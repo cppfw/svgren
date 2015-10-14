@@ -7,6 +7,8 @@
 
 #include "render.hpp"
 
+#include <cmath>
+
 #include <cairo/cairo.h>
 
 #include <utki/util.hpp>
@@ -17,14 +19,92 @@ using namespace svgren;
 
 namespace{
 
+class CairoMatrixPush{
+	cairo_matrix_t m;
+	cairo_t* cr;
+public:
+	CairoMatrixPush(cairo_t* cr) :
+			cr(cr)
+	{
+		ASSERT(this->cr)
+		cairo_get_matrix(this->cr, &this->m);
+	}
+	~CairoMatrixPush()noexcept{
+		cairo_set_matrix(this->cr, &this->m);
+	}
+};
+
+
 class Renderer : public svgdom::Renderer{
 	cairo_t* cr;
+	
+	void applyTransformations(const svgdom::Transformable& transformable)const{
+		for(auto& t : transformable.transformations){
+			switch(t.type){
+				case svgdom::Transformation::EType::TRANSLATE:
+					cairo_translate(this->cr, t.x, t.y);
+					break;
+				case svgdom::Transformation::EType::MATRIX:
+					{
+						cairo_matrix_t matrix;
+						matrix.xx = t.a;
+						matrix.yx = t.b;
+						matrix.xy = t.c;
+						matrix.yy = t.d;
+						matrix.x0 = t.e;
+						matrix.y0 = t.f;
+						cairo_transform(this->cr, &matrix);
+					}
+					break;
+				case svgdom::Transformation::EType::SCALE:
+					cairo_scale(this->cr, t.x, t.y);
+					break;
+				case svgdom::Transformation::EType::ROTATE:
+					cairo_translate(this->cr, t.x, t.y);
+					cairo_rotate(this->cr, t.angle);
+					cairo_translate(this->cr, -t.x, -t.y);
+					break;
+				case svgdom::Transformation::EType::SKEWX:
+					{
+						cairo_matrix_t matrix;
+						matrix.xx = 1;
+						matrix.yx = 0;
+						matrix.xy = std::tan(t.angle);
+						matrix.yy = 1;
+						matrix.x0 = 0;
+						matrix.y0 = 0;
+						cairo_transform(this->cr, &matrix);
+					}
+					break;
+				case svgdom::Transformation::EType::SKEWY:
+					{
+						cairo_matrix_t matrix;
+						matrix.xx = 1;
+						matrix.yx = std::tan(t.angle);
+						matrix.xy = 0;
+						matrix.yy = 1;
+						matrix.x0 = 0;
+						matrix.y0 = 0;
+						cairo_transform(this->cr, &matrix);
+					}
+					break;
+				default:
+					ASSERT(false)
+					break;
+			}
+		}
+	}
+	
 public:
 	Renderer(cairo_t* cr) :
 			cr(cr)
 	{}
 	
 	void render(const svgdom::PathElement& e)const override{
+		CairoMatrixPush cairoMatrixPush(this->cr);
+		
+		this->applyTransformations(e);
+		
 		cairo_set_source_rgb(cr, 1.0, 0, 0);
 		
 //		const svgdom::PathElement::Step* prev = nullptr;
