@@ -13,4 +13,9 @@ using namespace svgren;
 
 
 
-
+std::vector<std::uint32_t> render(const svgdom::SvgElement& svg, unsigned width, unsigned height){
+	std::vector<std::uint32_t> ret;
+	//TODO:
+	
+	return ret;
+}
