@@ -74,6 +74,12 @@ void processEvent(Display *display, Window window, XImage *ximage, int width, in
 }
 
 int main(int argc, char **argv){
+	auto dom = svgdom::load(papki::FSFile("tiger.svg"));
+	
+	ASSERT_ALWAYS(dom)
+	
+	
+	
 	XImage *ximage;
 	int width=512, height=512;
 	Display *display=XOpenDisplay(NULL);
