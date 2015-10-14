@@ -100,7 +100,19 @@ public:
 			cr(cr)
 	{}
 	
-	void render(const svgdom::PathElement& e)const override{
+	void render(const svgdom::GElement& e)override{
+		CairoMatrixPush cairoMatrixPush(this->cr);
+		
+		this->applyTransformations(e);
+		
+		e.Container::render(*this);
+	}
+	
+	void render(const svgdom::SvgElement& e)override{
+		e.Container::render(*this);
+	}
+	
+	void render(const svgdom::PathElement& e)override{
 		CairoMatrixPush cairoMatrixPush(this->cr);
 		
 		this->applyTransformations(e);
