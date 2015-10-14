@@ -27,7 +27,8 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <flagsDictionary>
-        <element flagsID="0" commonFlags="-funsigned-char -std=c++11 -fPIC"/>
+        <element flagsID="0"
+                 commonFlags="-mtune=generic -march=x86-64 -std=c++11 -funsigned-char -fPIC -fstack-protector"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -39,6 +40,10 @@
           <executablePath></executablePath>
           <ccTool>
             <incDir>
+              <pElem>src/svgren</pElem>
+              <pElem>/usr/include/utki</pElem>
+              <pElem>/usr/include/papki</pElem>
+              <pElem>/usr/include/svgdom</pElem>
               <pElem>.</pElem>
             </incDir>
           </ccTool>
