@@ -54,10 +54,11 @@
       <folder path="0">
         <ccTool>
           <incDir>
-            <pElem>src/svgren</pElem>
             <pElem>/usr/include/utki</pElem>
+            <pElem>src/svgren</pElem>
             <pElem>/usr/include/papki</pElem>
             <pElem>/usr/include/svgdom</pElem>
+            <pElem>/usr/include/cairo</pElem>
             <pElem>.</pElem>
           </incDir>
         </ccTool>
