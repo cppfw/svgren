@@ -13,8 +13,12 @@ using namespace svgren;
 
 
 
-std::vector<std::uint32_t> render(const svgdom::SvgElement& svg, unsigned width, unsigned height){
-	std::vector<std::uint32_t> ret;
+std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, unsigned width, unsigned height){
+	std::vector<std::uint32_t> ret(width * height);
+	
+	for(auto& c : ret){
+		c = 0xffff00;
+	}
 	//TODO:
 	
 	return ret;
