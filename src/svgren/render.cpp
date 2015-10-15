@@ -41,10 +41,10 @@ class Renderer : public svgdom::Renderer{
 	void applyTransformations(const svgdom::Transformable& transformable)const{
 		for(auto& t : transformable.transformations){
 			switch(t.type){
-				case svgdom::Transformation::EType::TRANSLATE:
+				case svgdom::Transformable::Transformation::EType::TRANSLATE:
 					cairo_translate(this->cr, t.x, t.y);
 					break;
-				case svgdom::Transformation::EType::MATRIX:
+				case svgdom::Transformable::Transformation::EType::MATRIX:
 					{
 						cairo_matrix_t matrix;
 						matrix.xx = t.a;
@@ -56,15 +56,15 @@ class Renderer : public svgdom::Renderer{
 						cairo_transform(this->cr, &matrix);
 					}
 					break;
-				case svgdom::Transformation::EType::SCALE:
+				case svgdom::Transformable::Transformation::EType::SCALE:
 					cairo_scale(this->cr, t.x, t.y);
 					break;
-				case svgdom::Transformation::EType::ROTATE:
+				case svgdom::Transformable::Transformation::EType::ROTATE:
 					cairo_translate(this->cr, t.x, t.y);
 					cairo_rotate(this->cr, t.angle);
 					cairo_translate(this->cr, -t.x, -t.y);
 					break;
-				case svgdom::Transformation::EType::SKEWX:
+				case svgdom::Transformable::Transformation::EType::SKEWX:
 					{
 						cairo_matrix_t matrix;
 						matrix.xx = 1;
@@ -76,7 +76,7 @@ class Renderer : public svgdom::Renderer{
 						cairo_transform(this->cr, &matrix);
 					}
 					break;
-				case svgdom::Transformation::EType::SKEWY:
+				case svgdom::Transformable::Transformation::EType::SKEWY:
 					{
 						cairo_matrix_t matrix;
 						matrix.xx = 1;
@@ -218,7 +218,7 @@ public:
 		if(fill && fill->effective){
 			svgdom::real opacity;
 			if(auto fillOpacity = e.getStyleProperty(svgdom::EStyleProperty::FILL_OPACITY)){
-				opacity = fillOpacity->floating;
+				opacity = fillOpacity->opacity;
 			}else{
 				opacity = 1;
 			}

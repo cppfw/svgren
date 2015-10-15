@@ -43,3 +43,8 @@ $(eval $(this_rules))
 $(prorab_this_name): $(abspath $(prorab_this_dir)../../src/libsvgren$(prorab_lib_extension))
 
 $(eval $(call prorab-include,$(prorab_this_dir)../../src/makefile))
+
+#add dependency on libsvgdom
+$(prorab_this_name): $(abspath $(prorab_this_dir)../../../svgdom/src/libsvgdom$(prorab_lib_extension))
+
+$(eval $(call prorab-include,$(prorab_this_dir)../../../svgdom/src/makefile))
