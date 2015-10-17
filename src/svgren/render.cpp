@@ -95,6 +95,42 @@ class Renderer : public svgdom::Renderer{
 		}
 	}
 	
+	void renderCurrentShape(const svgdom::Shape& e){
+		auto fill = e.getStyleProperty(svgdom::EStyleProperty::FILL);
+		auto stroke = e.getStyleProperty(svgdom::EStyleProperty::STROKE);
+		
+		if(fill && fill->effective){
+			svgdom::real opacity;
+			if(auto fillOpacity = e.getStyleProperty(svgdom::EStyleProperty::FILL_OPACITY)){
+				opacity = fillOpacity->opacity;
+			}else{
+				opacity = 1;
+			}
+
+			auto fillRgb = fill->getRgb();
+
+			cairo_set_source_rgba(this->cr, fillRgb.r, fillRgb.g, fillRgb.b, opacity);
+			if(stroke && stroke->effective){
+				cairo_fill_preserve(this->cr);
+			}else{
+				cairo_fill(this->cr);
+			}
+		}
+		
+		if(stroke && stroke->effective){
+			if(auto strokeWidth = e.getStyleProperty(svgdom::EStyleProperty::STROKE_WIDTH)){
+				cairo_set_line_width(cr, strokeWidth->length.value);
+			}else{
+				cairo_set_line_width(cr, 1);
+			}
+
+			auto rgb = stroke->getRgb();
+
+			cairo_set_source_rgb(this->cr, rgb.r, rgb.g, rgb.b);
+			cairo_stroke(this->cr);
+		}
+	}
+	
 public:
 	Renderer(cairo_t* cr) :
 			cr(cr)
@@ -212,39 +248,7 @@ public:
 //			prev = &s;
 		}
 		
-		auto fill = e.getStyleProperty(svgdom::EStyleProperty::FILL);
-		auto stroke = e.getStyleProperty(svgdom::EStyleProperty::STROKE);
-		
-		if(fill && fill->effective){
-			svgdom::real opacity;
-			if(auto fillOpacity = e.getStyleProperty(svgdom::EStyleProperty::FILL_OPACITY)){
-				opacity = fillOpacity->opacity;
-			}else{
-				opacity = 1;
-			}
-
-			auto fillRgb = fill->getRgb();
-
-			cairo_set_source_rgba(this->cr, fillRgb.r, fillRgb.g, fillRgb.b, opacity);
-			if(stroke && stroke->effective){
-				cairo_fill_preserve(this->cr);
-			}else{
-				cairo_fill(this->cr);
-			}
-		}
-		
-		if(stroke && stroke->effective){
-			if(auto strokeWidth = e.getStyleProperty(svgdom::EStyleProperty::STROKE_WIDTH)){
-				cairo_set_line_width(cr, strokeWidth->length.value);
-			}else{
-				cairo_set_line_width(cr, 1);
-			}
-
-			auto rgb = stroke->getRgb();
-
-			cairo_set_source_rgb(this->cr, rgb.r, rgb.g, rgb.b);
-			cairo_stroke(this->cr);
-		}
+		this->renderCurrentShape(e);
 	}
 };
 
