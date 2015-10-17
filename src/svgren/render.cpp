@@ -261,9 +261,8 @@ public:
 		{
 			cairo_rectangle(this->cr, e.x.value, e.y.value, e.width.value, e.height.value);
 		}else{
-			
+			//TODO: rounded corners
 		}
-		//TODO:
 		
 		this->renderCurrentShape(e);
 	}
