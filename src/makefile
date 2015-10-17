@@ -49,6 +49,10 @@ else ifeq ($(prorab_os),macosx)
 endif
 
 
+#TODO: remove when stabilized
+this_cflags += -I$(prorab_this_dir)../../svgdom/src
+this_ldflags += -L$(prorab_this_dir)../../svgdom/src
+
 
 $(eval $(prorab-build-lib))
 

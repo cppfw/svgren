@@ -6,15 +6,6 @@
         <in>render.cpp</in>
       </df>
     </df>
-    <logicalFolder name="svgdom"
-                   displayName="svgdom"
-                   projectFiles="true"
-                   root="../svgdom/src/svgdom">
-      <itemPath>../svgdom/src/svgdom/Exc.hpp</itemPath>
-      <itemPath>../svgdom/src/svgdom/config.hpp</itemPath>
-      <itemPath>../svgdom/src/svgdom/dom.cpp</itemPath>
-      <itemPath>../svgdom/src/svgdom/dom.hpp</itemPath>
-    </logicalFolder>
     <df root="tests" name="1">
       <df name="render">
         <in>main.cpp</in>
@@ -42,10 +33,9 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <flagsDictionary>
-        <element flagsID="0" commonFlags="-funsigned-char -std=c++11 -fPIC"/>
-        <element flagsID="1"
+        <element flagsID="0"
                  commonFlags="-mtune=generic -march=x86-64 -std=c++11 -funsigned-char -fPIC -fstack-protector"/>
-        <element flagsID="2" commonFlags="-std=c++11"/>
+        <element flagsID="1" commonFlags="-std=c++11"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -61,18 +51,15 @@
           <preBuildCommand></preBuildCommand>
         </preBuild>
       </makefileType>
-      <item path="../svgdom/src/svgdom/dom.cpp" ex="false" tool="1" flavor2="8">
-        <ccTool flags="0">
-        </ccTool>
-      </item>
       <folder path="0">
         <ccTool>
           <incDir>
             <pElem>/usr/include/utki</pElem>
-            <pElem>/usr/include/svgdom</pElem>
+            <pElem>../svgdom/src/svgdom</pElem>
             <pElem>src/svgren</pElem>
             <pElem>/usr/include/papki</pElem>
             <pElem>/usr/include/cairo</pElem>
+            <pElem>../svgdom/src</pElem>
             <pElem>.</pElem>
           </incDir>
         </ccTool>
@@ -80,16 +67,7 @@
       <folder path="1">
         <ccTool>
           <incDir>
-            <pElem>.</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>DEBUG</Elem>
-          </preprocessorList>
-        </ccTool>
-      </folder>
-      <folder path="svgdom">
-        <ccTool>
-          <incDir>
+            <pElem>../svgdom/src</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
@@ -98,11 +76,11 @@
         </ccTool>
       </folder>
       <item path="src/svgren/render.cpp" ex="false" tool="1" flavor2="8">
-        <ccTool flags="1">
+        <ccTool flags="0">
         </ccTool>
       </item>
       <item path="tests/render/main.cpp" ex="false" tool="1" flavor2="8">
-        <ccTool flags="2">
+        <ccTool flags="1">
         </ccTool>
       </item>
     </conf>
