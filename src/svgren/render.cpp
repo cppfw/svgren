@@ -250,6 +250,23 @@ public:
 		
 		this->renderCurrentShape(e);
 	}
+	
+	void render(const svgdom::RectElement& e) override{
+		CairoMatrixPush cairoMatrixPush(this->cr);
+		
+		this->applyTransformations(e);
+		
+		if((e.rx.value == 0 || e.rx.unit == svgdom::Length::EUnit::UNKNOWN)
+				&& (e.ry.value == 0 || e.ry.unit == svgdom::Length::EUnit::UNKNOWN))
+		{
+			cairo_rectangle(this->cr, e.x.value, e.y.value, e.width.value, e.height.value);
+		}else{
+			
+		}
+		//TODO:
+		
+		this->renderCurrentShape(e);
+	}
 };
 
 }
