@@ -36,13 +36,15 @@ public:
 
 
 class Renderer : public svgdom::Renderer{
+	cairo_t* curCr;
+	
 	cairo_t* cr;
 	
 	void applyTransformations(const svgdom::Transformable& transformable)const{
 		for(auto& t : transformable.transformations){
 			switch(t.type){
 				case svgdom::Transformable::Transformation::EType::TRANSLATE:
-					cairo_translate(this->cr, t.x, t.y);
+					cairo_translate(this->curCr, t.x, t.y);
 					break;
 				case svgdom::Transformable::Transformation::EType::MATRIX:
 					{
@@ -53,16 +55,16 @@ class Renderer : public svgdom::Renderer{
 						matrix.yy = t.d;
 						matrix.x0 = t.e;
 						matrix.y0 = t.f;
-						cairo_transform(this->cr, &matrix);
+						cairo_transform(this->curCr, &matrix);
 					}
 					break;
 				case svgdom::Transformable::Transformation::EType::SCALE:
-					cairo_scale(this->cr, t.x, t.y);
+					cairo_scale(this->curCr, t.x, t.y);
 					break;
 				case svgdom::Transformable::Transformation::EType::ROTATE:
-					cairo_translate(this->cr, t.x, t.y);
-					cairo_rotate(this->cr, t.angle);
-					cairo_translate(this->cr, -t.x, -t.y);
+					cairo_translate(this->curCr, t.x, t.y);
+					cairo_rotate(this->curCr, t.angle);
+					cairo_translate(this->curCr, -t.x, -t.y);
 					break;
 				case svgdom::Transformable::Transformation::EType::SKEWX:
 					{
@@ -73,7 +75,7 @@ class Renderer : public svgdom::Renderer{
 						matrix.yy = 1;
 						matrix.x0 = 0;
 						matrix.y0 = 0;
-						cairo_transform(this->cr, &matrix);
+						cairo_transform(this->curCr, &matrix);
 					}
 					break;
 				case svgdom::Transformable::Transformation::EType::SKEWY:
@@ -85,7 +87,7 @@ class Renderer : public svgdom::Renderer{
 						matrix.yy = 1;
 						matrix.x0 = 0;
 						matrix.y0 = 0;
-						cairo_transform(this->cr, &matrix);
+						cairo_transform(this->curCr, &matrix);
 					}
 					break;
 				default:
@@ -109,19 +111,19 @@ class Renderer : public svgdom::Renderer{
 
 			auto fillRgb = fill->getRgb();
 
-			cairo_set_source_rgba(this->cr, fillRgb.r, fillRgb.g, fillRgb.b, opacity);
+			cairo_set_source_rgba(this->curCr, fillRgb.r, fillRgb.g, fillRgb.b, opacity);
 			if(stroke && stroke->isNormal()){
-				cairo_fill_preserve(this->cr);
+				cairo_fill_preserve(this->curCr);
 			}else{
-				cairo_fill(this->cr);
+				cairo_fill(this->curCr);
 			}
 		}
 		
 		if(stroke && stroke->isNormal()){
 			if(auto strokeWidth = e.getStyleProperty(svgdom::EStyleProperty::STROKE_WIDTH)){
-				cairo_set_line_width(cr, strokeWidth->length.value);
+				cairo_set_line_width(curCr, strokeWidth->length.value);
 			}else{
-				cairo_set_line_width(cr, 1);
+				cairo_set_line_width(curCr, 1);
 			}
 
 			svgdom::real opacity;
@@ -133,18 +135,20 @@ class Renderer : public svgdom::Renderer{
 			
 			auto rgb = stroke->getRgb();
 
-			cairo_set_source_rgba(this->cr, rgb.r, rgb.g, rgb.b, opacity);
-			cairo_stroke(this->cr);
+			cairo_set_source_rgba(this->curCr, rgb.r, rgb.g, rgb.b, opacity);
+			cairo_stroke(this->curCr);
 		}
 	}
 	
 public:
 	Renderer(cairo_t* cr) :
 			cr(cr)
-	{}
+	{
+		this->curCr = this->cr;
+	}
 	
 	void render(const svgdom::GElement& e)override{
-		CairoMatrixPush cairoMatrixPush(this->cr);
+		CairoMatrixPush cairoMatrixPush(this->curCr);
 		
 		this->applyTransformations(e);
 		
@@ -156,7 +160,7 @@ public:
 	}
 	
 	void render(const svgdom::PathElement& e)override{
-		CairoMatrixPush cairoMatrixPush(this->cr);
+		CairoMatrixPush cairoMatrixPush(this->curCr);
 		
 		this->applyTransformations(e);
 		
@@ -164,69 +168,69 @@ public:
 		for(auto& s : e.path){
 			switch(s.type){
 				case svgdom::PathElement::Step::EType::MOVE_ABS:
-					cairo_move_to(this->cr, s.x, s.y);
+					cairo_move_to(this->curCr, s.x, s.y);
 					break;
 				case svgdom::PathElement::Step::EType::MOVE_REL:
-					cairo_rel_move_to(this->cr, s.x, s.y);
+					cairo_rel_move_to(this->curCr, s.x, s.y);
 					break;
 				case svgdom::PathElement::Step::EType::LINE_ABS:
-					cairo_line_to(this->cr, s.x, s.y);
+					cairo_line_to(this->curCr, s.x, s.y);
 					break;
 				case svgdom::PathElement::Step::EType::LINE_REL:
-					cairo_rel_line_to(this->cr, s.x, s.y);
+					cairo_rel_line_to(this->curCr, s.x, s.y);
 					break;
 				case svgdom::PathElement::Step::EType::HORIZONTAL_LINE_ABS:
 					{
 						double x, y;
-						if(cairo_has_current_point(this->cr)){
-							cairo_get_current_point(this->cr, &x, &y);
+						if(cairo_has_current_point(this->curCr)){
+							cairo_get_current_point(this->curCr, &x, &y);
 						}else{
 							y = 0;
 						}
-						cairo_line_to(this->cr, s.x, y);
+						cairo_line_to(this->curCr, s.x, y);
 					}
 					break;
 				case svgdom::PathElement::Step::EType::HORIZONTAL_LINE_REL:
 					{
 						double x, y;
-						if(cairo_has_current_point(this->cr)){
-							cairo_get_current_point(this->cr, &x, &y);
+						if(cairo_has_current_point(this->curCr)){
+							cairo_get_current_point(this->curCr, &x, &y);
 						}else{
 							y = 0;
 						}
-						cairo_rel_line_to(this->cr, s.x, y);
+						cairo_rel_line_to(this->curCr, s.x, y);
 					}
 					break;
 				case svgdom::PathElement::Step::EType::VERTICAL_LINE_ABS:
 					{
 						double x, y;
-						if(cairo_has_current_point(this->cr)){
-							cairo_get_current_point(this->cr, &x, &y);
+						if(cairo_has_current_point(this->curCr)){
+							cairo_get_current_point(this->curCr, &x, &y);
 						}else{
 							x = 0;
 						}
-						cairo_line_to(this->cr, x, s.y);
+						cairo_line_to(this->curCr, x, s.y);
 					}
 					break;
 				case svgdom::PathElement::Step::EType::VERTICAL_LINE_REL:
 					{
 						double x, y;
-						if(cairo_has_current_point(this->cr)){
-							cairo_get_current_point(this->cr, &x, &y);
+						if(cairo_has_current_point(this->curCr)){
+							cairo_get_current_point(this->curCr, &x, &y);
 						}else{
 							x = 0;
 						}
-						cairo_rel_line_to(this->cr, x, s.y);
+						cairo_rel_line_to(this->curCr, x, s.y);
 					}
 					break;
 				case svgdom::PathElement::Step::EType::CLOSE:
-					cairo_close_path(this->cr);
+					cairo_close_path(this->curCr);
 					break;
 				case svgdom::PathElement::Step::EType::CUBIC_ABS:
-					cairo_curve_to(this->cr, s.x1, s.y1, s.x2, s.y2, s.x, s.y);
+					cairo_curve_to(this->curCr, s.x1, s.y1, s.x2, s.y2, s.x, s.y);
 					break;
 				case svgdom::PathElement::Step::EType::CUBIC_REL:
-					cairo_rel_curve_to(this->cr, s.x1, s.y1, s.x2, s.y2, s.x, s.y);
+					cairo_rel_curve_to(this->curCr, s.x1, s.y1, s.x2, s.y2, s.x, s.y);
 					break;
 //				case svgdom::PathElement::Step::EType::CUBIC_SMOOTH_ABS:
 //					{
@@ -259,14 +263,14 @@ public:
 	}
 	
 	void render(const svgdom::RectElement& e) override{
-		CairoMatrixPush cairoMatrixPush(this->cr);
+		CairoMatrixPush cairoMatrixPush(this->curCr);
 		
 		this->applyTransformations(e);
 		
 		if((e.rx.value == 0 || e.rx.unit == svgdom::Length::EUnit::UNKNOWN)
 				&& (e.ry.value == 0 || e.ry.unit == svgdom::Length::EUnit::UNKNOWN))
 		{
-			cairo_rectangle(this->cr, e.x.value, e.y.value, e.width.value, e.height.value);
+			cairo_rectangle(this->curCr, e.x.value, e.y.value, e.width.value, e.height.value);
 		}else{
 			//compute real rx and ry
 			auto rx = e.rx;
@@ -286,40 +290,40 @@ public:
 				ry.value = e.height.value / 2;
 			}
 			
-			cairo_move_to(this->cr, e.x.value + rx.value, e.y.value);
-			cairo_line_to(this->cr, e.x.value + e.width.value - rx.value, e.y.value);
+			cairo_move_to(this->curCr, e.x.value + rx.value, e.y.value);
+			cairo_line_to(this->curCr, e.x.value + e.width.value - rx.value, e.y.value);
 			
-			cairo_save (this->cr);
-			cairo_translate (this->cr, e.x.value + e.width.value - rx.value, e.y.value + ry.value);
-			cairo_scale (this->cr, rx.value, ry.value);
-			cairo_arc (this->cr, 0, 0, 1, -M_PI / 2, 0);
-			cairo_restore (this->cr);
+			cairo_save (this->curCr);
+			cairo_translate (this->curCr, e.x.value + e.width.value - rx.value, e.y.value + ry.value);
+			cairo_scale (this->curCr, rx.value, ry.value);
+			cairo_arc (this->curCr, 0, 0, 1, -M_PI / 2, 0);
+			cairo_restore (this->curCr);
 			
-			cairo_line_to(this->cr, e.x.value + e.width.value, e.y.value + e.height.value - ry.value);
+			cairo_line_to(this->curCr, e.x.value + e.width.value, e.y.value + e.height.value - ry.value);
 			
-			cairo_save (this->cr);
-			cairo_translate (this->cr, e.x.value + e.width.value - rx.value, e.y.value + e.height.value - ry.value);
-			cairo_scale (this->cr, rx.value, ry.value);
-			cairo_arc (this->cr, 0, 0, 1, 0, M_PI / 2);
-			cairo_restore (this->cr);
+			cairo_save (this->curCr);
+			cairo_translate (this->curCr, e.x.value + e.width.value - rx.value, e.y.value + e.height.value - ry.value);
+			cairo_scale (this->curCr, rx.value, ry.value);
+			cairo_arc (this->curCr, 0, 0, 1, 0, M_PI / 2);
+			cairo_restore (this->curCr);
 			
-			cairo_line_to(this->cr, e.x.value + rx.value, e.y.value + e.height.value);
+			cairo_line_to(this->curCr, e.x.value + rx.value, e.y.value + e.height.value);
 			
-			cairo_save (this->cr);
-			cairo_translate (this->cr, e.x.value + rx.value, e.y.value + e.height.value - ry.value);
-			cairo_scale (this->cr, rx.value, ry.value);
-			cairo_arc (this->cr, 0, 0, 1, M_PI / 2, M_PI);
-			cairo_restore (this->cr);
+			cairo_save (this->curCr);
+			cairo_translate (this->curCr, e.x.value + rx.value, e.y.value + e.height.value - ry.value);
+			cairo_scale (this->curCr, rx.value, ry.value);
+			cairo_arc (this->curCr, 0, 0, 1, M_PI / 2, M_PI);
+			cairo_restore (this->curCr);
 			
-			cairo_line_to(this->cr, e.x.value, e.y.value + ry.value);
+			cairo_line_to(this->curCr, e.x.value, e.y.value + ry.value);
 			
-			cairo_save (this->cr);
-			cairo_translate (this->cr, e.x.value + rx.value, e.y.value + ry.value);
-			cairo_scale (this->cr, rx.value, ry.value);
-			cairo_arc (this->cr, 0, 0, 1, M_PI, M_PI * 3 / 2);
-			cairo_restore (this->cr);
+			cairo_save (this->curCr);
+			cairo_translate (this->curCr, e.x.value + rx.value, e.y.value + ry.value);
+			cairo_scale (this->curCr, rx.value, ry.value);
+			cairo_arc (this->curCr, 0, 0, 1, M_PI, M_PI * 3 / 2);
+			cairo_restore (this->curCr);
 			
-			cairo_close_path(this->cr);
+			cairo_close_path(this->curCr);
 		}
 		
 		this->renderCurrentShape(e);
