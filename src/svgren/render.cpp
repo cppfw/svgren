@@ -268,8 +268,58 @@ public:
 		{
 			cairo_rectangle(this->cr, e.x.value, e.y.value, e.width.value, e.height.value);
 		}else{
-			//TODO: rounded corners
-			cairo_rectangle(this->cr, e.x.value, e.y.value, e.width.value, e.height.value);
+			//compute real rx and ry
+			auto rx = e.rx;
+			auto ry = e.ry;
+			
+			if(ry.unit == svgdom::Length::EUnit::UNKNOWN && rx.unit != svgdom::Length::EUnit::UNKNOWN){
+				ry = rx;
+			}else if(rx.unit == svgdom::Length::EUnit::UNKNOWN && ry.unit != svgdom::Length::EUnit::UNKNOWN){
+				rx = ry;
+			}
+			ASSERT(rx.unit != svgdom::Length::EUnit::UNKNOWN && ry.unit != svgdom::Length::EUnit::UNKNOWN)
+			
+			if(rx.value > e.width.value / 2){
+				rx.value = e.width.value / 2;
+			}
+			if(ry.value > e.height.value / 2){
+				ry.value = e.height.value / 2;
+			}
+			
+			cairo_move_to(this->cr, e.x.value + rx.value, e.y.value);
+			cairo_line_to(this->cr, e.x.value + e.width.value - rx.value, e.y.value);
+			
+			cairo_save (this->cr);
+			cairo_translate (this->cr, e.x.value + e.width.value - rx.value, e.y.value + ry.value);
+			cairo_scale (this->cr, rx.value, ry.value);
+			cairo_arc (this->cr, 0, 0, 1, -M_PI / 2, 0);
+			cairo_restore (this->cr);
+			
+			cairo_line_to(this->cr, e.x.value + e.width.value, e.y.value + e.height.value - ry.value);
+			
+			cairo_save (this->cr);
+			cairo_translate (this->cr, e.x.value + e.width.value - rx.value, e.y.value + e.height.value - ry.value);
+			cairo_scale (this->cr, rx.value, ry.value);
+			cairo_arc (this->cr, 0, 0, 1, 0, M_PI / 2);
+			cairo_restore (this->cr);
+			
+			cairo_line_to(this->cr, e.x.value + rx.value, e.y.value + e.height.value);
+			
+			cairo_save (this->cr);
+			cairo_translate (this->cr, e.x.value + rx.value, e.y.value + e.height.value - ry.value);
+			cairo_scale (this->cr, rx.value, ry.value);
+			cairo_arc (this->cr, 0, 0, 1, M_PI / 2, M_PI);
+			cairo_restore (this->cr);
+			
+			cairo_line_to(this->cr, e.x.value, e.y.value + ry.value);
+			
+			cairo_save (this->cr);
+			cairo_translate (this->cr, e.x.value + rx.value, e.y.value + ry.value);
+			cairo_scale (this->cr, rx.value, ry.value);
+			cairo_arc (this->cr, 0, 0, 1, M_PI, M_PI * 3 / 2);
+			cairo_restore (this->cr);
+			
+			cairo_close_path(this->cr);
 		}
 		
 		this->renderCurrentShape(e);
