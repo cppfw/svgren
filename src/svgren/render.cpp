@@ -99,7 +99,7 @@ class Renderer : public svgdom::Renderer{
 		auto fill = e.getStyleProperty(svgdom::EStyleProperty::FILL);
 		auto stroke = e.getStyleProperty(svgdom::EStyleProperty::STROKE);
 		
-		if(fill && fill->effective){
+		if(fill && fill->isNormal()){
 			svgdom::real opacity;
 			if(auto fillOpacity = e.getStyleProperty(svgdom::EStyleProperty::FILL_OPACITY)){
 				opacity = fillOpacity->opacity;
@@ -110,23 +110,30 @@ class Renderer : public svgdom::Renderer{
 			auto fillRgb = fill->getRgb();
 
 			cairo_set_source_rgba(this->cr, fillRgb.r, fillRgb.g, fillRgb.b, opacity);
-			if(stroke && stroke->effective){
+			if(stroke && stroke->isNormal()){
 				cairo_fill_preserve(this->cr);
 			}else{
 				cairo_fill(this->cr);
 			}
 		}
 		
-		if(stroke && stroke->effective){
+		if(stroke && stroke->isNormal()){
 			if(auto strokeWidth = e.getStyleProperty(svgdom::EStyleProperty::STROKE_WIDTH)){
 				cairo_set_line_width(cr, strokeWidth->length.value);
 			}else{
 				cairo_set_line_width(cr, 1);
 			}
 
+			svgdom::real opacity;
+			if(auto strokeOpacity = e.getStyleProperty(svgdom::EStyleProperty::STROKE_OPACITY)){
+				opacity = strokeOpacity->opacity;
+			}else{
+				opacity = 1;
+			}
+			
 			auto rgb = stroke->getRgb();
 
-			cairo_set_source_rgb(this->cr, rgb.r, rgb.g, rgb.b);
+			cairo_set_source_rgba(this->cr, rgb.r, rgb.g, rgb.b, opacity);
 			cairo_stroke(this->cr);
 		}
 	}
@@ -262,6 +269,7 @@ public:
 			cairo_rectangle(this->cr, e.x.value, e.y.value, e.width.value, e.height.value);
 		}else{
 			//TODO: rounded corners
+			cairo_rectangle(this->cr, e.x.value, e.y.value, e.width.value, e.height.value);
 		}
 		
 		this->renderCurrentShape(e);
