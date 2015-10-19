@@ -101,34 +101,38 @@ class Renderer : public svgdom::Renderer{
 		auto fill = e.getStyleProperty(svgdom::EStyleProperty::FILL);
 		auto stroke = e.getStyleProperty(svgdom::EStyleProperty::STROKE);
 		
-		if(fill && fill->isNormal()){
+		if(fill && !fill->isNone()){
 			svgdom::real opacity;
-			if(auto fillOpacity = e.getStyleProperty(svgdom::EStyleProperty::FILL_OPACITY)){
-				opacity = fillOpacity->opacity;
+			if(auto p = e.getStyleProperty(svgdom::EStyleProperty::FILL_OPACITY)){
+				opacity = p->opacity;
 			}else{
 				opacity = 1;
 			}
 
-			auto fillRgb = fill->getRgb();
+			if(fill->rule == svgdom::StylePropertyValue::ERule::URL){
+				//TODO:
+			}else{
+				auto fillRgb = fill->getRgb();
+				cairo_set_source_rgba(this->curCr, fillRgb.r, fillRgb.g, fillRgb.b, opacity);
+			}
 
-			cairo_set_source_rgba(this->curCr, fillRgb.r, fillRgb.g, fillRgb.b, opacity);
-			if(stroke && stroke->isNormal()){
+			if(stroke && !stroke->isNone()){
 				cairo_fill_preserve(this->curCr);
 			}else{
 				cairo_fill(this->curCr);
 			}
 		}
 		
-		if(stroke && stroke->isNormal()){
-			if(auto strokeWidth = e.getStyleProperty(svgdom::EStyleProperty::STROKE_WIDTH)){
-				cairo_set_line_width(curCr, strokeWidth->length.value);
+		if(stroke && !stroke->isNone()){
+			if(auto p = e.getStyleProperty(svgdom::EStyleProperty::STROKE_WIDTH)){
+				cairo_set_line_width(curCr, p->length.value);
 			}else{
 				cairo_set_line_width(curCr, 1);
 			}
 
 			svgdom::real opacity;
-			if(auto strokeOpacity = e.getStyleProperty(svgdom::EStyleProperty::STROKE_OPACITY)){
-				opacity = strokeOpacity->opacity;
+			if(auto p = e.getStyleProperty(svgdom::EStyleProperty::STROKE_OPACITY)){
+				opacity = p->opacity;
 			}else{
 				opacity = 1;
 			}
