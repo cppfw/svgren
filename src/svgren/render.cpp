@@ -109,8 +109,12 @@ class Renderer : public svgdom::Renderer{
 				opacity = 1;
 			}
 
-			if(fill->rule == svgdom::StylePropertyValue::ERule::URL){
-				//TODO:
+			if(fill->isUrl()){
+				if(fill->url){
+					//TODO:
+				}else{
+					cairo_set_source_rgba(this->curCr, 0, 0, 0, 0);
+				}
 			}else{
 				auto fillRgb = fill->getRgb();
 				cairo_set_source_rgba(this->curCr, fillRgb.r, fillRgb.g, fillRgb.b, opacity);
@@ -138,8 +142,8 @@ class Renderer : public svgdom::Renderer{
 			}
 			
 			auto rgb = stroke->getRgb();
-
 			cairo_set_source_rgba(this->curCr, rgb.r, rgb.g, rgb.b, opacity);
+			
 			cairo_stroke(this->curCr);
 		}
 	}
