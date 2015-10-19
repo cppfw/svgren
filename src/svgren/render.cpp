@@ -97,25 +97,84 @@ class Renderer : public svgdom::Renderer{
 		}
 	}
 	
+	static void setCairoPatternExtent(cairo_pattern_t* pat, svgdom::Gradient::ESpreadMethod spreadMethod){
+		ASSERT(pat)
+		switch(spreadMethod){
+			default:
+			case svgdom::Gradient::ESpreadMethod::DEFAULT:
+				ASSERT(false)
+				break;
+			case svgdom::Gradient::ESpreadMethod::PAD:
+				cairo_pattern_set_extend(pat, CAIRO_EXTEND_PAD);
+				break;
+			case svgdom::Gradient::ESpreadMethod::REFLECT:
+				cairo_pattern_set_extend(pat, CAIRO_EXTEND_REFLECT);
+				break;
+			case svgdom::Gradient::ESpreadMethod::REPEAT:
+				cairo_pattern_set_extend(pat, CAIRO_EXTEND_REPEAT);
+				break;
+		}
+	}
+	
+	void setGradient(const svgdom::Element* gradient){
+		if(gradient){
+			if(auto g = dynamic_cast<const svgdom::LinearGradientElement*>(gradient)){
+				auto pat = cairo_pattern_create_linear(g->getX1().value, g->getY1().value,  g->getX2().value, g->getY2().value);
+				if(!pat){
+					return;
+				}
+				utki::ScopeExit scopeExit([pat](){
+					cairo_pattern_destroy(pat);
+				});
+
+				for(auto& stop : g->getStops()){
+					if(auto s = dynamic_cast<svgdom::Gradient::StopElement*>(stop.get())){
+						svgdom::Rgb rgb;
+						if(auto p = s->getStyleProperty(svgdom::EStyleProperty::STOP_COLOR)){
+							rgb = p->getRgb();
+						}else{
+							rgb.r = 0;
+							rgb.g = 0;
+							rgb.b = 0;
+						}
+						
+						svgdom::real opacity;
+						if(auto p = s->getStyleProperty(svgdom::EStyleProperty::STOP_OPACITY)){
+							opacity = p->opacity;
+						}else{
+							opacity = 1;
+						}
+						cairo_pattern_add_color_stop_rgba(pat, s->offset, rgb.r, rgb.g, rgb.b, opacity);
+					}
+				}
+				this->setCairoPatternExtent(pat, g->getSpreadMethod());
+				cairo_set_source (this->curCr, pat);
+				return;
+
+			}
+//			else if(auto g = dynamic_cast<const svgdom::RadialGradientElement*>(gradient)){
+//				//TODO:
+//				return;
+//			}
+		}
+		cairo_set_source_rgba(this->curCr, 0, 0, 0, 0);
+	}
+	
 	void renderCurrentShape(const svgdom::Shape& e){
 		auto fill = e.getStyleProperty(svgdom::EStyleProperty::FILL);
 		auto stroke = e.getStyleProperty(svgdom::EStyleProperty::STROKE);
 		
 		if(fill && !fill->isNone()){
-			svgdom::real opacity;
-			if(auto p = e.getStyleProperty(svgdom::EStyleProperty::FILL_OPACITY)){
-				opacity = p->opacity;
-			}else{
-				opacity = 1;
-			}
-
 			if(fill->isUrl()){
-				if(fill->url){
-					//TODO:
-				}else{
-					cairo_set_source_rgba(this->curCr, 0, 0, 0, 0);
-				}
+				this->setGradient(fill->url);
 			}else{
+				svgdom::real opacity;
+				if(auto p = e.getStyleProperty(svgdom::EStyleProperty::FILL_OPACITY)){
+					opacity = p->opacity;
+				}else{
+					opacity = 1;
+				}
+				
 				auto fillRgb = fill->getRgb();
 				cairo_set_source_rgba(this->curCr, fillRgb.r, fillRgb.g, fillRgb.b, opacity);
 			}
@@ -133,16 +192,20 @@ class Renderer : public svgdom::Renderer{
 			}else{
 				cairo_set_line_width(curCr, 1);
 			}
-
-			svgdom::real opacity;
-			if(auto p = e.getStyleProperty(svgdom::EStyleProperty::STROKE_OPACITY)){
-				opacity = p->opacity;
-			}else{
-				opacity = 1;
-			}
 			
-			auto rgb = stroke->getRgb();
-			cairo_set_source_rgba(this->curCr, rgb.r, rgb.g, rgb.b, opacity);
+			if(stroke->isUrl()){
+				this->setGradient(stroke->url);
+			}else{
+				svgdom::real opacity;
+				if(auto p = e.getStyleProperty(svgdom::EStyleProperty::STROKE_OPACITY)){
+					opacity = p->opacity;
+				}else{
+					opacity = 1;
+				}
+				
+				auto rgb = stroke->getRgb();
+				cairo_set_source_rgba(this->curCr, rgb.r, rgb.g, rgb.b, opacity);
+			}
 			
 			cairo_stroke(this->curCr);
 		}
