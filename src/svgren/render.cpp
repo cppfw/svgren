@@ -330,7 +330,7 @@ public:
 	}
 };
 
-}
+}//~namespace
 
 
 
