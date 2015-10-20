@@ -97,9 +97,32 @@ class Renderer : public svgdom::Renderer{
 		}
 	}
 	
-	static void setCairoPatternExtent(cairo_pattern_t* pat, svgdom::Gradient::ESpreadMethod spreadMethod){
-		ASSERT(pat)
-		switch(spreadMethod){
+	void setCairoPatternSource(cairo_pattern_t* pat, const svgdom::Gradient& g){
+		if(!pat){
+			return;
+		}
+		
+		for(auto& stop : g.getStops()){
+			if(auto s = dynamic_cast<svgdom::Gradient::StopElement*>(stop.get())){
+				svgdom::Rgb rgb;
+				if(auto p = s->getStyleProperty(svgdom::EStyleProperty::STOP_COLOR)){
+					rgb = p->getRgb();
+				}else{
+					rgb.r = 0;
+					rgb.g = 0;
+					rgb.b = 0;
+				}
+
+				svgdom::real opacity;
+				if(auto p = s->getStyleProperty(svgdom::EStyleProperty::STOP_OPACITY)){
+					opacity = p->opacity;
+				}else{
+					opacity = 1;
+				}
+				cairo_pattern_add_color_stop_rgba(pat, s->offset, rgb.r, rgb.g, rgb.b, opacity);
+			}
+		}
+		switch(g.getSpreadMethod()){
 			default:
 			case svgdom::Gradient::ESpreadMethod::DEFAULT:
 				ASSERT(false)
@@ -114,48 +137,38 @@ class Renderer : public svgdom::Renderer{
 				cairo_pattern_set_extend(pat, CAIRO_EXTEND_REPEAT);
 				break;
 		}
+		cairo_set_source (this->curCr, pat);
 	}
 	
 	void setGradient(const svgdom::Element* gradient){
 		if(gradient){
+			cairo_pattern_t* pat = nullptr;
+			utki::ScopeExit scopeExit([&pat](){
+				cairo_pattern_destroy(pat);
+			});
+			
 			if(auto g = dynamic_cast<const svgdom::LinearGradientElement*>(gradient)){
-				auto pat = cairo_pattern_create_linear(g->getX1().value, g->getY1().value,  g->getX2().value, g->getY2().value);
-				if(!pat){
-					return;
-				}
-				utki::ScopeExit scopeExit([pat](){
-					cairo_pattern_destroy(pat);
-				});
-
-				for(auto& stop : g->getStops()){
-					if(auto s = dynamic_cast<svgdom::Gradient::StopElement*>(stop.get())){
-						svgdom::Rgb rgb;
-						if(auto p = s->getStyleProperty(svgdom::EStyleProperty::STOP_COLOR)){
-							rgb = p->getRgb();
-						}else{
-							rgb.r = 0;
-							rgb.g = 0;
-							rgb.b = 0;
-						}
-						
-						svgdom::real opacity;
-						if(auto p = s->getStyleProperty(svgdom::EStyleProperty::STOP_OPACITY)){
-							opacity = p->opacity;
-						}else{
-							opacity = 1;
-						}
-						cairo_pattern_add_color_stop_rgba(pat, s->offset, rgb.r, rgb.g, rgb.b, opacity);
-					}
-				}
-				this->setCairoPatternExtent(pat, g->getSpreadMethod());
-				cairo_set_source (this->curCr, pat);
+				pat = cairo_pattern_create_linear(g->getX1().value, g->getY1().value,  g->getX2().value, g->getY2().value);
+				this->setCairoPatternSource(pat, *g);
 				return;
-
+			}else if(auto g = dynamic_cast<const svgdom::RadialGradientElement*>(gradient)){
+				auto cx = g->getCx();
+				auto cy = g->getCy();
+				auto r = g->getR();
+				auto fx = g->getFx();
+				auto fy = g->getFy();
+				
+				if(fx.unit == svgdom::Length::EUnit::UNKNOWN){
+					fx = cx;
+				}
+				if(fy.unit == svgdom::Length::EUnit::UNKNOWN){
+					fy = cy;
+				}
+				
+				pat = cairo_pattern_create_radial(fx.value, fy.value, 0, cx.value, cy.value, r.value);
+				this->setCairoPatternSource(pat, *g);
+				return;
 			}
-//			else if(auto g = dynamic_cast<const svgdom::RadialGradientElement*>(gradient)){
-//				//TODO:
-//				return;
-//			}
 		}
 		cairo_set_source_rgba(this->curCr, 0, 0, 0, 0);
 	}
