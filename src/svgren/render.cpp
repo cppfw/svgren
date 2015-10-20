@@ -346,6 +346,21 @@ public:
 		this->renderCurrentShape(e);
 	}
 	
+	void render(const svgdom::EllipseElement& e) override{
+		CairoMatrixPush cairoMatrixPush(this->curCr);
+		
+		this->applyTransformations(e);
+		
+		cairo_save(this->curCr);
+		cairo_translate (this->curCr, e.cx.value, e.cy.value);
+		cairo_scale (this->curCr, e.rx.value, e.ry.value);
+		cairo_arc(this->curCr, 0, 0, 1, 0, 2 * M_PI);
+		cairo_close_path(this->curCr);
+		cairo_restore (this->curCr);
+		
+		this->renderCurrentShape(e);
+	}
+	
 	void render(const svgdom::RectElement& e) override{
 		CairoMatrixPush cairoMatrixPush(this->curCr);
 		
