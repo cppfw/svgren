@@ -3,6 +3,7 @@
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df root="src" name="0">
       <df name="svgren">
+        <in>config.hpp</in>
         <in>render.cpp</in>
       </df>
     </df>
@@ -136,6 +137,8 @@
           </preprocessorList>
         </ccTool>
       </folder>
+      <item path="src/svgren/config.hpp" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/svgren/render.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
         </ccTool>
