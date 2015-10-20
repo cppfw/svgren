@@ -11,7 +11,7 @@
       <stop offset="100%" style="stop-color:rgb(255,0,0);stop-opacity:1" />
     </linearGradient>
   </defs>
-  <ellipse cx="100" cy="270" rx="85" ry="55" fill="url(#grad1)" />
+  <ellipse cx="100" cy="270" rx="85" ry="55" style="fill:url(#grad1)" />
   
 
 <defs>
