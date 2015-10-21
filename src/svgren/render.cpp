@@ -170,7 +170,8 @@ class Renderer : public svgdom::Renderer{
 				
 				if(g->isBoundingBoxUnits()){
 					cairo_translate(this->curCr, this->curBoundingBoxPos[0], this->curBoundingBoxPos[1]);
-					this->viewportStack.push_back(this->curBoundingBoxDim);
+					cairo_scale(this->curCr, this->curBoundingBoxDim[0], this->curBoundingBoxDim[1]);
+					this->viewportStack.push_back({1, 1});
 				}
 				utki::ScopeExit scopeExit([this, g](){
 					if(g->isBoundingBoxUnits()){
@@ -191,7 +192,8 @@ class Renderer : public svgdom::Renderer{
 				
 				if(g->isBoundingBoxUnits()){
 					cairo_translate(this->curCr, this->curBoundingBoxPos[0], this->curBoundingBoxPos[1]);
-					this->viewportStack.push_back(this->curBoundingBoxDim);
+					cairo_scale(this->curCr, this->curBoundingBoxDim[0], this->curBoundingBoxDim[1]);
+					this->viewportStack.push_back({1, 1});
 				}
 				utki::ScopeExit scopeExit([this, g](){
 					if(g->isBoundingBoxUnits()){
