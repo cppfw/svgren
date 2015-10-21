@@ -303,7 +303,16 @@ public:
 	}
 	
 	void render(const svgdom::SvgElement& e)override{
-		//if viewport stack is empty then it is an outermost 'svg' element, x and y should be 0.
+		CairoMatrixPush cairoMatrixPush(this->curCr);
+		
+		if(this->viewportStack.size() != 0){ //if not the outermost 'svg' element
+			cairo_translate(
+					this->curCr,
+					this->lengthToNum(e.x, 0),
+					this->lengthToNum(e.y, 1)
+				);
+		}
+		
 		this->viewportStack.push_back(
 				{
 					this->lengthToNum(e.width),
