@@ -42,7 +42,16 @@ class Renderer : public svgdom::Renderer{
 	
 	cairo_t* cr;
 	
-	real lengthToNum(const svgdom::Length& l)const noexcept{
+	std::vector<std::array<real, 2>> boundingBoxStack;//stack of width, height
+	
+	real lengthToNum(const svgdom::Length& l, unsigned coordIndex = 0)const noexcept{
+		if(l.isPercent()){
+			if(this->boundingBoxStack.size() == 0){
+				return 0;
+			}
+			ASSERT(coordIndex < this->boundingBoxStack.back().size())
+			return this->boundingBoxStack.back()[coordIndex] * (l.value / 100);
+		}
 		return l.value;
 	}
 	
@@ -155,10 +164,10 @@ class Renderer : public svgdom::Renderer{
 			
 			if(auto g = dynamic_cast<const svgdom::LinearGradientElement*>(gradient)){
 				pat = cairo_pattern_create_linear(
-						this->lengthToNum(g->getX1()),
-						this->lengthToNum(g->getY1()),
-						this->lengthToNum(g->getX2()),
-						this->lengthToNum(g->getY2())
+						this->lengthToNum(g->getX1(), 0),
+						this->lengthToNum(g->getY1(), 1),
+						this->lengthToNum(g->getX2(), 0),
+						this->lengthToNum(g->getY2(), 1)
 					);
 				this->setCairoPatternSource(pat, *g);
 				return;
@@ -177,11 +186,11 @@ class Renderer : public svgdom::Renderer{
 				}
 				
 				pat = cairo_pattern_create_radial(
-						this->lengthToNum(fx),
-						this->lengthToNum(fy),
+						this->lengthToNum(fx, 0),
+						this->lengthToNum(fy, 1),
 						0,
-						this->lengthToNum(cx),
-						this->lengthToNum(cy),
+						this->lengthToNum(cx, 0),
+						this->lengthToNum(cy, 1),
 						this->lengthToNum(r)
 					);
 				this->setCairoPatternSource(pat, *g);
@@ -258,6 +267,17 @@ public:
 	}
 	
 	void render(const svgdom::SvgElement& e)override{
+		//if viewport stack is empty then it is an outermost 'svg' element, x and y should be 0.
+		this->boundingBoxStack.push_back(
+				{
+					this->lengthToNum(e.width),
+					this->lengthToNum(e.height)
+				}
+			);
+		utki::ScopeExit scopeExit([this](){
+			this->boundingBoxStack.pop_back();
+		});
+		
 		e.Container::render(*this);
 	}
 	
@@ -370,8 +390,8 @@ public:
 		this->applyTransformations(e);
 		
 		cairo_save(this->curCr);
-		cairo_translate (this->curCr, this->lengthToNum(e.cx), this->lengthToNum(e.cy));
-		cairo_scale (this->curCr, this->lengthToNum(e.rx), this->lengthToNum(e.ry));
+		cairo_translate (this->curCr, this->lengthToNum(e.cx, 0), this->lengthToNum(e.cy, 1));
+		cairo_scale (this->curCr, this->lengthToNum(e.rx, 0), this->lengthToNum(e.ry, 1));
 		cairo_arc(this->curCr, 0, 0, 1, 0, 2 * M_PI);
 		cairo_close_path(this->curCr);
 		cairo_restore (this->curCr);
@@ -387,7 +407,7 @@ public:
 		if((e.rx.value == 0 || !e.rx.isValid())
 				&& (e.ry.value == 0 || !e.ry.isValid()))
 		{
-			cairo_rectangle(this->curCr, this->lengthToNum(e.x), this->lengthToNum(e.y), this->lengthToNum(e.width), this->lengthToNum(e.height));
+			cairo_rectangle(this->curCr, this->lengthToNum(e.x, 0), this->lengthToNum(e.y, 1), this->lengthToNum(e.width, 0), this->lengthToNum(e.height, 1));
 		}else{
 			//compute real rx and ry
 			auto rx = e.rx;
@@ -400,45 +420,45 @@ public:
 			}
 			ASSERT(rx.isValid() && ry.isValid())
 			
-			if(this->lengthToNum(rx) > this->lengthToNum(e.width) / 2){
+			if(this->lengthToNum(rx, 0) > this->lengthToNum(e.width, 0) / 2){
 				rx = e.width;
 				rx.value /= 2;
 			}
-			if(this->lengthToNum(ry) > this->lengthToNum(e.height) / 2){
+			if(this->lengthToNum(ry, 1) > this->lengthToNum(e.height, 1) / 2){
 				ry = e.height;
 				ry.value /= 2;
 			}
 			
-			cairo_move_to(this->curCr, this->lengthToNum(e.x) + this->lengthToNum(rx), this->lengthToNum(e.y));
-			cairo_line_to(this->curCr, this->lengthToNum(e.x) + this->lengthToNum(e.width) - this->lengthToNum(rx), this->lengthToNum(e.y));
+			cairo_move_to(this->curCr, this->lengthToNum(e.x, 0) + this->lengthToNum(rx, 0), this->lengthToNum(e.y, 1));
+			cairo_line_to(this->curCr, this->lengthToNum(e.x, 0) + this->lengthToNum(e.width, 0) - this->lengthToNum(rx, 0), this->lengthToNum(e.y, 1));
 			
 			cairo_save (this->curCr);
-			cairo_translate (this->curCr, this->lengthToNum(e.x) + this->lengthToNum(e.width) - this->lengthToNum(rx), this->lengthToNum(e.y) + this->lengthToNum(ry));
-			cairo_scale (this->curCr, this->lengthToNum(rx), this->lengthToNum(ry));
+			cairo_translate (this->curCr, this->lengthToNum(e.x, 0) + this->lengthToNum(e.width, 0) - this->lengthToNum(rx, 0), this->lengthToNum(e.y, 1) + this->lengthToNum(ry, 1));
+			cairo_scale (this->curCr, this->lengthToNum(rx, 0), this->lengthToNum(ry, 1));
 			cairo_arc (this->curCr, 0, 0, 1, -M_PI / 2, 0);
 			cairo_restore (this->curCr);
 			
-			cairo_line_to(this->curCr, this->lengthToNum(e.x) + this->lengthToNum(e.width), this->lengthToNum(e.y) + this->lengthToNum(e.height) - this->lengthToNum(ry));
+			cairo_line_to(this->curCr, this->lengthToNum(e.x, 0) + this->lengthToNum(e.width, 0), this->lengthToNum(e.y, 1) + this->lengthToNum(e.height, 1) - this->lengthToNum(ry, 1));
 			
 			cairo_save (this->curCr);
-			cairo_translate (this->curCr, this->lengthToNum(e.x) + this->lengthToNum(e.width) - this->lengthToNum(rx), this->lengthToNum(e.y) + this->lengthToNum(e.height) - this->lengthToNum(ry));
-			cairo_scale (this->curCr, this->lengthToNum(rx), this->lengthToNum(ry));
+			cairo_translate (this->curCr, this->lengthToNum(e.x, 0) + this->lengthToNum(e.width, 0) - this->lengthToNum(rx, 0), this->lengthToNum(e.y, 1) + this->lengthToNum(e.height, 1) - this->lengthToNum(ry, 1));
+			cairo_scale (this->curCr, this->lengthToNum(rx, 0), this->lengthToNum(ry, 1));
 			cairo_arc (this->curCr, 0, 0, 1, 0, M_PI / 2);
 			cairo_restore (this->curCr);
 			
-			cairo_line_to(this->curCr, this->lengthToNum(e.x) + this->lengthToNum(rx), this->lengthToNum(e.y) + this->lengthToNum(e.height));
+			cairo_line_to(this->curCr, this->lengthToNum(e.x, 0) + this->lengthToNum(rx, 0), this->lengthToNum(e.y, 1) + this->lengthToNum(e.height, 1));
 			
 			cairo_save (this->curCr);
-			cairo_translate (this->curCr, this->lengthToNum(e.x) + this->lengthToNum(rx), this->lengthToNum(e.y) + this->lengthToNum(e.height) - this->lengthToNum(ry));
-			cairo_scale (this->curCr, this->lengthToNum(rx), this->lengthToNum(ry));
+			cairo_translate (this->curCr, this->lengthToNum(e.x, 0) + this->lengthToNum(rx, 0), this->lengthToNum(e.y, 1) + this->lengthToNum(e.height, 1) - this->lengthToNum(ry, 1));
+			cairo_scale (this->curCr, this->lengthToNum(rx, 0), this->lengthToNum(ry, 1));
 			cairo_arc (this->curCr, 0, 0, 1, M_PI / 2, M_PI);
 			cairo_restore (this->curCr);
 			
-			cairo_line_to(this->curCr, this->lengthToNum(e.x), this->lengthToNum(e.y) + this->lengthToNum(ry));
+			cairo_line_to(this->curCr, this->lengthToNum(e.x, 0), this->lengthToNum(e.y, 1) + this->lengthToNum(ry, 1));
 			
 			cairo_save (this->curCr);
-			cairo_translate (this->curCr, this->lengthToNum(e.x) + this->lengthToNum(rx), this->lengthToNum(e.y) + this->lengthToNum(ry));
-			cairo_scale (this->curCr, this->lengthToNum(rx), this->lengthToNum(ry));
+			cairo_translate (this->curCr, this->lengthToNum(e.x, 0) + this->lengthToNum(rx, 0), this->lengthToNum(e.y, 1) + this->lengthToNum(ry, 1));
+			cairo_scale (this->curCr, this->lengthToNum(rx, 0), this->lengthToNum(ry, 1));
 			cairo_arc (this->curCr, 0, 0, 1, M_PI, M_PI * 3 / 2);
 			cairo_restore (this->curCr);
 			
