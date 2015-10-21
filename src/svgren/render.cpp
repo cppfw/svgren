@@ -42,15 +42,18 @@ class Renderer : public svgdom::Renderer{
 	
 	cairo_t* cr;
 	
-	std::vector<std::array<real, 2>> boundingBoxStack;//stack of width, height
+	std::vector<std::array<real, 2>> viewportStack;//stack of width, height
+	
+	std::array<real, 2> curBoundingBoxPos = {{0, 0}};
+	std::array<real, 2> curBoundingBoxDim = {{0, 0}};
 	
 	real lengthToNum(const svgdom::Length& l, unsigned coordIndex = 0)const noexcept{
 		if(l.isPercent()){
-			if(this->boundingBoxStack.size() == 0){
+			if(this->viewportStack.size() == 0){
 				return 0;
 			}
-			ASSERT(coordIndex < this->boundingBoxStack.back().size())
-			return this->boundingBoxStack.back()[coordIndex] * (l.value / 100);
+			ASSERT(coordIndex < this->viewportStack.back().size())
+			return this->viewportStack.back()[coordIndex] * (l.value / 100);
 		}
 		return l.value;
 	}
@@ -163,6 +166,18 @@ class Renderer : public svgdom::Renderer{
 			});
 			
 			if(auto g = dynamic_cast<const svgdom::LinearGradientElement*>(gradient)){
+				CairoMatrixPush cairoMatrixPush(this->curCr);
+				
+				if(g->isBoundingBoxUnits()){
+					cairo_translate(this->curCr, this->curBoundingBoxPos[0], this->curBoundingBoxPos[1]);
+					this->viewportStack.push_back(this->curBoundingBoxDim);
+				}
+				utki::ScopeExit scopeExit([this, g](){
+					if(g->isBoundingBoxUnits()){
+						this->viewportStack.pop_back();
+					}
+				});
+				
 				pat = cairo_pattern_create_linear(
 						this->lengthToNum(g->getX1(), 0),
 						this->lengthToNum(g->getY1(), 1),
@@ -172,6 +187,18 @@ class Renderer : public svgdom::Renderer{
 				this->setCairoPatternSource(pat, *g);
 				return;
 			}else if(auto g = dynamic_cast<const svgdom::RadialGradientElement*>(gradient)){
+				CairoMatrixPush cairoMatrixPush(this->curCr);
+				
+				if(g->isBoundingBoxUnits()){
+					cairo_translate(this->curCr, this->curBoundingBoxPos[0], this->curBoundingBoxPos[1]);
+					this->viewportStack.push_back(this->curBoundingBoxDim);
+				}
+				utki::ScopeExit scopeExit([this, g](){
+					if(g->isBoundingBoxUnits()){
+						this->viewportStack.pop_back();
+					}
+				});
+				
 				auto cx = g->getCx();
 				auto cy = g->getCy();
 				auto r = g->getR();
@@ -200,9 +227,27 @@ class Renderer : public svgdom::Renderer{
 		cairo_set_source_rgba(this->curCr, 0, 0, 0, 0);
 	}
 	
+	void updateCurBoundingBox(){
+		double x1, y1, x2, y2;
+		
+		cairo_path_extents(this->curCr,
+				&x1,
+				&y1,
+				&x2,
+				&y2
+			);
+		
+		this->curBoundingBoxPos[0] = x1;
+		this->curBoundingBoxPos[1] = y1;
+		this->curBoundingBoxDim[0] = x2 - x1;
+		this->curBoundingBoxDim[1] = y2 - y1;
+	}
+	
 	void renderCurrentShape(const svgdom::Shape& e){
 		auto fill = e.getStyleProperty(svgdom::EStyleProperty::FILL);
 		auto stroke = e.getStyleProperty(svgdom::EStyleProperty::STROKE);
+		
+		this->updateCurBoundingBox();
 		
 		if(fill && !fill->isNone()){
 			if(fill->isUrl()){
@@ -268,14 +313,14 @@ public:
 	
 	void render(const svgdom::SvgElement& e)override{
 		//if viewport stack is empty then it is an outermost 'svg' element, x and y should be 0.
-		this->boundingBoxStack.push_back(
+		this->viewportStack.push_back(
 				{
 					this->lengthToNum(e.width),
 					this->lengthToNum(e.height)
 				}
 			);
 		utki::ScopeExit scopeExit([this](){
-			this->boundingBoxStack.pop_back();
+			this->viewportStack.pop_back();
 		});
 		
 		e.Container::render(*this);
