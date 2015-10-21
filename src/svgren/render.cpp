@@ -21,23 +21,35 @@ using namespace svgren;
 
 namespace{
 
-class CairoMatrixPush{
+class CairoMatrixSave{
 	cairo_matrix_t m;
 	cairo_t* cr;
 public:
-	CairoMatrixPush(cairo_t* cr) :
+	CairoMatrixSave(cairo_t* cr) :
 			cr(cr)
 	{
 		ASSERT(this->cr)
 		cairo_get_matrix(this->cr, &this->m);
 	}
-	~CairoMatrixPush()noexcept{
+	~CairoMatrixSave()noexcept{
 		cairo_set_matrix(this->cr, &this->m);
 	}
 };
 
+class Renderer;
 
-class Renderer : public svgdom::Renderer{
+class SetTempCairoContext{
+	cairo_t* oldCr;
+	Renderer& renderer;
+public:
+	SetTempCairoContext(Renderer& renderer, const svgdom::Element& e);
+	~SetTempCairoContext()noexcept;
+	
+	//TODO:
+};
+
+
+struct Renderer : public svgdom::Renderer{
 	cairo_t* cr;
 	
 	std::vector<std::array<real, 2>> viewportStack;//stack of width, height
@@ -158,7 +170,7 @@ class Renderer : public svgdom::Renderer{
 	
 	void setGradient(const svgdom::Element* gradientElement){
 		if(auto gradient = dynamic_cast<const svgdom::Gradient*>(gradientElement)){
-			CairoMatrixPush cairoMatrixPush(this->cr);
+			CairoMatrixSave cairoMatrixPush(this->cr);
 			
 			if(gradient->isBoundingBoxUnits()){
 				cairo_translate(this->cr, this->curBoundingBoxPos[0], this->curBoundingBoxPos[1]);
@@ -291,7 +303,7 @@ public:
 	{}
 	
 	void render(const svgdom::GElement& e)override{
-		CairoMatrixPush cairoMatrixPush(this->cr);
+		CairoMatrixSave cairoMatrixPush(this->cr);
 		
 		this->applyTransformations(e.transformations);
 		
@@ -299,7 +311,7 @@ public:
 	}
 	
 	void render(const svgdom::SvgElement& e)override{
-		CairoMatrixPush cairoMatrixPush(this->cr);
+		CairoMatrixSave cairoMatrixPush(this->cr);
 		
 		if(this->viewportStack.size() != 0){ //if not the outermost 'svg' element
 			cairo_translate(
@@ -323,7 +335,7 @@ public:
 	}
 	
 	void render(const svgdom::PathElement& e)override{
-		CairoMatrixPush cairoMatrixPush(this->cr);
+		CairoMatrixSave cairoMatrixPush(this->cr);
 		
 		this->applyTransformations(e.transformations);
 		
@@ -426,7 +438,7 @@ public:
 	}
 	
 	void render(const svgdom::EllipseElement& e) override{
-		CairoMatrixPush cairoMatrixPush(this->cr);
+		CairoMatrixSave cairoMatrixPush(this->cr);
 		
 		this->applyTransformations(e.transformations);
 		
@@ -441,7 +453,7 @@ public:
 	}
 	
 	void render(const svgdom::RectElement& e) override{
-		CairoMatrixPush cairoMatrixPush(this->cr);
+		CairoMatrixSave cairoMatrixPush(this->cr);
 		
 		this->applyTransformations(e.transformations);
 		
