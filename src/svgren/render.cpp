@@ -58,8 +58,8 @@ class Renderer : public svgdom::Renderer{
 		return l.value;
 	}
 	
-	void applyTransformations(const svgdom::Transformable& transformable)const{
-		for(auto& t : transformable.transformations){
+	void applyTransformations(const decltype(svgdom::Transformable::transformations)& transformations)const{
+		for(auto& t : transformations){
 			switch(t.type){
 				case svgdom::Transformable::Transformation::EType::TRANSLATE:
 					cairo_translate(this->curCr, t.x, t.y);
@@ -308,7 +308,7 @@ public:
 	void render(const svgdom::GElement& e)override{
 		CairoMatrixPush cairoMatrixPush(this->curCr);
 		
-		this->applyTransformations(e);
+		this->applyTransformations(e.transformations);
 		
 		e.Container::render(*this);
 	}
@@ -331,7 +331,7 @@ public:
 	void render(const svgdom::PathElement& e)override{
 		CairoMatrixPush cairoMatrixPush(this->curCr);
 		
-		this->applyTransformations(e);
+		this->applyTransformations(e.transformations);
 		
 //		const svgdom::PathElement::Step* prev = nullptr;
 		for(auto& s : e.path){
@@ -434,7 +434,7 @@ public:
 	void render(const svgdom::EllipseElement& e) override{
 		CairoMatrixPush cairoMatrixPush(this->curCr);
 		
-		this->applyTransformations(e);
+		this->applyTransformations(e.transformations);
 		
 		cairo_save(this->curCr);
 		cairo_translate (this->curCr, this->lengthToNum(e.cx, 0), this->lengthToNum(e.cy, 1));
@@ -449,7 +449,7 @@ public:
 	void render(const svgdom::RectElement& e) override{
 		CairoMatrixPush cairoMatrixPush(this->curCr);
 		
-		this->applyTransformations(e);
+		this->applyTransformations(e.transformations);
 		
 		if((e.rx.value == 0 || !e.rx.isValid())
 				&& (e.ry.value == 0 || !e.ry.isValid()))
