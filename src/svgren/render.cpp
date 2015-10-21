@@ -158,27 +158,29 @@ class Renderer : public svgdom::Renderer{
 		cairo_set_source (this->curCr, pat);
 	}
 	
-	void setGradient(const svgdom::Element* gradient){
-		if(gradient){
+	void setGradient(const svgdom::Element* gradientElement){
+		if(auto gradient = dynamic_cast<const svgdom::Gradient*>(gradientElement)){
+			CairoMatrixPush cairoMatrixPush(this->curCr);
+			
+			if(gradient->isBoundingBoxUnits()){
+				cairo_translate(this->curCr, this->curBoundingBoxPos[0], this->curBoundingBoxPos[1]);
+				cairo_scale(this->curCr, this->curBoundingBoxDim[0], this->curBoundingBoxDim[1]);
+				this->viewportStack.push_back({1, 1});
+			}
+			utki::ScopeExit gradScopeExit([this, gradient](){
+				if(gradient->isBoundingBoxUnits()){
+					this->viewportStack.pop_back();
+				}
+			});
+
+			this->applyTransformations(gradient->transformations);
+			
 			cairo_pattern_t* pat = nullptr;
-			utki::ScopeExit scopeExit([&pat](){
+			utki::ScopeExit patScopeExit([&pat](){
 				cairo_pattern_destroy(pat);
 			});
 			
 			if(auto g = dynamic_cast<const svgdom::LinearGradientElement*>(gradient)){
-				CairoMatrixPush cairoMatrixPush(this->curCr);
-				
-				if(g->isBoundingBoxUnits()){
-					cairo_translate(this->curCr, this->curBoundingBoxPos[0], this->curBoundingBoxPos[1]);
-					cairo_scale(this->curCr, this->curBoundingBoxDim[0], this->curBoundingBoxDim[1]);
-					this->viewportStack.push_back({1, 1});
-				}
-				utki::ScopeExit scopeExit([this, g](){
-					if(g->isBoundingBoxUnits()){
-						this->viewportStack.pop_back();
-					}
-				});
-				
 				pat = cairo_pattern_create_linear(
 						this->lengthToNum(g->getX1(), 0),
 						this->lengthToNum(g->getY1(), 1),
@@ -188,19 +190,6 @@ class Renderer : public svgdom::Renderer{
 				this->setCairoPatternSource(pat, *g);
 				return;
 			}else if(auto g = dynamic_cast<const svgdom::RadialGradientElement*>(gradient)){
-				CairoMatrixPush cairoMatrixPush(this->curCr);
-				
-				if(g->isBoundingBoxUnits()){
-					cairo_translate(this->curCr, this->curBoundingBoxPos[0], this->curBoundingBoxPos[1]);
-					cairo_scale(this->curCr, this->curBoundingBoxDim[0], this->curBoundingBoxDim[1]);
-					this->viewportStack.push_back({1, 1});
-				}
-				utki::ScopeExit scopeExit([this, g](){
-					if(g->isBoundingBoxUnits()){
-						this->viewportStack.pop_back();
-					}
-				});
-				
 				auto cx = g->getCx();
 				auto cy = g->getCy();
 				auto r = g->getR();
