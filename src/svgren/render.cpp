@@ -44,8 +44,6 @@ class SetTempCairoContext{
 public:
 	SetTempCairoContext(Renderer& renderer, const svgdom::Element& e);
 	~SetTempCairoContext()noexcept;
-	
-	//TODO:
 };
 
 
@@ -521,6 +519,17 @@ public:
 		this->renderCurrentShape(e);
 	}
 };
+
+SetTempCairoContext::SetTempCairoContext(Renderer& renderer, const svgdom::Element& e) :
+		oldCr(nullptr),
+		renderer(renderer)
+{
+	//TODO:
+}
+
+SetTempCairoContext::~SetTempCairoContext()noexcept{
+	//TODO:
+}
 
 }//~namespace
 
