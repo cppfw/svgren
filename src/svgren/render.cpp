@@ -317,7 +317,7 @@ public:
 	Renderer(cairo_t* cr) :
 			cr(cr)
 	{
-		cairo_set_operator(this->cr, CAIRO_OPERATOR_ATOP);
+//		cairo_set_operator(this->cr, CAIRO_OPERATOR_ATOP);
 //		cairo_set_operator(this->cr, CAIRO_OPERATOR_SOURCE);
 	}
 	
@@ -576,31 +576,9 @@ SetTempCairoContext::SetTempCairoContext(Renderer& renderer, const svgdom::Eleme
 
 SetTempCairoContext::~SetTempCairoContext()noexcept{
 	if(this->oldCr){
-		//set alpha
-		if(cairo_image_surface_get_format(this->surface) == CAIRO_FORMAT_ARGB32){
-			cairo_surface_flush(this->surface);
-			
-			auto stride = cairo_image_surface_get_stride(this->surface);
-			auto width = cairo_image_surface_get_width(this->surface);
-			auto height = cairo_image_surface_get_height(this->surface);
-			
-			auto data = cairo_image_surface_get_data(this->surface);
-				
-			for(auto y = 0; y != height; ++y){
-				auto ptr = &data[y * stride];
-				ptr += 3;
-				for(auto x = 0; x != width; ++x, ptr += 4){
-					real o = real(*ptr) / real(0xff);
-					*ptr = (o * this->opacity * 0xff);
-				}
-			}
-			
-			cairo_surface_mark_dirty(this->surface);
-		}
-		
 		//blit surface
 		cairo_set_source_surface(this->oldCr, this->surface, 0, 0);
-		cairo_paint(this->oldCr);
+		cairo_paint_with_alpha(this->oldCr, this->opacity);
 		
 		ASSERT(this->surface)
 		cairo_destroy(this->renderer.cr);
