@@ -12,6 +12,7 @@
 #include <cairo/cairo.h>
 
 #include <utki/util.hpp>
+#include <pugiconfig.hpp>
 
 #include "config.hpp"
 
@@ -39,8 +40,11 @@ public:
 class Renderer;
 
 class SetTempCairoContext{
-	cairo_t* oldCr;
+	cairo_t* oldCr = nullptr;
+	cairo_surface_t* surface = nullptr;
 	Renderer& renderer;
+	
+	real opacity;
 public:
 	SetTempCairoContext(Renderer& renderer, const svgdom::Element& e);
 	~SetTempCairoContext()noexcept;
@@ -298,9 +302,14 @@ struct Renderer : public svgdom::Renderer{
 public:
 	Renderer(cairo_t* cr) :
 			cr(cr)
-	{}
+	{
+//		cairo_set_operator(this->cr, CAIRO_OPERATOR_ATOP);
+//		cairo_set_operator(this->cr, CAIRO_OPERATOR_SOURCE);
+	}
 	
 	void render(const svgdom::GElement& e)override{
+		SetTempCairoContext cairoTempContext(*this, e);
+		
 		CairoMatrixSave cairoMatrixPush(this->cr);
 		
 		this->applyTransformations(e.transformations);
@@ -309,6 +318,8 @@ public:
 	}
 	
 	void render(const svgdom::SvgElement& e)override{
+		SetTempCairoContext cairoTempContext(*this, e);
+		
 		CairoMatrixSave cairoMatrixPush(this->cr);
 		
 		if(this->viewportStack.size() != 0){ //if not the outermost 'svg' element
@@ -333,6 +344,8 @@ public:
 	}
 	
 	void render(const svgdom::PathElement& e)override{
+		SetTempCairoContext cairoTempContext(*this, e);
+		
 		CairoMatrixSave cairoMatrixPush(this->cr);
 		
 		this->applyTransformations(e.transformations);
@@ -436,6 +449,8 @@ public:
 	}
 	
 	void render(const svgdom::EllipseElement& e) override{
+		SetTempCairoContext cairoTempContext(*this, e);
+		
 		CairoMatrixSave cairoMatrixPush(this->cr);
 		
 		this->applyTransformations(e.transformations);
@@ -451,6 +466,8 @@ public:
 	}
 	
 	void render(const svgdom::RectElement& e) override{
+		SetTempCairoContext cairoTempContext(*this, e);
+		
 		CairoMatrixSave cairoMatrixPush(this->cr);
 		
 		this->applyTransformations(e.transformations);
@@ -521,14 +538,63 @@ public:
 };
 
 SetTempCairoContext::SetTempCairoContext(Renderer& renderer, const svgdom::Element& e) :
-		oldCr(nullptr),
 		renderer(renderer)
 {
-	//TODO:
+	if(auto p = e.getStyleProperty(svgdom::EStyleProperty::OPACITY)){
+		if(p->opacity < 1){
+			this->opacity = p->opacity;
+			this->surface = cairo_surface_create_similar_image(
+					cairo_get_target(renderer.cr),
+					cairo_image_surface_get_format(cairo_get_target(renderer.cr)),
+					cairo_image_surface_get_width(cairo_get_target(renderer.cr)),
+					cairo_image_surface_get_height(cairo_get_target(renderer.cr))
+				);
+			this->oldCr = renderer.cr;
+			renderer.cr = cairo_create(this->surface);
+
+			cairo_matrix_t m;
+			cairo_get_matrix(this->oldCr, &m);
+
+			cairo_set_matrix(renderer.cr, &m);
+		}
+	}
 }
 
 SetTempCairoContext::~SetTempCairoContext()noexcept{
-	//TODO:
+	if(this->oldCr){
+		//set alpha
+		if(cairo_image_surface_get_format(this->surface) == CAIRO_FORMAT_ARGB32){
+			cairo_surface_flush(this->surface);
+			
+			auto stride = cairo_image_surface_get_stride(this->surface);
+			auto width = cairo_image_surface_get_width(this->surface);
+			auto height = cairo_image_surface_get_height(this->surface);
+			
+			auto data = cairo_image_surface_get_data(this->surface);
+				
+			for(auto y = 0; y != height; ++y){
+				auto ptr = &data[y * stride];
+				ptr += 3;
+				for(auto x = 0; x != width; ++x, ptr += 4){
+					real o = real(*ptr) / real(0xff);
+					*ptr = (o * this->opacity * 0xff);
+				}
+			}
+			
+			cairo_surface_mark_dirty(this->surface);
+		}
+		
+		//blit surface
+		cairo_set_source_surface(this->oldCr, this->surface, 0, 0);
+		cairo_paint(this->oldCr);
+		
+		ASSERT(this->surface)
+		cairo_destroy(this->renderer.cr);
+		cairo_surface_destroy(this->surface);
+		this->renderer.cr = this->oldCr;
+	}else{
+		ASSERT(!this->surface)
+	}
 }
 
 }//~namespace
