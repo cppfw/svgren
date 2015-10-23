@@ -247,6 +247,20 @@ struct Renderer : public svgdom::Renderer{
 	}
 	
 	void renderCurrentShape(const svgdom::Shape& e){
+		if(auto p = e.getStyleProperty(svgdom::EStyleProperty::FILL_RULE)){
+			switch(p->fillRule){
+				default:
+					ASSERT(false)
+					break;
+				case svgdom::EFillRule::EVENODD:
+					cairo_set_fill_rule(this->cr, CAIRO_FILL_RULE_EVEN_ODD);
+					break;
+				case svgdom::EFillRule::NONZERO:
+					cairo_set_fill_rule(this->cr, CAIRO_FILL_RULE_WINDING);
+					break;
+			}
+		}
+		
 		auto fill = e.getStyleProperty(svgdom::EStyleProperty::FILL);
 		auto stroke = e.getStyleProperty(svgdom::EStyleProperty::STROKE);
 		
