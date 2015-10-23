@@ -317,7 +317,7 @@ public:
 	Renderer(cairo_t* cr) :
 			cr(cr)
 	{
-//		cairo_set_operator(this->cr, CAIRO_OPERATOR_ATOP);
+		cairo_set_operator(this->cr, CAIRO_OPERATOR_ATOP);
 //		cairo_set_operator(this->cr, CAIRO_OPERATOR_SOURCE);
 	}
 	
