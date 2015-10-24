@@ -1,0 +1,36 @@
+Source: libsvgren
+Section: misc
+Priority: extra
+Maintainer: Ivan Gagis <igagis@gmail.com>
+Build-Depends: debhelper (>= 9), prorab,
+		libc6-dev, libutki-dev, libsvgdom-dev
+Build-Depends-Indep: doxygen
+Standards-Version: 3.9.2
+
+Package: libsvgren$(soname)
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: cross-platform C++ SVG rendering library.
+ SVG rendering library.
+
+Package: libsvgren$(soname)-dbg
+Section: libdevel
+Architecture: any
+Depends: libsvgren$(soname) (= ${binary:Version}), ${misc:Depends}
+Description: debugging symbols for libsvgren$(soname) package.
+
+Package: libsvgren-dev
+Section: devel
+Architecture: all
+Depends: libsvgren$(soname) (= ${binary:Version}), libsvgren$(soname)-dbg (= ${binary:Version}), ${misc:Depends}
+Suggests: libsvgren-doc
+Description: cross-platform C++ SVG rendering library.
+ SVG rendering library.
+
+Package: libsvgren-doc
+Section: devel
+Architecture: all
+Depends: ${misc:Depends}
+Description: documentation for libsvgren library.
+ For more details see description to libsvgren-dev package.
