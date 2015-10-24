@@ -500,6 +500,20 @@ public:
 		this->renderCurrentShape(e);
 	}
 	
+	void render(const svgdom::LineElement& e) override{
+		SetTempCairoContext cairoTempContext(*this, e);
+		
+		CairoMatrixSave cairoMatrixPush(this->cr);
+		
+		this->applyTransformations(e.transformations);
+		
+		cairo_move_to(this->cr, this->lengthToNum(e.x1, 0), this->lengthToNum(e.y1, 1));
+		cairo_line_to(this->cr, this->lengthToNum(e.x2, 0), this->lengthToNum(e.y2, 1));
+		
+		this->renderCurrentShape(e);
+	}
+
+	
 	void render(const svgdom::EllipseElement& e) override{
 		SetTempCairoContext cairoTempContext(*this, e);
 		
