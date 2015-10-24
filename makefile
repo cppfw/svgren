@@ -21,10 +21,10 @@ $(eval $(prorab-build-deb))
 
 
 #Update version rule
-#$(prorab-clear-this-vars)
+$(prorab-clear-this-vars)
 
-#this_version_files += doc/doxygen.cfg.in
-#this_version_files += pkg-config/svgren.pc.in
-#this_version_files += nuget.autopkg.in
+this_version_files += doc/doxygen.cfg.in
+this_version_files += pkg-config/svgren.pc.in
+this_version_files += nuget.autopkg.in
 
-#$(eval $(prorab-apply-version))
+$(eval $(prorab-apply-version))

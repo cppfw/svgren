@@ -1,9 +1,9 @@
-Name: svgdom   # human-readable name
-Description: C++ library for reading SVG files # human-readable description
+Name: svgren   # human-readable name
+Description: SVG rendering C++ library # human-readable description
 Version: 0.1.0
-URL: https://github.com/igagis/svgdom
+URL: https://github.com/igagis/svgren
 Requires:
 Conflicts:
-Libs: -lsvgdom
+Libs: -lsvgren
 Libs.private:
 Cflags:
