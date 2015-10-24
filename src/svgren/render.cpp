@@ -500,6 +500,53 @@ public:
 		this->renderCurrentShape(e);
 	}
 	
+	void render(const svgdom::PolylineElement& e) override{
+		SetTempCairoContext cairoTempContext(*this, e);
+		
+		CairoMatrixSave cairoMatrixPush(this->cr);
+		
+		this->applyTransformations(e.transformations);
+		
+		if(e.points.size() == 0){
+			return;
+		}
+		
+		auto i = e.points.begin();
+		cairo_move_to(this->cr, (*i)[0], (*i)[1]);
+		++i;
+		
+		for(; i != e.points.end(); ++i){
+			cairo_line_to(this->cr, (*i)[0], (*i)[1]);
+		}
+		
+		this->renderCurrentShape(e);
+	}
+
+	void render(const svgdom::PolygonElement& e) override{
+		SetTempCairoContext cairoTempContext(*this, e);
+		
+		CairoMatrixSave cairoMatrixPush(this->cr);
+		
+		this->applyTransformations(e.transformations);
+		
+		if(e.points.size() == 0){
+			return;
+		}
+		
+		auto i = e.points.begin();
+		cairo_move_to(this->cr, (*i)[0], (*i)[1]);
+		++i;
+		
+		for(; i != e.points.end(); ++i){
+			cairo_line_to(this->cr, (*i)[0], (*i)[1]);
+		}
+		
+		cairo_close_path(this->cr);
+		
+		this->renderCurrentShape(e);
+	}
+
+	
 	void render(const svgdom::LineElement& e) override{
 		SetTempCairoContext cairoTempContext(*this, e);
 		
