@@ -481,6 +481,25 @@ public:
 		this->renderCurrentShape(e);
 	}
 	
+	void render(const svgdom::CircleElement& e) override{
+		SetTempCairoContext cairoTempContext(*this, e);
+		
+		CairoMatrixSave cairoMatrixPush(this->cr);
+		
+		this->applyTransformations(e.transformations);
+		
+		cairo_arc(
+				this->cr,
+				this->lengthToNum(e.cx, 0),
+				this->lengthToNum(e.cy, 1),
+				this->lengthToNum(e.r),
+				0,
+				2 * M_PI
+			);
+		
+		this->renderCurrentShape(e);
+	}
+	
 	void render(const svgdom::EllipseElement& e) override{
 		SetTempCairoContext cairoTempContext(*this, e);
 		
