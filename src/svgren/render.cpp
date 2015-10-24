@@ -295,6 +295,25 @@ struct Renderer : public svgdom::Renderer{
 				cairo_set_line_width(this->cr, 1);
 			}
 			
+			if(auto p = e.getStyleProperty(svgdom::EStyleProperty::STROKE_LINECAP)){
+				switch(p->strokeLineCap){
+					default:
+						ASSERT(false)
+						break;
+					case svgdom::EStrokeLineCap::BUTT:
+						cairo_set_line_cap(this->cr, CAIRO_LINE_CAP_BUTT);
+						break;
+					case svgdom::EStrokeLineCap::ROUND:
+						cairo_set_line_cap(this->cr, CAIRO_LINE_CAP_ROUND);
+						break;
+					case svgdom::EStrokeLineCap::SQUARE:
+						cairo_set_line_cap(this->cr, CAIRO_LINE_CAP_SQUARE);
+						break;
+				}
+			}else{
+				cairo_set_line_cap(this->cr, CAIRO_LINE_CAP_BUTT);
+			}
+			
 			if(stroke->isUrl()){
 				this->setGradient(stroke->url);
 			}else{
@@ -594,7 +613,6 @@ SetTempCairoContext::~SetTempCairoContext()noexcept{
 
 
 std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, unsigned width, unsigned height){
-//	int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
 	int stride = width * 4;
 	
 	TRACE(<< "width = " << width << " stride = " << stride / 4 << std::endl)
@@ -602,8 +620,11 @@ std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, unsigne
 	std::vector<std::uint32_t> ret((stride / sizeof(std::uint32_t)) * height);
 	
 	for(auto& c : ret){
-//		c = 0xffffffff;
+#ifdef DEBUG
+		c = 0xffffffff;
+#else
 		c = 0;
+#endif
 	}
 	
 	cairo_surface_t* surface = cairo_image_surface_create_for_data(
