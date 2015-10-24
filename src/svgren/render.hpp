@@ -12,6 +12,13 @@
 
 namespace svgren{
 
+/**
+ * @brief Render SVG to memory surface.
+ * @param svg - SVG document root.
+ * @param width - width of resulting raster image in pixels.
+ * @param height - height of resulting raster image in pixels.
+ * @return An array of RGBA values representing the resulting raster image.
+ */
 std::vector<std::uint32_t> render(const svgdom::SvgElement& svg, unsigned width, unsigned height);
 
 }//~namespace

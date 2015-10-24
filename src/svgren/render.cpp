@@ -602,7 +602,8 @@ std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, unsigne
 	std::vector<std::uint32_t> ret((stride / sizeof(std::uint32_t)) * height);
 	
 	for(auto& c : ret){
-		c = 0xffffffff;//TODO: fill 0
+//		c = 0xffffffff;
+		c = 0;
 	}
 	
 	cairo_surface_t* surface = cairo_image_surface_create_for_data(
