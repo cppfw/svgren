@@ -23,7 +23,8 @@ Description: debugging symbols for libsvgren$(soname) package.
 Package: libsvgren-dev
 Section: devel
 Architecture: all
-Depends: libsvgren$(soname) (= ${binary:Version}), libsvgren$(soname)-dbg (= ${binary:Version}), ${misc:Depends}
+Depends: libsvgren$(soname) (= ${binary:Version}), libsvgren$(soname)-dbg (= ${binary:Version}), ${misc:Depends},
+		libsvgdom-dev
 Suggests: libsvgren-doc
 Description: cross-platform C++ SVG rendering library.
  SVG rendering library.
