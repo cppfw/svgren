@@ -692,7 +692,14 @@ SetTempCairoContext::~SetTempCairoContext()noexcept{
 
 
 
-std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, unsigned width, unsigned height){
+std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, unsigned dpi){
+	if(svg.width.unit == svgdom::Length::EUnit::UNKNOWN || svg.height.unit == svgdom::Length::EUnit::UNKNOWN){
+		return std::vector<std::uint32_t>();
+	}
+	
+	unsigned width = svg.width.value;
+	unsigned height = svg.height.value;
+	
 	int stride = width * 4;
 	
 	TRACE(<< "width = " << width << " stride = " << stride / 4 << std::endl)

@@ -45,7 +45,7 @@ int main(int argc, char **argv){
 		return 1;
 	}
 
-	auto img = svgren::render(*dom, 512, 512);
+	auto img = svgren::render(*dom);
 	
 	ximage = XCreateImage(display, visual, 24, ZPixmap, 0, reinterpret_cast<char*>(&*img.begin()), width, height, 8, 0);
 	
