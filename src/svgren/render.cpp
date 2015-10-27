@@ -51,15 +51,35 @@ public:
 };
 
 
+real lengthToPx(const svgdom::Length& l, real dpi){
+	switch(l.unit){
+		default:
+			return 0;
+		case svgdom::Length::EUnit::NUMBER:
+		case svgdom::Length::EUnit::PX:
+			return l.value;
+		case svgdom::Length::EUnit::IN:
+			return l.value * dpi;
+		case svgdom::Length::EUnit::CM:
+			if(dpi <= 0){
+				return 0;
+			}
+			return l.value * (dpi / real(2.54));
+	}
+}
+
+
 struct Renderer : public svgdom::Renderer{
 	cairo_t* cr;
+	
+	const real dpi;
 	
 	std::vector<std::array<real, 2>> viewportStack;//stack of width, height
 	
 	std::array<real, 2> curBoundingBoxPos = {{0, 0}};
 	std::array<real, 2> curBoundingBoxDim = {{0, 0}};
 	
-	real lengthToNum(const svgdom::Length& l, unsigned coordIndex = 0)const noexcept{
+	real lengthToPx(const svgdom::Length& l, unsigned coordIndex = 0)const noexcept{
 		if(l.isPercent()){
 			if(this->viewportStack.size() == 0){
 				return 0;
@@ -67,7 +87,7 @@ struct Renderer : public svgdom::Renderer{
 			ASSERT(coordIndex < this->viewportStack.back().size())
 			return this->viewportStack.back()[coordIndex] * (l.value / 100);
 		}
-		return l.value;
+		return ::lengthToPx(l, this->dpi);
 	}
 	
 	void applyTransformations(const decltype(svgdom::Transformable::transformations)& transformations)const{
@@ -194,10 +214,10 @@ struct Renderer : public svgdom::Renderer{
 			
 			if(auto g = dynamic_cast<const svgdom::LinearGradientElement*>(gradient)){
 				pat = cairo_pattern_create_linear(
-						this->lengthToNum(g->getX1(), 0),
-						this->lengthToNum(g->getY1(), 1),
-						this->lengthToNum(g->getX2(), 0),
-						this->lengthToNum(g->getY2(), 1)
+						this->lengthToPx(g->getX1(), 0),
+						this->lengthToPx(g->getY1(), 1),
+						this->lengthToPx(g->getX2(), 0),
+						this->lengthToPx(g->getY2(), 1)
 					);
 				this->setCairoPatternSource(pat, *g);
 				return;
@@ -216,12 +236,12 @@ struct Renderer : public svgdom::Renderer{
 				}
 				
 				pat = cairo_pattern_create_radial(
-						this->lengthToNum(fx, 0),
-						this->lengthToNum(fy, 1),
+						this->lengthToPx(fx, 0),
+						this->lengthToPx(fy, 1),
 						0,
-						this->lengthToNum(cx, 0),
-						this->lengthToNum(cy, 1),
-						this->lengthToNum(r)
+						this->lengthToPx(cx, 0),
+						this->lengthToPx(cy, 1),
+						this->lengthToPx(r)
 					);
 				this->setCairoPatternSource(pat, *g);
 				return;
@@ -290,7 +310,7 @@ struct Renderer : public svgdom::Renderer{
 		
 		if(stroke && !stroke->isNone()){
 			if(auto p = e.getStyleProperty(svgdom::EStyleProperty::STROKE_WIDTH)){
-				cairo_set_line_width(this->cr, this->lengthToNum(p->length));
+				cairo_set_line_width(this->cr, this->lengthToPx(p->length));
 			}else{
 				cairo_set_line_width(this->cr, 1);
 			}
@@ -333,8 +353,9 @@ struct Renderer : public svgdom::Renderer{
 	}
 	
 public:
-	Renderer(cairo_t* cr) :
-			cr(cr)
+	Renderer(cairo_t* cr, unsigned dpi) :
+			cr(cr),
+			dpi(dpi)
 	{
 //		cairo_set_operator(this->cr, CAIRO_OPERATOR_ATOP);
 //		cairo_set_operator(this->cr, CAIRO_OPERATOR_SOURCE);
@@ -358,15 +379,15 @@ public:
 		if(this->viewportStack.size() != 0){ //if not the outermost 'svg' element
 			cairo_translate(
 					this->cr,
-					this->lengthToNum(e.x, 0),
-					this->lengthToNum(e.y, 1)
+					this->lengthToPx(e.x, 0),
+					this->lengthToPx(e.y, 1)
 				);
 		}
 		
 		this->viewportStack.push_back(
 				{
-					this->lengthToNum(e.width),
-					this->lengthToNum(e.height)
+					this->lengthToPx(e.width),
+					this->lengthToPx(e.height)
 				}
 			);
 		utki::ScopeExit scopeExit([this](){
@@ -490,9 +511,9 @@ public:
 		
 		cairo_arc(
 				this->cr,
-				this->lengthToNum(e.cx, 0),
-				this->lengthToNum(e.cy, 1),
-				this->lengthToNum(e.r),
+				this->lengthToPx(e.cx, 0),
+				this->lengthToPx(e.cy, 1),
+				this->lengthToPx(e.r),
 				0,
 				2 * M_PI
 			);
@@ -554,8 +575,8 @@ public:
 		
 		this->applyTransformations(e.transformations);
 		
-		cairo_move_to(this->cr, this->lengthToNum(e.x1, 0), this->lengthToNum(e.y1, 1));
-		cairo_line_to(this->cr, this->lengthToNum(e.x2, 0), this->lengthToNum(e.y2, 1));
+		cairo_move_to(this->cr, this->lengthToPx(e.x1, 0), this->lengthToPx(e.y1, 1));
+		cairo_line_to(this->cr, this->lengthToPx(e.x2, 0), this->lengthToPx(e.y2, 1));
 		
 		this->renderCurrentShape(e);
 	}
@@ -569,8 +590,8 @@ public:
 		this->applyTransformations(e.transformations);
 		
 		cairo_save(this->cr);
-		cairo_translate (this->cr, this->lengthToNum(e.cx, 0), this->lengthToNum(e.cy, 1));
-		cairo_scale (this->cr, this->lengthToNum(e.rx, 0), this->lengthToNum(e.ry, 1));
+		cairo_translate (this->cr, this->lengthToPx(e.cx, 0), this->lengthToPx(e.cy, 1));
+		cairo_scale (this->cr, this->lengthToPx(e.rx, 0), this->lengthToPx(e.ry, 1));
 		cairo_arc(this->cr, 0, 0, 1, 0, 2 * M_PI);
 		cairo_close_path(this->cr);
 		cairo_restore (this->cr);
@@ -588,7 +609,7 @@ public:
 		if((e.rx.value == 0 || !e.rx.isValid())
 				&& (e.ry.value == 0 || !e.ry.isValid()))
 		{
-			cairo_rectangle(this->cr, this->lengthToNum(e.x, 0), this->lengthToNum(e.y, 1), this->lengthToNum(e.width, 0), this->lengthToNum(e.height, 1));
+			cairo_rectangle(this->cr, this->lengthToPx(e.x, 0), this->lengthToPx(e.y, 1), this->lengthToPx(e.width, 0), this->lengthToPx(e.height, 1));
 		}else{
 			//compute real rx and ry
 			auto rx = e.rx;
@@ -601,45 +622,45 @@ public:
 			}
 			ASSERT(rx.isValid() && ry.isValid())
 			
-			if(this->lengthToNum(rx, 0) > this->lengthToNum(e.width, 0) / 2){
+			if(this->lengthToPx(rx, 0) > this->lengthToPx(e.width, 0) / 2){
 				rx = e.width;
 				rx.value /= 2;
 			}
-			if(this->lengthToNum(ry, 1) > this->lengthToNum(e.height, 1) / 2){
+			if(this->lengthToPx(ry, 1) > this->lengthToPx(e.height, 1) / 2){
 				ry = e.height;
 				ry.value /= 2;
 			}
 			
-			cairo_move_to(this->cr, this->lengthToNum(e.x, 0) + this->lengthToNum(rx, 0), this->lengthToNum(e.y, 1));
-			cairo_line_to(this->cr, this->lengthToNum(e.x, 0) + this->lengthToNum(e.width, 0) - this->lengthToNum(rx, 0), this->lengthToNum(e.y, 1));
+			cairo_move_to(this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1));
+			cairo_line_to(this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(e.width, 0) - this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1));
 			
 			cairo_save (this->cr);
-			cairo_translate (this->cr, this->lengthToNum(e.x, 0) + this->lengthToNum(e.width, 0) - this->lengthToNum(rx, 0), this->lengthToNum(e.y, 1) + this->lengthToNum(ry, 1));
-			cairo_scale (this->cr, this->lengthToNum(rx, 0), this->lengthToNum(ry, 1));
+			cairo_translate (this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(e.width, 0) - this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(ry, 1));
+			cairo_scale (this->cr, this->lengthToPx(rx, 0), this->lengthToPx(ry, 1));
 			cairo_arc (this->cr, 0, 0, 1, -M_PI / 2, 0);
 			cairo_restore (this->cr);
 			
-			cairo_line_to(this->cr, this->lengthToNum(e.x, 0) + this->lengthToNum(e.width, 0), this->lengthToNum(e.y, 1) + this->lengthToNum(e.height, 1) - this->lengthToNum(ry, 1));
+			cairo_line_to(this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(e.width, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(e.height, 1) - this->lengthToPx(ry, 1));
 			
 			cairo_save (this->cr);
-			cairo_translate (this->cr, this->lengthToNum(e.x, 0) + this->lengthToNum(e.width, 0) - this->lengthToNum(rx, 0), this->lengthToNum(e.y, 1) + this->lengthToNum(e.height, 1) - this->lengthToNum(ry, 1));
-			cairo_scale (this->cr, this->lengthToNum(rx, 0), this->lengthToNum(ry, 1));
+			cairo_translate (this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(e.width, 0) - this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(e.height, 1) - this->lengthToPx(ry, 1));
+			cairo_scale (this->cr, this->lengthToPx(rx, 0), this->lengthToPx(ry, 1));
 			cairo_arc (this->cr, 0, 0, 1, 0, M_PI / 2);
 			cairo_restore (this->cr);
 			
-			cairo_line_to(this->cr, this->lengthToNum(e.x, 0) + this->lengthToNum(rx, 0), this->lengthToNum(e.y, 1) + this->lengthToNum(e.height, 1));
+			cairo_line_to(this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(e.height, 1));
 			
 			cairo_save (this->cr);
-			cairo_translate (this->cr, this->lengthToNum(e.x, 0) + this->lengthToNum(rx, 0), this->lengthToNum(e.y, 1) + this->lengthToNum(e.height, 1) - this->lengthToNum(ry, 1));
-			cairo_scale (this->cr, this->lengthToNum(rx, 0), this->lengthToNum(ry, 1));
+			cairo_translate (this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(e.height, 1) - this->lengthToPx(ry, 1));
+			cairo_scale (this->cr, this->lengthToPx(rx, 0), this->lengthToPx(ry, 1));
 			cairo_arc (this->cr, 0, 0, 1, M_PI / 2, M_PI);
 			cairo_restore (this->cr);
 			
-			cairo_line_to(this->cr, this->lengthToNum(e.x, 0), this->lengthToNum(e.y, 1) + this->lengthToNum(ry, 1));
+			cairo_line_to(this->cr, this->lengthToPx(e.x, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(ry, 1));
 			
 			cairo_save (this->cr);
-			cairo_translate (this->cr, this->lengthToNum(e.x, 0) + this->lengthToNum(rx, 0), this->lengthToNum(e.y, 1) + this->lengthToNum(ry, 1));
-			cairo_scale (this->cr, this->lengthToNum(rx, 0), this->lengthToNum(ry, 1));
+			cairo_translate (this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(ry, 1));
+			cairo_scale (this->cr, this->lengthToPx(rx, 0), this->lengthToPx(ry, 1));
 			cairo_arc (this->cr, 0, 0, 1, M_PI, M_PI * 3 / 2);
 			cairo_restore (this->cr);
 			
@@ -692,14 +713,14 @@ SetTempCairoContext::~SetTempCairoContext()noexcept{
 
 
 
-std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, unsigned dpi){
+std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, real dpi){
 	if(svg.width.unit == svgdom::Length::EUnit::UNKNOWN || svg.height.unit == svgdom::Length::EUnit::UNKNOWN){
 		return std::vector<std::uint32_t>();
 	}
 	
 	//TODO: convert if units are cm or in
-	unsigned width = svg.width.value;
-	unsigned height = svg.height.value;
+	unsigned width = lengthToPx(svg.width, dpi);
+	unsigned height = lengthToPx(svg.height, dpi);
 	
 	int stride = width * 4;
 	
@@ -739,7 +760,7 @@ std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, unsigne
 		cairo_destroy(cr);
 	});
 	
-	Renderer r(cr);
+	Renderer r(cr, dpi);
 	
 	svg.render(r);
 	

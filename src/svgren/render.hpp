@@ -9,6 +9,7 @@
 
 #include <svgdom/dom.hpp>
 
+#include "config.hpp"
 
 namespace svgren{
 
@@ -18,6 +19,6 @@ namespace svgren{
  * @param dpi - dots per inch to use for units conversion to pixels.
  * @return An array of RGBA values representing the resulting raster image.
  */
-std::vector<std::uint32_t> render(const svgdom::SvgElement& svg, unsigned dpi = 96);
+std::vector<std::uint32_t> render(const svgdom::SvgElement& svg, real dpi = 96);
 
 }//~namespace
