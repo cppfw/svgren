@@ -697,6 +697,7 @@ std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, unsigne
 		return std::vector<std::uint32_t>();
 	}
 	
+	//TODO: convert if units are cm or in
 	unsigned width = svg.width.value;
 	unsigned height = svg.height.value;
 	
