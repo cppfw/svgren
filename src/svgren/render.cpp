@@ -714,11 +714,6 @@ SetTempCairoContext::~SetTempCairoContext()noexcept{
 
 
 std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, real dpi){
-	if(svg.width.unit == svgdom::Length::EUnit::UNKNOWN || svg.height.unit == svgdom::Length::EUnit::UNKNOWN){
-		return std::vector<std::uint32_t>();
-	}
-	
-	//TODO: convert if units are cm or in
 	unsigned width = lengthToPx(svg.width, dpi);
 	unsigned height = lengthToPx(svg.height, dpi);
 	
