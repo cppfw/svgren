@@ -394,6 +394,18 @@ public:
 			this->viewportStack.pop_back();
 		});
 		
+		if(e.viewBox[0] >= 0){//if viewBox is specified
+			if(e.viewBox[2] != 0 && e.viewBox[3] != 0){
+				cairo_scale(
+						this->cr,
+						this->viewportStack.back()[0] / e.viewBox[2],
+						this->viewportStack.back()[1] / e.viewBox[3]
+					);
+			}
+			
+			cairo_translate(this->cr, -e.viewBox[0], -e.viewBox[1]);
+		}
+		
 		e.Container::render(*this);
 	}
 	
