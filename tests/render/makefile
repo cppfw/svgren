@@ -13,10 +13,6 @@ this_srcs += main.cpp
 this_ldlibs += -lsvgdom -lsvgren -lpapki -lpugixml -lX11
 this_ldflags += -L$(prorab_this_dir)../../src
 
-#TODO: remove when stabilized
-this_cflags += -I$(prorab_this_dir)../../../svgdom/src
-this_ldflags += -L$(prorab_this_dir)../../../svgdom/src
-
 ifeq ($(prorab_os), macosx)
     this_cflags += -stdlib=libc++ #this is needed to be able to use c++11 std lib
     this_ldlibs += -lc++
@@ -47,8 +43,3 @@ $(eval $(this_rules))
 $(prorab_this_name): $(abspath $(prorab_this_dir)../../src/libsvgren$(prorab_lib_extension))
 
 $(eval $(call prorab-include,$(prorab_this_dir)../../src/makefile))
-
-#add dependency on libsvgdom
-$(prorab_this_name): $(abspath $(prorab_this_dir)../../../svgdom/src/libsvgdom$(prorab_lib_extension))
-
-$(eval $(call prorab-include,$(prorab_this_dir)../../../svgdom/src/makefile))

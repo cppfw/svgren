@@ -49,17 +49,5 @@ else ifeq ($(prorab_os),macosx)
 endif
 
 
-#TODO: remove when stabilized
-this_cflags += -I$(prorab_this_dir)../../svgdom/src
-this_ldflags += -L$(prorab_this_dir)../../svgdom/src
-
 
 $(eval $(prorab-build-lib))
-
-
-
-
-#add dependency on libsvgdom
-$(prorab_this_name): $(abspath $(prorab_this_dir)../../svgdom/src/libsvgdom$(prorab_lib_extension))
-
-$(eval $(call prorab-include,$(prorab_this_dir)../../svgdom/src/makefile))

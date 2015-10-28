@@ -12,7 +12,8 @@
 #include <cairo/cairo.h>
 
 #include <utki/util.hpp>
-#include <pugiconfig.hpp>
+
+#include <svgdom/dom.hpp>
 
 #include "config.hpp"
 
@@ -395,6 +396,9 @@ public:
 		});
 		
 		if(e.viewBox[0] >= 0){//if viewBox is specified
+//			if(e.preserveAspectRatio.preserve != svgdom::SvgElement::EPreserveAspectRatio
+			
+			
 			if(e.viewBox[2] != 0 && e.viewBox[3] != 0){
 				cairo_scale(
 						this->cr,
