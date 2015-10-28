@@ -52,24 +52,6 @@ public:
 };
 
 
-real lengthToPx(const svgdom::Length& l, real dpi){
-	switch(l.unit){
-		default:
-			return 0;
-		case svgdom::Length::EUnit::NUMBER:
-		case svgdom::Length::EUnit::PX:
-			return l.value;
-		case svgdom::Length::EUnit::IN:
-			return l.value * dpi;
-		case svgdom::Length::EUnit::CM:
-			if(dpi <= 0){
-				return 0;
-			}
-			return l.value * (dpi / real(2.54));
-	}
-}
-
-
 struct Renderer : public svgdom::Renderer{
 	cairo_t* cr;
 	
@@ -88,7 +70,7 @@ struct Renderer : public svgdom::Renderer{
 			ASSERT(coordIndex < this->viewportStack.back().size())
 			return this->viewportStack.back()[coordIndex] * (l.value / 100);
 		}
-		return ::lengthToPx(l, this->dpi);
+		return l.toPx(this->dpi);
 	}
 	
 	void applyTransformations(const decltype(svgdom::Transformable::transformations)& transformations)const{
@@ -784,8 +766,8 @@ SetTempCairoContext::~SetTempCairoContext()noexcept{
 
 
 std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, real dpi){
-	unsigned width = lengthToPx(svg.width, dpi);
-	unsigned height = lengthToPx(svg.height, dpi);
+	unsigned width = svg.width.toPx(dpi);
+	unsigned height = svg.height.toPx(dpi);
 	
 	int stride = width * 4;
 	
