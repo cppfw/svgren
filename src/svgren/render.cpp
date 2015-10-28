@@ -709,8 +709,11 @@ SetTempCairoContext::SetTempCairoContext(Renderer& renderer, const svgdom::Eleme
 SetTempCairoContext::~SetTempCairoContext()noexcept{
 	if(this->oldCr){
 		//blit surface
+		cairo_save(this->oldCr);
+		cairo_identity_matrix(this->oldCr);
 		cairo_set_source_surface(this->oldCr, this->surface, 0, 0);
 		cairo_paint_with_alpha(this->oldCr, this->opacity);
+		cairo_restore(this->oldCr);
 		
 		ASSERT(this->surface)
 		cairo_destroy(this->renderer.cr);
