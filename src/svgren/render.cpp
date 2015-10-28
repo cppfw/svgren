@@ -387,8 +387,8 @@ public:
 		
 		this->viewportStack.push_back(
 				{
-					this->lengthToPx(e.width),
-					this->lengthToPx(e.height)
+					this->lengthToPx(e.width, 0),
+					this->lengthToPx(e.height, 1)
 				}
 			);
 		utki::ScopeExit scopeExit([this](){
@@ -396,17 +396,68 @@ public:
 		});
 		
 		if(e.viewBox[0] >= 0){//if viewBox is specified
-//			if(e.preserveAspectRatio.preserve != svgdom::SvgElement::EPreserveAspectRatio
-			
-			
-			if(e.viewBox[2] != 0 && e.viewBox[3] != 0){
-				cairo_scale(
-						this->cr,
-						this->viewportStack.back()[0] / e.viewBox[2],
-						this->viewportStack.back()[1] / e.viewBox[3]
-					);
+			if(e.preserveAspectRatio.preserve != svgdom::EPreserveAspectRatio::NONE){
+				if(e.viewBox[3] >= 0 && this->viewportStack.back()[1] >= 0){ //if viewBox width and viewport width are not 0
+					real scaleFactor, dx, dy;
+					
+					real viewBoxAspect = e.viewBox[2] / e.viewBox[3];
+					real viewportAspect = this->viewportStack.back()[0] / this->viewportStack.back()[1];
+					
+					if((viewBoxAspect >= viewportAspect && e.preserveAspectRatio.slice) || (viewBoxAspect < viewportAspect && !e.preserveAspectRatio.slice)){
+						//fit by Y
+						scaleFactor = this->viewportStack.back()[1] / e.viewBox[3];
+						dx = e.viewBox[2] - this->viewportStack.back()[0];
+						dy = 0;
+					}else{//viewBoxAspect < viewportAspect
+						//fit by X
+						scaleFactor = this->viewportStack.back()[0] / e.viewBox[2];
+						dx = 0;
+						dy = e.viewBox[3] - this->viewportStack.back()[1];
+					}
+					switch(e.preserveAspectRatio.preserve){
+						case svgdom::EPreserveAspectRatio::NONE:
+							ASSERT(false)
+						default:
+							break;
+						case svgdom::EPreserveAspectRatio::X_MIN_Y_MAX:
+							cairo_translate(this->cr, 0, dy);
+							break;
+						case svgdom::EPreserveAspectRatio::X_MIN_Y_MID:
+							cairo_translate(this->cr, 0, dy / 2);
+							break;
+						case svgdom::EPreserveAspectRatio::X_MIN_Y_MIN:
+							break;
+						case svgdom::EPreserveAspectRatio::X_MID_Y_MAX:
+							cairo_translate(this->cr, dx / 2, dy);
+							break;
+						case svgdom::EPreserveAspectRatio::X_MID_Y_MID:
+							cairo_translate(this->cr, dx / 2, dy / 2);
+							break;
+						case svgdom::EPreserveAspectRatio::X_MID_Y_MIN:
+							cairo_translate(this->cr, dx / 2, 0);
+							break;
+						case svgdom::EPreserveAspectRatio::X_MAX_Y_MAX:
+							cairo_translate(this->cr, dx, dy);
+							break;
+						case svgdom::EPreserveAspectRatio::X_MAX_Y_MID:
+							cairo_translate(this->cr, dx, dy / 2);
+							break;
+						case svgdom::EPreserveAspectRatio::X_MAX_Y_MIN:
+							cairo_translate(this->cr, dx, 0);
+							break;
+					}
+
+					cairo_scale(this->cr, scaleFactor, scaleFactor);
+				}
+			}else{//if no preserveAspectRatio enforced
+				if(e.viewBox[2] != 0 && e.viewBox[3] != 0){ //if viewBox width and height are not 0
+					cairo_scale(
+							this->cr,
+							this->viewportStack.back()[0] / e.viewBox[2],
+							this->viewportStack.back()[1] / e.viewBox[3]
+						);
+				}
 			}
-			
 			cairo_translate(this->cr, -e.viewBox[0], -e.viewBox[1]);
 		}
 		
