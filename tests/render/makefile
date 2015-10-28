@@ -32,12 +32,12 @@ else
 endif
 
 
-define this_rules
-test:: $(prorab_this_name)
-	@echo running $$^...
-	$(this_test_cmd)
-endef
-$(eval $(this_rules))
+#define this_rules
+#test:: $(prorab_this_name)
+#	@echo running $$^...
+#	$(this_test_cmd)
+#endef
+#$(eval $(this_rules))
 
 #add dependency on libsvgren
 $(prorab_this_name): $(abspath $(prorab_this_dir)../../src/libsvgren$(prorab_lib_extension))
