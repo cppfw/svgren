@@ -24,7 +24,7 @@ void processEvent(Display *display, Window window, XImage *ximage, int width, in
 }
 
 int main(int argc, char **argv){
-	auto dom = svgdom::load(papki::FSFile("rect.svg"));
+	auto dom = svgdom::load(papki::FSFile("tiger.svg"));
 	
 	ASSERT_ALWAYS(dom)
 	
@@ -32,7 +32,7 @@ int main(int argc, char **argv){
 	
 	XImage *ximage;
 	
-	int width=512, height=512;
+	int width=dom->width.toPx(96), height=dom->height.toPx(96);
 	
 	Display *display=XOpenDisplay(NULL);
 	
