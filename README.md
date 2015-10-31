@@ -7,4 +7,4 @@ SVG renderer library in C++.
 - all shape kinds
 - render to memory
 
-**svgren** uses **cairo** to render graphics.
+**svgren** uses **[svgdom](https://github.com/igagis/svgdom)** to read the SVG file and **cairo** to render graphics.
