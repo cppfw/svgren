@@ -32,7 +32,8 @@ int main(int argc, char **argv){
 	
 	XImage *ximage;
 	
-	int width=dom->width.toPx(96), height=dom->height.toPx(96);
+	int width = 800, height=800;
+	int imWidth = 100, imHeight = 0;
 	
 	Display *display=XOpenDisplay(NULL);
 	
@@ -45,16 +46,25 @@ int main(int argc, char **argv){
 		return 1;
 	}
 
-	auto img = svgren::render(*dom);
+	auto img = svgren::render(*dom, 96, imWidth, imHeight);
 	
-	ximage = XCreateImage(display, visual, 24, ZPixmap, 0, reinterpret_cast<char*>(&*img.begin()), width, height, 8, 0);
+	if(imWidth == 0 && imHeight != 0){
+		imWidth = img.size() / imHeight;
+	}else if(imWidth != 0 && imHeight == 0){
+		imHeight = img.size() / imWidth;
+	}else if(imWidth == 0 && imHeight == 0){
+		ASSERT_ALWAYS(false)
+	}
+	
+	
+	ximage = XCreateImage(display, visual, 24, ZPixmap, 0, reinterpret_cast<char*>(&*img.begin()), imWidth, imHeight, 8, 0);
 	
 	XSelectInput(display, window, ButtonPressMask|ExposureMask);
 	
 	XMapWindow(display, window);
 	
 	while(true){
-		processEvent(display, window, ximage, width, height);
+		processEvent(display, window, ximage, imWidth, imHeight);
 	}
 
 	TRACE_ALWAYS(<< "[PASSED]" << std::endl)

@@ -765,15 +765,33 @@ SetTempCairoContext::~SetTempCairoContext()noexcept{
 
 
 
-std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, real dpi){
-	unsigned width = svg.width.toPx(dpi);
-	unsigned height = svg.height.toPx(dpi);
+std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, real dpi, unsigned width, unsigned height){
+	unsigned w = svg.width.toPx(dpi);
+	unsigned h = svg.height.toPx(dpi);
 	
-	int stride = width * 4;
+	if(w <= 0 || h <= 0){
+		return std::vector<std::uint32_t>();
+	}
+
+	if(width == 0 && height != 0){
+		width = svg.aspectRatio(dpi) * real(height);
+	}else if(width != 0 && height == 0){
+		height = real(width) / svg.aspectRatio(dpi);
+	}else if(width == 0 && height == 0){
+		width = w;
+		height = h;
+	}
+	
+	ASSERT(width != 0)
+	ASSERT(height != 0)
+	ASSERT(w != 0)
+	ASSERT(h != 0)
+	
+	int stride = width * sizeof(std::uint32_t);
 	
 	TRACE(<< "width = " << width << " stride = " << stride / 4 << std::endl)
 	
-	std::vector<std::uint32_t> ret((stride / sizeof(std::uint32_t)) * height);
+	std::vector<std::uint32_t> ret((stride / sizeof(std::uint32_t)) * h);
 	
 	for(auto& c : ret){
 #ifdef DEBUG
@@ -806,6 +824,8 @@ std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, real dp
 	utki::ScopeExit scopeExitContext([&cr](){
 		cairo_destroy(cr);
 	});
+	
+	cairo_scale(cr, real(width) / real(w), real(height) / real(h));
 	
 	Renderer r(cr, dpi);
 	
