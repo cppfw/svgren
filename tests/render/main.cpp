@@ -33,11 +33,10 @@ int main(int argc, char **argv){
 	XImage *ximage;
 	
 	int width = 800, height=800;
-	int imWidth = 100, imHeight = 0;
+
+	Display *display = XOpenDisplay(NULL);
 	
-	Display *display=XOpenDisplay(NULL);
-	
-	Visual *visual=DefaultVisual(display, 0);
+	Visual *visual = DefaultVisual(display, 0);
 	
 	Window window = XCreateSimpleWindow(display, RootWindow(display, 0), 0, 0, width, height, 1, 0, 0);
 	
@@ -46,16 +45,9 @@ int main(int argc, char **argv){
 		return 1;
 	}
 
-	auto img = svgren::render(*dom, 96, imWidth, imHeight);
-	
-	if(imWidth == 0 && imHeight != 0){
-		imWidth = img.size() / imHeight;
-	}else if(imWidth != 0 && imHeight == 0){
-		imHeight = img.size() / imWidth;
-	}else if(imWidth == 0 && imHeight == 0){
-		ASSERT_ALWAYS(false)
-	}
-	
+	unsigned imWidth = 0;
+	unsigned imHeight = 0;
+	auto img = svgren::render(*dom, imWidth, imHeight);
 	
 	ximage = XCreateImage(display, visual, 24, ZPixmap, 0, reinterpret_cast<char*>(&*img.begin()), imWidth, imHeight, 8, 0);
 	

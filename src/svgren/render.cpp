@@ -765,7 +765,7 @@ SetTempCairoContext::~SetTempCairoContext()noexcept{
 
 
 
-std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, real dpi, unsigned width, unsigned height){
+std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, unsigned& width, unsigned& height, real dpi){
 	unsigned w = svg.width.toPx(dpi);
 	unsigned h = svg.height.toPx(dpi);
 	
