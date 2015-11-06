@@ -180,7 +180,7 @@ struct Renderer : public svgdom::Renderer{
 			if(gradient->isBoundingBoxUnits()){
 				cairo_translate(this->cr, this->curBoundingBoxPos[0], this->curBoundingBoxPos[1]);
 				cairo_scale(this->cr, this->curBoundingBoxDim[0], this->curBoundingBoxDim[1]);
-				this->viewportStack.push_back({1, 1});
+				this->viewportStack.push_back({{1, 1}});
 			}
 			utki::ScopeExit gradScopeExit([this, gradient](){
 				if(gradient->isBoundingBoxUnits()){
