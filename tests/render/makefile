@@ -21,8 +21,11 @@ else ifeq ($(prorab_os),windows)
     this_ldflags += -L/usr/lib -L/usr/local/lib
 endif
 
-
-$(eval $(prorab-build-app))
+ifeq ($(prorab_os), macosx)
+    #no test app for macosx yet
+else
+    $(eval $(prorab-build-app))
+endif
 
 
 ifeq ($(prorab_os),windows)
