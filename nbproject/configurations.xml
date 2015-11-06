@@ -7,15 +7,6 @@
         <in>render.cpp</in>
       </df>
     </df>
-    <logicalFolder name="svgdom"
-                   displayName="svgdom"
-                   projectFiles="true"
-                   root="../svgdom/src/svgdom">
-      <itemPath>../svgdom/src/svgdom/Exc.hpp</itemPath>
-      <itemPath>../svgdom/src/svgdom/config.hpp</itemPath>
-      <itemPath>../svgdom/src/svgdom/dom.cpp</itemPath>
-      <itemPath>../svgdom/src/svgdom/dom.hpp</itemPath>
-    </logicalFolder>
     <df root="tests" name="1">
       <df name="render">
         <in>main.cpp</in>
@@ -68,10 +59,6 @@
           <preBuildCommand></preBuildCommand>
         </preBuild>
       </makefileType>
-      <item path="../svgdom/src/svgdom/dom.cpp" ex="false" tool="1" flavor2="8">
-        <ccTool flags="0">
-        </ccTool>
-      </item>
       <item path="src/svgren/render.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
         </ccTool>

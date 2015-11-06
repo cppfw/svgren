@@ -38,7 +38,7 @@ public:
 	}
 };
 
-class Renderer;
+struct Renderer;
 
 class SetTempCairoContext{
 	cairo_t* oldCr = nullptr;

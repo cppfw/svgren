@@ -23,7 +23,7 @@ before_install:
     echo "deb https://dl.bintray.com/igagis/deb /" | sudo tee /etc/apt/sources.list.d/igagis.list > /dev/null;
     sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 379CE192D401AB61;
     sudo apt-get update -qq;
-    sudo apt-get install -qq debhelper prorab doxygen libutki-dev libsvgdom-dev libcairo2-dev;
+    sudo apt-get install -qq debhelper prorab doxygen libutki-dev libsvgdom-dev libcairo2-dev libpugixml-dev;
   fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
     brew tap igagis/tap;
