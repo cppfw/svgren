@@ -1,0 +1,20 @@
+class Libsvgdom < Formula
+  desc "C++ cross-platform SVG rendering library."
+  homepage "https://github.com/igagis/svgren"
+  url "https://github.com/igagis/svgren/archive/$(version).tar.gz"
+  sha256 "$(sha256)"
+
+  depends_on "prorab" => :build
+  depends_on "libsvgdom"
+  depends_on "libutki"
+  depends_on "cairo" => :build
+
+  def install
+    ENV['PATH'] += ':/usr/local/bin'
+    system "make", "install"
+  end
+
+  #test do
+  #  system "make", "test"
+  #end
+end

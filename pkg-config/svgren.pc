@@ -1,9 +1,0 @@
-Name: svgren   # human-readable name
-Description: SVG rendering C++ library # human-readable description
-Version: 0.1.0
-URL: https://github.com/igagis/svgren
-Requires:
-Conflicts:
-Libs: -lsvgren
-Libs.private:
-Cflags:
