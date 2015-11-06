@@ -368,10 +368,10 @@ public:
 		}
 		
 		this->viewportStack.push_back(
-				{
+				{{
 					this->lengthToPx(e.width, 0),
 					this->lengthToPx(e.height, 1)
-				}
+				}}
 			);
 		utki::ScopeExit scopeExit([this](){
 			this->viewportStack.pop_back();
