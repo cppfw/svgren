@@ -1,4 +1,4 @@
-class Libsvgdom < Formula
+class Libsvgren < Formula
   desc "C++ cross-platform SVG rendering library."
   homepage "https://github.com/igagis/svgren"
   url "https://github.com/igagis/svgren/archive/$(version).tar.gz"
