@@ -22,7 +22,7 @@ else ifeq ($(prorab_os),windows)
 endif
 
 ifeq ($(prorab_os), macosx)
-    #no test app for macosx yet
+    $(info "no test app for macosx yet")
 else
     $(eval $(prorab-build-app))
 endif
