@@ -1,0 +1,53 @@
+nuget{
+	nuspec{
+		id = libsvgren;
+		version : $(version).1; //increase this trailing number if this file has changed to generate a new version of the NuGet package
+		title: C++ SVG rendering library;
+		authors: {Ivan Gagis};
+		owners: {Ivan Gagis};
+		licenseUrl: "https://raw.githubusercontent.com/igagis/svgren/master/LICENSE";
+		projectUrl: "https://github.com/igagis/svgren";
+		iconUrl: "https://github.com/igagis/svgren/blob/master/logo.svg";
+		requireLicenseAcceptance:false;
+		summary: C++ SVG rendering library;
+
+		description: @"C++ SVG rendering library";
+		releaseNotes: "Initial release";
+		copyright: Copyright 2015 Ivan Gagis;
+		tags: { native};
+	}
+	dependencies {
+		packages : {
+			cairo_static/1.12.8.1;
+			libsvgdom/0.2.1.2;
+			libutki/1.0.8.6;
+		};
+	}
+	files {
+		include: { "..\src\**\*.hpp" };
+		
+		[x86,release] { 
+			lib: ..\msvs_solution\Release\libsvgren.lib;
+//			symbols: ..\msvs_solution\Release\libsvgren.pdb;
+//			bin: ..\msvs_solution\Release\libsvgren.dll;
+		}
+
+		[x86,debug] { 
+			lib: ..\msvs_solution\Debug\libsvgren.lib;
+//			symbols: ..\msvs_solution\Debug\libsvgren.pdb;
+//			bin: ..\msvs_solution\Debug\libsvgren.dll;
+		}
+
+		[x64,release] { 
+			lib: ..\msvs_solution\x64\Release\libsvgren.lib;
+//			symbols: ..\msvs_solution\x64\Release\libsvgren.pdb;
+//			bin: ..\msvs_solution\x64\Release\libsvgren.dll;
+		}
+
+		[x64,debug] { 
+			lib: ..\msvs_solution\x64\Debug\libsvgren.lib;
+//			symbols: ..\msvs_solution\x64\Debug\libsvgren.pdb;
+//			bin: ..\msvs_solution\x64\Debug\libsvgren.dll;
+		}  
+	}
+}

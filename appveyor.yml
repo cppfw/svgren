@@ -1,0 +1,30 @@
+os: Visual Studio 2015
+version: "{branch}-{build}"
+
+install:
+  - ps: (new-object net.webclient).DownloadFile('http://downloads.coapp.org/files/CoApp.Tools.Powershell.msi', 'C:\CoApp.Tools.Powershell.msi')
+  - ps: Start-Process -FilePath msiexec -ArgumentList /i, 'C:\CoApp.Tools.Powershell.msi', /quiet -Wait
+  - ps: $env:PSModulePath = $env:PSModulePath + ';C:\Program Files (x86)\Outercurve Foundation\Modules'
+  - ps: Import-Module CoApp
+
+before_build:
+  - nuget restore msvs_solution/msvs_solution.sln
+
+build_script:
+  - ps: .\nuget\build_nuget.ps1
+
+#test_script:
+#  - ps: .\tests\autotest-appveyor.ps1
+
+deploy:
+  provider: NuGet
+  api_key:
+    secure: cvBwlGzXt2fwZB1AFv+aJZca9hCQf4hW/BYwKOjCjCx0WFD9L6g9e2IH7SZ+P0Qf
+  skip_symbols: true
+  artifact: /.*\.nupkg/
+  on:
+    appveyor_repo_tag: true
+
+artifacts:
+  - path: .\nuget\*.nupkg
+  
