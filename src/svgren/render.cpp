@@ -5,11 +5,17 @@
  * Created on October 12, 2015, 11:04 PM
  */
 
+#include <utki/config.hpp>
+
 #include "render.hpp"
 
 #include <cmath>
 
-#include <cairo/cairo.h>
+#if M_OS == M_OS_WINDOWS
+#	include <cairo.h>
+#else
+#	include <cairo/cairo.h>
+#endif
 
 #include <utki/util.hpp>
 
@@ -243,10 +249,10 @@ struct Renderer : public svgdom::Renderer{
 				&y2
 			);
 		
-		this->curBoundingBoxPos[0] = x1;
-		this->curBoundingBoxPos[1] = y1;
-		this->curBoundingBoxDim[0] = x2 - x1;
-		this->curBoundingBoxDim[1] = y2 - y1;
+		this->curBoundingBoxPos[0] = svgren::real(x1);
+		this->curBoundingBoxPos[1] = svgren::real(y1);
+		this->curBoundingBoxDim[0] = svgren::real(x2 - x1);
+		this->curBoundingBoxDim[1] = svgren::real(y2 - y1);
 	}
 	
 	void renderCurrentShape(const svgdom::Shape& e){
@@ -336,7 +342,7 @@ struct Renderer : public svgdom::Renderer{
 	}
 	
 public:
-	Renderer(cairo_t* cr, unsigned dpi) :
+	Renderer(cairo_t* cr, real dpi) :
 			cr(cr),
 			dpi(dpi)
 	{
@@ -766,17 +772,17 @@ SetTempCairoContext::~SetTempCairoContext()noexcept{
 
 
 std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, unsigned& width, unsigned& height, real dpi){
-	unsigned w = svg.width.toPx(dpi);
-	unsigned h = svg.height.toPx(dpi);
+	auto w = unsigned(svg.width.toPx(dpi));
+	auto h = unsigned(svg.height.toPx(dpi));
 	
 	if(w <= 0 || h <= 0){
 		return std::vector<std::uint32_t>();
 	}
 
 	if(width == 0 && height != 0){
-		width = svg.aspectRatio(dpi) * real(height);
+		width = unsigned(svg.aspectRatio(dpi) * real(height));
 	}else if(width != 0 && height == 0){
-		height = real(width) / svg.aspectRatio(dpi);
+		height = unsigned(real(width) / svg.aspectRatio(dpi));
 	}else if(width == 0 && height == 0){
 		width = w;
 		height = h;
