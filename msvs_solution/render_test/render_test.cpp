@@ -5,6 +5,7 @@
 #include "render_test.h"
 
 #include <svgdom/dom.hpp>
+#include "../../src/svgren/render.hpp"
 
 #include <papki/FSFile.hpp>
 
@@ -22,6 +23,8 @@ BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
+HBITMAP bmp;
+
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
                      _In_ LPWSTR    lpCmdLine,
@@ -32,7 +35,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     // TODO: Place code here.
 	auto dom = svgdom::load(papki::FSFile("camera.svg"));
+	ASSERT_ALWAYS(dom)
 
+	unsigned imWidth = 0;
+	unsigned imHeight = 0;
+	auto img = svgren::render(*dom, imWidth, imHeight);
+
+	bmp = CreateBitmap(imWidth, imHeight, 1, 32, &*img.begin());
+	ASSERT_ALWAYS(bmp != NULL)
 
     // Initialize global strings
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
@@ -118,6 +128,28 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    return TRUE;
 }
 
+void DrawBitmap(HDC hdc, HBITMAP hBitmap, int xStart, int yStart)
+{
+	BITMAP bm;
+	HDC hdcMem;
+	POINT ptSize, ptOrg;
+	hdcMem = CreateCompatibleDC(hdc);
+	SelectObject(hdcMem, hBitmap);
+	SetMapMode(hdcMem, GetMapMode(hdc));
+	GetObject(hBitmap, sizeof(BITMAP), (LPVOID)&bm);
+	ptSize.x = bm.bmWidth;
+	ptSize.y = bm.bmHeight;
+	DPtoLP(hdc, &ptSize, 1);
+	ptOrg.x = 0;
+	ptOrg.y = 0;
+	DPtoLP(hdcMem, &ptOrg, 1);
+	BitBlt(
+		hdc, xStart, yStart, ptSize.x, ptSize.y,
+		hdcMem, ptOrg.x, ptOrg.y, SRCCOPY
+		);
+	DeleteDC(hdcMem);
+}
+
 //
 //  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
 //
@@ -153,7 +185,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
-            // TODO: Add any drawing code that uses hdc here...
+			DrawBitmap(hdc, bmp, 0, 0);
             EndPaint(hWnd, &ps);
         }
         break;

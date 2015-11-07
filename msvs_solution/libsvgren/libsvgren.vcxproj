@@ -147,11 +147,6 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\cairo\msvs_solution\cairo\cairo.vcxproj">
-      <Project>{89d68af8-5cbc-43ff-b9ed-9d7b2a064036}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\libutki.1.0.8.5\build\native\libutki.targets" Condition="Exists('..\packages\libutki.1.0.8.5\build\native\libutki.targets')" />
