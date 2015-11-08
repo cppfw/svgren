@@ -4,6 +4,8 @@
 
 SVG renderer library in C++.
 
+![image sample](wiki/camera.png)
+
 - full gradient support
 - group opacity
 - all shape kinds
