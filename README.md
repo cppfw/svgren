@@ -1,4 +1,6 @@
-# svgren [![Build Status](https://travis-ci.org/igagis/svgren.svg?branch=master)](https://travis-ci.org/igagis/svgren)
+# svgren [![Build Status](https://travis-ci.org/igagis/svgren.svg?branch=master)](https://travis-ci.org/igagis/svgren) [![Build status](https://ci.appveyor.com/api/projects/status/6ilonof8aqcjryoi/branch/master?svg=true)](https://ci.appveyor.com/project/igagis/svgren/branch/master)
+
+
 
 SVG renderer library in C++.
 
