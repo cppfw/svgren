@@ -13,5 +13,5 @@ SVG renderer library in C++.
 
 **svgren** uses **[svgdom](https://github.com/igagis/svgdom)** to read the SVG file and **[cairo](http://cairographics.org)** to render graphics.
 
-# Installation
-Read [WiKi](wiki/MainPage.md) for installation instructions.
+# Installation and Tutorials
+Read [WiKi](wiki/MainPage.md) for installation instructions and tutorials.
