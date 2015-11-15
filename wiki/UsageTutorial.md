@@ -26,7 +26,7 @@ auto img = svgren::render(*dom, width, height); //uses 96 dpi by default
 //Returned 'img' is a std::vector<std::uint32_t> holding array of RGBA values.
 ```
 
-If SVG document specifies any coordiantes or lengthes in physical units, like milimeters or centimeters or inches
+If SVG document specifies any coordiantes or lengthes in physical units, like milimeters or centimeters or inches,
 we have to supply the dots per inch (DPI) value of our physical display to the svgren::render() function
 
 ``` cpp
