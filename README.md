@@ -1,4 +1,4 @@
-# svgren [![Build Status](https://travis-ci.org/igagis/svgren.svg?branch=master)](https://travis-ci.org/igagis/svgren) [![Build status](https://ci.appveyor.com/api/projects/status/6ilonof8aqcjryoi/branch/master?svg=true)](https://ci.appveyor.com/project/igagis/svgren/branch/master)
+# svgren [![releases](https://img.shields.io/github/tag/igagis/svgren.svg)](https://github.com/igagis/svgren/releases) [![Build Status](https://travis-ci.org/igagis/svgren.svg?branch=master)](https://travis-ci.org/igagis/svgren) [![Build status](https://ci.appveyor.com/api/projects/status/6ilonof8aqcjryoi/branch/master?svg=true)](https://ci.appveyor.com/project/igagis/svgren/branch/master)
 
 
 
