@@ -20,6 +20,7 @@
       <itemPath>ios/Podfile</itemPath>
       <itemPath>debian/changelog</itemPath>
       <itemPath>nbproject/private/launcher.properties</itemPath>
+      <itemPath>cocoapods/libsvgren.podspec.in</itemPath>
       <itemPath>homebrew/libsvgren.rb.in</itemPath>
       <itemPath>src/makefile</itemPath>
     </logicalFolder>
