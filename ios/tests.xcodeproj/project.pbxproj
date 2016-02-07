@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		1B25AC8CCF5186EA6A532080 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 03330A828C9DE311D784640E /* libPods.a */; };
+		2C0D7E871C676A09002E0FCB /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C0D7E861C676A09002E0FCB /* main.cpp */; };
 		2CEDD3C41C64CFE300DBD872 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2CEDD3C31C64CFE300DBD872 /* Assets.xcassets */; };
 		2CF1B5161C64D36300A800D1 /* render.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CF1B5151C64D36300A800D1 /* render.cpp */; };
 /* End PBXBuildFile section */
@@ -15,6 +16,7 @@
 /* Begin PBXFileReference section */
 		03330A828C9DE311D784640E /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		1E3C7CDB42B5D2F818FF8832 /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
+		2C0D7E861C676A09002E0FCB /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = ../../tests/render/main.cpp; sourceTree = "<group>"; };
 		2CEDD3B41C64CFE300DBD872 /* tests.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = tests.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2CEDD3C31C64CFE300DBD872 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2CEDD3C81C64CFE300DBD872 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -64,6 +66,7 @@
 		2CEDD3B61C64CFE300DBD872 /* tests */ = {
 			isa = PBXGroup;
 			children = (
+				2C0D7E861C676A09002E0FCB /* main.cpp */,
 				2CEDD3C31C64CFE300DBD872 /* Assets.xcassets */,
 				2CEDD3C81C64CFE300DBD872 /* Info.plist */,
 				2CEDD3B71C64CFE300DBD872 /* Supporting Files */,
@@ -206,6 +209,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2C0D7E871C676A09002E0FCB /* main.cpp in Sources */,
 				2CF1B5161C64D36300A800D1 /* render.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
