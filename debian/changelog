@@ -1,3 +1,9 @@
+libsvgren (0.1.2) stable; urgency=medium
+
+  * ios
+
+ -- Ivan Gagis <igagis@gmail.com>  Sun, 07 Feb 2016 14:17:14 +0200
+
 libsvgren (0.1.1-1) stable; urgency=medium
 
   * updating for ci
