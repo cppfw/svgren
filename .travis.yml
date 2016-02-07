@@ -1,16 +1,20 @@
 language: cpp
 sudo: required
+dist: trusty
+osx_image: xcode7.3
 
 os:
   - linux
   - osx
 
-osx_image: xcode7.1
-dist: trusty
-
 compiler:
   - clang
   - gcc
+
+matrix:
+  exclude:
+    - os: osx
+      compiler: gcc
 
 env:
   global:
@@ -20,14 +24,18 @@ env:
 
 before_install:
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
-    echo "deb https://dl.bintray.com/igagis/deb /" | sudo tee /etc/apt/sources.list.d/igagis.list > /dev/null;
-    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 379CE192D401AB61;
-    sudo apt-get update -qq;
+    echo "deb https://dl.bintray.com/igagis/deb /" | sudo tee /etc/apt/sources.list.d/igagis.list > /dev/null &&
+    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 379CE192D401AB61 &&
+    sudo apt-get update -qq &&
     sudo apt-get install -qq debhelper prorab doxygen libutki-dev libsvgdom-dev libcairo2-dev libpugixml-dev;
   fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
-    brew tap igagis/tap;
-    brew update > /dev/null;
+    rvm use ruby-2.2.1 &&
+    pod repo add --silent igagis https://$HOMEBREW_GITHUB_USERNAME:$HOMEBREW_GITHUB_ACCESS_TOKEN@github.com/igagis/cocoapods-repo.git &&
+    pod install --project-directory=ios &&
+    
+    brew tap igagis/tap &&
+    brew update > /dev/null &&
     brew install prorab libutki libsvgdom cairo;
   fi
 
@@ -37,7 +45,11 @@ script:
     make deb;
   fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
-    make;
+    make &&
+    
+    xcodebuild -workspace ios/tests.xcworkspace -scheme tests CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO &&
+
+    if [ -n "$TRAVIS_TAG" ]; then prorab-deploy-cocoapods.sh igagis; else echo "Skip deploying to cocoapods because not a tagged commit!!!"; fi;
   fi
 
 deploy:
