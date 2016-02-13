@@ -2,11 +2,11 @@ include prorab.mk
 
 this_name := tests
 
-this_cflags += -Wall
-this_cflags += -Wno-format #no warnings about format
-this_cflags += -DDEBUG
-this_cflags += -fstrict-aliasing #strict aliasing!!!
-this_cflags += -std=c++11
+this_cxxflags += -Wall
+this_cxxflags += -Wno-format #no warnings about format
+this_cxxflags += -DDEBUG
+this_cxxflags += -fstrict-aliasing #strict aliasing!!!
+this_cxxflags += -std=c++11
 
 this_srcs += main.cpp
 
@@ -14,10 +14,10 @@ this_ldlibs += -lsvgdom -lsvgren -lpapki  -lX11
 this_ldflags += -L$(prorab_this_dir)../../src
 
 ifeq ($(prorab_os), macosx)
-    this_cflags += -stdlib=libc++ #this is needed to be able to use c++11 std lib
+    this_cxxflags += -stdlib=libc++ #this is needed to be able to use c++11 std lib
     this_ldlibs += -lc++
 else ifeq ($(prorab_os),windows)
-    this_cflags += -I/usr/include -I/usr/local/include
+    this_cxxflags += -I/usr/include -I/usr/local/include
     this_ldflags += -L/usr/lib -L/usr/local/lib
 endif
 
