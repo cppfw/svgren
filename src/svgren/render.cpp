@@ -527,7 +527,8 @@ public:
 				case svgdom::PathElement::Step::EType::CUBIC_REL:
 					cairo_rel_curve_to(this->cr, s.x1, s.y1, s.x2, s.y2, s.x, s.y);
 					break;
-//				case svgdom::PathElement::Step::EType::CUBIC_SMOOTH_ABS:
+				case svgdom::PathElement::Step::EType::CUBIC_SMOOTH_ABS:
+					ASSERT_INFO(false, "Cubic smooth is not implemented")
 //					{
 //						double x, y;
 //						if(cairo_has_current_point(this->cr)){
@@ -547,8 +548,11 @@ public:
 //						cairo_curve_to(this->cr, x1, y1, s.x2, s.y2, s.x, s.y);
 //					}
 //					break;
+				case svgdom::PathElement::Step::EType::ARC_REL:
+					ASSERT_INFO(false, "Arc relative is not implemented")
+					break;
 				default:
-					ASSERT(false)
+					ASSERT_INFO(false, "unknown path step type: " << unsigned(s.type))
 					break;
 			}
 //			prev = &s;
