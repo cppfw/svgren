@@ -19,7 +19,7 @@
                    kind="IMPORTANT_FILES_FOLDER">
       <itemPath>.travis.yml</itemPath>
       <itemPath>ios/Podfile</itemPath>
-      <itemPath>nuget/build_nuget.ps1</itemPath>
+      <itemPath>appveyor.yml</itemPath>
       <itemPath>debian/changelog</itemPath>
       <itemPath>nbproject/private/launcher.properties</itemPath>
       <itemPath>cocoapods/libsvgren.podspec.in</itemPath>
