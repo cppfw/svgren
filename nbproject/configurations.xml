@@ -19,11 +19,13 @@
                    kind="IMPORTANT_FILES_FOLDER">
       <itemPath>.travis.yml</itemPath>
       <itemPath>ios/Podfile</itemPath>
+      <itemPath>nuget/build_nuget.ps1</itemPath>
       <itemPath>debian/changelog</itemPath>
       <itemPath>nbproject/private/launcher.properties</itemPath>
       <itemPath>cocoapods/libsvgren.podspec.in</itemPath>
       <itemPath>homebrew/libsvgren.rb.in</itemPath>
       <itemPath>src/makefile</itemPath>
+      <itemPath>nuget/nuget.autopkg.in</itemPath>
     </logicalFolder>
   </logicalFolder>
   <sourceFolderFilter>^(nbproject)$</sourceFolderFilter>
