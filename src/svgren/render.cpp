@@ -470,6 +470,8 @@ public:
 	}
 	
 	void render(const svgdom::PathElement& e)override{
+		cairo_new_path(this->cr);
+		
 		SetTempCairoContext cairoTempContext(*this, e);
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
@@ -483,6 +485,9 @@ public:
 					cairo_move_to(this->cr, s.x, s.y);
 					break;
 				case svgdom::PathElement::Step::EType::MOVE_REL:
+					if(!cairo_has_current_point(this->cr)){
+						cairo_move_to(this->cr, 0, 0);
+					}
 					cairo_rel_move_to(this->cr, s.x, s.y);
 					break;
 				case svgdom::PathElement::Step::EType::LINE_ABS:
