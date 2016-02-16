@@ -1,3 +1,9 @@
+libsvgren (0.2.1) stable; urgency=medium
+
+  * nuget fix
+
+ -- Ivan Gagis <igagis@gmail.com>  Tue, 16 Feb 2016 17:00:53 +0200
+
 libsvgren (0.2.0) stable; urgency=medium
 
   * Arcs support in paths
