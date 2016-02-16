@@ -40,6 +40,11 @@ std::tuple<real, real> rotate(real x, real y, real angle){
     return std::make_tuple(x * std::cos(angle) - y * std::sin(angle), y * std::cos(angle) + x * std::sin(angle));
 }
 
+//convert degrees to radians
+real degToRad(real deg){
+	return deg * real(M_PI) / real(180);
+}
+
 
 class CairoMatrixSave{
 	cairo_matrix_t m;
@@ -597,7 +602,7 @@ public:
 								yy = s.y;
 							}
 							
-							auto res = rotate(xx, yy, -s.xAxisRotation);
+							auto res = rotate(xx, yy, degToRad(-s.xAxisRotation));
 							xe = std::get<0>(res);
 							ye = std::get<1>(res);
 						}
@@ -641,7 +646,7 @@ public:
 						CairoMatrixSave cairoMatrixPush1(this->cr);
 						
 						cairo_translate(this->cr, x, y);
-						cairo_rotate(this->cr, s.xAxisRotation);
+						cairo_rotate(this->cr, degToRad(s.xAxisRotation));
 						cairo_scale(this->cr, 1, radiiRatio);
 						if(s.flags.sweep){
 							cairo_arc(this->cr, xc, yc, rx, angle1, angle2);
