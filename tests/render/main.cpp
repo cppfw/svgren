@@ -30,7 +30,7 @@ void processEvent(Display *display, Window window, XImage *ximage, int width, in
 #endif
 
 int main(int argc, char **argv){
-	auto dom = svgdom::load(papki::FSFile("arc.svg"));
+	auto dom = svgdom::load(papki::FSFile("RATFINK.svg"));
 	
 	ASSERT_ALWAYS(dom)
 	

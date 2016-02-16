@@ -564,7 +564,7 @@ public:
 //						}
 //						cairo_curve_to(this->cr, x1, y1, s.x2, s.y2, s.x, s.y);
 //					}
-//					break;
+					break;
 				case svgdom::PathElement::Step::EType::ARC_ABS:
 				case svgdom::PathElement::Step::EType::ARC_REL:
 					{
