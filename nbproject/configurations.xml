@@ -9,6 +9,7 @@
     </df>
     <df root="tests" name="1">
       <df name="render">
+        <in>arc.svg</in>
         <in>main.cpp</in>
       </df>
     </df>
@@ -114,6 +115,8 @@
       <item path="src/svgren/render.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
         </ccTool>
+      </item>
+      <item path="tests/render/arc.svg" ex="false" tool="3" flavor2="0">
       </item>
       <item path="tests/render/main.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="1">
