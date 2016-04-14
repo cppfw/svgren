@@ -51,7 +51,7 @@
       <makefileType>
         <makeTool>
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
-          <buildCommand>${MAKE} -f makefile debug=true</buildCommand>
+          <buildCommand>${MAKE} -f makefile debug=true CXX=g++-4.9</buildCommand>
           <cleanCommand>${MAKE} -f makefile clean</cleanCommand>
           <executablePath>tests/render/tests</executablePath>
         </makeTool>
@@ -63,11 +63,18 @@
       <folder path="0">
         <ccTool>
           <incDir>
+            <pElem>/usr/include/c++/4.9</pElem>
+            <pElem>/usr/include/c++/4.9/bits</pElem>
             <pElem>/usr/include/utki</pElem>
             <pElem>/usr/include/svgdom</pElem>
             <pElem>src/svgren</pElem>
+            <pElem>/usr/include/c++/4.9/ext</pElem>
+            <pElem>/usr/include/x86_64-linux-gnu/c++/4.9/bits</pElem>
+            <pElem>/usr/include/c++/4.9/debug</pElem>
+            <pElem>/usr/lib/gcc/x86_64-linux-gnu/4.9/include</pElem>
             <pElem>/usr/include/papki</pElem>
             <pElem>/usr/include/cairo</pElem>
+            <pElem>/usr/include/x86_64-linux-gnu/c++/4.9</pElem>
             <pElem>.</pElem>
           </incDir>
         </ccTool>

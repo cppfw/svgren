@@ -950,5 +950,10 @@ std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, unsigne
 	
 	svg.render(r);
 	
+	//swap Red and Blue
+	for(auto& c : ret){
+		c = (c & 0xff00ff00) | ((c << 16) & 0xff0000) | ((c >> 16) & 0xff);
+	}
+	
 	return ret;
 }

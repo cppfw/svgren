@@ -56,6 +56,10 @@ int main(int argc, char **argv){
 	unsigned imHeight = 0;
 	auto img = svgren::render(*dom, imWidth, imHeight);
 	
+	for(auto& c : img){
+		c = (c & 0xff00ff00) | ((c << 16) & 0xff0000) | ((c >> 16) & 0xff);
+	}
+	
 #if M_OS == M_OS_LINUX
 	ximage = XCreateImage(display, visual, 24, ZPixmap, 0, reinterpret_cast<char*>(&*img.begin()), imWidth, imHeight, 8, 0);
 	
