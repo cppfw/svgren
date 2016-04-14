@@ -1,3 +1,9 @@
+libsvgren (0.3.1) stable; urgency=medium
+
+  * homebrew fix
+
+ -- Ivan Gagis <igagis@gmail.com>  Thu, 14 Apr 2016 11:49:05 +0300
+
 libsvgren (0.3.0) stable; urgency=medium
 
   * swap red and blue
