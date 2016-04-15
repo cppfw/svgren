@@ -1,3 +1,9 @@
+libsvgren (0.3.4) stable; urgency=medium
+
+  * scaled height bug fix
+
+ -- Ivan Gagis <igagis@gmail.com>  Fri, 15 Apr 2016 14:44:24 +0300
+
 libsvgren (0.3.3) stable; urgency=medium
 
   * homebrew rm force

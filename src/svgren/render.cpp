@@ -910,7 +910,7 @@ std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, unsigne
 	
 	TRACE(<< "width = " << width << " stride = " << stride / 4 << std::endl)
 	
-	std::vector<std::uint32_t> ret((stride / sizeof(std::uint32_t)) * h);
+	std::vector<std::uint32_t> ret((stride / sizeof(std::uint32_t)) * height);
 	
 	for(auto& c : ret){
 #ifdef DEBUG
