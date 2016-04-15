@@ -1,3 +1,9 @@
+libsvgren (0.3.5) stable; urgency=medium
+
+  * appveyor fix
+
+ -- Ivan Gagis <igagis@gmail.com>  Fri, 15 Apr 2016 18:44:03 +0300
+
 libsvgren (0.3.4) stable; urgency=medium
 
   * scaled height bug fix
