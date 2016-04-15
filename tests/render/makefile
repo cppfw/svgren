@@ -2,6 +2,7 @@ include prorab.mk
 
 this_name := tests
 
+this_cxxflags += -g
 this_cxxflags += -Wall
 this_cxxflags += -Wno-format #no warnings about format
 this_cxxflags += -DDEBUG

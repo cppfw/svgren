@@ -29,6 +29,23 @@ using namespace svgren;
 
 namespace{
 
+
+//Return angle between x axis and point knowing given center.
+real pointAngle(real cx, real cy, real px, real py){
+    return std::atan2(py - cy, px - cx);
+}
+
+//Rotate a point of an angle around the origin point.
+std::tuple<real, real> rotate(real x, real y, real angle){
+    return std::make_tuple(x * std::cos(angle) - y * std::sin(angle), y * std::cos(angle) + x * std::sin(angle));
+}
+
+//convert degrees to radians
+real degToRad(real deg){
+	return deg * real(M_PI) / real(180);
+}
+
+
 class CairoMatrixSave{
 	cairo_matrix_t m;
 	cairo_t* cr;
@@ -453,6 +470,8 @@ public:
 	}
 	
 	void render(const svgdom::PathElement& e)override{
+		cairo_new_path(this->cr);
+		
 		SetTempCairoContext cairoTempContext(*this, e);
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
@@ -466,6 +485,9 @@ public:
 					cairo_move_to(this->cr, s.x, s.y);
 					break;
 				case svgdom::PathElement::Step::EType::MOVE_REL:
+					if(!cairo_has_current_point(this->cr)){
+						cairo_move_to(this->cr, 0, 0);
+					}
 					cairo_rel_move_to(this->cr, s.x, s.y);
 					break;
 				case svgdom::PathElement::Step::EType::LINE_ABS:
@@ -547,9 +569,96 @@ public:
 //						}
 //						cairo_curve_to(this->cr, x1, y1, s.x2, s.y2, s.x, s.y);
 //					}
-//					break;
+					break;
+				case svgdom::PathElement::Step::EType::ARC_ABS:
 				case svgdom::PathElement::Step::EType::ARC_REL:
-					ASSERT_INFO(false, "Arc relative is not implemented")
+					{
+						real x, y;
+						if(cairo_has_current_point(this->cr)){
+							double xx, yy;
+							cairo_get_current_point(this->cr, &xx, &yy);
+							x = real(xx);
+							y = real(yy);
+						}else{
+							x = 0;
+							y = 0;
+						}
+						
+						if(s.rx <= 0){
+							break;
+						}
+						ASSERT(s.rx > 0)
+						real radiiRatio = s.ry / s.rx;
+						
+						if(radiiRatio <= 0){
+							break;
+						}
+						
+						//cancel rotation of end point
+						real xe, ye;
+						{
+							real xx;
+							real yy;
+							if(s.type == svgdom::PathElement::Step::EType::ARC_ABS){
+								xx = s.x - x;
+								yy = s.y - y;
+							}else{
+								xx = s.x;
+								yy = s.y;
+							}
+							
+							auto res = rotate(xx, yy, degToRad(-s.xAxisRotation));
+							xe = std::get<0>(res);
+							ye = std::get<1>(res);
+						}
+						ASSERT(radiiRatio > 0)
+						ye /= radiiRatio;
+						
+						//Find the angle between the end point and the x axis
+						real angle = pointAngle(0, 0, xe, ye);
+						
+						//Put the end point onto the x axis
+						xe = std::sqrt(xe * xe + ye * ye);
+						ye = 0;
+						
+						//Update the x radius if it is too small
+						real rx = std::max(s.rx, xe / 2);
+						
+						//Find one circle center
+						real xc = xe / 2;
+						real yc = std::sqrt(rx * rx - xc * xc);
+						
+						//Choose between the two circles according to flags
+						if(!(s.flags.largeArc ^ s.flags.sweep)){
+							yc = -yc;
+						}
+						
+						//Put the second point and the center back to their positions
+						{
+							auto res = rotate(xe, 0, angle);
+							xe = std::get<0>(res);
+							ye = std::get<1>(res);
+						}
+						{
+							auto res = rotate(xc, yc, angle);
+							xc = std::get<0>(res);
+							yc = std::get<1>(res);
+						}
+
+						real angle1 = pointAngle(xc, yc, 0, 0);
+						real angle2 = pointAngle(xc, yc, xe, ye);
+						
+						CairoMatrixSave cairoMatrixPush1(this->cr);
+						
+						cairo_translate(this->cr, x, y);
+						cairo_rotate(this->cr, degToRad(s.xAxisRotation));
+						cairo_scale(this->cr, 1, radiiRatio);
+						if(s.flags.sweep){
+							cairo_arc(this->cr, xc, yc, rx, angle1, angle2);
+						}else{
+							cairo_arc_negative(this->cr, xc, yc, rx, angle1, angle2);
+						}
+					}
 					break;
 				default:
 					ASSERT_INFO(false, "unknown path step type: " << unsigned(s.type))
@@ -801,7 +910,7 @@ std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, unsigne
 	
 	TRACE(<< "width = " << width << " stride = " << stride / 4 << std::endl)
 	
-	std::vector<std::uint32_t> ret((stride / sizeof(std::uint32_t)) * h);
+	std::vector<std::uint32_t> ret((stride / sizeof(std::uint32_t)) * height);
 	
 	for(auto& c : ret){
 #ifdef DEBUG
@@ -840,6 +949,11 @@ std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, unsigne
 	Renderer r(cr, dpi);
 	
 	svg.render(r);
+	
+	//swap Red and Blue
+	for(auto& c : ret){
+		c = (c & 0xff00ff00) | ((c << 16) & 0xff0000) | ((c >> 16) & 0xff);
+	}
 	
 	return ret;
 }

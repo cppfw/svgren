@@ -5,13 +5,15 @@ class Libsvgren < Formula
   sha256 "$(sha256)"
 
   depends_on "prorab" => :build
+  depends_on "cairo" => :build
   depends_on "libsvgdom"
   depends_on "libutki"
-  depends_on "cairo" => :build
 
   def install
     ENV['PATH'] += ':/usr/local/bin'
-    system "make", "install"
+    system "make", "install", "PREFIX=#{prefix}"
+    system "rm", "-f", "#{prefix}/bin/tests"
+    system "rm", "#{prefix}/include/dummy.hpp"
   end
 
   #test do

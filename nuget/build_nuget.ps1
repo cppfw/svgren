@@ -3,7 +3,7 @@ $scriptdir = Split-Path $MyInvocation.MyCommand.Path
 cd $scriptdir
 
 #extract version from debian/changelog
-$ver = (Get-Content ..\debian\changelog -Head 1) -replace ".*\(([\d\.]*)\-\d*\).*",'$1'
+$ver = (Get-Content ..\debian\changelog -Head 1) -replace ".*\((\d*\.\d*\.\d*)(\-\d+){0,1}\).*",'$1'
 #Write-Host $ver
 
 #insert version into all *.in files

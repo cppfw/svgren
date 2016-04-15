@@ -1,7 +1,7 @@
 nuget{
 	nuspec{
 		id = libsvgren;
-		version : $(version).2; //increase this trailing number if this file has changed to generate a new version of the NuGet package
+		version : $(version);
 		title: C++ SVG rendering library;
 		authors: {Ivan Gagis};
 		owners: {Ivan Gagis};
