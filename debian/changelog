@@ -1,3 +1,9 @@
+libsvgren (0.3.7) stable; urgency=medium
+
+  * windows build fix
+
+ -- Ivan Gagis <igagis@gmail.com>  Sat, 04 Jun 2016 23:11:18 +0300
+
 libsvgren (0.3.6) stable; urgency=medium
 
   * update to latest libsvgdom
