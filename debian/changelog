@@ -1,3 +1,9 @@
+libsvgren (0.3.6) stable; urgency=medium
+
+  * update to latest libsvgdom
+
+ -- Ivan Gagis <igagis@gmail.com>  Sat, 04 Jun 2016 23:00:07 +0300
+
 libsvgren (0.3.5) stable; urgency=medium
 
   * appveyor fix

@@ -99,10 +99,10 @@ struct Renderer : public svgdom::Renderer{
 	void applyTransformations(const decltype(svgdom::Transformable::transformations)& transformations)const{
 		for(auto& t : transformations){
 			switch(t.type){
-				case svgdom::Transformable::Transformation::EType::TRANSLATE:
+				case svgdom::Transformable::Transformation::Type_e::TRANSLATE:
 					cairo_translate(this->cr, t.x, t.y);
 					break;
-				case svgdom::Transformable::Transformation::EType::MATRIX:
+				case svgdom::Transformable::Transformation::Type_e::MATRIX:
 					{
 						cairo_matrix_t matrix;
 						matrix.xx = t.a;
@@ -114,15 +114,15 @@ struct Renderer : public svgdom::Renderer{
 						cairo_transform(this->cr, &matrix);
 					}
 					break;
-				case svgdom::Transformable::Transformation::EType::SCALE:
+				case svgdom::Transformable::Transformation::Type_e::SCALE:
 					cairo_scale(this->cr, t.x, t.y);
 					break;
-				case svgdom::Transformable::Transformation::EType::ROTATE:
+				case svgdom::Transformable::Transformation::Type_e::ROTATE:
 					cairo_translate(this->cr, t.x, t.y);
 					cairo_rotate(this->cr, t.angle);
 					cairo_translate(this->cr, -t.x, -t.y);
 					break;
-				case svgdom::Transformable::Transformation::EType::SKEWX:
+				case svgdom::Transformable::Transformation::Type_e::SKEWX:
 					{
 						cairo_matrix_t matrix;
 						matrix.xx = 1;
@@ -134,7 +134,7 @@ struct Renderer : public svgdom::Renderer{
 						cairo_transform(this->cr, &matrix);
 					}
 					break;
-				case svgdom::Transformable::Transformation::EType::SKEWY:
+				case svgdom::Transformable::Transformation::Type_e::SKEWY:
 					{
 						cairo_matrix_t matrix;
 						matrix.xx = 1;
@@ -161,7 +161,7 @@ struct Renderer : public svgdom::Renderer{
 		for(auto& stop : g.getStops()){
 			if(auto s = dynamic_cast<svgdom::Gradient::StopElement*>(stop.get())){
 				svgdom::Rgb rgb;
-				if(auto p = s->getStyleProperty(svgdom::EStyleProperty::STOP_COLOR)){
+				if(auto p = s->getStyleProperty(svgdom::StyleProperty_e::STOP_COLOR)){
 					rgb = p->getRgb();
 				}else{
 					rgb.r = 0;
@@ -170,7 +170,7 @@ struct Renderer : public svgdom::Renderer{
 				}
 
 				svgdom::real opacity;
-				if(auto p = s->getStyleProperty(svgdom::EStyleProperty::STOP_OPACITY)){
+				if(auto p = s->getStyleProperty(svgdom::StyleProperty_e::STOP_OPACITY)){
 					opacity = p->opacity;
 				}else{
 					opacity = 1;
@@ -180,16 +180,16 @@ struct Renderer : public svgdom::Renderer{
 		}
 		switch(g.getSpreadMethod()){
 			default:
-			case svgdom::Gradient::ESpreadMethod::DEFAULT:
+			case svgdom::Gradient::SpreadMethod_e::DEFAULT:
 				ASSERT(false)
 				break;
-			case svgdom::Gradient::ESpreadMethod::PAD:
+			case svgdom::Gradient::SpreadMethod_e::PAD:
 				cairo_pattern_set_extend(pat, CAIRO_EXTEND_PAD);
 				break;
-			case svgdom::Gradient::ESpreadMethod::REFLECT:
+			case svgdom::Gradient::SpreadMethod_e::REFLECT:
 				cairo_pattern_set_extend(pat, CAIRO_EXTEND_REFLECT);
 				break;
-			case svgdom::Gradient::ESpreadMethod::REPEAT:
+			case svgdom::Gradient::SpreadMethod_e::REPEAT:
 				cairo_pattern_set_extend(pat, CAIRO_EXTEND_REPEAT);
 				break;
 		}
@@ -273,22 +273,22 @@ struct Renderer : public svgdom::Renderer{
 	}
 	
 	void renderCurrentShape(const svgdom::Shape& e){
-		if(auto p = e.getStyleProperty(svgdom::EStyleProperty::FILL_RULE)){
+		if(auto p = e.getStyleProperty(svgdom::StyleProperty_e::FILL_RULE)){
 			switch(p->fillRule){
 				default:
 					ASSERT(false)
 					break;
-				case svgdom::EFillRule::EVENODD:
+				case svgdom::FillRule_e::EVENODD:
 					cairo_set_fill_rule(this->cr, CAIRO_FILL_RULE_EVEN_ODD);
 					break;
-				case svgdom::EFillRule::NONZERO:
+				case svgdom::FillRule_e::NONZERO:
 					cairo_set_fill_rule(this->cr, CAIRO_FILL_RULE_WINDING);
 					break;
 			}
 		}
 		
-		auto fill = e.getStyleProperty(svgdom::EStyleProperty::FILL);
-		auto stroke = e.getStyleProperty(svgdom::EStyleProperty::STROKE);
+		auto fill = e.getStyleProperty(svgdom::StyleProperty_e::FILL);
+		auto stroke = e.getStyleProperty(svgdom::StyleProperty_e::STROKE);
 		
 		this->updateCurBoundingBox();
 		
@@ -297,7 +297,7 @@ struct Renderer : public svgdom::Renderer{
 				this->setGradient(fill->url);
 			}else{
 				svgdom::real opacity;
-				if(auto p = e.getStyleProperty(svgdom::EStyleProperty::FILL_OPACITY)){
+				if(auto p = e.getStyleProperty(svgdom::StyleProperty_e::FILL_OPACITY)){
 					opacity = p->opacity;
 				}else{
 					opacity = 1;
@@ -315,24 +315,24 @@ struct Renderer : public svgdom::Renderer{
 		}
 		
 		if(stroke && !stroke->isNone()){
-			if(auto p = e.getStyleProperty(svgdom::EStyleProperty::STROKE_WIDTH)){
+			if(auto p = e.getStyleProperty(svgdom::StyleProperty_e::STROKE_WIDTH)){
 				cairo_set_line_width(this->cr, this->lengthToPx(p->length));
 			}else{
 				cairo_set_line_width(this->cr, 1);
 			}
 			
-			if(auto p = e.getStyleProperty(svgdom::EStyleProperty::STROKE_LINECAP)){
+			if(auto p = e.getStyleProperty(svgdom::StyleProperty_e::STROKE_LINECAP)){
 				switch(p->strokeLineCap){
 					default:
 						ASSERT(false)
 						break;
-					case svgdom::EStrokeLineCap::BUTT:
+					case svgdom::StrokeLineCap_e::BUTT:
 						cairo_set_line_cap(this->cr, CAIRO_LINE_CAP_BUTT);
 						break;
-					case svgdom::EStrokeLineCap::ROUND:
+					case svgdom::StrokeLineCap_e::ROUND:
 						cairo_set_line_cap(this->cr, CAIRO_LINE_CAP_ROUND);
 						break;
-					case svgdom::EStrokeLineCap::SQUARE:
+					case svgdom::StrokeLineCap_e::SQUARE:
 						cairo_set_line_cap(this->cr, CAIRO_LINE_CAP_SQUARE);
 						break;
 				}
@@ -344,7 +344,7 @@ struct Renderer : public svgdom::Renderer{
 				this->setGradient(stroke->url);
 			}else{
 				svgdom::real opacity;
-				if(auto p = e.getStyleProperty(svgdom::EStyleProperty::STROKE_OPACITY)){
+				if(auto p = e.getStyleProperty(svgdom::StyleProperty_e::STROKE_OPACITY)){
 					opacity = p->opacity;
 				}else{
 					opacity = 1;
@@ -401,7 +401,7 @@ public:
 		});
 		
 		if(e.viewBox[0] >= 0){//if viewBox is specified
-			if(e.preserveAspectRatio.preserve != svgdom::EPreserveAspectRatio::NONE){
+			if(e.preserveAspectRatio.preserve != svgdom::PreserveAspectRatio_e::NONE){
 				if(e.viewBox[3] >= 0 && this->viewportStack.back()[1] >= 0){ //if viewBox width and viewport width are not 0
 					real scaleFactor, dx, dy;
 					
@@ -420,34 +420,34 @@ public:
 						dy = e.viewBox[3] - this->viewportStack.back()[1];
 					}
 					switch(e.preserveAspectRatio.preserve){
-						case svgdom::EPreserveAspectRatio::NONE:
+						case svgdom::PreserveAspectRatio_e::NONE:
 							ASSERT(false)
 						default:
 							break;
-						case svgdom::EPreserveAspectRatio::X_MIN_Y_MAX:
+						case svgdom::PreserveAspectRatio_e::X_MIN_Y_MAX:
 							cairo_translate(this->cr, 0, dy);
 							break;
-						case svgdom::EPreserveAspectRatio::X_MIN_Y_MID:
+						case svgdom::PreserveAspectRatio_e::X_MIN_Y_MID:
 							cairo_translate(this->cr, 0, dy / 2);
 							break;
-						case svgdom::EPreserveAspectRatio::X_MIN_Y_MIN:
+						case svgdom::PreserveAspectRatio_e::X_MIN_Y_MIN:
 							break;
-						case svgdom::EPreserveAspectRatio::X_MID_Y_MAX:
+						case svgdom::PreserveAspectRatio_e::X_MID_Y_MAX:
 							cairo_translate(this->cr, dx / 2, dy);
 							break;
-						case svgdom::EPreserveAspectRatio::X_MID_Y_MID:
+						case svgdom::PreserveAspectRatio_e::X_MID_Y_MID:
 							cairo_translate(this->cr, dx / 2, dy / 2);
 							break;
-						case svgdom::EPreserveAspectRatio::X_MID_Y_MIN:
+						case svgdom::PreserveAspectRatio_e::X_MID_Y_MIN:
 							cairo_translate(this->cr, dx / 2, 0);
 							break;
-						case svgdom::EPreserveAspectRatio::X_MAX_Y_MAX:
+						case svgdom::PreserveAspectRatio_e::X_MAX_Y_MAX:
 							cairo_translate(this->cr, dx, dy);
 							break;
-						case svgdom::EPreserveAspectRatio::X_MAX_Y_MID:
+						case svgdom::PreserveAspectRatio_e::X_MAX_Y_MID:
 							cairo_translate(this->cr, dx, dy / 2);
 							break;
-						case svgdom::EPreserveAspectRatio::X_MAX_Y_MIN:
+						case svgdom::PreserveAspectRatio_e::X_MAX_Y_MIN:
 							cairo_translate(this->cr, dx, 0);
 							break;
 					}
@@ -481,22 +481,22 @@ public:
 //		const svgdom::PathElement::Step* prev = nullptr;
 		for(auto& s : e.path){
 			switch(s.type){
-				case svgdom::PathElement::Step::EType::MOVE_ABS:
+				case svgdom::PathElement::Step::Type_e::MOVE_ABS:
 					cairo_move_to(this->cr, s.x, s.y);
 					break;
-				case svgdom::PathElement::Step::EType::MOVE_REL:
+				case svgdom::PathElement::Step::Type_e::MOVE_REL:
 					if(!cairo_has_current_point(this->cr)){
 						cairo_move_to(this->cr, 0, 0);
 					}
 					cairo_rel_move_to(this->cr, s.x, s.y);
 					break;
-				case svgdom::PathElement::Step::EType::LINE_ABS:
+				case svgdom::PathElement::Step::Type_e::LINE_ABS:
 					cairo_line_to(this->cr, s.x, s.y);
 					break;
-				case svgdom::PathElement::Step::EType::LINE_REL:
+				case svgdom::PathElement::Step::Type_e::LINE_REL:
 					cairo_rel_line_to(this->cr, s.x, s.y);
 					break;
-				case svgdom::PathElement::Step::EType::HORIZONTAL_LINE_ABS:
+				case svgdom::PathElement::Step::Type_e::HORIZONTAL_LINE_ABS:
 					{
 						double x, y;
 						if(cairo_has_current_point(this->cr)){
@@ -507,7 +507,7 @@ public:
 						cairo_line_to(this->cr, s.x, y);
 					}
 					break;
-				case svgdom::PathElement::Step::EType::HORIZONTAL_LINE_REL:
+				case svgdom::PathElement::Step::Type_e::HORIZONTAL_LINE_REL:
 					{
 						double x, y;
 						if(cairo_has_current_point(this->cr)){
@@ -518,7 +518,7 @@ public:
 						cairo_rel_line_to(this->cr, s.x, y);
 					}
 					break;
-				case svgdom::PathElement::Step::EType::VERTICAL_LINE_ABS:
+				case svgdom::PathElement::Step::Type_e::VERTICAL_LINE_ABS:
 					{
 						double x, y;
 						if(cairo_has_current_point(this->cr)){
@@ -529,7 +529,7 @@ public:
 						cairo_line_to(this->cr, x, s.y);
 					}
 					break;
-				case svgdom::PathElement::Step::EType::VERTICAL_LINE_REL:
+				case svgdom::PathElement::Step::Type_e::VERTICAL_LINE_REL:
 					{
 						double x, y;
 						if(cairo_has_current_point(this->cr)){
@@ -540,16 +540,16 @@ public:
 						cairo_rel_line_to(this->cr, x, s.y);
 					}
 					break;
-				case svgdom::PathElement::Step::EType::CLOSE:
+				case svgdom::PathElement::Step::Type_e::CLOSE:
 					cairo_close_path(this->cr);
 					break;
-				case svgdom::PathElement::Step::EType::CUBIC_ABS:
+				case svgdom::PathElement::Step::Type_e::CUBIC_ABS:
 					cairo_curve_to(this->cr, s.x1, s.y1, s.x2, s.y2, s.x, s.y);
 					break;
-				case svgdom::PathElement::Step::EType::CUBIC_REL:
+				case svgdom::PathElement::Step::Type_e::CUBIC_REL:
 					cairo_rel_curve_to(this->cr, s.x1, s.y1, s.x2, s.y2, s.x, s.y);
 					break;
-				case svgdom::PathElement::Step::EType::CUBIC_SMOOTH_ABS:
+				case svgdom::PathElement::Step::Type_e::CUBIC_SMOOTH_ABS:
 					ASSERT_INFO(false, "Cubic smooth is not implemented")
 //					{
 //						double x, y;
@@ -570,8 +570,8 @@ public:
 //						cairo_curve_to(this->cr, x1, y1, s.x2, s.y2, s.x, s.y);
 //					}
 					break;
-				case svgdom::PathElement::Step::EType::ARC_ABS:
-				case svgdom::PathElement::Step::EType::ARC_REL:
+				case svgdom::PathElement::Step::Type_e::ARC_ABS:
+				case svgdom::PathElement::Step::Type_e::ARC_REL:
 					{
 						real x, y;
 						if(cairo_has_current_point(this->cr)){
@@ -599,7 +599,7 @@ public:
 						{
 							real xx;
 							real yy;
-							if(s.type == svgdom::PathElement::Step::EType::ARC_ABS){
+							if(s.type == svgdom::PathElement::Step::Type_e::ARC_ABS){
 								xx = s.x - x;
 								yy = s.y - y;
 							}else{
@@ -842,7 +842,7 @@ public:
 SetTempCairoContext::SetTempCairoContext(Renderer& renderer, const svgdom::Element& e) :
 		renderer(renderer)
 {
-	if(auto p = e.getStyleProperty(svgdom::EStyleProperty::OPACITY)){
+	if(auto p = e.getStyleProperty(svgdom::StyleProperty_e::OPACITY)){
 		if(p->opacity < 1){
 			this->opacity = p->opacity;
 			this->surface = cairo_surface_create_similar_image(
