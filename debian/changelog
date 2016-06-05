@@ -1,3 +1,9 @@
+libsvgren (0.3.10) stable; urgency=medium
+
+  * add linejoin support
+
+ -- Ivan Gagis <igagis@gmail.com>  Sun, 05 Jun 2016 16:12:02 +0300
+
 libsvgren (0.3.9) stable; urgency=medium
 
   * no white background in debug build

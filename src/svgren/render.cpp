@@ -340,6 +340,25 @@ struct Renderer : public svgdom::Renderer{
 				cairo_set_line_cap(this->cr, CAIRO_LINE_CAP_BUTT);
 			}
 			
+			if(auto p = e.getStyleProperty(svgdom::StyleProperty_e::STROKE_LINEJOIN)){
+				switch(p->strokeLineJoin){
+					default:
+						ASSERT(false)
+						break;
+					case svgdom::StrokeLineJoin_e::MITER:
+						cairo_set_line_join(this->cr, CAIRO_LINE_JOIN_MITER);
+						break;
+					case svgdom::StrokeLineJoin_e::ROUND:
+						cairo_set_line_join(this->cr, CAIRO_LINE_JOIN_ROUND);
+						break;
+					case svgdom::StrokeLineJoin_e::BEVEL:
+						cairo_set_line_join(this->cr, CAIRO_LINE_JOIN_BEVEL);
+						break;
+				}
+			}else{
+				cairo_set_line_join(this->cr, CAIRO_LINE_JOIN_MITER);
+			}
+			
 			if(stroke->isUrl()){
 				this->setGradient(stroke->url);
 			}else{
