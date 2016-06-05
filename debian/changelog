@@ -1,3 +1,9 @@
+libsvgren (0.3.11) stable; urgency=medium
+
+  * fix windows build
+
+ -- Ivan Gagis <igagis@gmail.com>  Sun, 05 Jun 2016 17:33:41 +0300
+
 libsvgren (0.3.10) stable; urgency=medium
 
   * add linejoin support
