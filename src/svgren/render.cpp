@@ -913,7 +913,7 @@ std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, unsigne
 	std::vector<std::uint32_t> ret((stride / sizeof(std::uint32_t)) * height);
 	
 	for(auto& c : ret){
-#ifdef DEBUG
+#ifdef M_SVGREN_WHITE_BACKGROUND
 		c = 0xffffffff;
 #else
 		c = 0;
