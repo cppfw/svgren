@@ -182,8 +182,8 @@
     <Import Project="..\packages\libpng.redist.1.6.20.1\build\native\libpng.redist.targets" Condition="Exists('..\packages\libpng.redist.1.6.20.1\build\native\libpng.redist.targets')" />
     <Import Project="..\packages\libutki.1.0.13\build\native\libutki.targets" Condition="Exists('..\packages\libutki.1.0.13\build\native\libutki.targets')" />
     <Import Project="..\packages\libpapki.1.0.9\build\native\libpapki.targets" Condition="Exists('..\packages\libpapki.1.0.9\build\native\libpapki.targets')" />
-    <Import Project="..\packages\libsvgdom.0.2.6\build\native\libsvgdom.targets" Condition="Exists('..\packages\libsvgdom.0.2.6\build\native\libsvgdom.targets')" />
     <Import Project="..\packages\libpng.1.6.20.1\build\native\libpng.targets" Condition="Exists('..\packages\libpng.1.6.20.1\build\native\libpng.targets')" />
+    <Import Project="..\packages\libsvgdom.0.2.7\build\native\libsvgdom.targets" Condition="Exists('..\packages\libsvgdom.0.2.7\build\native\libsvgdom.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -197,7 +197,7 @@
     <Error Condition="!Exists('..\packages\libpng.redist.1.6.20.1\build\native\libpng.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libpng.redist.1.6.20.1\build\native\libpng.redist.targets'))" />
     <Error Condition="!Exists('..\packages\libutki.1.0.13\build\native\libutki.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libutki.1.0.13\build\native\libutki.targets'))" />
     <Error Condition="!Exists('..\packages\libpapki.1.0.9\build\native\libpapki.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libpapki.1.0.9\build\native\libpapki.targets'))" />
-    <Error Condition="!Exists('..\packages\libsvgdom.0.2.6\build\native\libsvgdom.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libsvgdom.0.2.6\build\native\libsvgdom.targets'))" />
     <Error Condition="!Exists('..\packages\libpng.1.6.20.1\build\native\libpng.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libpng.1.6.20.1\build\native\libpng.targets'))" />
+    <Error Condition="!Exists('..\packages\libsvgdom.0.2.7\build\native\libsvgdom.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libsvgdom.0.2.7\build\native\libsvgdom.targets'))" />
   </Target>
 </Project>
