@@ -1,3 +1,9 @@
+libsvgren (0.3.12) unstable; urgency=medium
+
+  * bintray version fix
+
+ -- Ivan Gagis <igagis@gmail.com>  Wed, 29 Jun 2016 18:03:40 +0300
+
 libsvgren (0.3.11) stable; urgency=medium
 
   * fix windows build

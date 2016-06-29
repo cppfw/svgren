@@ -6,7 +6,7 @@
 	},
 	
 	"version": {
-		"name": "all"
+		"name": "$(version)"
 	},
 
 	"files": [

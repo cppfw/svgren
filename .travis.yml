@@ -52,6 +52,9 @@ script:
     if [ -n "$TRAVIS_TAG" ]; then prorab-deploy-cocoapods.sh igagis; else echo "Skip deploying to cocoapods because not a tagged commit!!!"; fi;
   fi
 
+before_deploy:
+  - prorab-apply-version.sh `prorab-deb-version.sh debian/changelog` travis_bintray.json.in
+
 deploy:
 - provider: bintray
   skip_cleanup: true
