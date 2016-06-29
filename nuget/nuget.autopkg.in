@@ -28,25 +28,25 @@ nuget{
 		
 		[x86,release] { 
 			lib: ..\msvs_solution\Release\libsvgren.lib;
-//			symbols: ..\msvs_solution\Release\libsvgren.pdb;
+			symbols: ..\msvs_solution\libsvgren\Release\libsvgren.pdb;
 //			bin: ..\msvs_solution\Release\libsvgren.dll;
 		}
 
 		[x86,debug] { 
 			lib: ..\msvs_solution\Debug\libsvgren.lib;
-//			symbols: ..\msvs_solution\Debug\libsvgren.pdb;
+			symbols: ..\msvs_solution\libsvgren\Debug\libsvgren.pdb;
 //			bin: ..\msvs_solution\Debug\libsvgren.dll;
 		}
 
 		[x64,release] { 
 			lib: ..\msvs_solution\x64\Release\libsvgren.lib;
-//			symbols: ..\msvs_solution\x64\Release\libsvgren.pdb;
+			symbols: ..\msvs_solution\libsvgren\x64\Release\libsvgren.pdb;
 //			bin: ..\msvs_solution\x64\Release\libsvgren.dll;
 		}
 
 		[x64,debug] { 
 			lib: ..\msvs_solution\x64\Debug\libsvgren.lib;
-//			symbols: ..\msvs_solution\x64\Debug\libsvgren.pdb;
+			symbols: ..\msvs_solution\libsvgren\x64\Debug\libsvgren.pdb;
 //			bin: ..\msvs_solution\x64\Debug\libsvgren.dll;
 		}  
 	}

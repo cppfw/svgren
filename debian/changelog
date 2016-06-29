@@ -1,3 +1,9 @@
+libsvgren (0.3.13) unstable; urgency=medium
+
+  * nuget: add pdb files to package
+
+ -- Ivan Gagis <igagis@gmail.com>  Wed, 29 Jun 2016 20:46:33 +0300
+
 libsvgren (0.3.12) unstable; urgency=medium
 
   * bintray version fix
