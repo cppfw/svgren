@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1B25AC8CCF5186EA6A532080 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 03330A828C9DE311D784640E /* libPods.a */; };
 		2C0D7E871C676A09002E0FCB /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C0D7E861C676A09002E0FCB /* main.cpp */; };
 		2CEDD3C41C64CFE300DBD872 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2CEDD3C31C64CFE300DBD872 /* Assets.xcassets */; };
 		2CF1B5161C64D36300A800D1 /* render.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CF1B5151C64D36300A800D1 /* render.cpp */; };
@@ -33,7 +32,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1B25AC8CCF5186EA6A532080 /* libPods.a in Frameworks */,
 				3F0D0AEBA1381ACEF824E8A5 /* libPods-tests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
