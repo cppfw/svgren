@@ -22,7 +22,7 @@
       <itemPath>nbproject/private/launcher.properties</itemPath>
       <itemPath>cocoapods/libsvgren.podspec.in</itemPath>
       <itemPath>homebrew/libsvgren.rb.in</itemPath>
-      <itemPath>src/makefile</itemPath>
+      <itemPath>makefile</itemPath>
       <itemPath>nuget/nuget.autopkg.in</itemPath>
     </logicalFolder>
   </logicalFolder>

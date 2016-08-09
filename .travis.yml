@@ -42,7 +42,8 @@ before_install:
 
 script:
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
-    make deb;
+    prorab-deb-prepare.sh &&
+    dpkg-buildpackage -us -uc;
   fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
     make &&
