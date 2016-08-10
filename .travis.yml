@@ -48,9 +48,7 @@ script:
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
     make &&
     
-    xcodebuild -workspace ios/tests.xcworkspace -scheme tests CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO &&
-
-    if [ -n "$TRAVIS_TAG" ]; then prorab-deploy-cocoapods.sh igagis; else echo "Skip deploying to cocoapods because not a tagged commit!!!"; fi;
+    xcodebuild -workspace ios/tests.xcworkspace -scheme tests CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO;
   fi
 
 before_deploy:
@@ -70,6 +68,12 @@ deploy:
 - provider: script
   skip_cleanup: true
   script: prorab-deploy-homebrew.sh igagis/tap
+  on:
+    tags: true
+    condition: $TRAVIS_OS_NAME = osx && $CC = clang
+- provider: script
+  skip_cleanup: true
+  script: rvm 2.2.1 do prorab-deploy-cocoapods.sh igagis
   on:
     tags: true
     condition: $TRAVIS_OS_NAME = osx && $CC = clang
