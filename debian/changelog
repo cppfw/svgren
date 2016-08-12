@@ -1,3 +1,9 @@
+libsvgren (0.3.14) unstable; urgency=medium
+
+  * use old style debug symbols in msvs
+
+ -- Ivan Gagis <igagis@gmail.com>  Fri, 12 Aug 2016 13:40:11 +0300
+
 libsvgren (0.3.13) unstable; urgency=medium
 
   * nuget: add pdb files to package
