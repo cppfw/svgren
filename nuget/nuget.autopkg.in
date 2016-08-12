@@ -18,36 +18,28 @@ nuget{
 	}
 	dependencies {
 		packages : {
-			cairo_static/1.12.8.1;
-			libsvgdom/0.2.6;
-			libutki/1.0.13;
+			cairo_static/1.12.8.3;
+			libsvgdom/0.2.14;
+			libutki/1.0.22;
 		};
 	}
 	files {
 		include: { "..\src\**\*.hpp" };
-		
-		[x86,release] { 
+
+		[x86,release] {
 			lib: ..\msvs_solution\Release\libsvgren.lib;
-			symbols: ..\msvs_solution\libsvgren\Release\libsvgren.pdb;
-//			bin: ..\msvs_solution\Release\libsvgren.dll;
 		}
 
-		[x86,debug] { 
+		[x86,debug] {
 			lib: ..\msvs_solution\Debug\libsvgren.lib;
-			symbols: ..\msvs_solution\libsvgren\Debug\libsvgren.pdb;
-//			bin: ..\msvs_solution\Debug\libsvgren.dll;
 		}
 
-		[x64,release] { 
+		[x64,release] {
 			lib: ..\msvs_solution\x64\Release\libsvgren.lib;
-			symbols: ..\msvs_solution\libsvgren\x64\Release\libsvgren.pdb;
-//			bin: ..\msvs_solution\x64\Release\libsvgren.dll;
 		}
 
-		[x64,debug] { 
+		[x64,debug] {
 			lib: ..\msvs_solution\x64\Debug\libsvgren.lib;
-			symbols: ..\msvs_solution\libsvgren\x64\Debug\libsvgren.pdb;
-//			bin: ..\msvs_solution\x64\Debug\libsvgren.dll;
-		}  
+		}
 	}
 }
