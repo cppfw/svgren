@@ -1,0 +1,20 @@
+{
+	"package": {
+		"name": "libsvgren",
+		"repo": "rasp",
+		"subject": "igagis"
+	},
+	
+	"version": {
+		"name": "$(version)"
+	},
+
+	"files": [
+		{
+			"includePattern": "/tmp/rasp/(.[^/]*(\\.deb)$)",
+			"uploadPattern": "$1"
+		}
+	],
+	"publish": true,
+	"override": false
+}
