@@ -14,7 +14,7 @@ nuget{
 		description: @"C++ SVG rendering library";
 		releaseNotes: "Initial release";
 		copyright: Copyright 2015 Ivan Gagis;
-		tags: { native};
+		tags: {native};
 	}
 	dependencies {
 		packages : {
@@ -24,7 +24,11 @@ nuget{
 		};
 	}
 	files {
-		include: { "..\src\**\*.hpp" };
+		//this is needed to put headers in the base folder
+		nestedInclude: {
+			#destination = ${d_include}svgdom;
+			"..\src\svgren\**\*.hpp"
+		};
 
 		[x86,release] {
 			lib: ..\msvs_solution\Release\libsvgren.lib;
