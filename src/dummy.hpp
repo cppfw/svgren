@@ -1,1 +1,0 @@
-This is a dummy file for NuGet to keep the subdirectory in the package
