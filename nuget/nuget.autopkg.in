@@ -26,7 +26,7 @@ nuget{
 	files {
 		//this is needed to put headers in the base folder
 		nestedInclude: {
-			#destination = ${d_include}svgdom;
+			#destination = ${d_include}svgren;
 			"..\src\svgren\**\*.hpp"
 		};
 

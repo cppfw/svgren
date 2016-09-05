@@ -1,3 +1,9 @@
+libsvgren (0.3.18) unstable; urgency=medium
+
+  * nuget correction
+
+ -- Ivan Gagis <igagis@gmail.com>  Mon, 05 Sep 2016 16:17:32 +0300
+
 libsvgren (0.3.17) unstable; urgency=medium
 
   * removing dummy.hpp
