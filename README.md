@@ -15,3 +15,6 @@ SVG renderer library in C++.
 
 # Installation and Tutorials
 Read [WiKi](wiki/MainPage.md) for installation instructions and tutorials.
+
+# Questions
+In case of questions, please submit those as [Issue](https://github.com/igagis/svgren/issues).
