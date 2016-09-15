@@ -56,6 +56,8 @@ int main(int argc, char **argv){
 	unsigned imHeight = 0;
 	auto img = svgren::render(*dom, imWidth, imHeight);
 	
+        TRACE(<< "imWidth = " << imWidth << " imHeight = " << imHeight << " img.size() = " << img.size() << std::endl)
+        
 	for(auto& c : img){
 		c = (c & 0xff00ff00) | ((c << 16) & 0xff0000) | ((c >> 16) & 0xff);
 	}
