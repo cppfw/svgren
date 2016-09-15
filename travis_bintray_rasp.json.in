@@ -12,7 +12,12 @@
 	"files": [
 		{
 			"includePattern": "/tmp/rasp/(.[^/]*(\\.deb)$)",
-			"uploadPattern": "$1"
+			"uploadPattern": "$1",
+			"matrixParams": {
+				"deb_distribution": "unstable",
+				"deb_component": "main",
+				"deb_architecture": "armhf"
+			}
 		}
 	],
 	"publish": true,
