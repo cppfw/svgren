@@ -1,5 +1,5 @@
 Source: libsvgren
-Section: misc
+Section: libs
 Priority: extra
 Maintainer: Ivan Gagis <igagis@gmail.com>
 Build-Depends: debhelper (>= 9), prorab,
@@ -15,14 +15,14 @@ Description: cross-platform C++ SVG rendering library.
  SVG rendering library.
 
 Package: libsvgren$(soname)-dbg
-Section: libdevel
+Section: debug
 Architecture: any
 Depends: libsvgren$(soname) (= ${binary:Version}), ${misc:Depends}
 Description: debugging symbols for libsvgren$(soname) package.
 
 Package: libsvgren-dev
-Section: devel
-Architecture: all
+Section: libdevel
+Architecture: any
 Depends: libsvgren$(soname) (= ${binary:Version}), libsvgren$(soname)-dbg (= ${binary:Version}), ${misc:Depends},
 		libsvgdom-dev
 Suggests: libsvgren-doc
@@ -30,7 +30,7 @@ Description: cross-platform C++ SVG rendering library.
  SVG rendering library.
 
 Package: libsvgren-doc
-Section: devel
+Section: doc
 Architecture: all
 Depends: ${misc:Depends}
 Description: documentation for libsvgren library.

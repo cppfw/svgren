@@ -19,6 +19,7 @@
       <itemPath>ios/Podfile</itemPath>
       <itemPath>appveyor.yml</itemPath>
       <itemPath>debian/changelog</itemPath>
+      <itemPath>debian/control.in</itemPath>
       <itemPath>nbproject/private/launcher.properties</itemPath>
       <itemPath>cocoapods/libsvgren.podspec.in</itemPath>
       <itemPath>homebrew/libsvgren.rb.in</itemPath>

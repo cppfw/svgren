@@ -39,7 +39,7 @@ before_install:
 - if [ "$BUILD_NAME" == "macosx" ]; then
     brew tap igagis/tap &&
     brew update > /dev/null &&
-    brew install prorab libutki libpapki pugixml;
+    brew install prorab libutki libsvgdom;
   fi
 - if [ "$BUILD_NAME" == "ios" ]; then
     brew tap igagis/tap &&
