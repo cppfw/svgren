@@ -939,6 +939,10 @@ std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, unsigne
 #endif
 	}
 	
+	utki::ScopeExit scopeExitCairoReset([]{
+		cairo_debug_reset_static_data();
+	});
+	
 	cairo_surface_t* surface = cairo_image_surface_create_for_data(
 			reinterpret_cast<unsigned char*>(&*ret.begin()),
 			CAIRO_FORMAT_ARGB32,
