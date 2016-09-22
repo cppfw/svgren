@@ -1,3 +1,9 @@
+libsvgren (0.3.21) unstable; urgency=medium
+
+  * disable whole program optimization in MSVC
+
+ -- Ivan Gagis <igagis@gmail.com>  Thu, 22 Sep 2016 16:51:50 +0300
+
 libsvgren (0.3.20) unstable; urgency=medium
 
   * cairo memory leaks fixed
