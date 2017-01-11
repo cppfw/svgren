@@ -41,6 +41,7 @@ before_install:
     brew update > /dev/null &&
     brew install prorab libutki libsvgdom cairo;
   fi
+# Force bundler 1.12.5 because version 1.13 has issues, see https://github.com/fastlane/fastlane/issues/6065#issuecomment-246044617
 - if [ "$BUILD_NAME" == "ios" ]; then
     brew tap igagis/tap &&
     brew update > /dev/null &&
@@ -48,6 +49,10 @@ before_install:
 
     rvm install ruby-2.2.2 &&
     rvm use ruby-2.2.2 &&
+    
+    gem uninstall bundler -v '>1.12.5' --force || echo "bundler >1.12.5 is not installed" &&
+    gem install bundler -v 1.12.5 --no-rdoc --no-ri --no-document --quiet &&
+    
     sudo gem install cocoapods &&
     pod repo add --silent igagis https://$PRORAB_GIT_USERNAME:$PRORAB_GIT_ACCESS_TOKEN@github.com/igagis/cocoapods-repo.git &&
     pod install --project-directory=ios;
