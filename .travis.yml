@@ -165,7 +165,7 @@ deploy:
     condition: $BUILD_NAME = macosx
 - provider: script
   skip_cleanup: true
-  script: rvm 2.2.1 do prorab-deploy-cocoapods.sh igagis
+  script: rvm 2.2.1 do prorab-deploy-cocoapods.sh -r igagis
   on:
     tags: true
     condition: $BUILD_NAME = ios
