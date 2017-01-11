@@ -285,14 +285,24 @@ struct Renderer : public svgdom::Renderer{
 					cairo_set_fill_rule(this->cr, CAIRO_FILL_RULE_WINDING);
 					break;
 			}
+		}else{
+			cairo_set_fill_rule(this->cr, CAIRO_FILL_RULE_EVEN_ODD);
 		}
 		
+		svgdom::StylePropertyValue blackFill;
+		
 		auto fill = e.getStyleProperty(svgdom::StyleProperty_e::FILL);
+		if(!fill){
+			blackFill = svgdom::StylePropertyValue::parsePaint("black");
+			fill = &blackFill;
+		}
+		
 		auto stroke = e.getStyleProperty(svgdom::StyleProperty_e::STROKE);
 		
 		this->updateCurBoundingBox();
 		
-		if(fill && !fill->isNone()){
+		ASSERT(fill)
+		if(!fill->isNone()){
 			if(fill->isUrl()){
 				this->setGradient(fill->url);
 			}else{
