@@ -1,3 +1,9 @@
+libsvgren (0.3.22) unstable; urgency=medium
+
+  * setting default fill style to black color
+
+ -- Ivan Gagis <igagis@gmail.com>  Wed, 11 Jan 2017 14:14:09 +0200
+
 libsvgren (0.3.21) unstable; urgency=medium
 
   * disable whole program optimization in MSVC
