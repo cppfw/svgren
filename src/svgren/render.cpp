@@ -388,10 +388,11 @@ struct Renderer : public svgdom::Renderer{
 	}
 	
 public:
-	Renderer(cairo_t* cr, real dpi) :
+	Renderer(cairo_t* cr, real dpi, std::array<real, 2> canvasSize) :
 			cr(cr),
 			dpi(dpi)
 	{
+		this->viewportStack.push_back(canvasSize);
 //		cairo_set_operator(this->cr, CAIRO_OPERATOR_ATOP);
 //		cairo_set_operator(this->cr, CAIRO_OPERATOR_SOURCE);
 	}
@@ -916,18 +917,33 @@ SetTempCairoContext::~SetTempCairoContext()noexcept{
 std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, unsigned& width, unsigned& height, real dpi, bool bgra){
 	auto w = unsigned(svg.width.toPx(dpi));
 	auto h = unsigned(svg.height.toPx(dpi));
+
+	if(w == 0 && svg.viewBox[2] > 0){
+		w = unsigned(svg.viewBox[2]);
+	}
 	
-	if(w <= 0 || h <= 0){
+	if(h == 0 && svg.viewBox[3] > 0){
+		h = unsigned(svg.viewBox[3]);
+	}
+	
+	if(w == 0 || h == 0){
 		return std::vector<std::uint32_t>();
 	}
-
-	if(width == 0 && height != 0){
-		width = unsigned(svg.aspectRatio(dpi) * real(height));
-	}else if(width != 0 && height == 0){
-		height = unsigned(real(width) / svg.aspectRatio(dpi));
-	}else if(width == 0 && height == 0){
+	
+	if(width == 0 && height == 0){
 		width = w;
 		height = h;
+	}else{
+		real aspectRatio = svg.aspectRatio(dpi);
+		if (aspectRatio == 0){
+			return std::vector<std::uint32_t>();
+		}
+		ASSERT(aspectRatio > 0)
+		if(width == 0 && height != 0){
+			width = unsigned(aspectRatio * real(height));
+		}else if(width != 0 && height == 0){
+			height = unsigned(real(width) / aspectRatio);
+		}
 	}
 	
 	ASSERT(width != 0)
@@ -979,7 +995,7 @@ std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, unsigne
 	
 	cairo_scale(cr, real(width) / real(w), real(height) / real(h));
 	
-	Renderer r(cr, dpi);
+	Renderer r(cr, dpi, {{real(w), real(h)}});
 	
 	svg.render(r);
 	
