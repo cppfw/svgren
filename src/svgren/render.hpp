@@ -23,8 +23,9 @@ namespace svgren{
  *                 If 0 then height is taken from SVG document trying to preserve aspect ratio.
  *                 Resulting image height is returned via this reference argument.
  * @param dpi - dots per inch to use for units conversion to pixels.
+ * @param bgra - indicates if the output format is BGRA or RGBA. Default is RGBA.
  * @return An array of RGBA values representing the resulting raster image.
  */
-std::vector<std::uint32_t> render(const svgdom::SvgElement& svg, unsigned& width, unsigned& height, real dpi = 96);
+std::vector<std::uint32_t> render(const svgdom::SvgElement& svg, unsigned& width, unsigned& height, real dpi = 96, bool bgra = false);
 
 }//~namespace
