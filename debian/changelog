@@ -1,3 +1,9 @@
+libsvgren (0.4.4) unstable; urgency=medium
+
+  * color clamping when unpremultiplying alpha
+
+ -- Ivan Gagis <igagis@gmail.com>  Fri, 13 Jan 2017 16:57:07 +0200
+
 libsvgren (0.4.3) unstable; urgency=medium
 
   * unpremultiply alpha, divide by zero fix
