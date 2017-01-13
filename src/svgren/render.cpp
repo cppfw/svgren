@@ -1009,10 +1009,14 @@ std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, unsigne
 	//unpremultiply alpha
 	for(auto &c : ret){
 		std::uint32_t a = (c >> 24);
-		std::uint32_t r = (c & 0xff) * 0xff / a;
-		std::uint32_t g = ((c >> 8) & 0xff) * 0xff / a;
-		std::uint32_t b = ((c >> 16) & 0xff) * 0xff / a;
-		c = ((a << 24) | (b << 16) | (g << 8) | r);
+		if(a != 0){
+			std::uint32_t r = (c & 0xff) * 0xff / a;
+			std::uint32_t g = ((c >> 8) & 0xff) * 0xff / a;
+			std::uint32_t b = ((c >> 16) & 0xff) * 0xff / a;
+			c = ((a << 24) | (b << 16) | (g << 8) | r);
+		}else{
+			c = 0;
+		}
 	}
 	
 	return ret;
