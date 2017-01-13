@@ -1001,6 +1001,9 @@ std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, unsigne
 	//unpremultiply alpha
 	for(auto &c : ret){
 		std::uint32_t a = (c >> 24);
+		if(a == 0xff){
+			continue;
+		}
 		if(a != 0){
 			std::uint32_t r = (c & 0xff) * 0xff / a;
 			utki::clampTop(r, std::uint32_t(0xff));

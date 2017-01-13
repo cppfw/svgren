@@ -1,3 +1,9 @@
+libsvgren (0.4.5) unstable; urgency=medium
+
+  * small optimization to unpremultiplying alpha
+
+ -- Ivan Gagis <igagis@gmail.com>  Fri, 13 Jan 2017 17:16:20 +0200
+
 libsvgren (0.4.4) unstable; urgency=medium
 
   * color clamping when unpremultiplying alpha
