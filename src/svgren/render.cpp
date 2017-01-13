@@ -1,13 +1,7 @@
-/* 
- * File:   render.cpp
- * Author: ivan
- * 
- * Created on October 12, 2015, 11:04 PM
- */
-
 #include <utki/config.hpp>
+#include <utki/util.hpp>
 
-#include "render.hpp"
+#include <svgdom/dom.hpp>
 
 #include <cmath>
 
@@ -17,9 +11,7 @@
 #	include <cairo/cairo.h>
 #endif
 
-#include <utki/util.hpp>
-
-#include <svgdom/dom.hpp>
+#include "render.hpp"
 
 #include "config.hpp"
 
@@ -1011,8 +1003,11 @@ std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, unsigne
 		std::uint32_t a = (c >> 24);
 		if(a != 0){
 			std::uint32_t r = (c & 0xff) * 0xff / a;
+			utki::clampTop(r, std::uint32_t(0xff));
 			std::uint32_t g = ((c >> 8) & 0xff) * 0xff / a;
+			utki::clampTop(g, std::uint32_t(0xff));
 			std::uint32_t b = ((c >> 16) & 0xff) * 0xff / a;
+			utki::clampTop(b, std::uint32_t(0xff));
 			c = ((a << 24) | (b << 16) | (g << 8) | r);
 		}else{
 			c = 0;
