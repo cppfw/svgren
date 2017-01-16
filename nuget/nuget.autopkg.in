@@ -18,9 +18,9 @@ nuget{
 	}
 	dependencies {
 		packages : {
-			cairo_static/1.12.8.3;
-			libsvgdom/0.2.14;
-			libutki/1.0.22;
+			cairo_static/1.15.4.1;
+			libsvgdom/0.2.25;
+			libutki/1.0.30;
 		};
 	}
 	files {

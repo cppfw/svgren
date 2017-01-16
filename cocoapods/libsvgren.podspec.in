@@ -6,12 +6,12 @@ Pod::Spec.new do |s|
   s.license      = 'MIT'
   s.author       = { "Ivan Gagis" => "igagis@gmail.com" }
   s.platform     = :ios, "7.0"
-  
+
   s.source = { :git => "https://github.com/igagis/svgren.git", :tag => s.version }
 
   s.source_files  = "src/**/*.{hpp,cpp}"
   s.header_mappings_dir = "src"
 
-  s.dependency 'libsvgdom', '>= 0.2.2'
+  s.dependency 'libsvgdom', '>= 0.2.25'
   s.dependency 'libcairo', '>= 1.12.8'
 end
