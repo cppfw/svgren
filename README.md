@@ -18,6 +18,3 @@ Read [WiKi](wiki/MainPage.md) for installation instructions and tutorials.
 
 # Questions
 In case of questions, please submit those as [Issue](https://github.com/igagis/svgren/issues).
-
-# Donate
-[<img src="https://s3.amazonaws.com/patreon_public_assets/toolbox/patreon.png" width="200" alt="patreon"/>](https://patreon.com/igagis)
