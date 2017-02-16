@@ -1,3 +1,9 @@
+libsvgren (0.4.6) unstable; urgency=medium
+
+  * build for raspberry pi to link against latest binary libraries
+
+ -- Ivan Gagis <igagis@gmail.com>  Thu, 16 Feb 2017 16:47:52 +0200
+
 libsvgren (0.4.5) unstable; urgency=medium
 
   * small optimization to unpremultiplying alpha
