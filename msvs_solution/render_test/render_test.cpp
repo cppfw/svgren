@@ -34,12 +34,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(lpCmdLine);
 
     // TODO: Place code here.
-	auto dom = svgdom::load(papki::FSFile("interface-ethernet.svg"));
+	auto dom = svgdom::load(papki::FSFile("tiger.svg"));
 	ASSERT_ALWAYS(dom)
 
 	unsigned imWidth = 0;
 	unsigned imHeight = 0;
-	auto img = svgren::render(*dom, imWidth, imHeight);
+	auto img = svgren::render(*dom, imWidth, imHeight, 96, true);
 
 	bmp = CreateBitmap(imWidth, imHeight, 1, 32, &*img.begin());
 	ASSERT_ALWAYS(bmp != NULL)
