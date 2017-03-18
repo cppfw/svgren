@@ -530,15 +530,7 @@ public:
 					}
 					break;
 				case svgdom::PathElement::Step::Type_e::HORIZONTAL_LINE_REL:
-					{
-						double x, y;
-						if(cairo_has_current_point(this->cr)){
-							cairo_get_current_point(this->cr, &x, &y);
-						}else{
-							y = 0;
-						}
-						cairo_rel_line_to(this->cr, s.x, y);
-					}
+					cairo_rel_line_to(this->cr, s.x, 0);
 					break;
 				case svgdom::PathElement::Step::Type_e::VERTICAL_LINE_ABS:
 					{
@@ -552,15 +544,7 @@ public:
 					}
 					break;
 				case svgdom::PathElement::Step::Type_e::VERTICAL_LINE_REL:
-					{
-						double x, y;
-						if(cairo_has_current_point(this->cr)){
-							cairo_get_current_point(this->cr, &x, &y);
-						}else{
-							x = 0;
-						}
-						cairo_rel_line_to(this->cr, x, s.y);
-					}
+					cairo_rel_line_to(this->cr, 0, s.y);
 					break;
 				case svgdom::PathElement::Step::Type_e::CLOSE:
 					cairo_close_path(this->cr);

@@ -30,8 +30,8 @@ void processEvent(Display *display, Window window, XImage *ximage, int width, in
 #endif
 
 int main(int argc, char **argv){
-	auto dom = svgdom::load(papki::FSFile("interface-ethernet.svg"));
-//	auto dom = svgdom::load(papki::FSFile("button-add-viewbox.svg"));
+	auto dom = svgdom::load(papki::FSFile("test.svg"));
+//	auto dom = svgdom::load(papki::FSFile("rect.svg"));
 	
 	ASSERT_ALWAYS(dom)
 	
