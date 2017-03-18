@@ -30,9 +30,9 @@ matrix:
     - os: linux
       env: BUILD_NAME=raspberry_pi
       compiler: gcc
-    - os: linux
-      env: BUILD_NAME=clang
-      compiler: clang
+#    - os: linux
+#      env: BUILD_NAME=clang
+#      compiler: clang
 
 
 before_install:
