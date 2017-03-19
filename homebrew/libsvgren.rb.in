@@ -6,6 +6,8 @@ class Libsvgren < Formula
 
   depends_on "prorab" => :build
   depends_on "cairo" => :build
+  depends_on "libkolme" => :build
+  depends_on "libpng" => :build
   depends_on "libsvgdom"
   depends_on "libutki"
 
