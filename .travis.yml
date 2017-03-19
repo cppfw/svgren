@@ -117,7 +117,8 @@ script:
     dpkg-buildpackage -uc -us;
   fi
 - if [ "$BUILD_NAME" == "macosx" ]; then
-    make;
+    make &&
+    make test;
   fi
 - if [ "$BUILD_NAME" == "ios" ]; then
     xcodebuild -workspace ios/tests.xcworkspace -scheme tests CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO;
