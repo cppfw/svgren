@@ -349,7 +349,7 @@ int main(int argc, char** argv) {
 			;
 
 		if(pixel != img[i]){
-			std::cout << "Error: PNG pixel (0x" << std::hex << pixel << ") did not match SVG pixel (0x" << img[i] << ")" << std::endl;
+			std::cout << "Error: PNG pixel #" << std::dec << i << " (0x" << std::hex << pixel << ") did not match SVG pixel (0x" << img[i] << ")" << std::endl;
 			return 1;
 		}
 	}

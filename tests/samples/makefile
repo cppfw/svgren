@@ -24,12 +24,6 @@ endif
 
 $(eval $(prorab-build-app))
 
-#add dependency on libsvgren
-$(prorab_this_name): $(abspath $(d)../../src/libsvgren$(prorab_lib_extension))
-
-$(eval $(call prorab-include,$(d)../../src/makefile))
-
-
 this_svgs := $(patsubst %.svg,%,$(shell ls $(d)testdata/*.svg))
 
 define this_rules
@@ -43,3 +37,9 @@ test:: $(prorab_this_name)
 	@prorab-passed.sh
 endef
 $(eval $(this_rules))
+
+
+#add dependency on libsvgren
+$(prorab_this_name): $(abspath $(d)../../src/libsvgren$(prorab_lib_extension))
+
+$(eval $(call prorab-include,$(d)../../src/makefile))
