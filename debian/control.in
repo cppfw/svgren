@@ -4,7 +4,7 @@ Priority: extra
 Maintainer: Ivan Gagis <igagis@gmail.com>
 Build-Depends: debhelper (>= 9), prorab,
 		libc6-dev, libutki-dev, libsvgdom-dev, libcairo2-dev,
-		libkolme-dev, libpng-dev #needed for tests
+		libkolme-dev, libpng-dev
 Build-Depends-Indep: doxygen
 Standards-Version: 3.9.2
 
