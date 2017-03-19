@@ -21,7 +21,7 @@ void processEvent(Display *display, Window window, XImage *ximage, int width, in
 	switch(ev.type)
 	{
 	case Expose:
-		XPutImage(display, window, DefaultGC(display, 0), ximage, 0, 0, 0, 0, width, height);
+		XPutImage(display, window, DefaultGC(display, 0), ximage, 0, 0, 1, 1, width, height);
 		break;
 	case ButtonPress:
 		exit(0);
@@ -30,8 +30,7 @@ void processEvent(Display *display, Window window, XImage *ximage, int width, in
 #endif
 
 int main(int argc, char **argv){
-	auto dom = svgdom::load(papki::FSFile("test.svg"));
-//	auto dom = svgdom::load(papki::FSFile("rect.svg"));
+	auto dom = svgdom::load(papki::FSFile("../samples/testdata/sample1.svg"));
 	
 	ASSERT_ALWAYS(dom)
 	
@@ -55,10 +54,16 @@ int main(int argc, char **argv){
 	
 	unsigned imWidth = 0;
 	unsigned imHeight = 0;
-	auto img = svgren::render(*dom, imWidth, imHeight);
+	auto img = svgren::render(*dom, imWidth, imHeight, 96, false);
 	
 	TRACE(<< "imWidth = " << imWidth << " imHeight = " << imHeight << " img.size() = " << img.size() << std::endl)
-        
+
+	{
+		papki::FSFile file("out.data");
+		papki::File::Guard guard(file, papki::File::E_Mode::CREATE);
+		file.write(utki::Buf<std::uint8_t>(reinterpret_cast<std::uint8_t*>(&*img.begin()), img.size() * 4));
+	}
+
 	for(auto& c : img){
 		c = (c & 0xff00ff00) | ((c << 16) & 0xff0000) | ((c >> 16) & 0xff);
 	}
