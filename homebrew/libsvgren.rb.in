@@ -13,10 +13,10 @@ class Libsvgren < Formula
 
   def install
     ENV['PATH'] += ':/usr/local/bin'
-    system "make", "-f", "src/makefile", "install", "PREFIX=#{prefix}"
+    system "make", "-C", "src", "install", "PREFIX=#{prefix}"
   end
 
-  #test do
-  #  system "make", "test"
-  #end
+  test do
+    system "make", "test"
+  end
 end
