@@ -27,7 +27,7 @@ real pointAngle(real cx, real cy, real px, real py){
     return std::atan2(py - cy, px - cx);
 }
 
-//Rotate a point of an angle around the origin point.
+//Rotate a point by an angle around the origin point.
 std::tuple<real, real> rotate(real x, real y, real angle){
     return std::make_tuple(x * std::cos(angle) - y * std::sin(angle), y * std::cos(angle) + x * std::sin(angle));
 }
@@ -111,7 +111,7 @@ struct Renderer : public svgdom::Renderer{
 					break;
 				case svgdom::Transformable::Transformation::Type_e::ROTATE:
 					cairo_translate(this->cr, t.x, t.y);
-					cairo_rotate(this->cr, t.angle);
+					cairo_rotate(this->cr, degToRad(t.angle));
 					cairo_translate(this->cr, -t.x, -t.y);
 					break;
 				case svgdom::Transformable::Transformation::Type_e::SKEWX:

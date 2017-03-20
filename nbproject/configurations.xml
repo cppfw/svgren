@@ -80,7 +80,9 @@
         <ccTool flags="1">
         </ccTool>
       </item>
-      <item path="tests/samples/checksvg.cpp" ex="false" tool="1" flavor2="0">
+      <item path="tests/samples/checksvg.cpp" ex="false" tool="1" flavor2="8">
+        <ccTool flags="1">
+        </ccTool>
       </item>
     </conf>
     <conf name="Release" type="0">
