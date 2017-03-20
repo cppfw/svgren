@@ -1,3 +1,9 @@
+libsvgren (0.4.9) unstable; urgency=medium
+
+  * bugfix #10: rotation angle is in degrees
+
+ -- Ivan Gagis <igagis@gmail.com>  Mon, 20 Mar 2017 10:37:02 +0200
+
 libsvgren (0.4.8) unstable; urgency=medium
 
   * bugfix: horizontal and vertical relative lines are now rendered
