@@ -1,6 +1,6 @@
-#Installation in Linux
+# Installation in Linux
 
-##Using Debian packet manager
+## Using Debian packet manager
 - Add the repo to your sources (needs to be done once):
 
   **Debian**
