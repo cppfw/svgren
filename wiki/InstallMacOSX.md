@@ -1,4 +1,4 @@
-#Installation in MacOS X
+# Installation in MacOS X
 
 Installation in MacOS X requires **[homebrew](http://brew.sh/)** package manager. Install it before proceeding.
 
