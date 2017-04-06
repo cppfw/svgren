@@ -1,6 +1,6 @@
-#Installation in iOS and xCode
+# Installation in iOS and xCode
 
-##Using cocoapods dependency manager
+## Using cocoapods dependency manager
 - install **cocoapods**, see http://cocoapods.org for instructions.
 
 - in the Podfile add source repo:
