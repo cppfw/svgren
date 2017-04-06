@@ -1,4 +1,4 @@
-#WiKi main page
+# WiKi main page
 
 Istallation:
 - [Windows (Visual Studio 2015)](InstallMSVS.md)
