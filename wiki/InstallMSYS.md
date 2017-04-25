@@ -1,6 +1,6 @@
-#Installation in Windows
+# Installation in Windows
 
-##MSYS environment
+## MSYS environment
 
 - Download latest sources from **[here](https://github.com/igagis/svgren/releases)** and unpack it.
 
