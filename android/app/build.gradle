@@ -1,0 +1,106 @@
+apply plugin: 'com.android.model.application'
+
+
+model {
+
+    repositories {
+        libs(PrebuiltLibraries) {
+        }
+    }
+
+    android {
+        compileSdkVersion = 25
+        buildToolsVersion = '25.0.2'
+
+        defaultConfig{
+            applicationId = "io.github.igagis.svgrentests"
+            minSdkVersion.apiLevel = 9
+            targetSdkVersion.apiLevel = 9
+            versionCode = 1
+            versionName = '1.0'
+        }
+
+        ndk {
+            platformVersion = 21
+            moduleName = 'svgren-tests'
+            toolchain = 'clang'
+            stl = 'c++_shared'
+            cppFlags.add("-std=c++11")
+            cppFlags.add("-fexceptions")
+            cppFlags.add("-frtti")
+            cppFlags.add("-I" + projectDir.getAbsolutePath() + "/build/ndkLibs/include")
+            ldLibs.addAll(['android', 'log'])
+            // build a default combined apk including all ABIs.
+            // abiFilters.addAll(['x86'])
+        }
+
+        sources {
+            main {
+                jni {
+                    dependencies {
+                        project ":libsvgren" linkage "static"
+                    }
+                    source {
+                        srcDirs '../../tests'
+                        exclude('**/main.cpp')
+                        exclude('**/checksvg.cpp')
+                    }
+                }
+                jniLibs {
+                    // for shared lib, lib need to be pushed to the target too
+                    // Once libs are copied into app/src/main/jniLibs directory,
+                    // Android Studio will pack them into APK's lib/ directory
+                    // Here we like to avoid another duplication by pointing
+                    // to the files that containing our libs' distribution location
+                    // so the same file is used by compiler at host, also packed
+                    // into APk to be used at Target (phone/tablet)
+                    source {
+                    }
+                }
+            }
+        }
+        buildTypes {
+            release {
+                minifyEnabled false
+                proguardFiles.add(file('proguard-rules.pro'))
+            }
+        }
+    }
+
+    android.lintOptions {
+        abortOnError false
+    }
+}
+
+repositories {
+    maven {
+        url 'https://dl.bintray.com/igagis/android/'
+    }
+}
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+//    compile 'io.github.igagis:libutki:+'
+//    compile 'io.github.igagis:libpapki:+'
+//    compile 'io.github.igagis:libunikod:+'
+}
+
+
+
+task extractNDKLibs {
+    doLast {
+        configurations.compile.each {
+            def file = it.absoluteFile
+            copy {
+                from zipTree(file)
+                into "build/"
+                include "ndkLibs/**/*"
+            }
+        }
+    }
+}
+build.dependsOn('extractNDKLibs')
+tasks.whenTaskAdded { task ->
+    if (task.name.startsWith('compile')) {
+        task.dependsOn('extractNDKLibs')
+    }
+}

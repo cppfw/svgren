@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>io.github.igagis</groupId>
+  <artifactId>libsvgren</artifactId>
+  <version>$(version)</version>
+  <packaging>aar</packaging>
+  <dependencies>
+	  <dependency>
+		  <groupId>io.github.igagis</groupId>
+		  <artifactId>libutki</artifactId>
+		  <version>[1.1.7,)</version>
+		  <type>aar</type>
+		  <scope>compile</scope>
+	  </dependency>
+	  <dependency>
+		  <groupId>io.github.igagis</groupId>
+		  <artifactId>libsvgdom</artifactId>
+		  <version>[0.2.30,)</version>
+		  <type>aar</type>
+		  <scope>compile</scope>
+	  </dependency>
+	  <dependency>
+		  <groupId>org.cairographics</groupId>
+		  <artifactId>cairo</artifactId>
+		  <version>[1.15.4,)</version>
+		  <type>aar</type>
+		  <scope>compile</scope>
+	  </dependency>
+  </dependencies>
+</project>

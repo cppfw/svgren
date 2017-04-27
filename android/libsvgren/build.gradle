@@ -1,0 +1,134 @@
+apply plugin: "com.android.model.library"
+
+
+model {
+    android {
+        compileSdkVersion = 25
+        buildToolsVersion = '25.0.2'
+
+        defaultConfig {
+            minSdkVersion.apiLevel = 9
+            targetSdkVersion.apiLevel = 9
+            versionCode = 1
+            versionName = '1.0'
+        }
+        ndk {
+            platformVersion = 21
+            moduleName = "svgren"
+            toolchain = 'clang'
+            abiFilters.addAll(['armeabi', 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64', 'mips', 'mips64']) //this is default
+            ldLibs.addAll(['android', 'log', 'svgdom', 'papki', 'cairo', 'pixman', 'pugixml', 'c++'])
+            stl = 'c++_static'
+            cppFlags.add("-std=c++11")
+            cppFlags.add("-fexceptions")
+            cppFlags.add("-frtti")
+            cppFlags.add("-I" + projectDir.getAbsolutePath() + "/build/ndkLibs/include")
+        }
+        abis {
+            create("armeabi") {
+                ldFlags.add("-L" + projectDir.getAbsolutePath() + "/build/ndkLibs/armeabi")
+            }
+            create("armeabi-v7a") {
+                ldFlags.add("-L" + projectDir.getAbsolutePath() + "/build/ndkLibs/armeabi-v7a")
+            }
+            create("arm64-v8a") {
+                ldFlags.add("-L" + projectDir.getAbsolutePath() + "/build/ndkLibs/arm64-v8a")
+            }
+            create("x86") {
+                ldFlags.add("-L" + projectDir.getAbsolutePath() + "/build/ndkLibs/x86")
+            }
+            create("x86_64") {
+                ldFlags.add("-L" + projectDir.getAbsolutePath() + "/build/ndkLibs/x86_64")
+            }
+            create("mips") {
+                ldFlags.add("-L" + projectDir.getAbsolutePath() + "/build/ndkLibs/mips")
+            }
+            create("mips64") {
+                ldFlags.add("-L" + projectDir.getAbsolutePath() + "/build/ndkLibs/mips64")
+            }
+        }
+    }
+
+    android.lintOptions {
+        abortOnError false
+    }
+
+    android.sources {
+        main {
+            jni {
+                exportedHeaders {
+                    srcDir "../../src/"
+                }
+                source {
+                    srcDirs '../../src'
+                }
+            }
+        }
+    }
+}
+
+repositories {
+    maven {
+        url 'https://dl.bintray.com/igagis/android/'
+    }
+}
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'io.github.igagis:libutki:+'
+    compile 'io.github.igagis:libsvgdom:+'
+    compile 'org.cairographics:cairo:+'
+}
+
+
+//===================================
+//=== Extract NDK files from AARs ===
+
+task extractNDKLibs {
+    doLast {
+        configurations.compile.each {
+            def file = it.absoluteFile
+            copy {
+                from zipTree(file)
+                into "build/"
+                include "ndkLibs/**/*"
+            }
+        }
+    }
+}
+build.dependsOn('extractNDKLibs')
+tasks.whenTaskAdded { task ->
+    if (task.name.startsWith('compile')) {
+        task.dependsOn('extractNDKLibs')
+    }
+}
+
+
+
+//=================================
+//=== pack library files to aar ===
+
+
+def aarName = name
+
+task copyNdkLibsToAAR(type: Zip) {
+    baseName = aarName
+    version = "\$(version)"
+    extension = 'aar.in'
+    destinationDir = file('..') //put resulting AAR file to upper level directory
+
+    from zipTree("build/outputs/aar/" + aarName + "-release.aar")
+    exclude('**/*.so') //do not include shared libraries into final AAR
+    from("../../src") {
+        exclude('makefile')
+        exclude('soname.txt')
+        exclude('**/*.cpp')
+        exclude('**/*.c')
+        into('ndkLibs/include')
+    }
+    from("build/intermediates/binaries/debug/lib"){
+        include('**/*.a')
+        into('ndkLibs')
+    }
+}
+
+build.finalizedBy('copyNdkLibsToAAR')
