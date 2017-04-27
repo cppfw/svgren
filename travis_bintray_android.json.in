@@ -1,0 +1,24 @@
+{
+	"package": {
+		"name": "libsvgren",
+		"repo": "android",
+		"subject": "igagis"
+	},
+	
+	"version": {
+		"name": "$(version)"
+	},
+
+	"files": [
+		{
+			"includePattern": "android/(.[^/]*(\\.aar)$)",
+			"uploadPattern": "io/github/igagis/libsvgren/$(version)/$1"
+		},
+		{
+			"includePattern": "android/(.[^/]*(\\.pom)$)",
+			"uploadPattern": "io/github/igagis/libsvgren/$(version)/$1"
+		}
+	],
+	"publish": true,
+	"override": false
+}

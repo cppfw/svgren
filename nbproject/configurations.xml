@@ -24,10 +24,12 @@
       <itemPath>debian/changelog</itemPath>
       <itemPath>debian/control.in</itemPath>
       <itemPath>nbproject/private/launcher.properties</itemPath>
+      <itemPath>android/libsvgren-$(version).pom.in</itemPath>
       <itemPath>cocoapods/libsvgren.podspec.in</itemPath>
       <itemPath>homebrew/libsvgren.rb.in</itemPath>
       <itemPath>makefile</itemPath>
       <itemPath>nuget/nuget.autopkg.in</itemPath>
+      <itemPath>travis_bintray_android.json.in</itemPath>
       <itemPath>travis_bintray_deb.json.in</itemPath>
       <itemPath>travis_bintray_rasp.json.in</itemPath>
       <itemPath>travis_bintray_ubu.json.in</itemPath>
