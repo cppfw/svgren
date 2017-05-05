@@ -2,7 +2,7 @@
 
 Unfortunately, Android does not provide official packaging system which allows packaging native libraries with header files. But, there is a workaround! Read below.
 
-First, in order to use **libsvgren** one has to use http://tools.android.com/tech-docs/new-build-system/gradle-experimental[Android Experimental gradle bplugin].
+First, in order to use **libsvgren** one has to use http://tools.android.com/tech-docs/new-build-system/gradle-experimental[Android Experimental gradle plugin].
 
 Then, in the `build.gradle` file add a link to my bintray maven repository and add dependency on the **libsvgren** AAR package:
 ....
