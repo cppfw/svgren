@@ -5,6 +5,7 @@ Istallation:
 - [Linux](InstallLinux.md)
 - [MacOSX](InstallMacOSX.md)
 - [iOS](InstallIOS.md)
+- [Android](InstallAndroid.adoc)
 - [MSYS](InstallMSYS.md)
 
 Tutorials:
