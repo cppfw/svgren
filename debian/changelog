@@ -1,3 +1,9 @@
+libsvgren (0.4.11) unstable; urgency=medium
+
+  * deploy to cygwin
+
+ -- Ivan Gagis <igagis@gmail.com>  Wed, 10 May 2017 15:57:19 +0300
+
 libsvgren (0.4.10) unstable; urgency=medium
 
   * deploy to android
