@@ -1,0 +1,9 @@
+= Installation into Cygwin
+
+Use Cygwin's `setup-x86.exe` or `setup-x86_64.exe` utility. Run it from command line with the following arguments:
+
+....
+setup-x86_64.exe -X -q -s http://igagis.crabdance.com -s http://cygwin.mirror.constant.com -P svgren
+....
+
+It should perform all the needed operations without user interaction.
