@@ -11,13 +11,14 @@ this_cxxflags += -std=c++11
 
 this_srcs += main.cpp
 
-this_ldlibs += -lsvgdom -lsvgren -lpapki `pkg-config --libs cairo` -lpugixml -lX11 -lstdc++
+this_ldlibs += -lsvgdom -lsvgren -lpapki -lX11 -lstdc++
 this_ldflags += -L$(prorab_this_dir)../../src
 
 ifeq ($(prorab_os), macosx)
     this_cxxflags += -stdlib=libc++ #this is needed to be able to use c++11 std lib
     this_ldlibs += -lc++
 else ifeq ($(prorab_os),windows)
+    this_ldlibs += `pkg-config --libs cairo` -lpugixml
 endif
 
 ifeq ($(prorab_os), macosx)

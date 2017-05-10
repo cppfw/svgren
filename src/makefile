@@ -37,12 +37,13 @@ this_cxxflags += -g #include debugging symbols
                 #-P -E #-Wreorder
                 #-O3 -funroll-loops -fomit-frame-pointer
 
-this_ldlibs += `pkg-config --libs cairo` -lsvgdom -lpapki -lpugixml -lstdc++ -lm
+this_ldlibs += -lsvgdom -lpapki -lstdc++ -lm
 
 ifeq ($(os),linux)
     this_cxxflags += -fPIC # Since we are building shared library, we need Position-Independend Code
 else ifeq ($(os),windows)
     this_cxxflags += `pkg-config --cflags cairo`
+    this_ldlibs += `pkg-config --libs cairo` -lpugixml
 else ifeq ($(os),macosx)
     this_cxxflags += -stdlib=libc++ #this is needed to be able to use c++11 std lib
 endif
