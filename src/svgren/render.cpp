@@ -1,5 +1,6 @@
 #include <utki/config.hpp>
 #include <utki/util.hpp>
+#include <utki/math.hpp>
 
 #include <svgdom/dom.hpp>
 
@@ -9,7 +10,6 @@
 #	include <cairo.h>
 #else
 #	include <cairo/cairo.h>
-#include <utki/math.hpp>
 #endif
 
 #include "render.hpp"
