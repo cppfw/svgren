@@ -10,9 +10,9 @@ SVG renderer."
 SRC_URI="https://github.com/igagis/svgren/archive/${VERSION}.tar.gz"
 
 #compile time dependencies
-DEPEND="prorab, utki, svgdom, libcairo-devel"
+DEPEND="prorab utki svgdom libcairo-devel"
 
-REQUIRES="utki, svgdom"
+REQUIRES="utki svgdom"
 
 src_compile() {
   cd ${B}
