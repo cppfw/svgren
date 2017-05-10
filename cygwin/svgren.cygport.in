@@ -1,0 +1,28 @@
+NAME="svgren"
+VERSION=$(version)
+RELEASE=1
+
+CATEGORY="Devel"
+SUMMARY="C++ SVG renderer"
+DESCRIPTION="C++ SVG renderer.
+SVG renderer."
+
+SRC_URI="https://github.com/igagis/svgren/archive/${VERSION}.tar.gz"
+
+#compile time dependencies
+DEPEND="prorab, utki, svgdom, libcairo-devel"
+
+REQUIRES="utki, svgdom"
+
+src_compile() {
+  cd ${B}
+  lndirs
+  cygmake
+}
+
+src_install() {
+  cd ${B}
+  cyginstall -C src PREFIX=/usr
+}
+
+# use the standard src_test
