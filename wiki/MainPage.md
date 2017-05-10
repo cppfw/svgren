@@ -2,6 +2,7 @@
 
 Istallation:
 - [Windows (Visual Studio 2015)](InstallMSVS.md)
+- [Windows (Cygwin)](InstallCygwin.md)
 - [Linux](InstallLinux.md)
 - [MacOSX](InstallMacOSX.md)
 - [iOS](InstallIOS.md)
