@@ -11,14 +11,14 @@ this_cxxflags += -std=c++11
 
 this_srcs += checksvg.cpp
 
-this_ldlibs += -lsvgdom -lsvgren -lpapki -lpng -lstdc++
+this_ldlibs += -lsvgdom -lsvgren -lpapki `pkg-config --libs cairo` -lpng -lstdc++
 this_ldflags += -L$(d)../../src
 
 ifeq ($(prorab_os), macosx)
     this_cxxflags += -stdlib=libc++ #this is needed to be able to use c++11 std lib
     this_ldlibs += -lc++
 else ifeq ($(prorab_os),windows)
-    this_ldlibs += -lpugixml `pkg-config --libs cairo`
+    this_ldlibs += -lpugixml
 endif
 
 $(eval $(prorab-build-app))
@@ -28,7 +28,7 @@ this_svgs := $(patsubst %.svg,%,$(shell ls $(d)testdata/*.svg))
 define this_rules
 test:: $(prorab_this_name)
 	@prorab-running-test.sh samples
-	$(prorab_echo)cp $(d)../../src/*.dll .
+	$(prorab_echo)cp $(d)../../src/*.dll . || true
 	$(prorab_echo)for f in $(this_svgs); do \
 	    echo "checking file $$$$f.svg..." && \
 	    LD_LIBRARY_PATH=$(d)../../src $(d)./checksvg $$$$f.svg $$$$f.png && \
