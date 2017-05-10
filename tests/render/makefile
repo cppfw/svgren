@@ -11,7 +11,7 @@ this_cxxflags += -std=c++11
 
 this_srcs += main.cpp
 
-this_ldlibs += -lsvgdom -lsvgren -lpapki  -lX11 -lstdc++
+this_ldlibs += -lsvgdom -lsvgren -lpapki `pkg-config --libs cairo` -lpugixml -lX11 -lstdc++
 this_ldflags += -L$(prorab_this_dir)../../src
 
 ifeq ($(prorab_os), macosx)

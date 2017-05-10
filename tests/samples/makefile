@@ -11,7 +11,7 @@ this_cxxflags += -std=c++11
 
 this_srcs += checksvg.cpp
 
-this_ldlibs += -lsvgdom -lsvgren -lpapki -lpng -lstdc++
+this_ldlibs += -lsvgdom -lsvgren -lpapki -lpugixml `pkg-config --libs cairo` -lpng -lstdc++
 this_ldflags += -L$(d)../../src
 
 ifeq ($(prorab_os), macosx)
