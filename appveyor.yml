@@ -7,7 +7,7 @@ environment:
   PRORAB_GIT_USERNAME: igagis
   PRORAB_GIT_ACCESS_TOKEN:
     secure: mpW6B2ols1a2FkshjKjryBuvBt8A1TpU9WGn+/d6PIQiZlzA0Rpo1ETKpmy0bnvX
-  DEPS: make,gcc-g++,prorab,utki,svgdom,libcairo-devel
+  DEPS: make,gcc-g++,prorab,utki,svgdom,libcairo-devel,kolme
 
 
 install:
