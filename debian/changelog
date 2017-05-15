@@ -1,3 +1,9 @@
+libsvgren (0.4.12) unstable; urgency=medium
+
+  * fix: link against cairo library
+
+ -- Ivan Gagis <igagis@gmail.com>  Tue, 16 May 2017 00:25:15 +0300
+
 libsvgren (0.4.11) unstable; urgency=medium
 
   * deploy to cygwin

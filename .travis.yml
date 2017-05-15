@@ -154,7 +154,7 @@ script:
     prorab-deb-prepare.sh &&
     dpkg-buildpackage -uc -us;
   fi
-#NOTE: tests on maco os do not pass curretnly, probably libcairo is build with some different optimizations and produce slightly different result.
+#NOTE: tests on mac os do not pass curretnly, probably libcairo is build with some different optimizations and produce slightly different result.
 - if [ "$BUILD_NAME" == "macosx" ]; then
     make;
   fi
