@@ -1,20 +1,36 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug|Win32">
-      <Configuration>Debug</Configuration>
+    <ProjectConfiguration Include="v140_Debug|Win32">
+      <Configuration>v140_Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|Win32">
-      <Configuration>Release</Configuration>
+    <ProjectConfiguration Include="v140_Release|Win32">
+      <Configuration>v140_Release</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug|x64">
-      <Configuration>Debug</Configuration>
+    <ProjectConfiguration Include="v140_Debug|x64">
+      <Configuration>v140_Debug</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|x64">
-      <Configuration>Release</Configuration>
+    <ProjectConfiguration Include="v140_Release|x64">
+      <Configuration>v140_Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="v141_Debug|Win32">
+      <Configuration>v141_Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="v141_Debug|x64">
+      <Configuration>v141_Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="v141_Release|Win32">
+      <Configuration>v141_Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="v141_Release|x64">
+      <Configuration>v141_Release</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="WhiteBG_debug|Win32">
@@ -33,58 +49,96 @@
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='v140_Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='v141_Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='v140_Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='v141_Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='v140_Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='v141_Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='v140_Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='v141_Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='WhiteBG_debug|Win32'">
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='WhiteBG_debug|x64'">
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='v140_Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='v141_Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='v140_Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='v141_Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='v140_Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='v141_Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='v140_Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='v141_Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='v140_Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>
       </PrecompiledHeader>
@@ -100,7 +154,23 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='v141_Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions);_USE_MATH_DEFINES</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <MinimalRebuild>false</MinimalRebuild>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='v140_Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>
       </PrecompiledHeader>
@@ -116,7 +186,23 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='v141_Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions);_USE_MATH_DEFINES</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <MinimalRebuild>false</MinimalRebuild>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='v140_Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>
@@ -136,7 +222,47 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='v141_Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);_USE_MATH_DEFINES</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='v140_Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions);_USE_MATH_DEFINES</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='v141_Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>
@@ -174,13 +300,13 @@
     <Import Project="..\packages\zlib.v120.windesktop.msvcstl.dyn.rt-dyn.1.2.8.8\build\native\zlib.v120.windesktop.msvcstl.dyn.rt-dyn.targets" Condition="Exists('..\packages\zlib.v120.windesktop.msvcstl.dyn.rt-dyn.1.2.8.8\build\native\zlib.v120.windesktop.msvcstl.dyn.rt-dyn.targets')" />
     <Import Project="..\packages\zlib.v140.windesktop.msvcstl.dyn.rt-dyn.1.2.8.8\build\native\zlib.v140.windesktop.msvcstl.dyn.rt-dyn.targets" Condition="Exists('..\packages\zlib.v140.windesktop.msvcstl.dyn.rt-dyn.1.2.8.8\build\native\zlib.v140.windesktop.msvcstl.dyn.rt-dyn.targets')" />
     <Import Project="..\packages\libpng.redist.1.6.28.1\build\native\libpng.redist.targets" Condition="Exists('..\packages\libpng.redist.1.6.28.1\build\native\libpng.redist.targets')" />
-    <Import Project="..\packages\libutki.1.0.30\build\native\libutki.targets" Condition="Exists('..\packages\libutki.1.0.30\build\native\libutki.targets')" />
-    <Import Project="..\packages\libpapki.1.0.26\build\native\libpapki.targets" Condition="Exists('..\packages\libpapki.1.0.26\build\native\libpapki.targets')" />
     <Import Project="..\packages\pixman_static.0.32.4.4\build\native\pixman_static.targets" Condition="Exists('..\packages\pixman_static.0.32.4.4\build\native\pixman_static.targets')" />
-    <Import Project="..\packages\pugixml.1.8.0\build\native\pugixml.targets" Condition="Exists('..\packages\pugixml.1.8.0\build\native\pugixml.targets')" />
     <Import Project="..\packages\libpng.1.6.28.1\build\native\libpng.targets" Condition="Exists('..\packages\libpng.1.6.28.1\build\native\libpng.targets')" />
     <Import Project="..\packages\cairo_static.1.15.4.1\build\native\cairo_static.targets" Condition="Exists('..\packages\cairo_static.1.15.4.1\build\native\cairo_static.targets')" />
-    <Import Project="..\packages\libsvgdom.0.2.25\build\native\libsvgdom.targets" Condition="Exists('..\packages\libsvgdom.0.2.25\build\native\libsvgdom.targets')" />
+    <Import Project="..\packages\libutki.1.1.7\build\native\libutki.targets" Condition="Exists('..\packages\libutki.1.1.7\build\native\libutki.targets')" />
+    <Import Project="..\packages\libpapki.1.0.40\build\native\libpapki.targets" Condition="Exists('..\packages\libpapki.1.0.40\build\native\libpapki.targets')" />
+    <Import Project="..\packages\pugixml.1.8.1\build\native\pugixml.targets" Condition="Exists('..\packages\pugixml.1.8.1\build\native\pugixml.targets')" />
+    <Import Project="..\packages\libsvgdom.0.2.33\build\native\libsvgdom.targets" Condition="Exists('..\packages\libsvgdom.0.2.33\build\native\libsvgdom.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -189,12 +315,12 @@
     <Error Condition="!Exists('..\packages\zlib.v120.windesktop.msvcstl.dyn.rt-dyn.1.2.8.8\build\native\zlib.v120.windesktop.msvcstl.dyn.rt-dyn.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\zlib.v120.windesktop.msvcstl.dyn.rt-dyn.1.2.8.8\build\native\zlib.v120.windesktop.msvcstl.dyn.rt-dyn.targets'))" />
     <Error Condition="!Exists('..\packages\zlib.v140.windesktop.msvcstl.dyn.rt-dyn.1.2.8.8\build\native\zlib.v140.windesktop.msvcstl.dyn.rt-dyn.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\zlib.v140.windesktop.msvcstl.dyn.rt-dyn.1.2.8.8\build\native\zlib.v140.windesktop.msvcstl.dyn.rt-dyn.targets'))" />
     <Error Condition="!Exists('..\packages\libpng.redist.1.6.28.1\build\native\libpng.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libpng.redist.1.6.28.1\build\native\libpng.redist.targets'))" />
-    <Error Condition="!Exists('..\packages\libutki.1.0.30\build\native\libutki.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libutki.1.0.30\build\native\libutki.targets'))" />
-    <Error Condition="!Exists('..\packages\libpapki.1.0.26\build\native\libpapki.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libpapki.1.0.26\build\native\libpapki.targets'))" />
     <Error Condition="!Exists('..\packages\pixman_static.0.32.4.4\build\native\pixman_static.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\pixman_static.0.32.4.4\build\native\pixman_static.targets'))" />
-    <Error Condition="!Exists('..\packages\pugixml.1.8.0\build\native\pugixml.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\pugixml.1.8.0\build\native\pugixml.targets'))" />
     <Error Condition="!Exists('..\packages\libpng.1.6.28.1\build\native\libpng.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libpng.1.6.28.1\build\native\libpng.targets'))" />
     <Error Condition="!Exists('..\packages\cairo_static.1.15.4.1\build\native\cairo_static.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\cairo_static.1.15.4.1\build\native\cairo_static.targets'))" />
-    <Error Condition="!Exists('..\packages\libsvgdom.0.2.25\build\native\libsvgdom.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libsvgdom.0.2.25\build\native\libsvgdom.targets'))" />
+    <Error Condition="!Exists('..\packages\libutki.1.1.7\build\native\libutki.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libutki.1.1.7\build\native\libutki.targets'))" />
+    <Error Condition="!Exists('..\packages\libpapki.1.0.40\build\native\libpapki.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libpapki.1.0.40\build\native\libpapki.targets'))" />
+    <Error Condition="!Exists('..\packages\pugixml.1.8.1\build\native\pugixml.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\pugixml.1.8.1\build\native\pugixml.targets'))" />
+    <Error Condition="!Exists('..\packages\libsvgdom.0.2.33\build\native\libsvgdom.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libsvgdom.0.2.33\build\native\libsvgdom.targets'))" />
   </Target>
 </Project>

@@ -1,3 +1,11 @@
+configurations {
+	UserPlatformToolset {
+		// Needed because autopackage lacks VS2015+ support
+		key = "PlatformToolset";
+		choices: "v140,v141";
+	};
+}
+
 nuget{
 	nuspec{
 		id = libsvgren;
@@ -30,20 +38,36 @@ nuget{
 			"..\src\svgren\**\*.hpp"
 		};
 
-		[x86,release] {
-			lib: ..\msvs_solution\Release\libsvgren.lib;
+		[x86,v140,release] {
+			lib: ..\msvs_solution\v140_Release\libsvgren.lib;
 		}
 
-		[x86,debug] {
-			lib: ..\msvs_solution\Debug\libsvgren.lib;
+		[x86,v140,debug] {
+			lib: ..\msvs_solution\v140_Debug\libsvgren.lib;
 		}
 
-		[x64,release] {
-			lib: ..\msvs_solution\x64\Release\libsvgren.lib;
+		[x64,v140,release] {
+			lib: ..\msvs_solution\x64\v140_Release\libsvgren.lib;
 		}
 
-		[x64,debug] {
-			lib: ..\msvs_solution\x64\Debug\libsvgren.lib;
+		[x64,v140,debug] {
+			lib: ..\msvs_solution\x64\v140_Debug\libsvgren.lib;
+		}
+		
+		[x86,v141,release] {
+			lib: ..\msvs_solution\v141_Release\libsvgren.lib;
+		}
+
+		[x86,v141,debug] {
+			lib: ..\msvs_solution\v141_Debug\libsvgren.lib;
+		}
+
+		[x64,v141,release] {
+			lib: ..\msvs_solution\x64\v141_Release\libsvgren.lib;
+		}
+
+		[x64,v141,debug] {
+			lib: ..\msvs_solution\x64\v141_Debug\libsvgren.lib;
 		}
 	}
 }
