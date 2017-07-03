@@ -11,8 +11,8 @@ this_cxxflags += -std=c++11
 
 this_srcs += main.cpp
 
-this_ldlibs += -lsvgdom -lsvgren -lpapki `pkg-config --libs cairo` -lX11 -lstdc++
-this_ldflags += -L$(prorab_this_dir)../../src
+this_ldlibs += -lsvgdom $(d)../../src/libsvgren$(soext) -lpapki `pkg-config --libs cairo` -lX11 -lstdc++
+this_ldflags += -L$(d)../../src
 
 ifeq ($(prorab_os), macosx)
     this_cxxflags += -stdlib=libc++ #this is needed to be able to use c++11 std lib
@@ -29,9 +29,9 @@ endif
 
 
 ifeq ($(prorab_os),windows)
-    this_test_cmd := $(prorab_echo)(cd $(prorab_this_dir); cp ../../src/libsvgren.dll .; $$^)
+    this_test_cmd := $(prorab_echo)(cd $(d); cp ../../src/libsvgren$(soext) .; $$^)
 else
-    this_test_cmd := $(prorab_echo)(cd $(prorab_this_dir); LD_LIBRARY_PATH=../../src $$^)
+    this_test_cmd := $(prorab_echo)(cd $(d); LD_LIBRARY_PATH=../../src $$^)
 endif
 
 
@@ -43,6 +43,6 @@ endif
 #$(eval $(this_rules))
 
 #add dependency on libsvgren
-$(prorab_this_name): $(abspath $(prorab_this_dir)../../src/libsvgren$(prorab_lib_extension))
+$(prorab_this_name): $(abspath $(d)../../src/libsvgren$(soext))
 
-$(eval $(call prorab-include,$(prorab_this_dir)../../src/makefile))
+$(eval $(call prorab-include,$(d)../../src/makefile))
