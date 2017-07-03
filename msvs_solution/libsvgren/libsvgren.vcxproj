@@ -306,7 +306,8 @@
     <Import Project="..\packages\libutki.1.1.7\build\native\libutki.targets" Condition="Exists('..\packages\libutki.1.1.7\build\native\libutki.targets')" />
     <Import Project="..\packages\libpapki.1.0.40\build\native\libpapki.targets" Condition="Exists('..\packages\libpapki.1.0.40\build\native\libpapki.targets')" />
     <Import Project="..\packages\pugixml.1.8.1\build\native\pugixml.targets" Condition="Exists('..\packages\pugixml.1.8.1\build\native\pugixml.targets')" />
-    <Import Project="..\packages\libsvgdom.0.2.33\build\native\libsvgdom.targets" Condition="Exists('..\packages\libsvgdom.0.2.33\build\native\libsvgdom.targets')" />
+    <Import Project="..\packages\pugixml.1.8.0\build\native\pugixml.targets" Condition="Exists('..\packages\pugixml.1.8.0\build\native\pugixml.targets')" />
+    <Import Project="..\packages\libsvgdom.0.2.35\build\native\libsvgdom.targets" Condition="Exists('..\packages\libsvgdom.0.2.35\build\native\libsvgdom.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -321,6 +322,7 @@
     <Error Condition="!Exists('..\packages\libutki.1.1.7\build\native\libutki.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libutki.1.1.7\build\native\libutki.targets'))" />
     <Error Condition="!Exists('..\packages\libpapki.1.0.40\build\native\libpapki.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libpapki.1.0.40\build\native\libpapki.targets'))" />
     <Error Condition="!Exists('..\packages\pugixml.1.8.1\build\native\pugixml.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\pugixml.1.8.1\build\native\pugixml.targets'))" />
-    <Error Condition="!Exists('..\packages\libsvgdom.0.2.33\build\native\libsvgdom.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libsvgdom.0.2.33\build\native\libsvgdom.targets'))" />
+    <Error Condition="!Exists('..\packages\pugixml.1.8.0\build\native\pugixml.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\pugixml.1.8.0\build\native\pugixml.targets'))" />
+    <Error Condition="!Exists('..\packages\libsvgdom.0.2.35\build\native\libsvgdom.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libsvgdom.0.2.35\build\native\libsvgdom.targets'))" />
   </Target>
 </Project>

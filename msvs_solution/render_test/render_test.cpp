@@ -34,7 +34,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(lpCmdLine);
 
     // TODO: Place code here.
-	auto dom = svgdom::load(papki::FSFile("tiger.svg"));
+	auto dom = svgdom::load(papki::FSFile("../samples/testdata/menue-cut.svg"));
 	ASSERT_ALWAYS(dom)
 
 	unsigned imWidth = 0;
