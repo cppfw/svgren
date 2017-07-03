@@ -1,3 +1,9 @@
+libsvgren (0.4.16) unstable; urgency=medium
+
+  * relink to latest svgdom
+
+ -- Ivan Gagis <igagis@gmail.com>  Mon, 03 Jul 2017 22:39:34 +0300
+
 libsvgren (0.4.15) unstable; urgency=medium
 
   * relink to latest svgdom
