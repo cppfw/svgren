@@ -37,7 +37,7 @@ this_cxxflags += -g #include debugging symbols
                 #-P -E #-Wreorder
                 #-O3 -funroll-loops -fomit-frame-pointer
 
-this_ldlibs += `pkg-config --libs cairo` -lsvgdom -lpapki -lstdc++ -lm
+this_ldlibs += `pkg-config --libs cairo` -lsvgdom -lstdc++ -lm
 
 ifeq ($(os),linux)
     this_cxxflags += -fPIC # Since we are building shared library, we need Position-Independend Code
