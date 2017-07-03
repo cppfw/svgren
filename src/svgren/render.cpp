@@ -279,7 +279,7 @@ struct Renderer : public svgdom::Renderer{
 					break;
 			}
 		}else{
-			cairo_set_fill_rule(this->cr, CAIRO_FILL_RULE_EVEN_ODD);
+			cairo_set_fill_rule(this->cr, CAIRO_FILL_RULE_WINDING);
 		}
 		
 		svgdom::StylePropertyValue blackFill;
