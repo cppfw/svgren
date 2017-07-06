@@ -11,7 +11,7 @@ this_cxxflags += -std=c++11
 
 this_srcs += main.cpp
 
-this_ldlibs += -lsvgdom $(d)../../src/libsvgren$(soext) -lpapki `pkg-config --libs cairo` -lX11 -lstdc++
+this_ldlibs += -lsvgdom $(d)../../src/libsvgren$(soext) -lpapki -lpng `pkg-config --libs cairo` -lX11 -lstdc++
 this_ldflags += -L$(d)../../src
 
 ifeq ($(prorab_os), macosx)
