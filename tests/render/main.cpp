@@ -9,6 +9,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+
 #if M_OS == M_OS_LINUX
 #	include <X11/Xlib.h>
 #endif
@@ -42,9 +45,7 @@ int main(int argc, char **argv){
 	TRACE(<< "imWidth = " << imWidth << " imHeight = " << imHeight << " img.size() = " << img.size() << std::endl)
 
 	{
-		papki::FSFile file("out.data");
-		papki::File::Guard guard(file, papki::File::E_Mode::CREATE);
-		file.write(utki::Buf<std::uint8_t>(reinterpret_cast<std::uint8_t*>(&*img.begin()), img.size() * 4));
+		tbi_write_png("tiger.png", imWidth, imHeight, 4, reinterpret_cast<void*>(&*img.begin()), imWidth*4);
 	}
 
 	for(auto& c : img){
