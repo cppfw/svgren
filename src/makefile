@@ -1,9 +1,6 @@
 include prorab.mk
 
 
-debug := false
-
-
 this_name := svgren
 
 this_soname := $(shell cat $(d)soname.txt)

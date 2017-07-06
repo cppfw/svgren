@@ -41,7 +41,7 @@ build_script:
   - ps: .\nuget\build_nuget.ps1
 
 test_script:
-  - cmd: C:\cygwin64\bin\bash -e -l -c "make test"
+#  - cmd: C:\cygwin64\bin\bash -e -l -c "make test"
 #  - cmd: C:\cygwin\bin\bash -e -l -c "make test"
 #  - ps: .\tests\autotest-appveyor.ps1
 

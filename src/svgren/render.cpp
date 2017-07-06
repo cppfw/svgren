@@ -378,6 +378,9 @@ struct Renderer : public svgdom::Renderer{
 			
 			cairo_stroke(this->cr);
 		}
+		
+		//clear path if any left
+		cairo_new_path(this->cr);
 	}
 	
 public:
@@ -386,6 +389,7 @@ public:
 			dpi(dpi)
 	{
 		this->viewportStack.push_back(canvasSize);
+		//TODO: what are these for?
 //		cairo_set_operator(this->cr, CAIRO_OPERATOR_ATOP);
 //		cairo_set_operator(this->cr, CAIRO_OPERATOR_SOURCE);
 	}
@@ -493,8 +497,6 @@ public:
 	}
 	
 	void render(const svgdom::PathElement& e)override{
-		cairo_new_path(this->cr);
-		
 		SetTempCairoContext cairoTempContext(*this, e);
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
@@ -920,7 +922,7 @@ SetTempCairoContext::~SetTempCairoContext()noexcept{
 	}
 }
 
-}//~namespace
+}
 
 
 
