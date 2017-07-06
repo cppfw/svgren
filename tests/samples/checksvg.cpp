@@ -172,7 +172,7 @@ public:
 		ASSERT_ALWAYS(this->buf_v.size() == 0)
 
 		papki::File::Guard fileGuard(fi);//this will guarantee that the file will be closed upon exit
-	//	TRACE(<< "Image::LoadPNG(): file opened" << std::endl)
+//		TRACE(<< "Image::LoadPNG(): file opened" << std::endl)
 
 	#define PNGSIGSIZE 8 //The size of PNG signature (max 8 bytes)
 		std::array<png_byte, PNGSIGSIZE> sig;
@@ -191,7 +191,7 @@ public:
 		}
 
 		//Great!!! We have a PNG-file!
-	//	TRACE(<< "Image::LoadPNG(): file is a PNG" << std::endl)
+//		TRACE(<< "Image::LoadPNG(): file is a PNG" << std::endl)
 
 		//Create internal PNG-structure to work with PNG file
 		//(no warning and error callbacks)
@@ -268,7 +268,7 @@ public:
 		this->init(kolme::Vec2ui(width, height), imageType);//Set buf array size (allocate memory)
 		//Great! height and width are initialized and buffer memory allocated
 
-	//	TRACE(<< "Image::LoadPNG(): memory for image allocated" << std::endl)
+//		TRACE(<< "Image::LoadPNG(): memory for image allocated" << std::endl)
 
 		//Read image data
 		png_size_t bytesPerRow = png_get_rowbytes(pngPtr, infoPtr);//get bytes per row
@@ -280,20 +280,20 @@ public:
 
 		ASSERT_ALWAYS((bytesPerRow * height) == this->buf_v.size())
 
-	//	TRACE(<< "Image::LoadPNG(): going to read in the data" << std::endl)
+//		TRACE(<< "Image::LoadPNG(): going to read in the data" << std::endl)
 		{
 			ASSERT_ALWAYS(this->dim().y && this->buf_v.size())
 			std::vector<png_bytep> rows(this->dim().y);
 			//initialize row pointers
-	//		M_IMAGE_PRINT(<< "Image::LoadPNG(): this->buf.Buf() = " << std::hex << this->buf.Buf() << std::endl)
+//			TRACE(<< "Image::LoadPNG(): this->buf.Buf() = " << std::hex << this->buf.Buf() << std::endl)
 			for(unsigned i = 0; i < this->dim().y; ++i){
 				rows[i] = &*this->buf_v.begin() + i * bytesPerRow;
-	//			M_IMAGE_PRINT(<< "Image::LoadPNG(): rows[i] = " << std::hex << rows[i] << std::endl)
+//				TRACE(<< "Image::LoadPNG(): rows[i] = " << std::hex << rows[i] << std::endl)
 			}
-	//		TRACE(<< "Image::LoadPNG(): row pointers are set" << std::endl)
+//			TRACE(<< "Image::LoadPNG(): row pointers are set" << std::endl)
 			//Read in image data!
 			png_read_image(pngPtr, &*rows.begin());
-	//		TRACE(<< "Image::LoadPNG(): image data read" << std::endl)
+//			TRACE(<< "Image::LoadPNG(): image data read" << std::endl)
 		}
 
 		png_destroy_read_struct(&pngPtr,0,0);//free libpng memory
@@ -304,56 +304,64 @@ public:
 
 
 int main(int argc, char** argv) {
-	if(argc != 3){
-		std::cout << "Error: 2 arguments expected: <svg-file> <png-file>" << std::endl;
-		return 1;
-	}
-	
-	Image png;
-	png.loadPNG(papki::FSFile(argv[2]));
-	
-	ASSERT_ALWAYS(png.buf().size() != 0)
-	
-	auto dom = svgdom::load(papki::FSFile(argv[1]));
-	
-	unsigned imWidth = 0;
-	unsigned imHeight = 0;
-	auto img = svgren::render(*dom, imWidth, imHeight);
-	
-	if(png.colorDepth() != Image::ColorDepth_e::RGBA){
-		std::cout << "Error: PNG color depth is not RGBA: " << unsigned(png.colorDepth()) << std::endl;
-		return 1;
-	}
-	
-	if(imWidth != png.dim().x){
-		std::cout << "Error: svg width (" << imWidth << ") did not match png width (" << png.dim().x << ")" << std::endl;
-		return 1;
-	}
-	
-	if(imHeight != png.dim().y){
-		std::cout << "Error: svg height (" << imHeight << ") did not match png height (" << png.dim().y << ")" << std::endl;
-		return 1;
-	}
-	
-	if(img.size() != png.buf().size() / png.numChannels()){
-		std::cout << "Error: svg pixel buffer size (" << img.size() << ") did not match png pixel buffer size(" << png.buf().size() / png.numChannels() << ")" << std::endl;
-		return 1;
-	}
-	
-	for(size_t i = 0; i != img.size(); ++i){
-		std::uint32_t pixel =
-				std::uint32_t(png.buf()[i * png.numChannels()]) |
-				(std::uint32_t(png.buf()[i * png.numChannels() + 1]) << 8) |
-				(std::uint32_t(png.buf()[i * png.numChannels() + 2]) << 16) |
-				(std::uint32_t(png.buf()[i * png.numChannels() + 3]) << 24)
-			;
-
-		if(pixel != img[i]){
-			std::cout << "Error: PNG pixel #" << std::dec << i << " (0x" << std::hex << pixel << ") did not match SVG pixel (0x" << img[i] << ")" << std::endl;
+	//NOTE: for some reason, under Cygwin uncaught exceptions do not result in non-zero exit code.
+	//      This global try-catch block is to workaround this.
+	try{
+		if(argc != 3){
+			std::cout << "Error: 2 arguments expected: <svg-file> <png-file>" << std::endl;
 			return 1;
 		}
+		
+		Image png;
+		png.loadPNG(papki::FSFile(argv[2]));
+		
+		ASSERT_ALWAYS(png.buf().size() != 0)
+		
+		auto dom = svgdom::load(papki::FSFile(argv[1]));
+		
+		unsigned imWidth = 0;
+		unsigned imHeight = 0;
+		auto img = svgren::render(*dom, imWidth, imHeight);
+		
+		if(png.colorDepth() != Image::ColorDepth_e::RGBA){
+			std::cout << "Error: PNG color depth is not RGBA: " << unsigned(png.colorDepth()) << std::endl;
+			return 1;
+		}
+		
+		if(imWidth != png.dim().x){
+			std::cout << "Error: svg width (" << imWidth << ") did not match png width (" << png.dim().x << ")" << std::endl;
+			return 1;
+		}
+		
+		if(imHeight != png.dim().y){
+			std::cout << "Error: svg height (" << imHeight << ") did not match png height (" << png.dim().y << ")" << std::endl;
+			return 1;
+		}
+		
+		if(img.size() != png.buf().size() / png.numChannels()){
+			std::cout << "Error: svg pixel buffer size (" << img.size() << ") did not match png pixel buffer size(" << png.buf().size() / png.numChannels() << ")" << std::endl;
+			return 1;
+		}
+		
+		for(size_t i = 0; i != img.size(); ++i){
+			std::uint32_t pixel =
+					std::uint32_t(png.buf()[i * png.numChannels()]) |
+					(std::uint32_t(png.buf()[i * png.numChannels() + 1]) << 8) |
+					(std::uint32_t(png.buf()[i * png.numChannels() + 2]) << 16) |
+					(std::uint32_t(png.buf()[i * png.numChannels() + 3]) << 24)
+				;
+
+			if(pixel != img[i]){
+				std::cout << "Error: PNG pixel #" << std::dec << i << " (0x" << std::hex << pixel << ") did not match SVG pixel (0x" << img[i] << ")" << std::endl;
+				return 1;
+			}
+		}
+		
+		return 0;
+	}catch(std::exception &e){
+		ASSERT_INFO_ALWAYS(false, "Uncaught exception: e.what = " << e.what())
+	}catch(...){
+		ASSERT_INFO_ALWAYS(false, "Uncaught unknown exception")
 	}
-	
-	return 0;
 }
 
