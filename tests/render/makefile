@@ -11,28 +11,26 @@ this_cxxflags += -std=c++11
 
 this_srcs += main.cpp
 
-this_ldlibs += -lsvgdom $(d)../../src/libsvgren$(soext) -lpapki -lpng `pkg-config --libs cairo` -lX11 -lstdc++
+this_ldlibs += -lsvgdom $(d)../../src/libsvgren$(soext) -lpapki -lpng `pkg-config --libs cairo` -lstdc++
 this_ldflags += -L$(d)../../src
 
-ifeq ($(prorab_os), macosx)
+ifeq ($(os), macosx)
     this_cxxflags += -stdlib=libc++ #this is needed to be able to use c++11 std lib
     this_ldlibs += -lc++
-else ifeq ($(prorab_os),windows)
+else ifeq ($(os),windows)
     this_ldlibs += -lpugixml
-endif
-
-ifeq ($(prorab_os), macosx)
-    $(info "no test app for macosx yet")
 else
-    $(eval $(prorab-build-app))
+    this_ldlibs += -lX11
 endif
 
+$(eval $(prorab-build-app))
 
-ifeq ($(prorab_os),windows)
-    this_test_cmd := $(prorab_echo)(cd $(d); cp ../../src/libsvgren$(soext) .; $$^)
-else
-    this_test_cmd := $(prorab_echo)(cd $(d); LD_LIBRARY_PATH=../../src $$^)
-endif
+
+#ifeq ($(prorab_os),windows)
+#    this_test_cmd := $(prorab_echo)(cd $(d); cp ../../src/libsvgren$(soext) .; $$^)
+#else
+#    this_test_cmd := $(prorab_echo)(cd $(d); LD_LIBRARY_PATH=../../src $$^)
+#endif
 
 
 #define this_rules
