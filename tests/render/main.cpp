@@ -30,8 +30,8 @@ void processEvent(Display *display, Window window, XImage *ximage, int width, in
 #endif
 
 int main(int argc, char **argv){
-//	auto dom = svgdom::load(papki::FSFile("../samples/testdata/sample2.svg"));
-	auto dom = svgdom::load(papki::FSFile("tiger.svg"));
+	auto dom = svgdom::load(papki::FSFile("../samples/testdata/tiger_with_smooth_cubic_curves.svg"));
+//	auto dom = svgdom::load(papki::FSFile("tiger.svg"));
 	
 	ASSERT_ALWAYS(dom)
 	

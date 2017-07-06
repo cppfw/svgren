@@ -64,6 +64,9 @@
             <incDir>
               <pElem>.</pElem>
             </incDir>
+            <preprocessorList>
+              <Elem>DEBUG</Elem>
+            </preprocessorList>
           </ccTool>
         </makeTool>
         <preBuild>
@@ -71,13 +74,6 @@
           <preBuildCommand></preBuildCommand>
         </preBuild>
       </makefileType>
-      <folder path="1">
-        <ccTool>
-          <preprocessorList>
-            <Elem>DEBUG</Elem>
-          </preprocessorList>
-        </ccTool>
-      </folder>
       <item path="src/svgren/render.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
         </ccTool>
