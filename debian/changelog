@@ -1,3 +1,9 @@
+libsvgren (0.4.18) unstable; urgency=medium
+
+  * Smooth cubic curves implemented in paths
+
+ -- Ivan Gagis <igagis@gmail.com>  Thu, 06 Jul 2017 18:14:21 +0300
+
 libsvgren (0.4.17) unstable; urgency=medium
 
   * relink to latest svgdom
