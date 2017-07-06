@@ -559,25 +559,38 @@ public:
 					cairo_rel_curve_to(this->cr, s.x1, s.y1, s.x2, s.y2, s.x, s.y);
 					break;
 				case svgdom::PathElement::Step::Type_e::CUBIC_SMOOTH_ABS:
-					ASSERT_INFO(false, "Cubic smooth is not implemented")
-//					{
-//						double x, y;
-//						if(cairo_has_current_point(this->cr)){
-//							cairo_get_current_point(this->cr, &x, &y);
-//						}else{
-//							x = 0;
-//							y = 0;
-//						}
-//						double x1, y1;
-//						if(prev){
-//							x1 = -(prev->x2 - x) + x;
-//							y1 = -(prev->y2 - y) + y;
-//						}else{
-//							x1 = x;
-//							y1 = y;
-//						}
-//						cairo_curve_to(this->cr, x1, y1, s.x2, s.y2, s.x, s.y);
-//					}
+					{
+						double x0, y0; //current point, absolute coordinates
+						if (cairo_has_current_point(this->cr)) {
+							cairo_get_current_point(this->cr, &x0, &y0);
+						}
+						else {
+							cairo_move_to(this->cr, 0, 0);
+							x0 = 0;
+							y0 = 0;
+						}
+
+						double x1, y1; //first control point
+						switch (prevStep ? prevStep->type : svgdom::PathElement::Step::Type_e::UNKNOWN) {
+							case svgdom::PathElement::Step::Type_e::CUBIC_SMOOTH_ABS:
+							case svgdom::PathElement::Step::Type_e::CUBIC_ABS:
+								x1 = -(prevStep->x2 - x0) + x0;
+								y1 = -(prevStep->y2 - y0) + y0;
+								break;
+							case svgdom::PathElement::Step::Type_e::CUBIC_SMOOTH_REL:
+							case svgdom::PathElement::Step::Type_e::CUBIC_REL:
+								x1 = -(prevStep->x2 - prevStep->x) + x0;
+								y1 = -(prevStep->y2 - prevStep->y) + y0;
+								break;
+							default:
+								//No previous step or previous step is not a cubic Bezier curve.
+								//Set first control point equal to current point
+								x1 = x0;
+								y1 = y0;
+								break;
+						}
+						cairo_curve_to(this->cr, x1, y1, s.x2, s.y2, s.x, s.y);
+					}
 					break;
 				case svgdom::PathElement::Step::Type_e::CUBIC_SMOOTH_REL:
 					{

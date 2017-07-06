@@ -1,0 +1,19 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" 
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="10cm" height="8cm" viewBox="0 0 1000 800"
+     xmlns="http://www.w3.org/2000/svg" version="1.1">
+
+  <path stroke="blue" stroke-width="5" fill="red" d="M100,200 C100,100 250,100 250,200
+                                       S400,300 400,200" />
+									   
+  <path stroke="blue" stroke-width="5" fill="red" d="M500,200 C500,100 650,100 650,200
+                                       s150,100 150,0" />
+									   
+  <path stroke="blue" stroke-width="5" fill="red" d="M100,400 c0,-100 150,-100 150,0
+                                       S400,500 400,400" />
+									   
+  <path stroke="blue" stroke-width="5" fill="red" d="M500,400 c0,-100 150,-100 150,0
+                                       s150,100 150,0" />
+
+</svg>
