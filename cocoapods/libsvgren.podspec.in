@@ -12,6 +12,6 @@ Pod::Spec.new do |s|
   s.source_files  = "src/**/*.{hpp,cpp}"
   s.header_mappings_dir = "src"
 
-  s.dependency 'libsvgdom', '>= 0.2.25'
+  s.dependency 'libsvgdom', '>= 0.2.36'
   s.dependency 'libcairo', '>= 1.12.8'
 end
