@@ -501,7 +501,7 @@ public:
 		
 		this->applyTransformations(e.transformations);
 		
-//		const svgdom::PathElement::Step* prev = nullptr;
+		const svgdom::PathElement::Step* prevStep = nullptr;
 		for(auto& s : e.path){
 			switch(s.type){
 				case svgdom::PathElement::Step::Type_e::MOVE_ABS:
@@ -576,6 +576,39 @@ public:
 //						}
 //						cairo_curve_to(this->cr, x1, y1, s.x2, s.y2, s.x, s.y);
 //					}
+					break;
+				case svgdom::PathElement::Step::Type_e::CUBIC_SMOOTH_REL:
+					{
+						double x0, y0; //current point, absolute coordinates
+						if (cairo_has_current_point(this->cr)) {
+							cairo_get_current_point(this->cr, &x0, &y0);
+						}else{
+							cairo_move_to(this->cr, 0, 0);
+							x0 = 0;
+							y0 = 0;
+						}
+
+						double x1, y1; //first control point
+						switch (prevStep ? prevStep->type : svgdom::PathElement::Step::Type_e::UNKNOWN){
+							case svgdom::PathElement::Step::Type_e::CUBIC_SMOOTH_ABS:
+							case svgdom::PathElement::Step::Type_e::CUBIC_ABS:
+								x1 = -(prevStep->x2 - x0);
+								y1 = -(prevStep->y2 - y0);
+								break;
+							case svgdom::PathElement::Step::Type_e::CUBIC_SMOOTH_REL:
+							case svgdom::PathElement::Step::Type_e::CUBIC_REL:
+								x1 = -(prevStep->x2 - prevStep->x);
+								y1 = -(prevStep->y2 - prevStep->y);
+								break;
+							default:
+								//No previous step or previous step is not a cubic Bezier curve.
+								//Set first control point equal to current point, i.e. 0 because this is Relative step.
+								x1 = 0;
+								y1 = 0;
+								break;
+						}
+						cairo_rel_curve_to(this->cr, x1, y1, s.x2, s.y2, s.x, s.y);
+					}
 					break;
 				case svgdom::PathElement::Step::Type_e::ARC_ABS:
 				case svgdom::PathElement::Step::Type_e::ARC_REL:
@@ -671,7 +704,7 @@ public:
 					ASSERT_INFO(false, "unknown path step type: " << unsigned(s.type))
 					break;
 			}
-//			prev = &s;
+			prevStep = &s;
 		}
 		
 		this->renderCurrentShape(e);
