@@ -41,7 +41,7 @@ int writePng(const char* filename, int width, int height, std::uint32_t *buffer)
    png_infop info_ptr = NULL;
    
    // Open file for writing (binary mode)
-   fp = fopen(filename, "wb");
+   fp = fopen(filename, "w+b");
    if (fp == NULL) {
       fprintf(stderr, "Could not open file %s for writing\n", filename);
       code = 1;
@@ -71,27 +71,13 @@ int writePng(const char* filename, int width, int height, std::uint32_t *buffer)
          8, PNG_COLOR_TYPE_RGBA, PNG_INTERLACE_NONE,
          PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
-   // Set title
-//   if (title != NULL) {
-//      png_text title_text;
-//      title_text.compression = PNG_TEXT_COMPRESSION_NONE;
-//      title_text.key = "Title";
-//      title_text.text = title;
-//      png_set_text(png_ptr, info_ptr, &title_text, 1);
-//   }
 
    png_write_info(png_ptr, info_ptr);
    
-   // Allocate memory for one row (4 bytes per pixel - RGBA)
-   //row = (png_bytep) malloc(4 * width * sizeof(png_byte));
-
    // Write image data
    int y;
    auto p = buffer;
    for (y=0 ; y<height ; y++, p += width) {
-//      for (x=0 ; x<width ; x++) {
-//         setRGB(&(row[x*3]), buffer[y*width + x]);
-//      }
       png_write_row(png_ptr, reinterpret_cast<png_bytep>(p));
    }
 
@@ -101,22 +87,41 @@ int writePng(const char* filename, int width, int height, std::uint32_t *buffer)
    if (fp != NULL) fclose(fp);
    if (info_ptr != NULL) png_free_data(png_ptr, info_ptr, PNG_FREE_ALL, -1);
    if (png_ptr != NULL) png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
-   //if (row != NULL) free(row);
 
    return code;
 }
 
 
 int main(int argc, char **argv){
-	if(argc != 3){
-		std::cout << "Error: 2 arguments expected: <in-svg-file> <out-png-file>" << std::endl;
-		return 1;
+	std::string filename;
+	std::string outFilename;
+	switch(argc){
+		case 0:
+		case 1:
+			std::cout << "Warning: 2 arguments expected: <in-svg-file> <out-png-file>" << std::endl;
+			std::cout << "\t Got 0 arguments, assume <in-svg-file>=tiger.svg <out-png-file>=tiger.png" << std::endl;
+			filename = "tiger.svg";
+			outFilename = "tiger.png";
+			break;
+		case 2:
+			std::cout << "Warning: 2 arguments expected: <in-svg-file> <out-png-file>" << std::endl;
+			filename = argv[1];
+			{
+				auto dotIndex = filename.find_last_of(".", filename.size());
+				if(dotIndex == std::string::npos){
+					dotIndex = filename.size();
+				}
+				outFilename = filename.substr(0, dotIndex) + ".png";
+			}
+			std::cout << "\t Got 1 argument, assume <in-svg-file>=" << filename << " <out-png-file>=" << outFilename << std::endl;
+			break;
+		default:
+			filename = argv[1];
+			outFilename = argv[2];
+			break;
 	}
-	
-	std::string filename = argv[1];
-	
+		
 	auto dom = svgdom::load(papki::FSFile(filename));
-//	auto dom = svgdom::load(papki::FSFile("tiger.svg"));
 	
 	ASSERT_ALWAYS(dom)
 	
@@ -126,12 +131,7 @@ int main(int argc, char **argv){
 	
 	TRACE(<< "imWidth = " << imWidth << " imHeight = " << imHeight << " img.size() = " << img.size() << std::endl)
 
-	writePng(argv[2], imWidth, imHeight, &*img.begin());
-//	{
-//		papki::FSFile file("out.data");
-//		papki::File::Guard guard(file, papki::File::E_Mode::CREATE);
-//		file.write(utki::Buf<std::uint8_t>(reinterpret_cast<std::uint8_t*>(&*img.begin()), img.size() * 4));
-//	}
+	writePng(outFilename.c_str(), imWidth, imHeight, &*img.begin());
 
 	
 #if M_OS == M_OS_LINUX
