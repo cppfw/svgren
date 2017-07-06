@@ -5,4 +5,5 @@ source 'https://github.com/igagis/cocoapods-repo.git'
 target "tests" do
   pod 'libsvgdom', '>= 0.2.13'
   pod 'libcairo', '>= 1.12.8'
+  pod 'libpng_igagis', '>= 1.4.1'
 end

@@ -312,6 +312,17 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = tests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"-l\"libcairo\"",
+					"-l\"libpapki\"",
+					"-l\"libpixman\"",
+					"-l\"libpng_igagis\"",
+					"-l\"libsvgdom\"",
+					"-l\"pugixml\"",
+					"-l\"z\"",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.igagis.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -324,6 +335,17 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = tests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"-l\"libcairo\"",
+					"-l\"libpapki\"",
+					"-l\"libpixman\"",
+					"-l\"libpng_igagis\"",
+					"-l\"libsvgdom\"",
+					"-l\"pugixml\"",
+					"-l\"z\"",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.igagis.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
