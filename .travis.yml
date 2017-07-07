@@ -156,7 +156,7 @@ script:
   fi
 #NOTE: tests on mac os do not pass curretnly, probably libcairo is build with some different optimizations and produce slightly different result.
 - if [ "$BUILD_NAME" == "macosx" ]; then
-    make;
+    make && make test;
   fi
 - if [ "$BUILD_NAME" == "ios" ]; then
     xcodebuild -workspace ios/tests.xcworkspace -scheme tests CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO;
