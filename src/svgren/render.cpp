@@ -552,6 +552,36 @@ public:
 				case svgdom::PathElement::Step::Type_e::CLOSE:
 					cairo_close_path(this->cr);
 					break;
+				case svgdom::PathElement::Step::Type_e::QUADRATIC_ABS:
+					{
+						double x0, y0; //current point, absolute coordinates
+						if (cairo_has_current_point(this->cr)) {
+							cairo_get_current_point(this->cr, &x0, &y0);
+						}
+						else {
+							cairo_move_to(this->cr, 0, 0);
+							x0 = 0;
+							y0 = 0;
+						}
+						cairo_curve_to(this->cr,
+								2.0 / 3.0 * s.x1 + 1.0 / 3.0 * x0,
+								2.0 / 3.0 * s.y1 + 1.0 / 3.0 * y0,
+								2.0 / 3.0 * s.x1 + 1.0 / 3.0 * s.x,
+								2.0 / 3.0 * s.y1 + 1.0 / 3.0 * s.y,
+								s.x,
+								s.y
+							);
+					}
+					break;
+				case svgdom::PathElement::Step::Type_e::QUADRATIC_REL:
+					//TODO:
+					break;
+				case svgdom::PathElement::Step::Type_e::QUADRATIC_SMOOTH_ABS:
+					//TODO:
+					break;
+				case svgdom::PathElement::Step::Type_e::QUADRATIC_SMOOTH_REL:
+					//TODO:
+					break;
 				case svgdom::PathElement::Step::Type_e::CUBIC_ABS:
 					cairo_curve_to(this->cr, s.x1, s.y1, s.x2, s.y2, s.x, s.y);
 					break;
