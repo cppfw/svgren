@@ -1,20 +1,48 @@
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" 
   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="24cm" height="12cm" viewBox="0 0 2400 1200"
+<svg width="24cm" height="24cm" viewBox="0 0 2400 2400"
      xmlns="http://www.w3.org/2000/svg" version="1.1">
   <title>Example quad01 - quadratic Bézier commands in path data</title>
   <desc>Picture showing a "Q" a "T" command,
         along with annotations showing the control points
         and end points</desc>
-  <rect x="1" y="1" width="2398" height="1198"
+  <rect x="1" y="1" width="2398" height="2398"
         fill="none" stroke="blue" stroke-width="1" />
 
   <path d="M200,300 Q400,50 600,300 T1000,300"
         fill="none" stroke="red" stroke-width="5"  />
   
+  <path d="M200,300 Q400,50 200,300"
+        fill="none" stroke="red" stroke-width="5"  />
+  
   <path d="M1200,300 Q1400,50 1600,300 q200,250 400,0"
         fill="none" stroke="red" stroke-width="5"  />
+  
+  <path d="M200,900 Q400,650 600,900 t400,0"
+        fill="none" stroke="red" stroke-width="5"  />
+  
+  <path d="M1200,900 q200,-250 400,0 t400,0"
+        fill="none" stroke="red" stroke-width="5"  />
+  
+  <path d="M200,1500 q200,-250 400,0 T1000,1500"
+        fill="none" stroke="red" stroke-width="5"  />
+  
+  <path d="M1200,1500 q-200,250 0,0 t400,0 T2000,1500"
+        fill="none" stroke="red" stroke-width="5"  />
+  
+  <path d="M1200,1600 q-200,250 0,0"
+        fill="none" stroke="red" stroke-width="5"  />
+  
+  <path d="M200,2100 q-200,250 0,0 T600,2100 T1000,2100"
+        fill="none" stroke="red" stroke-width="5"  />
+  
+  <path d="M1200,2100 q-200,250 0,0 T1600,2100 t400,0"
+        fill="none" stroke="red" stroke-width="5"  />
+  
+  <path d="M1200,2200 q-200,250 0,0 t400,0 t400,0"
+        fill="none" stroke="red" stroke-width="5"  />
+  
   
   <!-- End points -->
   <g fill="black" >
