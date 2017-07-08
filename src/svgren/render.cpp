@@ -58,6 +58,17 @@ void cairoQuadraticCurveTo(cairo_t *cr, double x1, double y1, double x, double y
 		);
 }
 
+void cairoRelQuadraticCurveTo(cairo_t *cr, double x1, double y1, double x, double y){
+	cairo_rel_curve_to(cr,
+			2.0 / 3.0 * x1,
+			2.0 / 3.0 * y1,
+			2.0 / 3.0 * x1 + 1.0 / 3.0 * x,
+			2.0 / 3.0 * y1 + 1.0 / 3.0 * y,
+			x,
+			y
+		);
+}
+
 class CairoMatrixSave{
 	cairo_matrix_t m;
 	cairo_t* cr;
@@ -408,9 +419,6 @@ public:
 			dpi(dpi)
 	{
 		this->viewportStack.push_back(canvasSize);
-		//TODO: what are these for?
-//		cairo_set_operator(this->cr, CAIRO_OPERATOR_ATOP);
-//		cairo_set_operator(this->cr, CAIRO_OPERATOR_SOURCE);
 	}
 	
 	void render(const svgdom::GElement& e)override{
@@ -575,7 +583,7 @@ public:
 					cairoQuadraticCurveTo(this->cr, s.x1, s.y1, s.x, s.y);
 					break;
 				case svgdom::PathElement::Step::Type_e::QUADRATIC_REL:
-					//TODO:
+					cairoRelQuadraticCurveTo(this->cr, s.x1, s.y1, s.x, s.y);
 					break;
 				case svgdom::PathElement::Step::Type_e::QUADRATIC_SMOOTH_ABS:
 //					{

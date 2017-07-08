@@ -11,13 +11,12 @@ this_cxxflags += -std=c++11
 
 this_srcs += checksvg.cpp
 
-this_ldlibs += -lsvgdom -lsvgren -lpapki `pkg-config --libs cairo` -lpng -lstdc++
-this_ldflags += -L$(d)../../src
+this_ldlibs += -lsvgdom $(d)../../src/libsvgren$(soext) -lpapki `pkg-config --libs cairo` -lpng -lstdc++
 
-ifeq ($(prorab_os), macosx)
+ifeq ($(os), macosx)
     this_cxxflags += -stdlib=libc++ #this is needed to be able to use c++11 std lib
     this_ldlibs += -lc++
-else ifeq ($(prorab_os),windows)
+else ifeq ($(os),windows)
     this_ldlibs += -lpugixml
 endif
 
@@ -40,6 +39,6 @@ $(eval $(this_rules))
 
 
 #add dependency on libsvgren
-$(prorab_this_name): $(abspath $(d)../../src/libsvgren$(prorab_lib_extension))
+$(prorab_this_name): $(abspath $(d)../../src/libsvgren$(soext))
 
 $(eval $(call prorab-include,$(d)../../src/makefile))
