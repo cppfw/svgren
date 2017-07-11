@@ -8,7 +8,8 @@ SVG renderer library in C++.
 
 - full gradient support
 - group opacity
-- all shape kinds
+- all shapes support
+- all path elements support
 - render to memory
 
 **svgren** uses **[svgdom](https://github.com/igagis/svgdom)** to read the SVG file and **[cairo](http://cairographics.org)** to render graphics.
