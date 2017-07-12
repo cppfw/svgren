@@ -1,3 +1,15 @@
+libsvgren (0.4.20) unstable; urgency=medium
+
+  * release nuget package
+
+ -- Ivan Gagis <igagis@gmail.com>  Tue, 11 Jul 2017 10:38:01 +0300
+
+libsvgren (0.4.19) unstable; urgency=medium
+
+  * release nuget package
+
+ -- Ivan Gagis <igagis@gmail.com>  Tue, 11 Jul 2017 10:26:45 +0300
+
 libsvgren (0.4.18) unstable; urgency=medium
 
   * Smooth cubic curves implemented in paths

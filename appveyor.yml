@@ -28,16 +28,12 @@ before_build:
   - nuget restore msvs_solution/msvs_solution.sln
 
 build_script:
-  - cmd: if "%APPVEYOR_REPO_TAG%"=="true"
-           C:\cygwin64\bin\bash -e -l -c "prorab-apply-version.sh -v `prorab-deb-version.sh debian/changelog` cygwin/*.in" &&
-           C:\cygwin64\bin\bash -e -l -c "cygport cygwin/*.cygport download" &&
-           C:\cygwin64\bin\bash -e -l -c "cygport cygwin/*.cygport all" &&
-           C:\cygwin\bin\bash -e -l -c "prorab-apply-version.sh -v `prorab-deb-version.sh debian/changelog` cygwin/*.in" &&
-           C:\cygwin\bin\bash -e -l -c "cygport cygwin/*.cygport download" &&
-           C:\cygwin\bin\bash -e -l -c "cygport cygwin/*.cygport all"
-         else
-           C:\cygwin64\bin\bash -e -l -c "make" &&
-           C:\cygwin\bin\bash -e -l -c "make"
+#  - cmd: C:\cygwin64\bin\bash -e -l -c "prorab-apply-version.sh -v `prorab-deb-version.sh debian/changelog` cygwin/*.in" &&
+#         C:\cygwin64\bin\bash -e -l -c "cygport cygwin/*.cygport download" &&
+#         C:\cygwin64\bin\bash -e -l -c "cygport cygwin/*.cygport all" &&
+#         C:\cygwin\bin\bash -e -l -c "prorab-apply-version.sh -v `prorab-deb-version.sh debian/changelog` cygwin/*.in" &&
+#         C:\cygwin\bin\bash -e -l -c "cygport cygwin/*.cygport download" &&
+#         C:\cygwin\bin\bash -e -l -c "cygport cygwin/*.cygport all"
   - ps: .\nuget\build_nuget.ps1
 
 test_script:
@@ -46,7 +42,7 @@ test_script:
 #  - ps: .\tests\autotest-appveyor.ps1
 
 before_deploy:
-  - cmd: if "%APPVEYOR_REPO_TAG%"=="true" (C:\cygwin64\bin\bash -e -l -c "prorab-deploy-cygwin.sh -r igagis/cygwin-repo" && C:\cygwin\bin\bash -e -l -c "prorab-deploy-cygwin.sh -r igagis/cygwin-repo") else (echo Skipping deploy because not a tagged commit.)
+#  - cmd: if "%APPVEYOR_REPO_TAG%"=="true" (C:\cygwin64\bin\bash -e -l -c "prorab-deploy-cygwin.sh -r igagis/cygwin-repo" && C:\cygwin\bin\bash -e -l -c "prorab-deploy-cygwin.sh -r igagis/cygwin-repo") else (echo Skipping deploy because not a tagged commit.)
 
 
 deploy:

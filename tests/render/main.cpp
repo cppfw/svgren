@@ -141,7 +141,7 @@ int main(int argc, char **argv){
 	
 	XImage *ximage;
 	
-	int width = 800, height=800;
+	int width = imWidth, height=imHeight;
 
 	Display *display = XOpenDisplay(NULL);
 	
