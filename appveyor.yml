@@ -26,6 +26,7 @@ before_build:
   - cmd: xcopy /S C:\projects\build C:\cygwin64\home\appveyor\
   - cmd: xcopy /S C:\projects\build C:\cygwin\home\appveyor\
   - nuget restore msvs_solution/msvs_solution.sln
+  - nuget update msvs_solution/msvs_solution.sln
 
 build_script:
   - cmd: C:\cygwin64\bin\bash -e -l -c "prorab-apply-version.sh -v `prorab-deb-version.sh debian/changelog` cygwin/*.in" &&
