@@ -98,7 +98,7 @@ public:
 };
 
 
-struct Renderer : public svgdom::Renderer{
+struct Renderer : public svgdom::Visitor{
 	cairo_t* cr;
 	
 	const real dpi;
@@ -421,17 +421,17 @@ public:
 		this->viewportStack.push_back(canvasSize);
 	}
 	
-	void render(const svgdom::GElement& e)override{
+	void visit(const svgdom::GElement& e)override{
 		SetTempCairoContext cairoTempContext(*this, e);
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
 		
 		this->applyTransformations(e.transformations);
 		
-		e.Container::render(*this);
+		e.Container::accept(*this);
 	}
 	
-	void render(const svgdom::SvgElement& e)override{
+	void visit(const svgdom::SvgElement& e)override{
 		SetTempCairoContext cairoTempContext(*this, e);
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
@@ -520,10 +520,10 @@ public:
 			cairo_translate(this->cr, -e.viewBox[0], -e.viewBox[1]);
 		}
 		
-		e.Container::render(*this);
+		e.Container::accept(*this);
 	}
 	
-	void render(const svgdom::PathElement& e)override{
+	void visit(const svgdom::PathElement& e)override{
 		SetTempCairoContext cairoTempContext(*this, e);
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
@@ -846,7 +846,7 @@ public:
 		this->renderCurrentShape(e);
 	}
 	
-	void render(const svgdom::CircleElement& e) override{
+	void visit(const svgdom::CircleElement& e) override{
 		SetTempCairoContext cairoTempContext(*this, e);
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
@@ -865,7 +865,7 @@ public:
 		this->renderCurrentShape(e);
 	}
 	
-	void render(const svgdom::PolylineElement& e) override{
+	void visit(const svgdom::PolylineElement& e) override{
 		SetTempCairoContext cairoTempContext(*this, e);
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
@@ -887,7 +887,7 @@ public:
 		this->renderCurrentShape(e);
 	}
 
-	void render(const svgdom::PolygonElement& e) override{
+	void visit(const svgdom::PolygonElement& e) override{
 		SetTempCairoContext cairoTempContext(*this, e);
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
@@ -912,7 +912,7 @@ public:
 	}
 
 	
-	void render(const svgdom::LineElement& e) override{
+	void visit(const svgdom::LineElement& e) override{
 		SetTempCairoContext cairoTempContext(*this, e);
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
@@ -926,7 +926,7 @@ public:
 	}
 
 	
-	void render(const svgdom::EllipseElement& e) override{
+	void visit(const svgdom::EllipseElement& e) override{
 		SetTempCairoContext cairoTempContext(*this, e);
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
@@ -943,7 +943,7 @@ public:
 		this->renderCurrentShape(e);
 	}
 	
-	void render(const svgdom::RectElement& e) override{
+	void visit(const svgdom::RectElement& e) override{
 		SetTempCairoContext cairoTempContext(*this, e);
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
@@ -1143,7 +1143,7 @@ std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, unsigne
 	
 	Renderer r(cr, dpi, {{real(w), real(h)}});
 	
-	svg.render(r);
+	svg.accept(r);
 	
 	//swap Red and Blue
 	if(!bgra){
