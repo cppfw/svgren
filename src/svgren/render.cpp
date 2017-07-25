@@ -84,19 +84,6 @@ public:
 	}
 };
 
-struct Renderer;
-
-class SetTempCairoContext{
-	cairo_t* oldCr = nullptr;
-	cairo_surface_t* surface = nullptr;
-	Renderer& renderer;
-	
-	real opacity;
-public:
-	SetTempCairoContext(Renderer& renderer, const svgdom::Element& e);
-	~SetTempCairoContext()noexcept;
-};
-
 class CairoContextSaveRestore{
 	cairo_t* cr;
 	
@@ -113,6 +100,27 @@ public:
 	}
 };
 
+struct Renderer;
+
+class SetTempCairoContext{
+	cairo_t* oldCr = nullptr;
+	cairo_surface_t* surface = nullptr;
+	Renderer& renderer;
+	
+	real opacity;
+public:
+	SetTempCairoContext(Renderer& renderer, const svgdom::Element& e);
+	~SetTempCairoContext()noexcept;
+};
+
+class PushStyles{
+	Renderer& r;
+public:
+	PushStyles(Renderer& r, const svgdom::Styleable& s);
+	~PushStyles()noexcept;
+};
+
+
 
 struct Renderer : public svgdom::Visitor{
 	cairo_t* cr;
@@ -123,6 +131,29 @@ struct Renderer : public svgdom::Visitor{
 	
 	std::array<real, 2> curBoundingBoxPos = {{0, 0}};
 	std::array<real, 2> curBoundingBoxDim = {{0, 0}};
+	
+	std::vector<const svgdom::Styleable*> styleStack;
+	
+	const svgdom::StylePropertyValue* getStyleProperty(svgdom::StyleProperty_e p){
+		bool explicitInherit = false;
+		
+		for(auto i = this->styleStack.rbegin(); i != this->styleStack.rend(); ++i){
+			auto v = (*i)->findStyleProperty(p);
+			if(!v){
+				if(!explicitInherit && !svgdom::Styleable::isStylePropertyInherited(p)){
+					return nullptr;
+				}
+				continue;
+			}
+			if(v->type == svgdom::StylePropertyValue::Type_e::INHERIT){
+				explicitInherit = true;
+				continue;
+			}
+			return v;
+		}
+
+		return nullptr;
+	}
 	
 	real lengthToPx(const svgdom::Length& l, unsigned coordIndex = 0)const noexcept{
 		if(l.isPercent()){
@@ -442,6 +473,8 @@ public:
 	}
 	
 	void visit(const svgdom::GElement& e)override{
+		PushStyles pushStyles(*this, e);
+		
 		SetTempCairoContext cairoTempContext(*this, e);
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
@@ -452,6 +485,8 @@ public:
 	}
 	
 	void visit(const svgdom::UseElement& e)override{
+		PushStyles pushStyles(*this, e);
+		
 		SetTempCairoContext cairoTempContext(*this, e);
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
@@ -471,6 +506,8 @@ public:
 	}
 	
 	void visit(const svgdom::SvgElement& e)override{
+		PushStyles pushStyles(*this, e);
+		
 		SetTempCairoContext cairoTempContext(*this, e);
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
@@ -563,6 +600,8 @@ public:
 	}
 	
 	void visit(const svgdom::PathElement& e)override{
+		PushStyles pushStyles(*this, e);
+		
 		SetTempCairoContext cairoTempContext(*this, e);
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
@@ -886,6 +925,8 @@ public:
 	}
 	
 	void visit(const svgdom::CircleElement& e) override{
+		PushStyles pushStyles(*this, e);
+		
 		SetTempCairoContext cairoTempContext(*this, e);
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
@@ -905,6 +946,8 @@ public:
 	}
 	
 	void visit(const svgdom::PolylineElement& e) override{
+		PushStyles pushStyles(*this, e);
+		
 		SetTempCairoContext cairoTempContext(*this, e);
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
@@ -927,6 +970,8 @@ public:
 	}
 
 	void visit(const svgdom::PolygonElement& e) override{
+		PushStyles pushStyles(*this, e);
+		
 		SetTempCairoContext cairoTempContext(*this, e);
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
@@ -952,6 +997,8 @@ public:
 
 	
 	void visit(const svgdom::LineElement& e) override{
+		PushStyles pushStyles(*this, e);
+		
 		SetTempCairoContext cairoTempContext(*this, e);
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
@@ -966,6 +1013,8 @@ public:
 
 	
 	void visit(const svgdom::EllipseElement& e) override{
+		PushStyles pushStyles(*this, e);
+		
 		SetTempCairoContext cairoTempContext(*this, e);
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
@@ -986,6 +1035,8 @@ public:
 	}
 	
 	void visit(const svgdom::RectElement& e) override{
+		PushStyles pushStyles(*this, e);
+		
 		SetTempCairoContext cairoTempContext(*this, e);
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
@@ -1060,6 +1111,16 @@ public:
 		this->renderCurrentShape(e);
 	}
 };
+
+PushStyles::PushStyles(Renderer& r, const svgdom::Styleable& s) :
+		r(r)
+{
+	this->r.styleStack.push_back(&s);
+}
+
+PushStyles::~PushStyles()noexcept{
+	this->r.styleStack.pop_back();
+}
 
 SetTempCairoContext::SetTempCairoContext(Renderer& renderer, const svgdom::Element& e) :
 		renderer(renderer)
