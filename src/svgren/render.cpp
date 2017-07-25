@@ -346,8 +346,8 @@ struct Renderer : public svgdom::Visitor{
 		this->curBoundingBoxDim[1] = svgren::real(y2 - y1);
 	}
 	
-	void renderCurrentShape(const svgdom::Shape& e){
-		if(auto p = e.getStyleProperty(svgdom::StyleProperty_e::FILL_RULE)){
+	void renderCurrentShape(){
+		if(auto p = this->getStyleProperty(svgdom::StyleProperty_e::FILL_RULE)){
 			switch(p->fillRule){
 				default:
 					ASSERT(false)
@@ -365,13 +365,13 @@ struct Renderer : public svgdom::Visitor{
 		
 		svgdom::StylePropertyValue blackFill;
 		
-		auto fill = e.getStyleProperty(svgdom::StyleProperty_e::FILL);
+		auto fill = this->getStyleProperty(svgdom::StyleProperty_e::FILL);
 		if(!fill){
 			blackFill = svgdom::StylePropertyValue::parsePaint("black");
 			fill = &blackFill;
 		}
 		
-		auto stroke = e.getStyleProperty(svgdom::StyleProperty_e::STROKE);
+		auto stroke = this->getStyleProperty(svgdom::StyleProperty_e::STROKE);
 		
 		this->updateCurBoundingBox();
 		
@@ -381,7 +381,7 @@ struct Renderer : public svgdom::Visitor{
 				this->setGradient(fill->url);
 			}else{
 				svgdom::real opacity;
-				if(auto p = e.getStyleProperty(svgdom::StyleProperty_e::FILL_OPACITY)){
+				if(auto p = this->getStyleProperty(svgdom::StyleProperty_e::FILL_OPACITY)){
 					opacity = p->opacity;
 				}else{
 					opacity = 1;
@@ -399,13 +399,13 @@ struct Renderer : public svgdom::Visitor{
 		}
 		
 		if(stroke && !stroke->isNone()){
-			if(auto p = e.getStyleProperty(svgdom::StyleProperty_e::STROKE_WIDTH)){
+			if(auto p = this->getStyleProperty(svgdom::StyleProperty_e::STROKE_WIDTH)){
 				cairo_set_line_width(this->cr, this->lengthToPx(p->length));
 			}else{
 				cairo_set_line_width(this->cr, 1);
 			}
 			
-			if(auto p = e.getStyleProperty(svgdom::StyleProperty_e::STROKE_LINECAP)){
+			if(auto p = this->getStyleProperty(svgdom::StyleProperty_e::STROKE_LINECAP)){
 				switch(p->strokeLineCap){
 					default:
 						ASSERT(false)
@@ -424,7 +424,7 @@ struct Renderer : public svgdom::Visitor{
 				cairo_set_line_cap(this->cr, CAIRO_LINE_CAP_BUTT);
 			}
 			
-			if(auto p = e.getStyleProperty(svgdom::StyleProperty_e::STROKE_LINEJOIN)){
+			if(auto p = this->getStyleProperty(svgdom::StyleProperty_e::STROKE_LINEJOIN)){
 				switch(p->strokeLineJoin){
 					default:
 						ASSERT(false)
@@ -447,7 +447,7 @@ struct Renderer : public svgdom::Visitor{
 				this->setGradient(stroke->url);
 			}else{
 				svgdom::real opacity;
-				if(auto p = e.getStyleProperty(svgdom::StyleProperty_e::STROKE_OPACITY)){
+				if(auto p = this->getStyleProperty(svgdom::StyleProperty_e::STROKE_OPACITY)){
 					opacity = p->opacity;
 				}else{
 					opacity = 1;
@@ -921,7 +921,7 @@ public:
 			prevStep = &s;
 		}
 		
-		this->renderCurrentShape(e);
+		this->renderCurrentShape();
 	}
 	
 	void visit(const svgdom::CircleElement& e) override{
@@ -942,7 +942,7 @@ public:
 				2 * utki::pi<double>()
 			);
 		
-		this->renderCurrentShape(e);
+		this->renderCurrentShape();
 	}
 	
 	void visit(const svgdom::PolylineElement& e) override{
@@ -966,7 +966,7 @@ public:
 			cairo_line_to(this->cr, (*i)[0], (*i)[1]);
 		}
 		
-		this->renderCurrentShape(e);
+		this->renderCurrentShape();
 	}
 
 	void visit(const svgdom::PolygonElement& e) override{
@@ -992,7 +992,7 @@ public:
 		
 		cairo_close_path(this->cr);
 		
-		this->renderCurrentShape(e);
+		this->renderCurrentShape();
 	}
 
 	
@@ -1008,7 +1008,7 @@ public:
 		cairo_move_to(this->cr, this->lengthToPx(e.x1, 0), this->lengthToPx(e.y1, 1));
 		cairo_line_to(this->cr, this->lengthToPx(e.x2, 0), this->lengthToPx(e.y2, 1));
 		
-		this->renderCurrentShape(e);
+		this->renderCurrentShape();
 	}
 
 	
@@ -1031,7 +1031,7 @@ public:
 		}
 		
 		
-		this->renderCurrentShape(e);
+		this->renderCurrentShape();
 	}
 	
 	void visit(const svgdom::RectElement& e) override{
@@ -1108,7 +1108,7 @@ public:
 			cairo_close_path(this->cr);
 		}
 		
-		this->renderCurrentShape(e);
+		this->renderCurrentShape();
 	}
 };
 
