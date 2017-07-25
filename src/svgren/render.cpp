@@ -135,7 +135,7 @@ struct Renderer : public svgdom::Visitor{
 		return l.toPx(this->dpi);
 	}
 	
-	void applyTransformation(const svgdom::Transformable::Transformation& t){
+	void applyCairoTransformation(const svgdom::Transformable::Transformation& t){
 		switch(t.type){
 			case svgdom::Transformable::Transformation::Type_e::TRANSLATE:
 				cairo_translate(this->cr, t.x, t.y);
@@ -190,9 +190,9 @@ struct Renderer : public svgdom::Visitor{
 		}
 	}
 	
-	void applyTransformations(const decltype(svgdom::Transformable::transformations)& transformations){
+	void applyCairoTransformations(const decltype(svgdom::Transformable::transformations)& transformations){
 		for(auto& t : transformations){
-			this->applyTransformation(t);
+			this->applyCairoTransformation(t);
 		}
 	}
 	
@@ -254,7 +254,7 @@ struct Renderer : public svgdom::Visitor{
 				}
 			});
 
-			this->applyTransformations(gradient->transformations);
+			this->applyCairoTransformations(gradient->transformations);
 			
 			cairo_pattern_t* pat = nullptr;
 			utki::ScopeExit patScopeExit([&pat](){
@@ -446,7 +446,7 @@ public:
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
 		
-		this->applyTransformations(e.transformations);
+		this->applyCairoTransformations(e.transformations);
 		
 		e.Container::accept(*this);
 	}
@@ -456,7 +456,7 @@ public:
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
 		
-		this->applyTransformations(e.transformations);
+		this->applyCairoTransformations(e.transformations);
 		
 		{
 			svgdom::Transformable::Transformation t;
@@ -464,7 +464,7 @@ public:
 			t.x = this->lengthToPx(e.x, 0);
 			t.y = this->lengthToPx(e.y, 1);
 			
-			this->applyTransformation(t);
+			this->applyCairoTransformation(t);
 		}
 		
 		//TODO:
@@ -475,7 +475,7 @@ public:
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
 		
-		if(this->viewportStack.size() != 0){ //if not the outermost 'svg' element
+		if(this->viewportStack.size() > 1){ //if not the outermost 'svg' element
 			cairo_translate(
 					this->cr,
 					this->lengthToPx(e.x, 0),
@@ -567,7 +567,7 @@ public:
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
 		
-		this->applyTransformations(e.transformations);
+		this->applyCairoTransformations(e.transformations);
 		
 		double prevQuadraticX1 = 0;
 		double prevQuadraticY1 = 0;
@@ -890,7 +890,7 @@ public:
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
 		
-		this->applyTransformations(e.transformations);
+		this->applyCairoTransformations(e.transformations);
 		
 		cairo_arc(
 				this->cr,
@@ -909,7 +909,7 @@ public:
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
 		
-		this->applyTransformations(e.transformations);
+		this->applyCairoTransformations(e.transformations);
 		
 		if(e.points.size() == 0){
 			return;
@@ -931,7 +931,7 @@ public:
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
 		
-		this->applyTransformations(e.transformations);
+		this->applyCairoTransformations(e.transformations);
 		
 		if(e.points.size() == 0){
 			return;
@@ -956,7 +956,7 @@ public:
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
 		
-		this->applyTransformations(e.transformations);
+		this->applyCairoTransformations(e.transformations);
 		
 		cairo_move_to(this->cr, this->lengthToPx(e.x1, 0), this->lengthToPx(e.y1, 1));
 		cairo_line_to(this->cr, this->lengthToPx(e.x2, 0), this->lengthToPx(e.y2, 1));
@@ -970,7 +970,7 @@ public:
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
 		
-		this->applyTransformations(e.transformations);
+		this->applyCairoTransformations(e.transformations);
 		
 		{
 			CairoContextSaveRestore saveRestore(this->cr);
@@ -990,7 +990,7 @@ public:
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
 		
-		this->applyTransformations(e.transformations);
+		this->applyCairoTransformations(e.transformations);
 		
 		if((e.rx.value == 0 || !e.rx.isValid())
 				&& (e.ry.value == 0 || !e.ry.isValid()))
