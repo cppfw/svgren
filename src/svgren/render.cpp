@@ -109,7 +109,7 @@ class SetTempCairoContext{
 	
 	real opacity;
 public:
-	SetTempCairoContext(Renderer& renderer, const svgdom::Element& e);
+	SetTempCairoContext(Renderer& renderer);
 	~SetTempCairoContext()noexcept;
 };
 
@@ -475,7 +475,7 @@ public:
 	void visit(const svgdom::GElement& e)override{
 		PushStyles pushStyles(*this, e);
 		
-		SetTempCairoContext cairoTempContext(*this, e);
+		SetTempCairoContext cairoTempContext(*this);
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
 		
@@ -487,7 +487,7 @@ public:
 	void visit(const svgdom::UseElement& e)override{
 		PushStyles pushStyles(*this, e);
 		
-		SetTempCairoContext cairoTempContext(*this, e);
+		SetTempCairoContext cairoTempContext(*this);
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
 		
@@ -508,7 +508,7 @@ public:
 	void visit(const svgdom::SvgElement& e)override{
 		PushStyles pushStyles(*this, e);
 		
-		SetTempCairoContext cairoTempContext(*this, e);
+		SetTempCairoContext cairoTempContext(*this);
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
 		
@@ -602,7 +602,7 @@ public:
 	void visit(const svgdom::PathElement& e)override{
 		PushStyles pushStyles(*this, e);
 		
-		SetTempCairoContext cairoTempContext(*this, e);
+		SetTempCairoContext cairoTempContext(*this);
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
 		
@@ -927,7 +927,7 @@ public:
 	void visit(const svgdom::CircleElement& e) override{
 		PushStyles pushStyles(*this, e);
 		
-		SetTempCairoContext cairoTempContext(*this, e);
+		SetTempCairoContext cairoTempContext(*this);
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
 		
@@ -948,7 +948,7 @@ public:
 	void visit(const svgdom::PolylineElement& e) override{
 		PushStyles pushStyles(*this, e);
 		
-		SetTempCairoContext cairoTempContext(*this, e);
+		SetTempCairoContext cairoTempContext(*this);
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
 		
@@ -972,7 +972,7 @@ public:
 	void visit(const svgdom::PolygonElement& e) override{
 		PushStyles pushStyles(*this, e);
 		
-		SetTempCairoContext cairoTempContext(*this, e);
+		SetTempCairoContext cairoTempContext(*this);
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
 		
@@ -999,7 +999,7 @@ public:
 	void visit(const svgdom::LineElement& e) override{
 		PushStyles pushStyles(*this, e);
 		
-		SetTempCairoContext cairoTempContext(*this, e);
+		SetTempCairoContext cairoTempContext(*this);
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
 		
@@ -1015,7 +1015,7 @@ public:
 	void visit(const svgdom::EllipseElement& e) override{
 		PushStyles pushStyles(*this, e);
 		
-		SetTempCairoContext cairoTempContext(*this, e);
+		SetTempCairoContext cairoTempContext(*this);
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
 		
@@ -1037,7 +1037,7 @@ public:
 	void visit(const svgdom::RectElement& e) override{
 		PushStyles pushStyles(*this, e);
 		
-		SetTempCairoContext cairoTempContext(*this, e);
+		SetTempCairoContext cairoTempContext(*this);
 		
 		CairoMatrixSave cairoMatrixPush(this->cr);
 		
@@ -1122,10 +1122,10 @@ PushStyles::~PushStyles()noexcept{
 	this->r.styleStack.pop_back();
 }
 
-SetTempCairoContext::SetTempCairoContext(Renderer& renderer, const svgdom::Element& e) :
+SetTempCairoContext::SetTempCairoContext(Renderer& renderer) :
 		renderer(renderer)
 {
-	if(auto p = e.getStyleProperty(svgdom::StyleProperty_e::OPACITY)){
+	if(auto p = this->renderer.getStyleProperty(svgdom::StyleProperty_e::OPACITY)){
 		if(p->opacity < 1){
 			this->opacity = p->opacity;
 			this->surface = cairo_surface_create_similar_image(
