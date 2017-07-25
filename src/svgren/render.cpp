@@ -119,60 +119,64 @@ struct Renderer : public svgdom::Visitor{
 		return l.toPx(this->dpi);
 	}
 	
-	void applyTransformations(const decltype(svgdom::Transformable::transformations)& transformations)const{
+	void applyTransformation(const svgdom::Transformable::Transformation& t){
+		switch(t.type){
+			case svgdom::Transformable::Transformation::Type_e::TRANSLATE:
+				cairo_translate(this->cr, t.x, t.y);
+				break;
+			case svgdom::Transformable::Transformation::Type_e::MATRIX:
+				{
+					cairo_matrix_t matrix;
+					matrix.xx = t.a;
+					matrix.yx = t.b;
+					matrix.xy = t.c;
+					matrix.yy = t.d;
+					matrix.x0 = t.e;
+					matrix.y0 = t.f;
+					cairo_transform(this->cr, &matrix);
+				}
+				break;
+			case svgdom::Transformable::Transformation::Type_e::SCALE:
+				cairo_scale(this->cr, t.x, t.y);
+				break;
+			case svgdom::Transformable::Transformation::Type_e::ROTATE:
+				cairo_translate(this->cr, t.x, t.y);
+				cairo_rotate(this->cr, degToRad(t.angle));
+				cairo_translate(this->cr, -t.x, -t.y);
+				break;
+			case svgdom::Transformable::Transformation::Type_e::SKEWX:
+				{
+					cairo_matrix_t matrix;
+					matrix.xx = 1;
+					matrix.yx = 0;
+					matrix.xy = std::tan(t.angle);
+					matrix.yy = 1;
+					matrix.x0 = 0;
+					matrix.y0 = 0;
+					cairo_transform(this->cr, &matrix);
+				}
+				break;
+			case svgdom::Transformable::Transformation::Type_e::SKEWY:
+				{
+					cairo_matrix_t matrix;
+					matrix.xx = 1;
+					matrix.yx = std::tan(t.angle);
+					matrix.xy = 0;
+					matrix.yy = 1;
+					matrix.x0 = 0;
+					matrix.y0 = 0;
+					cairo_transform(this->cr, &matrix);
+				}
+				break;
+			default:
+				ASSERT(false)
+				break;
+		}
+	}
+	
+	void applyTransformations(const decltype(svgdom::Transformable::transformations)& transformations){
 		for(auto& t : transformations){
-			switch(t.type){
-				case svgdom::Transformable::Transformation::Type_e::TRANSLATE:
-					cairo_translate(this->cr, t.x, t.y);
-					break;
-				case svgdom::Transformable::Transformation::Type_e::MATRIX:
-					{
-						cairo_matrix_t matrix;
-						matrix.xx = t.a;
-						matrix.yx = t.b;
-						matrix.xy = t.c;
-						matrix.yy = t.d;
-						matrix.x0 = t.e;
-						matrix.y0 = t.f;
-						cairo_transform(this->cr, &matrix);
-					}
-					break;
-				case svgdom::Transformable::Transformation::Type_e::SCALE:
-					cairo_scale(this->cr, t.x, t.y);
-					break;
-				case svgdom::Transformable::Transformation::Type_e::ROTATE:
-					cairo_translate(this->cr, t.x, t.y);
-					cairo_rotate(this->cr, degToRad(t.angle));
-					cairo_translate(this->cr, -t.x, -t.y);
-					break;
-				case svgdom::Transformable::Transformation::Type_e::SKEWX:
-					{
-						cairo_matrix_t matrix;
-						matrix.xx = 1;
-						matrix.yx = 0;
-						matrix.xy = std::tan(t.angle);
-						matrix.yy = 1;
-						matrix.x0 = 0;
-						matrix.y0 = 0;
-						cairo_transform(this->cr, &matrix);
-					}
-					break;
-				case svgdom::Transformable::Transformation::Type_e::SKEWY:
-					{
-						cairo_matrix_t matrix;
-						matrix.xx = 1;
-						matrix.yx = std::tan(t.angle);
-						matrix.xy = 0;
-						matrix.yy = 1;
-						matrix.x0 = 0;
-						matrix.y0 = 0;
-						cairo_transform(this->cr, &matrix);
-					}
-					break;
-				default:
-					ASSERT(false)
-					break;
-			}
+			this->applyTransformation(t);
 		}
 	}
 	
@@ -429,6 +433,25 @@ public:
 		this->applyTransformations(e.transformations);
 		
 		e.Container::accept(*this);
+	}
+	
+	void visit(const svgdom::UseElement& e)override{
+		SetTempCairoContext cairoTempContext(*this, e);
+		
+		CairoMatrixSave cairoMatrixPush(this->cr);
+		
+		this->applyTransformations(e.transformations);
+		
+		{
+			svgdom::Transformable::Transformation t;
+			t.type = svgdom::Transformable::Transformation::Type_e::TRANSLATE;
+			t.x = this->lengthToPx(e.x, 0);
+			t.y = this->lengthToPx(e.y, 1);
+			
+			this->applyTransformation(t);
+		}
+		
+		//TODO:
 	}
 	
 	void visit(const svgdom::SvgElement& e)override{
