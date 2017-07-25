@@ -97,6 +97,22 @@ public:
 	~SetTempCairoContext()noexcept;
 };
 
+class CairoContextSaveRestore{
+	cairo_t* cr;
+	
+public:
+	CairoContextSaveRestore(cairo_t* cr) :
+			cr(cr)
+	{
+		ASSERT(this->cr)
+		cairo_save(this->cr);
+	}
+	
+	~CairoContextSaveRestore()noexcept{
+		cairo_restore(this->cr);
+	}
+};
+
 
 struct Renderer : public svgdom::Visitor{
 	cairo_t* cr;
@@ -956,12 +972,15 @@ public:
 		
 		this->applyTransformations(e.transformations);
 		
-		cairo_save(this->cr);
-		cairo_translate (this->cr, this->lengthToPx(e.cx, 0), this->lengthToPx(e.cy, 1));
-		cairo_scale (this->cr, this->lengthToPx(e.rx, 0), this->lengthToPx(e.ry, 1));
-		cairo_arc(this->cr, 0, 0, 1, 0, 2 * utki::pi<double>());
-		cairo_close_path(this->cr);
-		cairo_restore (this->cr);
+		{
+			CairoContextSaveRestore saveRestore(this->cr);
+
+			cairo_translate (this->cr, this->lengthToPx(e.cx, 0), this->lengthToPx(e.cy, 1));
+			cairo_scale (this->cr, this->lengthToPx(e.rx, 0), this->lengthToPx(e.ry, 1));
+			cairo_arc(this->cr, 0, 0, 1, 0, 2 * utki::pi<double>());
+			cairo_close_path(this->cr);
+		}
+		
 		
 		this->renderCurrentShape(e);
 	}
@@ -1001,35 +1020,39 @@ public:
 			cairo_move_to(this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1));
 			cairo_line_to(this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(e.width, 0) - this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1));
 			
-			cairo_save (this->cr);
-			cairo_translate (this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(e.width, 0) - this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(ry, 1));
-			cairo_scale (this->cr, this->lengthToPx(rx, 0), this->lengthToPx(ry, 1));
-			cairo_arc (this->cr, 0, 0, 1, -utki::pi<double>() / 2, 0);
-			cairo_restore (this->cr);
+			{
+				CairoContextSaveRestore saveRestore(this->cr);
+				cairo_translate (this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(e.width, 0) - this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(ry, 1));
+				cairo_scale (this->cr, this->lengthToPx(rx, 0), this->lengthToPx(ry, 1));
+				cairo_arc (this->cr, 0, 0, 1, -utki::pi<double>() / 2, 0);
+			}
 			
 			cairo_line_to(this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(e.width, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(e.height, 1) - this->lengthToPx(ry, 1));
 			
-			cairo_save (this->cr);
-			cairo_translate (this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(e.width, 0) - this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(e.height, 1) - this->lengthToPx(ry, 1));
-			cairo_scale (this->cr, this->lengthToPx(rx, 0), this->lengthToPx(ry, 1));
-			cairo_arc (this->cr, 0, 0, 1, 0, utki::pi<double>() / 2);
-			cairo_restore (this->cr);
+			{
+				CairoContextSaveRestore saveRestore(this->cr);
+				cairo_translate (this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(e.width, 0) - this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(e.height, 1) - this->lengthToPx(ry, 1));
+				cairo_scale (this->cr, this->lengthToPx(rx, 0), this->lengthToPx(ry, 1));
+				cairo_arc (this->cr, 0, 0, 1, 0, utki::pi<double>() / 2);
+			}
 			
 			cairo_line_to(this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(e.height, 1));
 			
-			cairo_save (this->cr);
-			cairo_translate (this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(e.height, 1) - this->lengthToPx(ry, 1));
-			cairo_scale (this->cr, this->lengthToPx(rx, 0), this->lengthToPx(ry, 1));
-			cairo_arc (this->cr, 0, 0, 1, utki::pi<double>() / 2, utki::pi<double>());
-			cairo_restore (this->cr);
+			{
+				CairoContextSaveRestore saveRestore(this->cr);
+				cairo_translate (this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(e.height, 1) - this->lengthToPx(ry, 1));
+				cairo_scale (this->cr, this->lengthToPx(rx, 0), this->lengthToPx(ry, 1));
+				cairo_arc (this->cr, 0, 0, 1, utki::pi<double>() / 2, utki::pi<double>());
+			}
 			
 			cairo_line_to(this->cr, this->lengthToPx(e.x, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(ry, 1));
 			
-			cairo_save (this->cr);
-			cairo_translate (this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(ry, 1));
-			cairo_scale (this->cr, this->lengthToPx(rx, 0), this->lengthToPx(ry, 1));
-			cairo_arc (this->cr, 0, 0, 1, utki::pi<double>(), utki::pi<double>() * 3 / 2);
-			cairo_restore (this->cr);
+			{
+				CairoContextSaveRestore saveRestore(this->cr);
+				cairo_translate (this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(ry, 1));
+				cairo_scale (this->cr, this->lengthToPx(rx, 0), this->lengthToPx(ry, 1));
+				cairo_arc (this->cr, 0, 0, 1, utki::pi<double>(), utki::pi<double>() * 3 / 2);
+			}
 			
 			cairo_close_path(this->cr);
 		}
@@ -1064,11 +1087,12 @@ SetTempCairoContext::SetTempCairoContext(Renderer& renderer, const svgdom::Eleme
 SetTempCairoContext::~SetTempCairoContext()noexcept{
 	if(this->oldCr){
 		//blit surface
-		cairo_save(this->oldCr);
-		cairo_identity_matrix(this->oldCr);
-		cairo_set_source_surface(this->oldCr, this->surface, 0, 0);
-		cairo_paint_with_alpha(this->oldCr, this->opacity);
-		cairo_restore(this->oldCr);
+		{
+			CairoContextSaveRestore saveRestore(this->oldCr);
+			cairo_identity_matrix(this->oldCr);
+			cairo_set_source_surface(this->oldCr, this->surface, 0, 0);
+			cairo_paint_with_alpha(this->oldCr, this->opacity);
+		}
 		
 		ASSERT(this->surface)
 		cairo_destroy(this->renderer.cr);
