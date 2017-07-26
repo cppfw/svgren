@@ -30,16 +30,17 @@ before_build:
 
 build_script:
 # cyggport downloads tagged sources from github, so use cygport only for tagged commits, otherwise build with just make.
-  - cmd: if "%APPVEYOR_REPO_TAG%"=="true"
+  - cmd: if "%APPVEYOR_REPO_TAG%"=="true" (
             C:\cygwin64\bin\bash -e -l -c "prorab-apply-version.sh -v `prorab-deb-version.sh debian/changelog` cygwin/*.in" &&
             C:\cygwin64\bin\bash -e -l -c "cygport cygwin/*.cygport download" &&
             C:\cygwin64\bin\bash -e -l -c "cygport cygwin/*.cygport all" &&
             C:\cygwin\bin\bash -e -l -c "prorab-apply-version.sh -v `prorab-deb-version.sh debian/changelog` cygwin/*.in" &&
             C:\cygwin\bin\bash -e -l -c "cygport cygwin/*.cygport download" &&
             C:\cygwin\bin\bash -e -l -c "cygport cygwin/*.cygport all"
-        else
+        ) else (
             C:\cygwin64\bin\bash -e -l -c "make" &&
             C:\cygwin\bin\bash -e -l -c "make"
+        )
   - ps: .\nuget\build_nuget.ps1
 
 test_script:

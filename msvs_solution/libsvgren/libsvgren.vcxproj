@@ -286,11 +286,10 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\svgren\config.hpp" />
-    <ClInclude Include="..\..\src\svgren\render.hpp" />
+    <ClInclude Include="..\..\src\**\*.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\svgren\render.cpp" />
+    <ClCompile Include="..\..\src\**\*.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
