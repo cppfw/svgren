@@ -5,7 +5,6 @@
 using namespace svgren;
 
 namespace{
-//TODO: remove in favor of CairoContextSaveRestore
 class CairoMatrixSaveRestore{
 	cairo_matrix_t m;
 	cairo_t* cr;
@@ -304,6 +303,7 @@ void Renderer::setCairoPatternSource(cairo_pattern_t* pat, const svgdom::Gradien
 
 void Renderer::setGradient(const svgdom::Element* gradientElement) {
 	if (auto gradient = dynamic_cast<const svgdom::Gradient*> (gradientElement)) {
+		//here we need to save/restore only matrix
 		CairoMatrixSaveRestore cairoMatrixPush(this->cr);
 
 		if (gradient->isBoundingBoxUnits()) {
