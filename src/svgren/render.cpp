@@ -69,17 +69,17 @@ void cairoRelQuadraticCurveTo(cairo_t *cr, double x1, double y1, double x, doubl
 		);
 }
 
-class CairoMatrixSave{
+class CairoMatrixSaveRestore{
 	cairo_matrix_t m;
 	cairo_t* cr;
 public:
-	CairoMatrixSave(cairo_t* cr) :
+	CairoMatrixSaveRestore(cairo_t* cr) :
 			cr(cr)
 	{
 		ASSERT(this->cr)
 		cairo_get_matrix(this->cr, &this->m);
 	}
-	~CairoMatrixSave()noexcept{
+	~CairoMatrixSaveRestore()noexcept{
 		cairo_set_matrix(this->cr, &this->m);
 	}
 };
@@ -272,7 +272,7 @@ struct Renderer : public svgdom::Visitor{
 	
 	void setGradient(const svgdom::Element* gradientElement){
 		if(auto gradient = dynamic_cast<const svgdom::Gradient*>(gradientElement)){
-			CairoMatrixSave cairoMatrixPush(this->cr);
+			CairoMatrixSaveRestore cairoMatrixPush(this->cr);
 			
 			if(gradient->isBoundingBoxUnits()){
 				cairo_translate(this->cr, this->curBoundingBoxPos[0], this->curBoundingBoxPos[1]);
@@ -477,22 +477,27 @@ public:
 		
 		SetTempCairoContext cairoTempContext(*this);
 		
-		CairoMatrixSave cairoMatrixPush(this->cr);
+		CairoMatrixSaveRestore cairoMatrixPush(this->cr);
 		
 		this->applyCairoTransformations(e.transformations);
 		
-		e.Container::accept(*this);
+		e.relayAccept(*this);
 	}
 	
 	void visit(const svgdom::UseElement& e)override{
+		if(!e.ref){
+			return;
+		}
+		
 		PushStyles pushStyles(*this, e);
 		
 		SetTempCairoContext cairoTempContext(*this);
 		
-		CairoMatrixSave cairoMatrixPush(this->cr);
+		CairoMatrixSaveRestore cairoMatrixPush(this->cr);
 		
 		this->applyCairoTransformations(e.transformations);
 		
+		//Apply x and y transformation
 		{
 			svgdom::Transformable::Transformation t;
 			t.type = svgdom::Transformable::Transformation::Type_e::TRANSLATE;
@@ -502,15 +507,122 @@ public:
 			this->applyCairoTransformation(t);
 		}
 		
-		//TODO:
+		if(auto symbol = dynamic_cast<const svgdom::SymbolElement*>(e.ref)){
+			ASSERT(symbol)
+			
+			PushStyles pushSymbolStyles(*this, *symbol);
+		
+			SetTempCairoContext symbolCairoTempContext(*this);
+
+			CairoMatrixSaveRestore symbolCairoMatrixPush(this->cr);
+
+			const auto hundredPercent = svgdom::Length::make(100, svgdom::Length::Unit_e::PERCENT);
+			this->viewportStack.push_back({{
+					this->lengthToPx(e.width.isValid() ? e.width : hundredPercent, 0),
+					this->lengthToPx(e.height.isValid() ? e.height : hundredPercent, 1)
+				}});
+			utki::ScopeExit symbolScopeExit([this](){
+				this->viewportStack.pop_back();
+			});
+
+			this->applyViewBox(*symbol);
+
+			symbol->relayAccept(*this);
+		}else if(auto svg = dynamic_cast<const svgdom::SvgElement*>(e.ref)){
+			ASSERT(svg)
+			//width and height of <use> element override those of <svg> element.
+			this->renderSvgElement(
+					*svg,
+					e.width.isValid() ? e.width : svg->width,
+					e.height.isValid() ? e.height : svg->height
+				);
+		}else{
+			ASSERT(e.ref)
+			e.ref->accept(*this);
+		}
 	}
 	
-	void visit(const svgdom::SvgElement& e)override{
+	void applyViewBox(const svgdom::ViewBoxed& e){
+		if(!e.isViewBoxSpecified()){
+			return;
+		}
+		
+		if(e.preserveAspectRatio.preserve != svgdom::PreserveAspectRatio_e::NONE){
+			if(e.viewBox[3] >= 0 && this->viewportStack.back()[1] >= 0){ //if viewBox width and viewport width are not 0
+				real scaleFactor, dx, dy;
+
+				real viewBoxAspect = e.viewBox[2] / e.viewBox[3];
+				real viewportAspect = this->viewportStack.back()[0] / this->viewportStack.back()[1];
+
+				if((viewBoxAspect >= viewportAspect && e.preserveAspectRatio.slice) || (viewBoxAspect < viewportAspect && !e.preserveAspectRatio.slice)){
+					//fit by Y
+					scaleFactor = this->viewportStack.back()[1] / e.viewBox[3];
+					dx = e.viewBox[2] - this->viewportStack.back()[0];
+					dy = 0;
+				}else{//viewBoxAspect < viewportAspect
+					//fit by X
+					scaleFactor = this->viewportStack.back()[0] / e.viewBox[2];
+					dx = 0;
+					dy = e.viewBox[3] - this->viewportStack.back()[1];
+				}
+				switch(e.preserveAspectRatio.preserve){
+					case svgdom::PreserveAspectRatio_e::NONE:
+						ASSERT(false)
+					default:
+						break;
+					case svgdom::PreserveAspectRatio_e::X_MIN_Y_MAX:
+						cairo_translate(this->cr, 0, dy);
+						break;
+					case svgdom::PreserveAspectRatio_e::X_MIN_Y_MID:
+						cairo_translate(this->cr, 0, dy / 2);
+						break;
+					case svgdom::PreserveAspectRatio_e::X_MIN_Y_MIN:
+						break;
+					case svgdom::PreserveAspectRatio_e::X_MID_Y_MAX:
+						cairo_translate(this->cr, dx / 2, dy);
+						break;
+					case svgdom::PreserveAspectRatio_e::X_MID_Y_MID:
+						cairo_translate(this->cr, dx / 2, dy / 2);
+						break;
+					case svgdom::PreserveAspectRatio_e::X_MID_Y_MIN:
+						cairo_translate(this->cr, dx / 2, 0);
+						break;
+					case svgdom::PreserveAspectRatio_e::X_MAX_Y_MAX:
+						cairo_translate(this->cr, dx, dy);
+						break;
+					case svgdom::PreserveAspectRatio_e::X_MAX_Y_MID:
+						cairo_translate(this->cr, dx, dy / 2);
+						break;
+					case svgdom::PreserveAspectRatio_e::X_MAX_Y_MIN:
+						cairo_translate(this->cr, dx, 0);
+						break;
+				}
+
+				cairo_scale(this->cr, scaleFactor, scaleFactor);
+			}
+		}else{//if no preserveAspectRatio enforced
+			if(e.viewBox[2] != 0 && e.viewBox[3] != 0){ //if viewBox width and height are not 0
+				cairo_scale(
+						this->cr,
+						this->viewportStack.back()[0] / e.viewBox[2],
+						this->viewportStack.back()[1] / e.viewBox[3]
+					);
+			}
+		}
+		cairo_translate(this->cr, -e.viewBox[0], -e.viewBox[1]);
+	}
+	
+	void renderSvgElement(
+			const svgdom::SvgElement& e,
+			const svgdom::Length& width,
+			const svgdom::Length& height
+		)
+	{
 		PushStyles pushStyles(*this, e);
 		
 		SetTempCairoContext cairoTempContext(*this);
 		
-		CairoMatrixSave cairoMatrixPush(this->cr);
+		CairoMatrixSaveRestore cairoMatrixPush(this->cr);
 		
 		if(this->viewportStack.size() > 1){ //if not the outermost 'svg' element
 			cairo_translate(
@@ -520,83 +632,21 @@ public:
 				);
 		}
 		
-		this->viewportStack.push_back(
-				{{
-					this->lengthToPx(e.width, 0),
-					this->lengthToPx(e.height, 1)
-				}}
-			);
+		this->viewportStack.push_back({{
+				this->lengthToPx(width, 0),
+				this->lengthToPx(height, 1)
+			}});
 		utki::ScopeExit scopeExit([this](){
 			this->viewportStack.pop_back();
 		});
 		
-		if(e.viewBox[0] >= 0){//if viewBox is specified
-			if(e.preserveAspectRatio.preserve != svgdom::PreserveAspectRatio_e::NONE){
-				if(e.viewBox[3] >= 0 && this->viewportStack.back()[1] >= 0){ //if viewBox width and viewport width are not 0
-					real scaleFactor, dx, dy;
-					
-					real viewBoxAspect = e.viewBox[2] / e.viewBox[3];
-					real viewportAspect = this->viewportStack.back()[0] / this->viewportStack.back()[1];
-					
-					if((viewBoxAspect >= viewportAspect && e.preserveAspectRatio.slice) || (viewBoxAspect < viewportAspect && !e.preserveAspectRatio.slice)){
-						//fit by Y
-						scaleFactor = this->viewportStack.back()[1] / e.viewBox[3];
-						dx = e.viewBox[2] - this->viewportStack.back()[0];
-						dy = 0;
-					}else{//viewBoxAspect < viewportAspect
-						//fit by X
-						scaleFactor = this->viewportStack.back()[0] / e.viewBox[2];
-						dx = 0;
-						dy = e.viewBox[3] - this->viewportStack.back()[1];
-					}
-					switch(e.preserveAspectRatio.preserve){
-						case svgdom::PreserveAspectRatio_e::NONE:
-							ASSERT(false)
-						default:
-							break;
-						case svgdom::PreserveAspectRatio_e::X_MIN_Y_MAX:
-							cairo_translate(this->cr, 0, dy);
-							break;
-						case svgdom::PreserveAspectRatio_e::X_MIN_Y_MID:
-							cairo_translate(this->cr, 0, dy / 2);
-							break;
-						case svgdom::PreserveAspectRatio_e::X_MIN_Y_MIN:
-							break;
-						case svgdom::PreserveAspectRatio_e::X_MID_Y_MAX:
-							cairo_translate(this->cr, dx / 2, dy);
-							break;
-						case svgdom::PreserveAspectRatio_e::X_MID_Y_MID:
-							cairo_translate(this->cr, dx / 2, dy / 2);
-							break;
-						case svgdom::PreserveAspectRatio_e::X_MID_Y_MIN:
-							cairo_translate(this->cr, dx / 2, 0);
-							break;
-						case svgdom::PreserveAspectRatio_e::X_MAX_Y_MAX:
-							cairo_translate(this->cr, dx, dy);
-							break;
-						case svgdom::PreserveAspectRatio_e::X_MAX_Y_MID:
-							cairo_translate(this->cr, dx, dy / 2);
-							break;
-						case svgdom::PreserveAspectRatio_e::X_MAX_Y_MIN:
-							cairo_translate(this->cr, dx, 0);
-							break;
-					}
-
-					cairo_scale(this->cr, scaleFactor, scaleFactor);
-				}
-			}else{//if no preserveAspectRatio enforced
-				if(e.viewBox[2] != 0 && e.viewBox[3] != 0){ //if viewBox width and height are not 0
-					cairo_scale(
-							this->cr,
-							this->viewportStack.back()[0] / e.viewBox[2],
-							this->viewportStack.back()[1] / e.viewBox[3]
-						);
-				}
-			}
-			cairo_translate(this->cr, -e.viewBox[0], -e.viewBox[1]);
-		}
+		this->applyViewBox(e);
 		
-		e.Container::accept(*this);
+		e.relayAccept(*this);
+	}
+	
+	void visit(const svgdom::SvgElement& e)override{
+		renderSvgElement(e, e.width, e.height);
 	}
 	
 	void visit(const svgdom::PathElement& e)override{
@@ -604,7 +654,7 @@ public:
 		
 		SetTempCairoContext cairoTempContext(*this);
 		
-		CairoMatrixSave cairoMatrixPush(this->cr);
+		CairoMatrixSaveRestore cairoMatrixPush(this->cr);
 		
 		this->applyCairoTransformations(e.transformations);
 		
@@ -902,7 +952,7 @@ public:
 						real angle1 = pointAngle(xc, yc, 0, 0);
 						real angle2 = pointAngle(xc, yc, xe, ye);
 						
-						CairoMatrixSave cairoMatrixPush1(this->cr);
+						CairoMatrixSaveRestore cairoMatrixPush1(this->cr);
 						
 						cairo_translate(this->cr, x, y);
 						cairo_rotate(this->cr, degToRad(s.xAxisRotation));
@@ -929,7 +979,7 @@ public:
 		
 		SetTempCairoContext cairoTempContext(*this);
 		
-		CairoMatrixSave cairoMatrixPush(this->cr);
+		CairoMatrixSaveRestore cairoMatrixPush(this->cr);
 		
 		this->applyCairoTransformations(e.transformations);
 		
@@ -950,7 +1000,7 @@ public:
 		
 		SetTempCairoContext cairoTempContext(*this);
 		
-		CairoMatrixSave cairoMatrixPush(this->cr);
+		CairoMatrixSaveRestore cairoMatrixPush(this->cr);
 		
 		this->applyCairoTransformations(e.transformations);
 		
@@ -974,7 +1024,7 @@ public:
 		
 		SetTempCairoContext cairoTempContext(*this);
 		
-		CairoMatrixSave cairoMatrixPush(this->cr);
+		CairoMatrixSaveRestore cairoMatrixPush(this->cr);
 		
 		this->applyCairoTransformations(e.transformations);
 		
@@ -1001,7 +1051,7 @@ public:
 		
 		SetTempCairoContext cairoTempContext(*this);
 		
-		CairoMatrixSave cairoMatrixPush(this->cr);
+		CairoMatrixSaveRestore cairoMatrixPush(this->cr);
 		
 		this->applyCairoTransformations(e.transformations);
 		
@@ -1017,7 +1067,7 @@ public:
 		
 		SetTempCairoContext cairoTempContext(*this);
 		
-		CairoMatrixSave cairoMatrixPush(this->cr);
+		CairoMatrixSaveRestore cairoMatrixPush(this->cr);
 		
 		this->applyCairoTransformations(e.transformations);
 		
@@ -1039,7 +1089,7 @@ public:
 		
 		SetTempCairoContext cairoTempContext(*this);
 		
-		CairoMatrixSave cairoMatrixPush(this->cr);
+		CairoMatrixSaveRestore cairoMatrixPush(this->cr);
 		
 		this->applyCairoTransformations(e.transformations);
 		

@@ -109,7 +109,8 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <flagsDictionary>
-        <element flagsID="0" commonFlags="-funsigned-char -std=c++11 -fPIC"/>
+        <element flagsID="0"
+                 commonFlags="-mtune=generic -march=x86-64 -std=c++11 -funsigned-char -fPIC"/>
         <element flagsID="1" commonFlags="-std=c++11"/>
       </flagsDictionary>
       <codeAssistance>
@@ -120,19 +121,29 @@
           <buildCommand>${MAKE} -f makefile</buildCommand>
           <cleanCommand>${MAKE} -f makefile clean</cleanCommand>
           <executablePath>tests/render/tests</executablePath>
-          <ccTool>
-            <incDir>
-              <pElem>.</pElem>
-            </incDir>
-          </ccTool>
         </makeTool>
         <preBuild>
           <preBuildCommandWorkingDir>.</preBuildCommandWorkingDir>
           <preBuildCommand></preBuildCommand>
         </preBuild>
       </makefileType>
+      <folder path="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/include/utki</pElem>
+            <pElem>/usr/include/svgdom</pElem>
+            <pElem>src/svgren</pElem>
+            <pElem>/usr/include/papki</pElem>
+            <pElem>/usr/include/cairo</pElem>
+            <pElem>tests/samples</pElem>
+          </incDir>
+        </ccTool>
+      </folder>
       <folder path="1">
         <ccTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
           <preprocessorList>
             <Elem>DEBUG</Elem>
           </preprocessorList>
@@ -158,7 +169,8 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <flagsDictionary>
-        <element flagsID="0" commonFlags="-funsigned-char -std=c++11 -fPIC"/>
+        <element flagsID="0"
+                 commonFlags="-mtune=generic -march=x86-64 -std=c++11 -funsigned-char -fPIC"/>
         <element flagsID="1" commonFlags="-std=c++11"/>
       </flagsDictionary>
       <codeAssistance>
@@ -169,21 +181,35 @@
           <buildCommand>${MAKE} -f makefile debug=true CXXFLAGS=-DM_SVGREN_WHITE_BACKGROUND</buildCommand>
           <cleanCommand>${MAKE} -f makefile clean</cleanCommand>
           <executablePath>tests/render/tests</executablePath>
-          <ccTool>
-            <incDir>
-              <pElem>.</pElem>
-            </incDir>
-            <preprocessorList>
-              <Elem>DEBUG</Elem>
-              <Elem>M_SVGREN_WHITE_BACKGROUND</Elem>
-            </preprocessorList>
-          </ccTool>
         </makeTool>
         <preBuild>
           <preBuildCommandWorkingDir>.</preBuildCommandWorkingDir>
           <preBuildCommand></preBuildCommand>
         </preBuild>
       </makefileType>
+      <folder path="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/include/utki</pElem>
+            <pElem>/usr/include/svgdom</pElem>
+            <pElem>src/svgren</pElem>
+            <pElem>/usr/include/papki</pElem>
+            <pElem>/usr/include/cairo</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
+      </folder>
+      <folder path="1">
+        <ccTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>DEBUG</Elem>
+            <Elem>M_SVGREN_WHITE_BACKGROUND</Elem>
+          </preprocessorList>
+        </ccTool>
+      </folder>
       <item path="src/svgren/render.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
         </ccTool>
