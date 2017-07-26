@@ -344,16 +344,30 @@ int main(int argc, char** argv) {
 		}
 		
 		for(size_t i = 0; i != img.size(); ++i){
-			std::uint32_t pixel =
-					std::uint32_t(png.buf()[i * png.numChannels()]) |
-					(std::uint32_t(png.buf()[i * png.numChannels() + 1]) << 8) |
-					(std::uint32_t(png.buf()[i * png.numChannels() + 2]) << 16) |
-					(std::uint32_t(png.buf()[i * png.numChannels() + 3]) << 24)
-				;
+			std::array<std::uint8_t, 4> rgba;
+			rgba[0] = img[i] & 0xff;
+			rgba[1] = (img[i] >> 8) & 0xff;
+			rgba[2] = (img[i] >> 16) & 0xff;
+			rgba[3] = (img[i] >> 24) & 0xff;
 
-			if(pixel != img[i]){
-				std::cout << "Error: PNG pixel #" << std::dec << i << " (0x" << std::hex << pixel << ") did not match SVG pixel (0x" << img[i] << ")" << std::endl;
-				return 1;
+			for(unsigned j = 0; j != rgba.size(); ++j){
+				auto c1 = rgba[j];
+				auto c2 = png.buf()[i * png.numChannels() + j];
+				if(c1 > c2){
+					std::swap(c1, c2);
+				}
+				
+				if(c2 - c1 > 1){ //allow difference in 1
+					std::uint32_t pixel =
+						std::uint32_t(png.buf()[i * png.numChannels()]) |
+						(std::uint32_t(png.buf()[i * png.numChannels() + 1]) << 8) |
+						(std::uint32_t(png.buf()[i * png.numChannels() + 2]) << 16) |
+						(std::uint32_t(png.buf()[i * png.numChannels() + 3]) << 24)
+					;
+					
+					std::cout << "Error: PNG pixel #" << std::dec << i << " (0x" << std::hex << pixel << ") did not match SVG pixel (0x" << img[i] << ")" << std::endl;
+					return 1;
+				}
 			}
 		}
 		
