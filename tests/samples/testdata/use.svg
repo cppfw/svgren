@@ -1,5 +1,6 @@
 <?xml version="1.0" standalone="no"?>
-<svg width="80" height="80" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<svg width="80" height="80" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+style="fill: yellow">
   <style>
     .classA {
       fill: red;
