@@ -7,7 +7,7 @@ this_soname := $(shell cat $(d)soname.txt)
 
 
 #Sources
-this_srcs += svgren/render.cpp
+this_srcs := $(call prorab-src-dir,.)
 
 
 

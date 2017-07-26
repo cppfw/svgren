@@ -89,6 +89,10 @@
           </preprocessorList>
         </ccTool>
       </folder>
+      <item path="src/svgren/Renderer.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="src/svgren/Renderer.hxx" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/svgren/render.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
         </ccTool>
@@ -149,6 +153,10 @@
           </preprocessorList>
         </ccTool>
       </folder>
+      <item path="src/svgren/Renderer.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="src/svgren/Renderer.hxx" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/svgren/render.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
         </ccTool>
@@ -195,6 +203,10 @@
           <preBuildCommand></preBuildCommand>
         </preBuild>
       </makefileType>
+      <item path="src/svgren/Renderer.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="src/svgren/Renderer.hxx" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/svgren/render.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
         </ccTool>
