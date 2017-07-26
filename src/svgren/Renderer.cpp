@@ -502,7 +502,7 @@ void Renderer::renderSvgElement(const svgdom::SvgElement& e, const svgdom::Lengt
 
 	SetTempCairoContext cairoTempContext(*this);
 
-	CairoMatrixSaveRestore cairoMatrixPush(this->cr);
+	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
 	if (this->viewportStack.size() > 1) { //if not the outermost 'svg' element
 		cairo_translate(
@@ -538,7 +538,7 @@ void Renderer::visit(const svgdom::GElement& e) {
 
 	SetTempCairoContext cairoTempContext(*this);
 
-	CairoMatrixSaveRestore cairoMatrixPush(this->cr);
+	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
 	this->applyCairoTransformations(e.transformations);
 
@@ -554,7 +554,7 @@ void Renderer::visit(const svgdom::UseElement& e) {
 
 	SetTempCairoContext cairoTempContext(*this);
 
-	CairoMatrixSaveRestore cairoMatrixPush(this->cr);
+	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
 	this->applyCairoTransformations(e.transformations);
 
@@ -575,7 +575,7 @@ void Renderer::visit(const svgdom::UseElement& e) {
 
 		SetTempCairoContext symbolCairoTempContext(*this);
 
-		CairoMatrixSaveRestore symbolCairoMatrixPush(this->cr);
+		CairoContextSaveRestore symbolCairoMatrixPush(this->cr);
 
 		const auto hundredPercent = svgdom::Length::make(100, svgdom::Length::Unit_e::PERCENT);
 		this->viewportStack.push_back({
@@ -613,7 +613,7 @@ void Renderer::visit(const svgdom::PathElement& e) {
 
 	SetTempCairoContext cairoTempContext(*this);
 
-	CairoMatrixSaveRestore cairoMatrixPush(this->cr);
+	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
 	this->applyCairoTransformations(e.transformations);
 
@@ -908,7 +908,7 @@ void Renderer::visit(const svgdom::PathElement& e) {
 					real angle1 = pointAngle(xc, yc, 0, 0);
 					real angle2 = pointAngle(xc, yc, xe, ye);
 
-					CairoMatrixSaveRestore cairoMatrixPush1(this->cr);
+					CairoContextSaveRestore cairoMatrixPush1(this->cr);
 
 					cairo_translate(this->cr, x, y);
 					cairo_rotate(this->cr, degToRad(s.xAxisRotation));
@@ -935,7 +935,7 @@ void Renderer::visit(const svgdom::CircleElement& e) {
 
 	SetTempCairoContext cairoTempContext(*this);
 
-	CairoMatrixSaveRestore cairoMatrixPush(this->cr);
+	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
 	this->applyCairoTransformations(e.transformations);
 
@@ -956,7 +956,7 @@ void Renderer::visit(const svgdom::PolylineElement& e) {
 
 	SetTempCairoContext cairoTempContext(*this);
 
-	CairoMatrixSaveRestore cairoMatrixPush(this->cr);
+	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
 	this->applyCairoTransformations(e.transformations);
 
@@ -980,7 +980,7 @@ void Renderer::visit(const svgdom::PolygonElement& e) {
 
 	SetTempCairoContext cairoTempContext(*this);
 
-	CairoMatrixSaveRestore cairoMatrixPush(this->cr);
+	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
 	this->applyCairoTransformations(e.transformations);
 
@@ -1006,7 +1006,7 @@ void Renderer::visit(const svgdom::LineElement& e) {
 
 	SetTempCairoContext cairoTempContext(*this);
 
-	CairoMatrixSaveRestore cairoMatrixPush(this->cr);
+	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
 	this->applyCairoTransformations(e.transformations);
 
@@ -1021,7 +1021,7 @@ void Renderer::visit(const svgdom::EllipseElement& e) {
 
 	SetTempCairoContext cairoTempContext(*this);
 
-	CairoMatrixSaveRestore cairoMatrixPush(this->cr);
+	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
 	this->applyCairoTransformations(e.transformations);
 
@@ -1043,7 +1043,7 @@ void Renderer::visit(const svgdom::RectElement& e) {
 
 	SetTempCairoContext cairoTempContext(*this);
 
-	CairoMatrixSaveRestore cairoMatrixPush(this->cr);
+	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
 	this->applyCairoTransformations(e.transformations);
 
