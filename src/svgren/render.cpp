@@ -3,6 +3,7 @@
 #include <utki/math.hpp>
 
 #include <svgdom/dom.hpp>
+#include <svgdom/Visitor.hpp>
 
 #include <cmath>
 
