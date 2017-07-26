@@ -640,29 +640,29 @@ void Renderer::visit(const svgdom::PathElement& e) {
 				cairo_rel_line_to(this->cr, s.x, s.y);
 				break;
 			case svgdom::PathElement::Step::Type_e::HORIZONTAL_LINE_ABS:
-			{
-				double x, y;
-				if (cairo_has_current_point(this->cr)) {
-					cairo_get_current_point(this->cr, &x, &y);
-				} else {
-					y = 0;
+				{
+					double x, y;
+					if (cairo_has_current_point(this->cr)) {
+						cairo_get_current_point(this->cr, &x, &y);
+					} else {
+						y = 0;
+					}
+					cairo_line_to(this->cr, s.x, y);
 				}
-				cairo_line_to(this->cr, s.x, y);
-			}
 				break;
 			case svgdom::PathElement::Step::Type_e::HORIZONTAL_LINE_REL:
 				cairo_rel_line_to(this->cr, s.x, 0);
 				break;
 			case svgdom::PathElement::Step::Type_e::VERTICAL_LINE_ABS:
-			{
-				double x, y;
-				if (cairo_has_current_point(this->cr)) {
-					cairo_get_current_point(this->cr, &x, &y);
-				} else {
-					x = 0;
+				{
+					double x, y;
+					if (cairo_has_current_point(this->cr)) {
+						cairo_get_current_point(this->cr, &x, &y);
+					} else {
+						x = 0;
+					}
+					cairo_line_to(this->cr, x, s.y);
 				}
-				cairo_line_to(this->cr, x, s.y);
-			}
 				break;
 			case svgdom::PathElement::Step::Type_e::VERTICAL_LINE_REL:
 				cairo_rel_line_to(this->cr, 0, s.y);
@@ -677,86 +677,86 @@ void Renderer::visit(const svgdom::PathElement& e) {
 				cairoRelQuadraticCurveTo(this->cr, s.x1, s.y1, s.x, s.y);
 				break;
 			case svgdom::PathElement::Step::Type_e::QUADRATIC_SMOOTH_ABS:
-			{
-				double x0, y0; //current point, absolute coordinates
-				if (cairo_has_current_point(this->cr)) {
-					cairo_get_current_point(this->cr, &x0, &y0);
-				} else {
-					cairo_move_to(this->cr, 0, 0);
-					x0 = 0;
-					y0 = 0;
-				}
+				{
+					double x0, y0; //current point, absolute coordinates
+					if (cairo_has_current_point(this->cr)) {
+						cairo_get_current_point(this->cr, &x0, &y0);
+					} else {
+						cairo_move_to(this->cr, 0, 0);
+						x0 = 0;
+						y0 = 0;
+					}
 
-				double x1, y1; //control point
-				switch (prevStep ? prevStep->type : svgdom::PathElement::Step::Type_e::UNKNOWN) {
-					case svgdom::PathElement::Step::Type_e::QUADRATIC_ABS:
-						x1 = -(prevStep->x1 - x0) + x0;
-						y1 = -(prevStep->y1 - y0) + y0;
-						break;
-					case svgdom::PathElement::Step::Type_e::QUADRATIC_SMOOTH_ABS:
-						x1 = -(prevQuadraticX1 - x0) + x0;
-						y1 = -(prevQuadraticY1 - y0) + y0;
-						break;
-					case svgdom::PathElement::Step::Type_e::QUADRATIC_REL:
-						x1 = -(prevStep->x1 - prevStep->x) + x0;
-						y1 = -(prevStep->y1 - prevStep->y) + y0;
-						break;
-					case svgdom::PathElement::Step::Type_e::QUADRATIC_SMOOTH_REL:
-						x1 = -(prevQuadraticX1 - prevStep->x) + x0;
-						y1 = -(prevQuadraticY1 - prevStep->y) + y0;
-						break;
-					default:
-						//No previous step or previous step is not a quadratic Bezier curve.
-						//Set first control point equal to current point
-						x1 = x0;
-						y1 = y0;
-						break;
+					double x1, y1; //control point
+					switch (prevStep ? prevStep->type : svgdom::PathElement::Step::Type_e::UNKNOWN) {
+						case svgdom::PathElement::Step::Type_e::QUADRATIC_ABS:
+							x1 = -(prevStep->x1 - x0) + x0;
+							y1 = -(prevStep->y1 - y0) + y0;
+							break;
+						case svgdom::PathElement::Step::Type_e::QUADRATIC_SMOOTH_ABS:
+							x1 = -(prevQuadraticX1 - x0) + x0;
+							y1 = -(prevQuadraticY1 - y0) + y0;
+							break;
+						case svgdom::PathElement::Step::Type_e::QUADRATIC_REL:
+							x1 = -(prevStep->x1 - prevStep->x) + x0;
+							y1 = -(prevStep->y1 - prevStep->y) + y0;
+							break;
+						case svgdom::PathElement::Step::Type_e::QUADRATIC_SMOOTH_REL:
+							x1 = -(prevQuadraticX1 - prevStep->x) + x0;
+							y1 = -(prevQuadraticY1 - prevStep->y) + y0;
+							break;
+						default:
+							//No previous step or previous step is not a quadratic Bezier curve.
+							//Set first control point equal to current point
+							x1 = x0;
+							y1 = y0;
+							break;
+					}
+					prevQuadraticX1 = x1;
+					prevQuadraticY1 = y1;
+					cairoQuadraticCurveTo(this->cr, x1, y1, s.x, s.y);
 				}
-				prevQuadraticX1 = x1;
-				prevQuadraticY1 = y1;
-				cairoQuadraticCurveTo(this->cr, x1, y1, s.x, s.y);
-			}
 				break;
 			case svgdom::PathElement::Step::Type_e::QUADRATIC_SMOOTH_REL:
-			{
-				double x0, y0; //current point, absolute coordinates
-				if (cairo_has_current_point(this->cr)) {
-					cairo_get_current_point(this->cr, &x0, &y0);
-				} else {
-					cairo_move_to(this->cr, 0, 0);
-					x0 = 0;
-					y0 = 0;
-				}
+				{
+					double x0, y0; //current point, absolute coordinates
+					if (cairo_has_current_point(this->cr)) {
+						cairo_get_current_point(this->cr, &x0, &y0);
+					} else {
+						cairo_move_to(this->cr, 0, 0);
+						x0 = 0;
+						y0 = 0;
+					}
 
-				double x1, y1; //control point
-				switch (prevStep ? prevStep->type : svgdom::PathElement::Step::Type_e::UNKNOWN) {
-					case svgdom::PathElement::Step::Type_e::QUADRATIC_SMOOTH_ABS:
-						x1 = -(prevQuadraticX1 - x0);
-						y1 = -(prevQuadraticY1 - y0);
-						break;
-					case svgdom::PathElement::Step::Type_e::QUADRATIC_ABS:
-						x1 = -(prevStep->x1 - x0);
-						y1 = -(prevStep->y1 - y0);
-						break;
-					case svgdom::PathElement::Step::Type_e::QUADRATIC_SMOOTH_REL:
-						x1 = -(prevQuadraticX1 - prevStep->x);
-						y1 = -(prevQuadraticY1 - prevStep->y);
-						break;
-					case svgdom::PathElement::Step::Type_e::QUADRATIC_REL:
-						x1 = -(prevStep->x1 - prevStep->x);
-						y1 = -(prevStep->y1 - prevStep->y);
-						break;
-					default:
-						//No previous step or previous step is not a quadratic Bezier curve.
-						//Set first control point equal to current point, i.e. 0 because this is Relative step.
-						x1 = 0;
-						y1 = 0;
-						break;
+					double x1, y1; //control point
+					switch (prevStep ? prevStep->type : svgdom::PathElement::Step::Type_e::UNKNOWN) {
+						case svgdom::PathElement::Step::Type_e::QUADRATIC_SMOOTH_ABS:
+							x1 = -(prevQuadraticX1 - x0);
+							y1 = -(prevQuadraticY1 - y0);
+							break;
+						case svgdom::PathElement::Step::Type_e::QUADRATIC_ABS:
+							x1 = -(prevStep->x1 - x0);
+							y1 = -(prevStep->y1 - y0);
+							break;
+						case svgdom::PathElement::Step::Type_e::QUADRATIC_SMOOTH_REL:
+							x1 = -(prevQuadraticX1 - prevStep->x);
+							y1 = -(prevQuadraticY1 - prevStep->y);
+							break;
+						case svgdom::PathElement::Step::Type_e::QUADRATIC_REL:
+							x1 = -(prevStep->x1 - prevStep->x);
+							y1 = -(prevStep->y1 - prevStep->y);
+							break;
+						default:
+							//No previous step or previous step is not a quadratic Bezier curve.
+							//Set first control point equal to current point, i.e. 0 because this is Relative step.
+							x1 = 0;
+							y1 = 0;
+							break;
+					}
+					prevQuadraticX1 = x1;
+					prevQuadraticY1 = y1;
+					cairoRelQuadraticCurveTo(this->cr, x1, y1, s.x, s.y);
 				}
-				prevQuadraticX1 = x1;
-				prevQuadraticY1 = y1;
-				cairoRelQuadraticCurveTo(this->cr, x1, y1, s.x, s.y);
-			}
 				break;
 			case svgdom::PathElement::Step::Type_e::CUBIC_ABS:
 				cairo_curve_to(this->cr, s.x1, s.y1, s.x2, s.y2, s.x, s.y);
@@ -765,160 +765,160 @@ void Renderer::visit(const svgdom::PathElement& e) {
 				cairo_rel_curve_to(this->cr, s.x1, s.y1, s.x2, s.y2, s.x, s.y);
 				break;
 			case svgdom::PathElement::Step::Type_e::CUBIC_SMOOTH_ABS:
-			{
-				double x0, y0; //current point, absolute coordinates
-				if (cairo_has_current_point(this->cr)) {
-					cairo_get_current_point(this->cr, &x0, &y0);
-				} else {
-					cairo_move_to(this->cr, 0, 0);
-					x0 = 0;
-					y0 = 0;
-				}
+				{
+					double x0, y0; //current point, absolute coordinates
+					if (cairo_has_current_point(this->cr)) {
+						cairo_get_current_point(this->cr, &x0, &y0);
+					} else {
+						cairo_move_to(this->cr, 0, 0);
+						x0 = 0;
+						y0 = 0;
+					}
 
-				double x1, y1; //first control point
-				switch (prevStep ? prevStep->type : svgdom::PathElement::Step::Type_e::UNKNOWN) {
-					case svgdom::PathElement::Step::Type_e::CUBIC_SMOOTH_ABS:
-					case svgdom::PathElement::Step::Type_e::CUBIC_ABS:
-						x1 = -(prevStep->x2 - x0) + x0;
-						y1 = -(prevStep->y2 - y0) + y0;
-						break;
-					case svgdom::PathElement::Step::Type_e::CUBIC_SMOOTH_REL:
-					case svgdom::PathElement::Step::Type_e::CUBIC_REL:
-						x1 = -(prevStep->x2 - prevStep->x) + x0;
-						y1 = -(prevStep->y2 - prevStep->y) + y0;
-						break;
-					default:
-						//No previous step or previous step is not a cubic Bezier curve.
-						//Set first control point equal to current point
-						x1 = x0;
-						y1 = y0;
-						break;
+					double x1, y1; //first control point
+					switch (prevStep ? prevStep->type : svgdom::PathElement::Step::Type_e::UNKNOWN) {
+						case svgdom::PathElement::Step::Type_e::CUBIC_SMOOTH_ABS:
+						case svgdom::PathElement::Step::Type_e::CUBIC_ABS:
+							x1 = -(prevStep->x2 - x0) + x0;
+							y1 = -(prevStep->y2 - y0) + y0;
+							break;
+						case svgdom::PathElement::Step::Type_e::CUBIC_SMOOTH_REL:
+						case svgdom::PathElement::Step::Type_e::CUBIC_REL:
+							x1 = -(prevStep->x2 - prevStep->x) + x0;
+							y1 = -(prevStep->y2 - prevStep->y) + y0;
+							break;
+						default:
+							//No previous step or previous step is not a cubic Bezier curve.
+							//Set first control point equal to current point
+							x1 = x0;
+							y1 = y0;
+							break;
+					}
+					cairo_curve_to(this->cr, x1, y1, s.x2, s.y2, s.x, s.y);
 				}
-				cairo_curve_to(this->cr, x1, y1, s.x2, s.y2, s.x, s.y);
-			}
 				break;
 			case svgdom::PathElement::Step::Type_e::CUBIC_SMOOTH_REL:
-			{
-				double x0, y0; //current point, absolute coordinates
-				if (cairo_has_current_point(this->cr)) {
-					cairo_get_current_point(this->cr, &x0, &y0);
-				} else {
-					cairo_move_to(this->cr, 0, 0);
-					x0 = 0;
-					y0 = 0;
-				}
+				{
+					double x0, y0; //current point, absolute coordinates
+					if (cairo_has_current_point(this->cr)) {
+						cairo_get_current_point(this->cr, &x0, &y0);
+					} else {
+						cairo_move_to(this->cr, 0, 0);
+						x0 = 0;
+						y0 = 0;
+					}
 
-				double x1, y1; //first control point
-				switch (prevStep ? prevStep->type : svgdom::PathElement::Step::Type_e::UNKNOWN) {
-					case svgdom::PathElement::Step::Type_e::CUBIC_SMOOTH_ABS:
-					case svgdom::PathElement::Step::Type_e::CUBIC_ABS:
-						x1 = -(prevStep->x2 - x0);
-						y1 = -(prevStep->y2 - y0);
-						break;
-					case svgdom::PathElement::Step::Type_e::CUBIC_SMOOTH_REL:
-					case svgdom::PathElement::Step::Type_e::CUBIC_REL:
-						x1 = -(prevStep->x2 - prevStep->x);
-						y1 = -(prevStep->y2 - prevStep->y);
-						break;
-					default:
-						//No previous step or previous step is not a cubic Bezier curve.
-						//Set first control point equal to current point, i.e. 0 because this is Relative step.
-						x1 = 0;
-						y1 = 0;
-						break;
+					double x1, y1; //first control point
+					switch (prevStep ? prevStep->type : svgdom::PathElement::Step::Type_e::UNKNOWN) {
+						case svgdom::PathElement::Step::Type_e::CUBIC_SMOOTH_ABS:
+						case svgdom::PathElement::Step::Type_e::CUBIC_ABS:
+							x1 = -(prevStep->x2 - x0);
+							y1 = -(prevStep->y2 - y0);
+							break;
+						case svgdom::PathElement::Step::Type_e::CUBIC_SMOOTH_REL:
+						case svgdom::PathElement::Step::Type_e::CUBIC_REL:
+							x1 = -(prevStep->x2 - prevStep->x);
+							y1 = -(prevStep->y2 - prevStep->y);
+							break;
+						default:
+							//No previous step or previous step is not a cubic Bezier curve.
+							//Set first control point equal to current point, i.e. 0 because this is Relative step.
+							x1 = 0;
+							y1 = 0;
+							break;
+					}
+					cairo_rel_curve_to(this->cr, x1, y1, s.x2, s.y2, s.x, s.y);
 				}
-				cairo_rel_curve_to(this->cr, x1, y1, s.x2, s.y2, s.x, s.y);
-			}
 				break;
 			case svgdom::PathElement::Step::Type_e::ARC_ABS:
 			case svgdom::PathElement::Step::Type_e::ARC_REL:
-			{
-				real x, y;
-				if (cairo_has_current_point(this->cr)) {
-					double xx, yy;
-					cairo_get_current_point(this->cr, &xx, &yy);
-					x = real(xx);
-					y = real(yy);
-				} else {
-					x = 0;
-					y = 0;
-				}
-
-				if (s.rx <= 0) {
-					break;
-				}
-				ASSERT(s.rx > 0)
-				real radiiRatio = s.ry / s.rx;
-
-				if (radiiRatio <= 0) {
-					break;
-				}
-
-				//cancel rotation of end point
-				real xe, ye;
 				{
-					real xx;
-					real yy;
-					if (s.type == svgdom::PathElement::Step::Type_e::ARC_ABS) {
-						xx = s.x - x;
-						yy = s.y - y;
+					real x, y;
+					if (cairo_has_current_point(this->cr)) {
+						double xx, yy;
+						cairo_get_current_point(this->cr, &xx, &yy);
+						x = real(xx);
+						y = real(yy);
 					} else {
-						xx = s.x;
-						yy = s.y;
+						x = 0;
+						y = 0;
 					}
 
-					auto res = rotate(xx, yy, degToRad(-s.xAxisRotation));
-					xe = std::get<0>(res);
-					ye = std::get<1>(res);
+					if (s.rx <= 0) {
+						break;
+					}
+					ASSERT(s.rx > 0)
+					real radiiRatio = s.ry / s.rx;
+
+					if (radiiRatio <= 0) {
+						break;
+					}
+
+					//cancel rotation of end point
+					real xe, ye;
+					{
+						real xx;
+						real yy;
+						if (s.type == svgdom::PathElement::Step::Type_e::ARC_ABS) {
+							xx = s.x - x;
+							yy = s.y - y;
+						} else {
+							xx = s.x;
+							yy = s.y;
+						}
+
+						auto res = rotate(xx, yy, degToRad(-s.xAxisRotation));
+						xe = std::get<0>(res);
+						ye = std::get<1>(res);
+					}
+					ASSERT(radiiRatio > 0)
+					ye /= radiiRatio;
+
+					//Find the angle between the end point and the x axis
+					real angle = pointAngle(0, 0, xe, ye);
+
+					//Put the end point onto the x axis
+					xe = std::sqrt(xe * xe + ye * ye);
+					ye = 0;
+
+					//Update the x radius if it is too small
+					real rx = std::max(s.rx, xe / 2);
+
+					//Find one circle center
+					real xc = xe / 2;
+					real yc = std::sqrt(rx * rx - xc * xc);
+
+					//Choose between the two circles according to flags
+					if (!(s.flags.largeArc ^ s.flags.sweep)) {
+						yc = -yc;
+					}
+
+					//Put the second point and the center back to their positions
+					{
+						auto res = rotate(xe, 0, angle);
+						xe = std::get<0>(res);
+						ye = std::get<1>(res);
+					}
+					{
+						auto res = rotate(xc, yc, angle);
+						xc = std::get<0>(res);
+						yc = std::get<1>(res);
+					}
+
+					real angle1 = pointAngle(xc, yc, 0, 0);
+					real angle2 = pointAngle(xc, yc, xe, ye);
+
+					CairoMatrixSaveRestore cairoMatrixPush1(this->cr);
+
+					cairo_translate(this->cr, x, y);
+					cairo_rotate(this->cr, degToRad(s.xAxisRotation));
+					cairo_scale(this->cr, 1, radiiRatio);
+					if (s.flags.sweep) {
+						cairo_arc(this->cr, xc, yc, rx, angle1, angle2);
+					} else {
+						cairo_arc_negative(this->cr, xc, yc, rx, angle1, angle2);
+					}
 				}
-				ASSERT(radiiRatio > 0)
-				ye /= radiiRatio;
-
-				//Find the angle between the end point and the x axis
-				real angle = pointAngle(0, 0, xe, ye);
-
-				//Put the end point onto the x axis
-				xe = std::sqrt(xe * xe + ye * ye);
-				ye = 0;
-
-				//Update the x radius if it is too small
-				real rx = std::max(s.rx, xe / 2);
-
-				//Find one circle center
-				real xc = xe / 2;
-				real yc = std::sqrt(rx * rx - xc * xc);
-
-				//Choose between the two circles according to flags
-				if (!(s.flags.largeArc ^ s.flags.sweep)) {
-					yc = -yc;
-				}
-
-				//Put the second point and the center back to their positions
-				{
-					auto res = rotate(xe, 0, angle);
-					xe = std::get<0>(res);
-					ye = std::get<1>(res);
-				}
-				{
-					auto res = rotate(xc, yc, angle);
-					xc = std::get<0>(res);
-					yc = std::get<1>(res);
-				}
-
-				real angle1 = pointAngle(xc, yc, 0, 0);
-				real angle2 = pointAngle(xc, yc, xe, ye);
-
-				CairoMatrixSaveRestore cairoMatrixPush1(this->cr);
-
-				cairo_translate(this->cr, x, y);
-				cairo_rotate(this->cr, degToRad(s.xAxisRotation));
-				cairo_scale(this->cr, 1, radiiRatio);
-				if (s.flags.sweep) {
-					cairo_arc(this->cr, xc, yc, rx, angle1, angle2);
-				} else {
-					cairo_arc_negative(this->cr, xc, yc, rx, angle1, angle2);
-				}
-			}
 				break;
 			default:
 				ASSERT_INFO(false, "unknown path step type: " << unsigned(s.type))
