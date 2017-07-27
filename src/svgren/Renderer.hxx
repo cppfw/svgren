@@ -13,12 +13,16 @@
 #include <svgdom/Visitor.hpp>
 
 #include "config.hpp"
+#include "Finder.hxx"
+#include "StyleStack.hxx"
 
 namespace svgren{
 
 
 class Renderer : public svgdom::Visitor{
 	cairo_t* cr;
+	
+	Finder finder;
 	
 	const real dpi;
 	
@@ -27,17 +31,8 @@ class Renderer : public svgdom::Visitor{
 	std::array<real, 2> curBoundingBoxPos = {{0, 0}};
 	std::array<real, 2> curBoundingBoxDim = {{0, 0}};
 	
+	StyleStack styleStack;
 	
-	std::vector<const svgdom::Styleable*> styleStack;
-		
-	const svgdom::StylePropertyValue* getStyleProperty(svgdom::StyleProperty_e p);
-	
-	class PushStyles{
-		Renderer& r;
-	public:
-		PushStyles(Renderer& r, const svgdom::Styleable& s);
-		~PushStyles()noexcept;
-	};
 	
 	class SetTempCairoContext{
 		cairo_t* oldCr = nullptr;
@@ -73,7 +68,12 @@ class Renderer : public svgdom::Visitor{
 		);
 	
 public:
-	Renderer(cairo_t* cr, real dpi, std::array<real, 2> canvasSize);
+	Renderer(
+			cairo_t* cr,
+			real dpi,
+			std::array<real, 2> canvasSize,
+			const svgdom::SvgElement& root
+		);
 	
 	void visit(const svgdom::GElement& e)override;
 	void visit(const svgdom::UseElement& e)override;

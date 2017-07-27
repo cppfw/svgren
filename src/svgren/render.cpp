@@ -91,7 +91,7 @@ std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, unsigne
 	
 	cairo_scale(cr, real(width) / real(w), real(height) / real(h));
 	
-	Renderer r(cr, dpi, {{real(w), real(h)}});
+	Renderer r(cr, dpi, {{real(w), real(h)}}, svg);
 	
 	svg.accept(r);
 	

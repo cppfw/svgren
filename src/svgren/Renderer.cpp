@@ -95,26 +95,7 @@ real pointAngle(real cx, real cy, real px, real py){
 }
 }
 
-const svgdom::StylePropertyValue* Renderer::getStyleProperty(svgdom::StyleProperty_e p) {
-	bool explicitInherit = false;
 
-	for (auto i = this->styleStack.rbegin(); i != this->styleStack.rend(); ++i) {
-		auto v = (*i)->findStyleProperty(p);
-		if (!v) {
-			if (!explicitInherit && !svgdom::Styleable::isStylePropertyInherited(p)) {
-				return nullptr;
-			}
-			continue;
-		}
-		if (v->type == svgdom::StylePropertyValue::Type_e::INHERIT) {
-			explicitInherit = true;
-			continue;
-		}
-		return v;
-	}
-
-	return nullptr;
-}
 
 real Renderer::lengthToPx(const svgdom::Length& l, unsigned coordIndex) const noexcept{
 	if (l.isPercent()) {
@@ -380,7 +361,7 @@ void Renderer::updateCurBoundingBox() {
 }
 
 void Renderer::renderCurrentShape() {
-	if (auto p = this->getStyleProperty(svgdom::StyleProperty_e::FILL_RULE)) {
+	if (auto p = this->styleStack.getStyleProperty(svgdom::StyleProperty_e::FILL_RULE)) {
 		switch (p->fillRule) {
 			default:
 				ASSERT(false)
@@ -398,13 +379,13 @@ void Renderer::renderCurrentShape() {
 
 	svgdom::StylePropertyValue blackFill;
 
-	auto fill = this->getStyleProperty(svgdom::StyleProperty_e::FILL);
+	auto fill = this->styleStack.getStyleProperty(svgdom::StyleProperty_e::FILL);
 	if (!fill) {
 		blackFill = svgdom::StylePropertyValue::parsePaint("black");
 		fill = &blackFill;
 	}
 
-	auto stroke = this->getStyleProperty(svgdom::StyleProperty_e::STROKE);
+	auto stroke = this->styleStack.getStyleProperty(svgdom::StyleProperty_e::STROKE);
 
 	this->updateCurBoundingBox();
 
@@ -414,7 +395,7 @@ void Renderer::renderCurrentShape() {
 			this->setGradient(fill->url);
 		} else {
 			svgdom::real opacity;
-			if (auto p = this->getStyleProperty(svgdom::StyleProperty_e::FILL_OPACITY)) {
+			if (auto p = this->styleStack.getStyleProperty(svgdom::StyleProperty_e::FILL_OPACITY)) {
 				opacity = p->opacity;
 			} else {
 				opacity = 1;
@@ -432,13 +413,13 @@ void Renderer::renderCurrentShape() {
 	}
 
 	if (stroke && !stroke->isNone()) {
-		if (auto p = this->getStyleProperty(svgdom::StyleProperty_e::STROKE_WIDTH)) {
+		if (auto p = this->styleStack.getStyleProperty(svgdom::StyleProperty_e::STROKE_WIDTH)) {
 			cairo_set_line_width(this->cr, this->lengthToPx(p->length));
 		} else {
 			cairo_set_line_width(this->cr, 1);
 		}
 
-		if (auto p = this->getStyleProperty(svgdom::StyleProperty_e::STROKE_LINECAP)) {
+		if (auto p = this->styleStack.getStyleProperty(svgdom::StyleProperty_e::STROKE_LINECAP)) {
 			switch (p->strokeLineCap) {
 				default:
 					ASSERT(false)
@@ -457,7 +438,7 @@ void Renderer::renderCurrentShape() {
 			cairo_set_line_cap(this->cr, CAIRO_LINE_CAP_BUTT);
 		}
 
-		if (auto p = this->getStyleProperty(svgdom::StyleProperty_e::STROKE_LINEJOIN)) {
+		if (auto p = this->styleStack.getStyleProperty(svgdom::StyleProperty_e::STROKE_LINEJOIN)) {
 			switch (p->strokeLineJoin) {
 				default:
 					ASSERT(false)
@@ -480,7 +461,7 @@ void Renderer::renderCurrentShape() {
 			this->setGradient(stroke->url);
 		} else {
 			svgdom::real opacity;
-			if (auto p = this->getStyleProperty(svgdom::StyleProperty_e::STROKE_OPACITY)) {
+			if (auto p = this->styleStack.getStyleProperty(svgdom::StyleProperty_e::STROKE_OPACITY)) {
 				opacity = p->opacity;
 			} else {
 				opacity = 1;
@@ -498,7 +479,7 @@ void Renderer::renderCurrentShape() {
 }
 
 void Renderer::renderSvgElement(const svgdom::SvgElement& e, const svgdom::Length& width, const svgdom::Length& height) {
-	PushStyles pushStyles(*this, e);
+	StyleStack::Push pushStyles(this->styleStack, e);
 
 	SetTempCairoContext cairoTempContext(*this);
 
@@ -526,15 +507,21 @@ void Renderer::renderSvgElement(const svgdom::SvgElement& e, const svgdom::Lengt
 	e.relayAccept(*this);
 }
 
-Renderer::Renderer(cairo_t* cr, real dpi, std::array<real, 2> canvasSize) :
+Renderer::Renderer(
+		cairo_t* cr,
+		real dpi,
+		std::array<real, 2> canvasSize,
+		const svgdom::SvgElement& root
+	) :
 		cr(cr),
+		finder(root),
 		dpi(dpi)
 {
 	this->viewportStack.push_back(canvasSize);
 }
 
 void Renderer::visit(const svgdom::GElement& e) {
-	PushStyles pushStyles(*this, e);
+	StyleStack::Push pushStyles(this->styleStack, e);
 
 	SetTempCairoContext cairoTempContext(*this);
 
@@ -550,7 +537,7 @@ void Renderer::visit(const svgdom::UseElement& e) {
 		return;
 	}
 
-	PushStyles pushStyles(*this, e);
+	StyleStack::Push pushStyles(this->styleStack, e);
 
 	SetTempCairoContext cairoTempContext(*this);
 
@@ -571,7 +558,7 @@ void Renderer::visit(const svgdom::UseElement& e) {
 	if (auto symbol = dynamic_cast<const svgdom::SymbolElement*> (e.ref)) {
 		ASSERT(symbol)
 
-		PushStyles pushSymbolStyles(*this, *symbol);
+		StyleStack::Push pushSymbolStyles(this->styleStack, *symbol);
 
 		SetTempCairoContext symbolCairoTempContext(*this);
 
@@ -609,7 +596,7 @@ void Renderer::visit(const svgdom::SvgElement& e) {
 }
 
 void Renderer::visit(const svgdom::PathElement& e) {
-	PushStyles pushStyles(*this, e);
+	StyleStack::Push pushStyles(this->styleStack, e);
 
 	SetTempCairoContext cairoTempContext(*this);
 
@@ -931,7 +918,7 @@ void Renderer::visit(const svgdom::PathElement& e) {
 }
 
 void Renderer::visit(const svgdom::CircleElement& e) {
-	PushStyles pushStyles(*this, e);
+	StyleStack::Push pushStyles(this->styleStack, e);
 
 	SetTempCairoContext cairoTempContext(*this);
 
@@ -952,7 +939,7 @@ void Renderer::visit(const svgdom::CircleElement& e) {
 }
 
 void Renderer::visit(const svgdom::PolylineElement& e) {
-	PushStyles pushStyles(*this, e);
+	StyleStack::Push pushStyles(this->styleStack, e);
 
 	SetTempCairoContext cairoTempContext(*this);
 
@@ -976,7 +963,7 @@ void Renderer::visit(const svgdom::PolylineElement& e) {
 }
 
 void Renderer::visit(const svgdom::PolygonElement& e) {
-	PushStyles pushStyles(*this, e);
+	StyleStack::Push pushStyles(this->styleStack, e);
 
 	SetTempCairoContext cairoTempContext(*this);
 
@@ -1002,7 +989,7 @@ void Renderer::visit(const svgdom::PolygonElement& e) {
 }
 
 void Renderer::visit(const svgdom::LineElement& e) {
-	PushStyles pushStyles(*this, e);
+	StyleStack::Push pushStyles(this->styleStack, e);
 
 	SetTempCairoContext cairoTempContext(*this);
 
@@ -1017,7 +1004,7 @@ void Renderer::visit(const svgdom::LineElement& e) {
 }
 
 void Renderer::visit(const svgdom::EllipseElement& e) {
-	PushStyles pushStyles(*this, e);
+	StyleStack::Push pushStyles(this->styleStack, e);
 
 	SetTempCairoContext cairoTempContext(*this);
 
@@ -1039,7 +1026,7 @@ void Renderer::visit(const svgdom::EllipseElement& e) {
 }
 
 void Renderer::visit(const svgdom::RectElement& e) {
-	PushStyles pushStyles(*this, e);
+	StyleStack::Push pushStyles(this->styleStack, e);
 
 	SetTempCairoContext cairoTempContext(*this);
 
@@ -1115,20 +1102,11 @@ void Renderer::visit(const svgdom::RectElement& e) {
 }
 
 
-Renderer::PushStyles::PushStyles(Renderer& r, const svgdom::Styleable& s) :
-		r(r)
-{
-	this->r.styleStack.push_back(&s);
-}
-
-Renderer::PushStyles::~PushStyles()noexcept{
-	this->r.styleStack.pop_back();
-}
 
 Renderer::SetTempCairoContext::SetTempCairoContext(Renderer& renderer) :
 		renderer(renderer)
 {
-	if(auto p = this->renderer.getStyleProperty(svgdom::StyleProperty_e::OPACITY)){
+	if(auto p = this->renderer.styleStack.getStyleProperty(svgdom::StyleProperty_e::OPACITY)){
 		if(p->opacity < 1){
 			this->opacity = p->opacity;
 			this->surface = cairo_surface_create_similar_image(
