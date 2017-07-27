@@ -562,40 +562,51 @@ void Renderer::visit(const svgdom::UseElement& e) {
 		this->applyCairoTransformation(t);
 	}
 
-	if (auto symbol = dynamic_cast<const svgdom::SymbolElement*> (ref.e)) {
-		ASSERT(symbol)
+	struct RefRenderer : public svgdom::Visitor{
+		Renderer& r;
+		const svgdom::UseElement& e;
+		
+		RefRenderer(Renderer& r, const svgdom::UseElement& e) : r(r), e(e){}
+		
+		void visit(const svgdom::SymbolElement& symbol)override{
+			StyleStack::Push pushSymbolStyles(this->r.styleStack, symbol);
 
-		StyleStack::Push pushSymbolStyles(this->styleStack, *symbol);
+			SetTempCairoContext symbolCairoTempContext(this->r);
 
-		SetTempCairoContext symbolCairoTempContext(*this);
+			CairoContextSaveRestore symbolCairoMatrixPush(this->r.cr);
 
-		CairoContextSaveRestore symbolCairoMatrixPush(this->cr);
+			const auto hundredPercent = svgdom::Length::make(100, svgdom::Length::Unit_e::PERCENT);
+			this->r.viewportStack.push_back({
+				{
+					this->r.lengthToPx(this->e.width.isValid() ? this->e.width : hundredPercent, 0),
+					this->r.lengthToPx(this->e.height.isValid() ? this->e.height : hundredPercent, 1)
+				}});
+			utki::ScopeExit symbolScopeExit([this]() {
+				this->r.viewportStack.pop_back();
+			});
 
-		const auto hundredPercent = svgdom::Length::make(100, svgdom::Length::Unit_e::PERCENT);
-		this->viewportStack.push_back({
-			{
-				this->lengthToPx(e.width.isValid() ? e.width : hundredPercent, 0),
-				this->lengthToPx(e.height.isValid() ? e.height : hundredPercent, 1)
-			}});
-		utki::ScopeExit symbolScopeExit([this]() {
-			this->viewportStack.pop_back();
-		});
+			this->r.applyViewBox(symbol);
 
-		this->applyViewBox(*symbol);
-
-		symbol->relayAccept(*this);
-	} else if (auto svg = dynamic_cast<const svgdom::SvgElement*> (ref.e)) {
-		ASSERT(svg)
-				//width and height of <use> element override those of <svg> element.
-				this->renderSvgElement(
-				*svg,
-				e.width.isValid() ? e.width : svg->width,
-				e.height.isValid() ? e.height : svg->height
+			symbol.relayAccept(this->r);
+		}
+		
+		void visit(const svgdom::SvgElement& svg)override{
+			//width and height of <use> element override those of <svg> element.
+			this->r.renderSvgElement(
+					svg,
+					this->e.width.isValid() ? this->e.width : svg.width,
+					this->e.height.isValid() ? this->e.height : svg.height
 				);
-	} else {
-		ASSERT(ref.e)
-		ref.e->accept(*this);
-	}
+		}
+		
+		void defaultVisit(const svgdom::Element& element)override{
+			element.accept(this->r);
+		}
+	} visitor{*this, e};
+	
+	ASSERT(ref.e)
+	
+	ref.e->accept(visitor);
 }
 
 void Renderer::visit(const svgdom::SvgElement& e) {

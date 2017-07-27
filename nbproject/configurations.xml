@@ -3,7 +3,9 @@
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df root="src" name="0">
       <df name="svgren">
+        <in>Finder.cpp</in>
         <in>Renderer.cpp</in>
+        <in>StyleStack.cpp</in>
         <in>render.cpp</in>
       </df>
     </df>
@@ -90,14 +92,6 @@
           </preprocessorList>
         </ccTool>
       </folder>
-      <item path="src/svgren/Finder.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="src/svgren/Finder.hxx" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/svgren/StyleStack.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="src/svgren/StyleStack.hxx" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="src/svgren/render.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
         </ccTool>
@@ -129,7 +123,7 @@
           <buildCommand>${MAKE} -f makefile</buildCommand>
           <cleanCommand>${MAKE} -f makefile clean</cleanCommand>
           <executablePath>tests/render/tests</executablePath>
-          <ccTool>
+          <ccTool flags="0">
             <incDir>
               <pElem>.</pElem>
             </incDir>
@@ -149,9 +143,6 @@
       </folder>
       <item path="src/svgren/Finder.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
-          <incDir>
-            <pElem>.</pElem>
-          </incDir>
         </ccTool>
       </item>
       <item path="src/svgren/Renderer.cpp" ex="false" tool="1" flavor2="8">
@@ -160,9 +151,6 @@
       </item>
       <item path="src/svgren/StyleStack.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
-          <incDir>
-            <pElem>.</pElem>
-          </incDir>
         </ccTool>
       </item>
       <item path="src/svgren/render.cpp" ex="false" tool="1" flavor2="8">
@@ -237,14 +225,6 @@
           </preprocessorList>
         </ccTool>
       </folder>
-      <item path="src/svgren/Finder.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="src/svgren/Finder.hxx" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/svgren/StyleStack.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="src/svgren/StyleStack.hxx" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="src/svgren/render.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
         </ccTool>
