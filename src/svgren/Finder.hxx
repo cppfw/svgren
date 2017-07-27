@@ -2,6 +2,8 @@
 
 #include <svgdom/elements/Element.hpp>
 
+#include "StyleStack.hxx"
+
 namespace svgren{
 
 class Finder{
@@ -12,7 +14,16 @@ public:
 	
 	Finder(const svgdom::Element& root);
 	
-	const svgdom::Element* findById(const std::string& id);
+	struct ElementInfo{
+		const svgdom::Element* e = nullptr;
+		StyleStack ss;
+		
+		explicit operator bool()const{
+			return this->e;
+		}
+	};
+	
+	ElementInfo findById(const std::string& id);
 };
 	
 }

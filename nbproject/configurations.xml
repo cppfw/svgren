@@ -119,10 +119,8 @@
       </toolsSet>
       <flagsDictionary>
         <element flagsID="0" commonFlags="-funsigned-char -std=c++11 -fPIC"/>
-        <element flagsID="1"
-                 commonFlags="-mtune=generic -march=x86-64 -std=c++11 -funsigned-char -fPIC"/>
-        <element flagsID="2" commonFlags="-std=c++11"/>
-        <element flagsID="3" commonFlags="-std=c++14"/>
+        <element flagsID="1" commonFlags="-std=c++11"/>
+        <element flagsID="2" commonFlags="-std=c++14"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -151,11 +149,8 @@
         </ccTool>
       </folder>
       <item path="src/svgren/Finder.cpp" ex="false" tool="1" flavor2="8">
-        <ccTool flags="1">
+        <ccTool flags="0">
           <incDir>
-            <pElem>src/svgren</pElem>
-            <pElem>/usr/include/svgdom</pElem>
-            <pElem>/usr/include/utki</pElem>
             <pElem>.</pElem>
           </incDir>
         </ccTool>
@@ -165,7 +160,10 @@
         </ccTool>
       </item>
       <item path="src/svgren/StyleStack.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="3">
+        <ccTool flags="2">
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="src/svgren/render.cpp" ex="false" tool="1" flavor2="8">
@@ -173,11 +171,11 @@
         </ccTool>
       </item>
       <item path="tests/render/main.cpp" ex="false" tool="1" flavor2="8">
-        <ccTool flags="2">
+        <ccTool flags="1">
         </ccTool>
       </item>
       <item path="tests/samples/checksvg.cpp" ex="false" tool="1" flavor2="8">
-        <ccTool flags="2">
+        <ccTool flags="1">
         </ccTool>
       </item>
     </conf>

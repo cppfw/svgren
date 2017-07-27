@@ -70,6 +70,7 @@ public:
 };
 }
 
-const svgdom::Element* Finder::findById(const std::string& id) {
-	return nullptr;
+Finder::ElementInfo Finder::findById(const std::string& id) {
+	//TODO:
+	return ElementInfo();
 }
