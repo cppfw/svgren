@@ -267,6 +267,7 @@ void Renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradien
 	for (auto& stop : g.getStops()) {
 		stop->accept(visitor);
 	}
+
 	switch (g.getSpreadMethod()) {
 		default:
 		case svgdom::Gradient::SpreadMethod_e::DEFAULT:
@@ -291,6 +292,34 @@ void Renderer::setGradient(const std::string& id) {
 		cairo_set_source_rgba(this->cr, 0, 0, 0, 0);
 		return;
 	}
+	
+	struct CommonPush{
+		Renderer& r;
+		
+		const svgdom::Gradient& gradient;
+		
+		CairoMatrixSaveRestore cairoMatrixPush; //here we need to save/restore only matrix
+		
+		CommonPush(Renderer& r, const svgdom::Gradient& gradient) :
+				r(r),
+				gradient(gradient),
+				cairoMatrixPush(r.cr)
+		{
+			if (this->gradient.isBoundingBoxUnits()) {
+				cairo_translate(this->r.cr, this->r.curBoundingBoxPos[0], this->r.curBoundingBoxPos[1]);
+				cairo_scale(this->r.cr, this->r.curBoundingBoxDim[0], this->r.curBoundingBoxDim[1]);
+				this->r.viewportStack.push_back({{1, 1}});
+			}
+
+			this->r.applyCairoTransformations(this->gradient.transformations);
+		}
+		
+		~CommonPush()noexcept{
+			if(this->gradient.isBoundingBoxUnits()) {
+				this->r.viewportStack.pop_back();
+			}
+		}
+	};
 	
 	struct GradientSetter : public svgdom::Visitor{
 		Renderer& r;
@@ -319,21 +348,7 @@ void Renderer::setGradient(const std::string& id) {
 	const svgdom::Element* gradientElement = g.e;
 	
 	if (auto gradient = dynamic_cast<const svgdom::Gradient*> (gradientElement)) {
-		//here we need to save/restore only matrix
-		CairoMatrixSaveRestore cairoMatrixPush(this->cr);
-
-		if (gradient->isBoundingBoxUnits()) {
-			cairo_translate(this->cr, this->curBoundingBoxPos[0], this->curBoundingBoxPos[1]);
-			cairo_scale(this->cr, this->curBoundingBoxDim[0], this->curBoundingBoxDim[1]);
-			this->viewportStack.push_back({{1, 1}});
-		}
-		utki::ScopeExit gradScopeExit([this, gradient]() {
-			if (gradient->isBoundingBoxUnits()) {
-				this->viewportStack.pop_back();
-			}
-		});
-
-		this->applyCairoTransformations(gradient->transformations);
+		CommonPush commonPush(*this, *gradient);
 
 		if (auto g = dynamic_cast<const svgdom::LinearGradientElement*> (gradient)) {
 			if(auto pat = cairo_pattern_create_linear(
