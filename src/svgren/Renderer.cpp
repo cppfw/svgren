@@ -293,14 +293,14 @@ void Renderer::setGradient(const std::string& id) {
 		return;
 	}
 	
-	struct CommonPush{
+	struct CommonGradientPush{
 		Renderer& r;
 		
 		const svgdom::Gradient& gradient;
 		
 		CairoMatrixSaveRestore cairoMatrixPush; //here we need to save/restore only matrix
 		
-		CommonPush(Renderer& r, const svgdom::Gradient& gradient) :
+		CommonGradientPush(Renderer& r, const svgdom::Gradient& gradient) :
 				r(r),
 				gradient(gradient),
 				cairoMatrixPush(r.cr)
@@ -314,7 +314,7 @@ void Renderer::setGradient(const std::string& id) {
 			this->r.applyCairoTransformations(this->gradient.transformations);
 		}
 		
-		~CommonPush()noexcept{
+		~CommonGradientPush()noexcept{
 			if(this->gradient.isBoundingBoxUnits()) {
 				this->r.viewportStack.pop_back();
 			}
@@ -327,46 +327,28 @@ void Renderer::setGradient(const std::string& id) {
 		GradientSetter(Renderer& r) : r(r) {}
 		
 		void visit(const svgdom::LinearGradientElement& gradient)override{
-			//TODO:
-		}
-		
-		void visit(const svgdom::RadialGradientElement& gradient)override{
-			//TODO:
-		}
-		
-		void defaultVisit(const svgdom::Element&)override{
-			cairo_set_source_rgba(this->r.cr, 0, 0, 0, 0);
-		}
-	} visitor(*this);
-	
-	ASSERT(g.e)
-	g.e->accept(visitor);
-	
-	
-	
-	
-	const svgdom::Element* gradientElement = g.e;
-	
-	if (auto gradient = dynamic_cast<const svgdom::Gradient*> (gradientElement)) {
-		CommonPush commonPush(*this, *gradient);
-
-		if (auto g = dynamic_cast<const svgdom::LinearGradientElement*> (gradient)) {
+			CommonGradientPush commonPush(this->r, gradient);
+			
 			if(auto pat = cairo_pattern_create_linear(
-					this->lengthToPx(g->getX1(), 0),
-					this->lengthToPx(g->getY1(), 1),
-					this->lengthToPx(g->getX2(), 0),
-					this->lengthToPx(g->getY2(), 1)
+					this->r.lengthToPx(gradient.getX1(), 0),
+					this->r.lengthToPx(gradient.getY1(), 1),
+					this->r.lengthToPx(gradient.getX2(), 0),
+					this->r.lengthToPx(gradient.getY2(), 1)
 				))
 			{
 				utki::ScopeExit patScopeExit([&pat]() {cairo_pattern_destroy(pat);});
-				this->setCairoPatternSource(*pat, *g);
+				this->r.setCairoPatternSource(*pat, gradient);
 			}
-		} else if (auto g = dynamic_cast<const svgdom::RadialGradientElement*> (gradient)) {
-			auto cx = g->getCx();
-			auto cy = g->getCy();
-			auto r = g->getR();
-			auto fx = g->getFx();
-			auto fy = g->getFy();
+		}
+		
+		void visit(const svgdom::RadialGradientElement& gradient)override{
+			CommonGradientPush commonPush(this->r, gradient);
+			
+			auto cx = gradient.getCx();
+			auto cy = gradient.getCy();
+			auto radius = gradient.getR();
+			auto fx = gradient.getFx();
+			auto fy = gradient.getFy();
 
 			if (!fx.isValid()) {
 				fx = cx;
@@ -376,19 +358,26 @@ void Renderer::setGradient(const std::string& id) {
 			}
 
 			if(auto pat = cairo_pattern_create_radial(
-					this->lengthToPx(fx, 0),
-					this->lengthToPx(fy, 1),
+					this->r.lengthToPx(fx, 0),
+					this->r.lengthToPx(fy, 1),
 					0,
-					this->lengthToPx(cx, 0),
-					this->lengthToPx(cy, 1),
-					this->lengthToPx(r)
+					this->r.lengthToPx(cx, 0),
+					this->r.lengthToPx(cy, 1),
+					this->r.lengthToPx(radius)
 				))
 			{
 				utki::ScopeExit patScopeExit([&pat]() {cairo_pattern_destroy(pat);});
-				this->setCairoPatternSource(*pat, *g);
+				this->r.setCairoPatternSource(*pat, gradient);
 			}
 		}
-	}
+		
+		void defaultVisit(const svgdom::Element&)override{
+			cairo_set_source_rgba(this->r.cr, 0, 0, 0, 0);
+		}
+	} visitor(*this);
+	
+	ASSERT(g.e)
+	g.e->accept(visitor);
 }
 
 void Renderer::updateCurBoundingBox() {
