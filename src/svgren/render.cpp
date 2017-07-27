@@ -1,13 +1,9 @@
-#include <utki/config.hpp>
-#include <utki/util.hpp>
-#include <utki/math.hpp>
-
-#include "Renderer.hxx"
-
-#include <cmath>
-
 #include "render.hpp"
 
+#include <utki/config.hpp>
+#include <utki/util.hpp>
+
+#include "Renderer.hxx"
 #include "config.hpp"
 
 using namespace svgren;
