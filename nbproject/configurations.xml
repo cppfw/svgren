@@ -120,7 +120,6 @@
       <flagsDictionary>
         <element flagsID="0" commonFlags="-funsigned-char -std=c++11 -fPIC"/>
         <element flagsID="1" commonFlags="-std=c++11"/>
-        <element flagsID="2" commonFlags="-std=c++14"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -159,8 +158,8 @@
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="src/svgren/StyleStack.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
+      <item path="src/svgren/StyleStack.cpp" ex="false" tool="1" flavor2="8">
+        <ccTool flags="0">
           <incDir>
             <pElem>.</pElem>
           </incDir>

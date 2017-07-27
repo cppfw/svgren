@@ -533,10 +533,17 @@ void Renderer::visit(const svgdom::GElement& e) {
 }
 
 void Renderer::visit(const svgdom::UseElement& e) {
-	if (!e.ref) {
+	auto refId = e.getLocalIdFromIri();
+	
+	if (refId.length() == 0) {
 		return;
 	}
 
+	auto ref = this->finder.findById(refId);
+	if(!ref){
+		return;
+	}
+	
 	StyleStack::Push pushStyles(this->styleStack, e);
 
 	SetTempCairoContext cairoTempContext(*this);

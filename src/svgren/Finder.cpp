@@ -10,67 +10,89 @@ Finder::Finder(const svgdom::Element& root) :
 }
 
 namespace{
-class FindByIdVisitor : svgdom::Visitor{
+class FindByIdVisitor : public svgdom::Visitor{
+	const std::string& id;
 public:
-	const svgdom::Element* found = nullptr;
+	FindByIdVisitor(const std::string& id) :
+			id(id)
+	{}
 	
-	void visitContainer(const svgdom::Container& c){
-		//TODO:
+	Finder::ElementInfo found;
+	
+	void visitContainer(const svgdom::Element& e, const svgdom::Container& c, const svgdom::Styleable& s){
+		this->found.ss.stack.push_back(&s);
+		if(this->id == e.id){
+			this->found.e = &e;
+			return;
+		}
+		c.relayAccept(*this);
+		if(this->found){
+			return;
+		}
+		this->found.ss.stack.pop_back();
 	}
-	void visitElement(const svgdom::Element& e){
-		//TODO:
+	void visitElement(const svgdom::Element& e, const svgdom::Styleable& s){
+		this->found.ss.stack.push_back(&s);
+		if(this->id == e.id){
+			this->found.e = &e;
+			return;
+		}
+		this->found.ss.stack.pop_back();
 	}
 	
 	void visit(const svgdom::GElement& e) override{
-		this->visitContainer(e);
+		this->visitContainer(e, e, e);
 	}
 	void visit(const svgdom::SymbolElement& e) override{
-		this->visitContainer(e);
+		this->visitContainer(e, e, e);
 	}
 	void visit(const svgdom::SvgElement& e) override{
-		this->visitContainer(e);
+		this->visitContainer(e, e, e);
 	}
 	void visit(const svgdom::RadialGradientElement& e) override{
-		this->visitContainer(e);
+		this->visitContainer(e, e, e);
 	}
 	void visit(const svgdom::LinearGradientElement& e) override{
-		this->visitContainer(e);
+		this->visitContainer(e, e, e);
 	}
 	void visit(const svgdom::DefsElement& e) override{
-		this->visitContainer(e);
+		this->visitContainer(e, e, e);
 	}
 
 	void visit(const svgdom::UseElement& e) override{
-		this->visitElement(e);
+		this->visitElement(e, e);
 	}
 	void visit(const svgdom::LineElement& e) override{
-		this->visitElement(e);
+		this->visitElement(e, e);
 	}
 	void visit(const svgdom::EllipseElement& e) override{
-		this->visitElement(e);
+		this->visitElement(e, e);
 	}
 	void visit(const svgdom::CircleElement& e) override{
-		this->visitElement(e);
+		this->visitElement(e, e);
 	}
 	void visit(const svgdom::PolygonElement& e) override{
-		this->visitElement(e);
+		this->visitElement(e, e);
 	}
 	void visit(const svgdom::Gradient::StopElement& e) override{
-		this->visitElement(e);
+		this->visitElement(e, e);
 	}
 	void visit(const svgdom::PolylineElement& e) override{
-		this->visitElement(e);
+		this->visitElement(e, e);
 	}
 	void visit(const svgdom::PathElement& e) override{
-		this->visitElement(e);
+		this->visitElement(e, e);
 	}
 	void visit(const svgdom::RectElement& e) override{
-		this->visitElement(e);
+		this->visitElement(e, e);
 	}
 };
 }
 
 Finder::ElementInfo Finder::findById(const std::string& id) {
-	//TODO:
-	return ElementInfo();
+	FindByIdVisitor visitor(id);
+	
+	this->root.accept(visitor);
+	
+	return visitor.found;
 }
