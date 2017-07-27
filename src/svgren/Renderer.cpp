@@ -240,11 +240,14 @@ void Renderer::applyViewBox(const svgdom::ViewBoxed& e) {
 }
 
 void Renderer::setCairoPatternSource(cairo_pattern_t* pat, const svgdom::Gradient& g) {
-	if (!pat) {
-		return;
-	}
 
+
+	class ColorStopAdder : public svgdom::Visitor{
+		
+	};
+	
 	for (auto& stop : g.getStops()) {
+		
 		if (auto s = dynamic_cast<svgdom::Gradient::StopElement*> (stop.get())) {
 			svgdom::Rgb rgb;
 			if (auto p = s->getStyleProperty(svgdom::StyleProperty_e::STOP_COLOR)) {
@@ -322,8 +325,7 @@ void Renderer::setGradient(const std::string& id) {
 		if (gradient->isBoundingBoxUnits()) {
 			cairo_translate(this->cr, this->curBoundingBoxPos[0], this->curBoundingBoxPos[1]);
 			cairo_scale(this->cr, this->curBoundingBoxDim[0], this->curBoundingBoxDim[1]);
-			this->viewportStack.push_back({
-				{1, 1}});
+			this->viewportStack.push_back({{1, 1}});
 		}
 		utki::ScopeExit gradScopeExit([this, gradient]() {
 			if (gradient->isBoundingBoxUnits()) {
@@ -334,14 +336,16 @@ void Renderer::setGradient(const std::string& id) {
 		this->applyCairoTransformations(gradient->transformations);
 
 		if (auto g = dynamic_cast<const svgdom::LinearGradientElement*> (gradient)) {
-			auto pat = cairo_pattern_create_linear(
+			if(auto pat = cairo_pattern_create_linear(
 					this->lengthToPx(g->getX1(), 0),
 					this->lengthToPx(g->getY1(), 1),
 					this->lengthToPx(g->getX2(), 0),
 					this->lengthToPx(g->getY2(), 1)
-					);
-			utki::ScopeExit patScopeExit([&pat]() {cairo_pattern_destroy(pat);});
-			this->setCairoPatternSource(pat, *g);
+				))
+			{
+				utki::ScopeExit patScopeExit([&pat]() {cairo_pattern_destroy(pat);});
+				this->setCairoPatternSource(pat, *g);
+			}
 		} else if (auto g = dynamic_cast<const svgdom::RadialGradientElement*> (gradient)) {
 			auto cx = g->getCx();
 			auto cy = g->getCy();
@@ -356,16 +360,18 @@ void Renderer::setGradient(const std::string& id) {
 				fy = cy;
 			}
 
-			auto pat = cairo_pattern_create_radial(
+			if(auto pat = cairo_pattern_create_radial(
 					this->lengthToPx(fx, 0),
 					this->lengthToPx(fy, 1),
 					0,
 					this->lengthToPx(cx, 0),
 					this->lengthToPx(cy, 1),
 					this->lengthToPx(r)
-					);
-			utki::ScopeExit patScopeExit([&pat]() {cairo_pattern_destroy(pat);});
-			this->setCairoPatternSource(pat, *g);
+				))
+			{
+				utki::ScopeExit patScopeExit([&pat]() {cairo_pattern_destroy(pat);});
+				this->setCairoPatternSource(pat, *g);
+			}
 		}
 	}
 }
