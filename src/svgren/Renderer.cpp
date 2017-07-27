@@ -562,7 +562,7 @@ void Renderer::visit(const svgdom::UseElement& e) {
 		this->applyCairoTransformation(t);
 	}
 
-	if (auto symbol = dynamic_cast<const svgdom::SymbolElement*> (e.ref)) {
+	if (auto symbol = dynamic_cast<const svgdom::SymbolElement*> (ref.e)) {
 		ASSERT(symbol)
 
 		StyleStack::Push pushSymbolStyles(this->styleStack, *symbol);
@@ -584,7 +584,7 @@ void Renderer::visit(const svgdom::UseElement& e) {
 		this->applyViewBox(*symbol);
 
 		symbol->relayAccept(*this);
-	} else if (auto svg = dynamic_cast<const svgdom::SvgElement*> (e.ref)) {
+	} else if (auto svg = dynamic_cast<const svgdom::SvgElement*> (ref.e)) {
 		ASSERT(svg)
 				//width and height of <use> element override those of <svg> element.
 				this->renderSvgElement(
@@ -593,8 +593,8 @@ void Renderer::visit(const svgdom::UseElement& e) {
 				e.height.isValid() ? e.height : svg->height
 				);
 	} else {
-		ASSERT(e.ref)
-		e.ref->accept(*this);
+		ASSERT(ref.e)
+		ref.e->accept(*this);
 	}
 }
 
