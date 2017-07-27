@@ -239,9 +239,7 @@ void Renderer::applyViewBox(const svgdom::ViewBoxed& e) {
 	cairo_translate(this->cr, -e.viewBox[0], -e.viewBox[1]);
 }
 
-void Renderer::setCairoPatternSource(cairo_pattern_t* pat, const svgdom::Gradient& g) {
-
-
+void Renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradient& g) {
 	class ColorStopAdder : public svgdom::Visitor{
 		
 	};
@@ -264,7 +262,7 @@ void Renderer::setCairoPatternSource(cairo_pattern_t* pat, const svgdom::Gradien
 			} else {
 				opacity = 1;
 			}
-			cairo_pattern_add_color_stop_rgba(pat, s->offset, rgb.r, rgb.g, rgb.b, opacity);
+			cairo_pattern_add_color_stop_rgba(&pat, s->offset, rgb.r, rgb.g, rgb.b, opacity);
 		}
 	}
 	switch (g.getSpreadMethod()) {
@@ -273,16 +271,16 @@ void Renderer::setCairoPatternSource(cairo_pattern_t* pat, const svgdom::Gradien
 			ASSERT(false)
 			break;
 		case svgdom::Gradient::SpreadMethod_e::PAD:
-			cairo_pattern_set_extend(pat, CAIRO_EXTEND_PAD);
+			cairo_pattern_set_extend(&pat, CAIRO_EXTEND_PAD);
 			break;
 		case svgdom::Gradient::SpreadMethod_e::REFLECT:
-			cairo_pattern_set_extend(pat, CAIRO_EXTEND_REFLECT);
+			cairo_pattern_set_extend(&pat, CAIRO_EXTEND_REFLECT);
 			break;
 		case svgdom::Gradient::SpreadMethod_e::REPEAT:
-			cairo_pattern_set_extend(pat, CAIRO_EXTEND_REPEAT);
+			cairo_pattern_set_extend(&pat, CAIRO_EXTEND_REPEAT);
 			break;
 	}
-	cairo_set_source(this->cr, pat);
+	cairo_set_source(this->cr, &pat);
 }
 
 void Renderer::setGradient(const std::string& id) {
@@ -344,7 +342,7 @@ void Renderer::setGradient(const std::string& id) {
 				))
 			{
 				utki::ScopeExit patScopeExit([&pat]() {cairo_pattern_destroy(pat);});
-				this->setCairoPatternSource(pat, *g);
+				this->setCairoPatternSource(*pat, *g);
 			}
 		} else if (auto g = dynamic_cast<const svgdom::RadialGradientElement*> (gradient)) {
 			auto cx = g->getCx();
@@ -370,7 +368,7 @@ void Renderer::setGradient(const std::string& id) {
 				))
 			{
 				utki::ScopeExit patScopeExit([&pat]() {cairo_pattern_destroy(pat);});
-				this->setCairoPatternSource(pat, *g);
+				this->setCairoPatternSource(*pat, *g);
 			}
 		}
 	}

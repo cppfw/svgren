@@ -51,7 +51,7 @@ class Renderer : public svgdom::Visitor{
 	
 	void applyCairoTransformations(const decltype(svgdom::Transformable::transformations)& transformations);
 	
-	void setCairoPatternSource(cairo_pattern_t* pat, const svgdom::Gradient& g);
+	void setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradient& g);
 	
 	void setGradient(const std::string& id);
 	
