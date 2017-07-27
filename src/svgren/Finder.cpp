@@ -1,5 +1,7 @@
 #include "Finder.hxx"
 
+#include <utki/debug.hpp>
+
 #include <svgdom/Visitor.hpp>
 
 using namespace svgren;
@@ -89,10 +91,21 @@ public:
 };
 }
 
-Finder::ElementInfo Finder::findById(const std::string& id) {
+const Finder::ElementInfo& Finder::findById(const std::string& id) {
+	auto i = this->cache.find(id);
+	if(i != this->cache.end()){
+		return i->second;
+	}
+	
 	FindByIdVisitor visitor(id);
 	
 	this->root.accept(visitor);
 	
-	return visitor.found;
+	auto ret = this->cache.insert(std::make_pair(id, visitor.found));
+	ASSERT(ret.second)
+	return ret.first->second;
+}
+
+void Finder::clearCache() {
+	this->cache.clear();
 }

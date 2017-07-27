@@ -1,5 +1,7 @@
 #pragma once
 
+#include <map>
+
 #include <svgdom/elements/Element.hpp>
 
 #include "StyleStack.hxx"
@@ -23,7 +25,12 @@ public:
 		}
 	};
 	
-	ElementInfo findById(const std::string& id);
+	const ElementInfo& findById(const std::string& id);
+	
+	void clearCache();
+	
+private:
+	std::map<std::string, ElementInfo> cache;
 };
 	
 }
