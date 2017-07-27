@@ -342,7 +342,6 @@ void Renderer::setGradient(const std::string& id) {
 					);
 			utki::ScopeExit patScopeExit([&pat]() {cairo_pattern_destroy(pat);});
 			this->setCairoPatternSource(pat, *g);
-			return;
 		} else if (auto g = dynamic_cast<const svgdom::RadialGradientElement*> (gradient)) {
 			auto cx = g->getCx();
 			auto cy = g->getCy();
@@ -367,7 +366,6 @@ void Renderer::setGradient(const std::string& id) {
 					);
 			utki::ScopeExit patScopeExit([&pat]() {cairo_pattern_destroy(pat);});
 			this->setCairoPatternSource(pat, *g);
-			return;
 		}
 	}
 }
