@@ -53,7 +53,7 @@ class Renderer : public svgdom::Visitor{
 	
 	void setCairoPatternSource(cairo_pattern_t* pat, const svgdom::Gradient& g);
 	
-	void setGradient(const svgdom::Element* gradientElement);
+	void setGradient(const std::string& id);
 	
 	void updateCurBoundingBox();
 	

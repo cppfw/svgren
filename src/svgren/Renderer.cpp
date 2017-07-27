@@ -282,7 +282,15 @@ void Renderer::setCairoPatternSource(cairo_pattern_t* pat, const svgdom::Gradien
 	cairo_set_source(this->cr, pat);
 }
 
-void Renderer::setGradient(const svgdom::Element* gradientElement) {
+void Renderer::setGradient(const std::string& id) {
+	auto g = this->finder.findById(id);
+	if(!g){
+		cairo_set_source_rgba(this->cr, 0, 0, 0, 0);
+		return;
+	}
+	
+	const svgdom::Element* gradientElement = g.e;
+	
 	if (auto gradient = dynamic_cast<const svgdom::Gradient*> (gradientElement)) {
 		//here we need to save/restore only matrix
 		CairoMatrixSaveRestore cairoMatrixPush(this->cr);
@@ -341,7 +349,6 @@ void Renderer::setGradient(const svgdom::Element* gradientElement) {
 			return;
 		}
 	}
-	cairo_set_source_rgba(this->cr, 0, 0, 0, 0);
 }
 
 void Renderer::updateCurBoundingBox() {
@@ -392,7 +399,7 @@ void Renderer::renderCurrentShape() {
 	ASSERT(fill)
 	if (!fill->isNone()) {
 		if (fill->isUrl()) {
-			this->setGradient(fill->url);
+			this->setGradient(fill->getLocalIdFromIri());
 		} else {
 			svgdom::real opacity;
 			if (auto p = this->styleStack.getStyleProperty(svgdom::StyleProperty_e::FILL_OPACITY)) {
@@ -458,7 +465,7 @@ void Renderer::renderCurrentShape() {
 		}
 
 		if (stroke->isUrl()) {
-			this->setGradient(stroke->url);
+			this->setGradient(stroke->getLocalIdFromIri());
 		} else {
 			svgdom::real opacity;
 			if (auto p = this->styleStack.getStyleProperty(svgdom::StyleProperty_e::STROKE_OPACITY)) {
@@ -602,7 +609,7 @@ void Renderer::visit(const svgdom::UseElement& e) {
 		void defaultVisit(const svgdom::Element& element)override{
 			element.accept(this->r);
 		}
-	} visitor{*this, e};
+	} visitor(*this, e);
 	
 	ASSERT(ref.e)
 	

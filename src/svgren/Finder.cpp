@@ -75,7 +75,10 @@ const Finder::ElementInfo& Finder::findById(const std::string& id) {
 	
 	FindByIdVisitor visitor(id);
 	
-	this->root.accept(visitor);
+	//for empty ID we don't search, but just create an empty entry in cache
+	if(id.length() != 0){
+		this->root.accept(visitor);
+	}
 	
 	auto ret = this->cache.insert(std::make_pair(id, visitor.found));
 	ASSERT(ret.second)
