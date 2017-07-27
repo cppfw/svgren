@@ -244,7 +244,7 @@ void Renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradien
 		cairo_pattern_t& pat;
 		ColorStopAdder(cairo_pattern_t& pat) : pat(pat){}
 		
-		void visit(const svgdom::Gradient::StopElement& s){
+		void visit(const svgdom::Gradient::StopElement& s)override{
 			svgdom::Rgb rgb;
 			if (auto p = s.getStyleProperty(svgdom::StyleProperty_e::STOP_COLOR)) {
 				rgb = p->getRgb();
