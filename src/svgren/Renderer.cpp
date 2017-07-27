@@ -240,15 +240,13 @@ void Renderer::applyViewBox(const svgdom::ViewBoxed& e) {
 }
 
 void Renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradient& g) {
-	class ColorStopAdder : public svgdom::Visitor{
+	struct ColorStopAdder : public svgdom::Visitor{
+		cairo_pattern_t& pat;
+		ColorStopAdder(cairo_pattern_t& pat) : pat(pat){}
 		
-	};
-	
-	for (auto& stop : g.getStops()) {
-		
-		if (auto s = dynamic_cast<svgdom::Gradient::StopElement*> (stop.get())) {
+		void visit(const svgdom::Gradient::StopElement& s){
 			svgdom::Rgb rgb;
-			if (auto p = s->getStyleProperty(svgdom::StyleProperty_e::STOP_COLOR)) {
+			if (auto p = s.getStyleProperty(svgdom::StyleProperty_e::STOP_COLOR)) {
 				rgb = p->getRgb();
 			} else {
 				rgb.r = 0;
@@ -257,13 +255,17 @@ void Renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradien
 			}
 
 			svgdom::real opacity;
-			if (auto p = s->getStyleProperty(svgdom::StyleProperty_e::STOP_OPACITY)) {
+			if (auto p = s.getStyleProperty(svgdom::StyleProperty_e::STOP_OPACITY)) {
 				opacity = p->opacity;
 			} else {
 				opacity = 1;
 			}
-			cairo_pattern_add_color_stop_rgba(&pat, s->offset, rgb.r, rgb.g, rgb.b, opacity);
+			cairo_pattern_add_color_stop_rgba(&this->pat, s.offset, rgb.r, rgb.g, rgb.b, opacity);
 		}
+	} visitor(pat);
+	
+	for (auto& stop : g.getStops()) {
+		stop->accept(visitor);
 	}
 	switch (g.getSpreadMethod()) {
 		default:
