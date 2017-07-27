@@ -540,13 +540,7 @@ void Renderer::visit(const svgdom::GElement& e) {
 }
 
 void Renderer::visit(const svgdom::UseElement& e) {
-	auto refId = e.getLocalIdFromIri();
-	
-	if (refId.length() == 0) {
-		return;
-	}
-
-	auto ref = this->finder.findById(refId);
+	auto ref = this->finder.findById(e.getLocalIdFromIri());
 	if(!ref){
 		return;
 	}
