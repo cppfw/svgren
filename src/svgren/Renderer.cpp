@@ -289,6 +289,30 @@ void Renderer::setGradient(const std::string& id) {
 		return;
 	}
 	
+	struct GradientSetter : public svgdom::Visitor{
+		Renderer& r;
+		
+		GradientSetter(Renderer& r) : r(r) {}
+		
+		void visit(const svgdom::LinearGradientElement& gradient)override{
+			//TODO:
+		}
+		
+		void visit(const svgdom::RadialGradientElement& gradient)override{
+			//TODO:
+		}
+		
+		void defaultVisit(const svgdom::Element&)override{
+			cairo_set_source_rgba(this->r.cr, 0, 0, 0, 0);
+		}
+	} visitor(*this);
+	
+	ASSERT(g.e)
+	g.e->accept(visitor);
+	
+	
+	
+	
 	const svgdom::Element* gradientElement = g.e;
 	
 	if (auto gradient = dynamic_cast<const svgdom::Gradient*> (gradientElement)) {
@@ -309,18 +333,14 @@ void Renderer::setGradient(const std::string& id) {
 
 		this->applyCairoTransformations(gradient->transformations);
 
-		cairo_pattern_t* pat = nullptr;
-		utki::ScopeExit patScopeExit([&pat]() {
-			cairo_pattern_destroy(pat);
-		});
-
 		if (auto g = dynamic_cast<const svgdom::LinearGradientElement*> (gradient)) {
-			pat = cairo_pattern_create_linear(
+			auto pat = cairo_pattern_create_linear(
 					this->lengthToPx(g->getX1(), 0),
 					this->lengthToPx(g->getY1(), 1),
 					this->lengthToPx(g->getX2(), 0),
 					this->lengthToPx(g->getY2(), 1)
 					);
+			utki::ScopeExit patScopeExit([&pat]() {cairo_pattern_destroy(pat);});
 			this->setCairoPatternSource(pat, *g);
 			return;
 		} else if (auto g = dynamic_cast<const svgdom::RadialGradientElement*> (gradient)) {
@@ -337,7 +357,7 @@ void Renderer::setGradient(const std::string& id) {
 				fy = cy;
 			}
 
-			pat = cairo_pattern_create_radial(
+			auto pat = cairo_pattern_create_radial(
 					this->lengthToPx(fx, 0),
 					this->lengthToPx(fy, 1),
 					0,
@@ -345,6 +365,7 @@ void Renderer::setGradient(const std::string& id) {
 					this->lengthToPx(cy, 1),
 					this->lengthToPx(r)
 					);
+			utki::ScopeExit patScopeExit([&pat]() {cairo_pattern_destroy(pat);});
 			this->setCairoPatternSource(pat, *g);
 			return;
 		}
