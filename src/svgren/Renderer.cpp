@@ -264,7 +264,7 @@ void Renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradien
 		}
 	} visitor(pat);
 	
-	for (auto& stop : g.getStops()) {
+	for (auto& stop : this->gradientGetStops(g)) {
 		stop->accept(visitor);
 	}
 
@@ -330,10 +330,10 @@ void Renderer::setGradient(const std::string& id) {
 			CommonGradientPush commonPush(this->r, gradient);
 			
 			if(auto pat = cairo_pattern_create_linear(
-					this->r.lengthToPx(gradient.getX1(), 0),
-					this->r.lengthToPx(gradient.getY1(), 1),
-					this->r.lengthToPx(gradient.getX2(), 0),
-					this->r.lengthToPx(gradient.getY2(), 1)
+					this->r.lengthToPx(this->r.gradientGetX1(gradient), 0),
+					this->r.lengthToPx(this->r.gradientGetY1(gradient), 1),
+					this->r.lengthToPx(this->r.gradientGetX2(gradient), 0),
+					this->r.lengthToPx(this->r.gradientGetY2(gradient), 1)
 				))
 			{
 				utki::ScopeExit patScopeExit([&pat]() {cairo_pattern_destroy(pat);});
@@ -344,11 +344,11 @@ void Renderer::setGradient(const std::string& id) {
 		void visit(const svgdom::RadialGradientElement& gradient)override{
 			CommonGradientPush commonPush(this->r, gradient);
 			
-			auto cx = gradient.getCx();
-			auto cy = gradient.getCy();
-			auto radius = gradient.getR();
-			auto fx = gradient.getFx();
-			auto fy = gradient.getFy();
+			auto cx = this->r.gradientGetCx(gradient);
+			auto cy = this->r.gradientGetCy(gradient);
+			auto radius = this->r.gradientGetR(gradient);
+			auto fx = this->r.gradientGetFx(gradient);
+			auto fy = this->r.gradientGetFy(gradient);
 
 			if (!fx.isValid()) {
 				fx = cx;
@@ -1191,4 +1191,223 @@ Renderer::SetTempCairoContext::~SetTempCairoContext()noexcept{
 	}else{
 		ASSERT(!this->surface)
 	}
+}
+
+namespace{
+struct GradientCaster : public svgdom::Visitor{
+	const svgdom::LinearGradientElement* linear;
+	const svgdom::RadialGradientElement* radial;
+	const svgdom::Gradient* gradient;
+	
+	void visit(const svgdom::LinearGradientElement& e) override{
+		this->gradient = &e;
+		this->linear = &e;
+	}
+
+	void visit(const svgdom::RadialGradientElement& e) override{
+		this->gradient = &e;
+		this->radial = &e;
+	}
+};
+}
+
+svgdom::Length Renderer::gradientGetX1(const svgdom::LinearGradientElement& g){
+	if(g.x1.isValid()){
+		return g.x1;
+	}
+	
+	auto refId = g.getLocalIdFromIri();
+	if(refId.length() != 0){
+		auto ref = this->finder.findById(refId);
+		
+		if(ref){
+			GradientCaster caster;
+			ref.e->accept(caster);
+			if(caster.linear){
+				return this->gradientGetX1(*caster.linear);
+			}
+		}
+	}
+	return svgdom::Length::make(0, svgdom::Length::Unit_e::PERCENT);
+}
+
+svgdom::Length Renderer::gradientGetY1(const svgdom::LinearGradientElement& g) {
+	if(g.y1.isValid()){
+		return g.y1;
+	}
+	
+	auto refId = g.getLocalIdFromIri();
+	if(refId.length() != 0){
+		auto ref = this->finder.findById(refId);
+		
+		if(ref){
+			GradientCaster caster;
+			ref.e->accept(caster);
+			if(caster.linear){
+				return this->gradientGetY1(*caster.linear);
+			}
+		}
+	}
+	return svgdom::Length::make(0, svgdom::Length::Unit_e::PERCENT);
+}
+
+svgdom::Length Renderer::gradientGetX2(const svgdom::LinearGradientElement& g) {
+	if(g.x2.isValid()){
+		return g.x2;
+	}
+	
+	auto refId = g.getLocalIdFromIri();
+	if(refId.length() != 0){
+		auto ref = this->finder.findById(refId);
+		
+		if(ref){
+			GradientCaster caster;
+			ref.e->accept(caster);
+			if(caster.linear){
+				return this->gradientGetX2(*caster.linear);
+			}
+		}
+	}
+	return svgdom::Length::make(100, svgdom::Length::Unit_e::PERCENT);
+}
+
+svgdom::Length Renderer::gradientGetY2(const svgdom::LinearGradientElement& g) {
+	if(g.y2.isValid()){
+		return g.y2;
+	}
+	
+	auto refId = g.getLocalIdFromIri();
+	if(refId.length() != 0){
+		auto ref = this->finder.findById(refId);
+		
+		if(ref){
+			GradientCaster caster;
+			ref.e->accept(caster);
+			if(caster.linear){
+				return this->gradientGetY2(*caster.linear);
+			}
+		}
+	}
+	return svgdom::Length::make(0, svgdom::Length::Unit_e::PERCENT);
+}
+
+svgdom::Length Renderer::gradientGetCx(const svgdom::RadialGradientElement& g) {
+	if(g.cx.isValid()){
+		return g.cx;
+	}
+	
+	auto refId = g.getLocalIdFromIri();
+	if(refId.length() != 0){
+		auto ref = this->finder.findById(refId);
+		
+		if(ref){
+			GradientCaster caster;
+			ref.e->accept(caster);
+			if(caster.radial){
+				return this->gradientGetCx(*caster.radial);
+			}
+		}
+	}
+	return svgdom::Length::make(50, svgdom::Length::Unit_e::PERCENT);
+}
+
+svgdom::Length Renderer::gradientGetCy(const svgdom::RadialGradientElement& g) {
+	if(g.cy.isValid()){
+		return g.cy;
+	}
+	
+	auto refId = g.getLocalIdFromIri();
+	if(refId.length() != 0){
+		auto ref = this->finder.findById(refId);
+		
+		if(ref){
+			GradientCaster caster;
+			ref.e->accept(caster);
+			if(caster.radial){
+				return this->gradientGetCy(*caster.radial);
+			}
+		}
+	}
+	return svgdom::Length::make(50, svgdom::Length::Unit_e::PERCENT);
+}
+
+svgdom::Length Renderer::gradientGetR(const svgdom::RadialGradientElement& g) {
+	if(g.r.isValid()){
+		return g.r;
+	}
+	
+	auto refId = g.getLocalIdFromIri();
+	if(refId.length() != 0){
+		auto ref = this->finder.findById(refId);
+		
+		if(ref){
+			GradientCaster caster;
+			ref.e->accept(caster);
+			if(caster.radial){
+				return this->gradientGetR(*caster.radial);
+			}
+		}
+	}
+	return svgdom::Length::make(50, svgdom::Length::Unit_e::PERCENT);
+}
+
+svgdom::Length Renderer::gradientGetFx(const svgdom::RadialGradientElement& g) {
+	if(g.fx.isValid()){
+		return g.fx;
+	}
+	
+	auto refId = g.getLocalIdFromIri();
+	if(refId.length() != 0){
+		auto ref = this->finder.findById(refId);
+		
+		if(ref){
+			GradientCaster caster;
+			ref.e->accept(caster);
+			if(caster.radial){
+				return this->gradientGetFx(*caster.radial);
+			}
+		}
+	}
+	return svgdom::Length::make(0, svgdom::Length::Unit_e::UNKNOWN);
+}
+
+svgdom::Length Renderer::gradientGetFy(const svgdom::RadialGradientElement& g) {
+	if(g.fy.isValid()){
+		return g.fy;
+	}
+	
+	auto refId = g.getLocalIdFromIri();
+	if(refId.length() != 0){
+		auto ref = this->finder.findById(refId);
+		
+		if(ref){
+			GradientCaster caster;
+			ref.e->accept(caster);
+			if(caster.radial){
+				return this->gradientGetFy(*caster.radial);
+			}
+		}
+	}
+	return svgdom::Length::make(0, svgdom::Length::Unit_e::UNKNOWN);
+}
+
+const decltype(svgdom::Container::children)&  Renderer::gradientGetStops(const svgdom::Gradient& g) {
+	if(g.children.size() != 0){
+		return g.children;
+	}
+	
+	auto refId = g.getLocalIdFromIri();
+	if(refId.length() != 0){
+		auto ref = this->finder.findById(refId);
+		
+		if(ref){
+			GradientCaster caster;
+			ref.e->accept(caster);
+			if(caster.gradient){
+				return this->gradientGetStops(*caster.gradient);
+			}
+		}
+	}
+	
+	return g.children;
 }

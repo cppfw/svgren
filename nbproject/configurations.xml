@@ -112,7 +112,8 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <flagsDictionary>
-        <element flagsID="0" commonFlags="-funsigned-char -std=c++11 -fPIC"/>
+        <element flagsID="0"
+                 commonFlags="-mtune=generic -march=x86-64 -std=c++11 -funsigned-char -fPIC"/>
         <element flagsID="1" commonFlags="-std=c++11"/>
       </flagsDictionary>
       <codeAssistance>
@@ -123,10 +124,7 @@
           <buildCommand>${MAKE} -f makefile</buildCommand>
           <cleanCommand>${MAKE} -f makefile clean</cleanCommand>
           <executablePath>tests/render/tests</executablePath>
-          <ccTool flags="0">
-            <incDir>
-              <pElem>.</pElem>
-            </incDir>
+          <ccTool flags="-funsigned-char -std=c++11 -fPIC">
           </ccTool>
         </makeTool>
         <preBuild>
@@ -136,6 +134,9 @@
       </makefileType>
       <folder path="1">
         <ccTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
           <preprocessorList>
             <Elem>DEBUG</Elem>
           </preprocessorList>
@@ -143,18 +144,48 @@
       </folder>
       <item path="src/svgren/Finder.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
+          <incDir>
+            <pElem>src/svgren</pElem>
+            <pElem>/usr/include/svgdom</pElem>
+            <pElem>/usr/include/svgdom/elements</pElem>
+            <pElem>/usr/include/utki</pElem>
+            <pElem>.</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="src/svgren/Renderer.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
+          <incDir>
+            <pElem>/usr/include/svgdom</pElem>
+            <pElem>/usr/include/svgdom/elements</pElem>
+            <pElem>src/svgren</pElem>
+            <pElem>/usr/include/utki</pElem>
+            <pElem>/usr/include/cairo</pElem>
+            <pElem>.</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="src/svgren/StyleStack.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
+          <incDir>
+            <pElem>src/svgren</pElem>
+            <pElem>/usr/include/svgdom</pElem>
+            <pElem>/usr/include/svgdom/elements</pElem>
+            <pElem>.</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="src/svgren/render.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
+          <incDir>
+            <pElem>/usr/include/utki</pElem>
+            <pElem>/usr/include/svgdom</pElem>
+            <pElem>src/svgren</pElem>
+            <pElem>/usr/include/papki</pElem>
+            <pElem>/usr/include/svgdom/elements</pElem>
+            <pElem>/usr/include/cairo</pElem>
+            <pElem>.</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="tests/render/main.cpp" ex="false" tool="1" flavor2="8">

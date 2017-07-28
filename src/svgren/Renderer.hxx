@@ -67,6 +67,19 @@ class Renderer : public svgdom::Visitor{
 			const svgdom::Length& height
 		);
 	
+	svgdom::Length gradientGetX1(const svgdom::LinearGradientElement& g);
+	svgdom::Length gradientGetY1(const svgdom::LinearGradientElement& g);
+	svgdom::Length gradientGetX2(const svgdom::LinearGradientElement& g);
+	svgdom::Length gradientGetY2(const svgdom::LinearGradientElement& g);
+	
+	svgdom::Length gradientGetCx(const svgdom::RadialGradientElement& g);
+	svgdom::Length gradientGetCy(const svgdom::RadialGradientElement& g);
+	svgdom::Length gradientGetR(const svgdom::RadialGradientElement& g);
+	svgdom::Length gradientGetFx(const svgdom::RadialGradientElement& g);
+	svgdom::Length gradientGetFy(const svgdom::RadialGradientElement& g);
+	
+	const decltype(svgdom::Container::children)& gradientGetStops(const svgdom::Gradient& g);
+	
 public:
 	Renderer(
 			cairo_t* cr,
