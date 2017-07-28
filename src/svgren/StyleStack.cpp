@@ -5,7 +5,7 @@
 using namespace svgren;
 
 
-const svgdom::StylePropertyValue* StyleStack::getStyleProperty(svgdom::StyleProperty_e p) {
+const svgdom::StyleValue* StyleStack::getStyleProperty(svgdom::StyleProperty_e p) {
 	bool explicitInherit = false;
 
 	for (auto i = this->stack.rbegin(); i != this->stack.rend(); ++i) {
@@ -16,7 +16,7 @@ const svgdom::StylePropertyValue* StyleStack::getStyleProperty(svgdom::StyleProp
 			}
 			continue;
 		}
-		if (v->type == svgdom::StylePropertyValue::Type_e::INHERIT) {
+		if (v->type == svgdom::StyleValue::Type_e::INHERIT) {
 			explicitInherit = true;
 			continue;
 		}

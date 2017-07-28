@@ -174,7 +174,7 @@ void Renderer::applyViewBox(const svgdom::ViewBoxed& e) {
 		return;
 	}
 
-	if (e.preserveAspectRatio.preserve != svgdom::PreserveAspectRatio_e::NONE) {
+	if (e.preserveAspectRatio.preserve != svgdom::ViewBoxed::PreserveAspectRatio_e::NONE) {
 		if (e.viewBox[3] >= 0 && this->viewportStack.back()[1] >= 0) { //if viewBox width and viewport width are not 0
 			real scaleFactor, dx, dy;
 
@@ -193,34 +193,34 @@ void Renderer::applyViewBox(const svgdom::ViewBoxed& e) {
 				dy = e.viewBox[3] - this->viewportStack.back()[1];
 			}
 			switch (e.preserveAspectRatio.preserve) {
-				case svgdom::PreserveAspectRatio_e::NONE:
+				case svgdom::ViewBoxed::PreserveAspectRatio_e::NONE:
 					ASSERT(false)
 				default:
 					break;
-				case svgdom::PreserveAspectRatio_e::X_MIN_Y_MAX:
+				case svgdom::ViewBoxed::PreserveAspectRatio_e::X_MIN_Y_MAX:
 					cairo_translate(this->cr, 0, dy);
 					break;
-				case svgdom::PreserveAspectRatio_e::X_MIN_Y_MID:
+				case svgdom::ViewBoxed::PreserveAspectRatio_e::X_MIN_Y_MID:
 					cairo_translate(this->cr, 0, dy / 2);
 					break;
-				case svgdom::PreserveAspectRatio_e::X_MIN_Y_MIN:
+				case svgdom::ViewBoxed::PreserveAspectRatio_e::X_MIN_Y_MIN:
 					break;
-				case svgdom::PreserveAspectRatio_e::X_MID_Y_MAX:
+				case svgdom::ViewBoxed::PreserveAspectRatio_e::X_MID_Y_MAX:
 					cairo_translate(this->cr, dx / 2, dy);
 					break;
-				case svgdom::PreserveAspectRatio_e::X_MID_Y_MID:
+				case svgdom::ViewBoxed::PreserveAspectRatio_e::X_MID_Y_MID:
 					cairo_translate(this->cr, dx / 2, dy / 2);
 					break;
-				case svgdom::PreserveAspectRatio_e::X_MID_Y_MIN:
+				case svgdom::ViewBoxed::PreserveAspectRatio_e::X_MID_Y_MIN:
 					cairo_translate(this->cr, dx / 2, 0);
 					break;
-				case svgdom::PreserveAspectRatio_e::X_MAX_Y_MAX:
+				case svgdom::ViewBoxed::PreserveAspectRatio_e::X_MAX_Y_MAX:
 					cairo_translate(this->cr, dx, dy);
 					break;
-				case svgdom::PreserveAspectRatio_e::X_MAX_Y_MID:
+				case svgdom::ViewBoxed::PreserveAspectRatio_e::X_MAX_Y_MID:
 					cairo_translate(this->cr, dx, dy / 2);
 					break;
-				case svgdom::PreserveAspectRatio_e::X_MAX_Y_MIN:
+				case svgdom::ViewBoxed::PreserveAspectRatio_e::X_MAX_Y_MIN:
 					cairo_translate(this->cr, dx, 0);
 					break;
 			}
@@ -278,7 +278,7 @@ void Renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradien
 		stop->accept(visitor);
 	}
 
-	switch (g.getSpreadMethod()) {
+	switch (this->gradientGetSpreadMethod(g)) {
 		default:
 		case svgdom::Gradient::SpreadMethod_e::DEFAULT:
 			ASSERT(false)
@@ -425,11 +425,11 @@ void Renderer::renderCurrentShape() {
 		cairo_set_fill_rule(this->cr, CAIRO_FILL_RULE_WINDING);
 	}
 
-	svgdom::StylePropertyValue blackFill;
+	svgdom::StyleValue blackFill;
 
 	auto fill = this->styleStack.getStyleProperty(svgdom::StyleProperty_e::FILL);
 	if (!fill) {
-		blackFill = svgdom::StylePropertyValue::parsePaint("black");
+		blackFill = svgdom::StyleValue::parsePaint("black");
 		fill = &blackFill;
 	}
 

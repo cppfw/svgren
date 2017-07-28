@@ -10,7 +10,7 @@ class StyleStack{
 public:
 	std::vector<std::reference_wrapper<const svgdom::Styleable>> stack;
 	
-	const svgdom::StylePropertyValue* getStyleProperty(svgdom::StyleProperty_e p);
+	const svgdom::StyleValue* getStyleProperty(svgdom::StyleProperty_e p);
 	
 	class Push{
 		StyleStack& ss;
