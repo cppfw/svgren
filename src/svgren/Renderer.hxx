@@ -51,7 +51,7 @@ class Renderer : public svgdom::Visitor{
 	
 	void applyCairoTransformations(const decltype(svgdom::Transformable::transformations)& transformations);
 	
-	void setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradient& g);
+	void setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradient& g, const StyleStack& ss);
 	
 	void setGradient(const std::string& id);
 	
@@ -79,6 +79,7 @@ class Renderer : public svgdom::Visitor{
 	svgdom::Length gradientGetFy(const svgdom::RadialGradientElement& g);
 	
 	const decltype(svgdom::Container::children)& gradientGetStops(const svgdom::Gradient& g);
+	const svgdom::Styleable& gradientGetStyle(const svgdom::Gradient& g);
 	
 public:
 	Renderer(

@@ -22,7 +22,7 @@ public:
 	Finder::ElementInfo found;
 	
 	void visitContainer(const svgdom::Element& e, const svgdom::Container& c, const svgdom::Styleable& s){
-		this->found.ss.stack.push_back(&s);
+		this->found.ss.stack.push_back(s);
 		if(this->id == e.id){
 			this->found.e = &e;
 			return;
@@ -34,7 +34,7 @@ public:
 		this->found.ss.stack.pop_back();
 	}
 	void visitElement(const svgdom::Element& e){
-		this->found.ss.stack.push_back(&e);
+		this->found.ss.stack.push_back(e);
 		if(this->id == e.id){
 			this->found.e = &e;
 			return;

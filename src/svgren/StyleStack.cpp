@@ -1,5 +1,7 @@
 #include "StyleStack.hxx"
 
+#include <utki/debug.hpp>
+
 using namespace svgren;
 
 
@@ -7,7 +9,7 @@ const svgdom::StylePropertyValue* StyleStack::getStyleProperty(svgdom::StyleProp
 	bool explicitInherit = false;
 
 	for (auto i = this->stack.rbegin(); i != this->stack.rend(); ++i) {
-		auto v = (*i)->findStyleProperty(p);
+		auto v = i->get().findStyleProperty(p);
 		if (!v) {
 			if (!explicitInherit && !svgdom::Styleable::isStylePropertyInherited(p)) {
 				return nullptr;
@@ -27,7 +29,7 @@ const svgdom::StylePropertyValue* StyleStack::getStyleProperty(svgdom::StyleProp
 StyleStack::Push::Push(StyleStack& ss, const svgdom::Styleable& s) :
 		ss(ss)
 {
-	this->ss.stack.push_back(&s);
+	this->ss.stack.push_back(s);
 }
 
 StyleStack::Push::~Push()noexcept{

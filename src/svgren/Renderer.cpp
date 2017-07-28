@@ -239,14 +239,24 @@ void Renderer::applyViewBox(const svgdom::ViewBoxed& e) {
 	cairo_translate(this->cr, -e.viewBox[0], -e.viewBox[1]);
 }
 
-void Renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradient& g) {
+void Renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradient& g, const StyleStack& ss) {
+	StyleStack gradientSs(ss);
+	if(gradientSs.stack.back().get().styles.size() == 0){
+		//gradient does not have styles attribute declared, need to inherit it from referenced
+		gradientSs.stack.push_back(this->gradientGetStyle(g));
+	}
+	
 	struct ColorStopAdder : public svgdom::Visitor{
 		cairo_pattern_t& pat;
-		ColorStopAdder(cairo_pattern_t& pat) : pat(pat){}
+		StyleStack& ss;
+		
+		ColorStopAdder(cairo_pattern_t& pat, StyleStack& ss) : pat(pat), ss(ss) {}
 		
 		void visit(const svgdom::Gradient::StopElement& s)override{
+			StyleStack::Push stylePush(this->ss, s);
+			
 			svgdom::Rgb rgb;
-			if (auto p = s.getStyleProperty(svgdom::StyleProperty_e::STOP_COLOR)) {
+			if (auto p = this->ss.getStyleProperty(svgdom::StyleProperty_e::STOP_COLOR)) {
 				rgb = p->getRgb();
 			} else {
 				rgb.r = 0;
@@ -255,14 +265,14 @@ void Renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradien
 			}
 
 			svgdom::real opacity;
-			if (auto p = s.getStyleProperty(svgdom::StyleProperty_e::STOP_OPACITY)) {
+			if (auto p = this->ss.getStyleProperty(svgdom::StyleProperty_e::STOP_OPACITY)) {
 				opacity = p->opacity;
 			} else {
 				opacity = 1;
 			}
 			cairo_pattern_add_color_stop_rgba(&this->pat, s.offset, rgb.r, rgb.g, rgb.b, opacity);
 		}
-	} visitor(pat);
+	} visitor(pat, gradientSs);
 	
 	for (auto& stop : this->gradientGetStops(g)) {
 		stop->accept(visitor);
@@ -324,7 +334,9 @@ void Renderer::setGradient(const std::string& id) {
 	struct GradientSetter : public svgdom::Visitor{
 		Renderer& r;
 		
-		GradientSetter(Renderer& r) : r(r) {}
+		const StyleStack& ss;
+		
+		GradientSetter(Renderer& r, const StyleStack& ss) : r(r), ss(ss) {}
 		
 		void visit(const svgdom::LinearGradientElement& gradient)override{
 			CommonGradientPush commonPush(this->r, gradient);
@@ -337,7 +349,7 @@ void Renderer::setGradient(const std::string& id) {
 				))
 			{
 				utki::ScopeExit patScopeExit([&pat]() {cairo_pattern_destroy(pat);});
-				this->r.setCairoPatternSource(*pat, gradient);
+				this->r.setCairoPatternSource(*pat, gradient, this->ss);
 			}
 		}
 		
@@ -367,14 +379,14 @@ void Renderer::setGradient(const std::string& id) {
 				))
 			{
 				utki::ScopeExit patScopeExit([&pat]() {cairo_pattern_destroy(pat);});
-				this->r.setCairoPatternSource(*pat, gradient);
+				this->r.setCairoPatternSource(*pat, gradient, this->ss);
 			}
 		}
 		
 		void defaultVisit(const svgdom::Element&)override{
 			cairo_set_source_rgba(this->r.cr, 0, 0, 0, 0);
 		}
-	} visitor(*this);
+	} visitor(*this, g.ss);
 	
 	ASSERT(g.e)
 	g.e->accept(visitor);
@@ -1410,4 +1422,25 @@ const decltype(svgdom::Container::children)&  Renderer::gradientGetStops(const s
 	}
 	
 	return g.children;
+}
+
+const svgdom::Styleable& Renderer::gradientGetStyle(const svgdom::Gradient& g) {
+	if(g.styles.size() != 0){
+		return g;
+	}
+	
+	auto refId = g.getLocalIdFromIri();
+	if(refId.length() != 0){
+		auto ref = this->finder.findById(refId);
+		
+		if(ref){
+			GradientCaster caster;
+			ref.e->accept(caster);
+			if(caster.gradient){
+				return this->gradientGetStyle(*caster.gradient);
+			}
+		}
+	}
+	
+	return g;
 }
