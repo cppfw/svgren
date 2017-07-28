@@ -1444,3 +1444,26 @@ const svgdom::Styleable& Renderer::gradientGetStyle(const svgdom::Gradient& g) {
 	
 	return g;
 }
+
+svgdom::Gradient::SpreadMethod_e Renderer::gradientGetSpreadMethod(const svgdom::Gradient& g) {
+	if(g.spreadMethod != svgdom::Gradient::SpreadMethod_e::DEFAULT){
+		return g.spreadMethod;
+	}
+	
+	ASSERT(g.spreadMethod == svgdom::Gradient::SpreadMethod_e::DEFAULT)
+	
+	auto refId = g.getLocalIdFromIri();
+	if(refId.length() != 0){
+		auto ref = this->finder.findById(refId);
+		
+		if(ref){
+			GradientCaster caster;
+			ref.e->accept(caster);
+			if(caster.gradient){
+				return this->gradientGetSpreadMethod(*caster.gradient);
+			}
+		}
+	}
+	
+	return svgdom::Gradient::SpreadMethod_e::PAD;
+}

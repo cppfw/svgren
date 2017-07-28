@@ -80,6 +80,7 @@ class Renderer : public svgdom::Visitor{
 	
 	const decltype(svgdom::Container::children)& gradientGetStops(const svgdom::Gradient& g);
 	const svgdom::Styleable& gradientGetStyle(const svgdom::Gradient& g);
+	svgdom::Gradient::SpreadMethod_e gradientGetSpreadMethod(const svgdom::Gradient& g);
 	
 public:
 	Renderer(
