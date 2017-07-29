@@ -1,3 +1,9 @@
+libsvgren (0.4.26) unstable; urgency=medium
+
+  * ios build fix
+
+ -- Ivan Gagis <igagis@gmail.com>  Sat, 29 Jul 2017 11:36:08 +0300
+
 libsvgren (0.4.25) unstable; urgency=medium
 
   * ios build fix
