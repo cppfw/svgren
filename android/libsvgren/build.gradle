@@ -22,6 +22,7 @@ model {
             cppFlags.add("-std=c++11")
             cppFlags.add("-fexceptions")
             cppFlags.add("-frtti")
+            cppFlags.add("-fintegrated-as") //needed to avoid assembler error since NDK r15
             cppFlags.add("-I" + projectDir.getAbsolutePath() + "/build/ndkLibs/include")
         }
         abis {
