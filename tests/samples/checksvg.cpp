@@ -124,27 +124,6 @@ public:
 	void flipVertical();
 
 
-	/**
-	 * @brief Get reference to specific channel for given pixel.
-	 * @param x - X pixel location.
-	 * @param y - Y pixel location.
-	 * @param chan - channel index to get reference to.
-	 * @return Reference to uint8_t representing a single color channel of given pixel.
-	 */
-	const std::uint8_t& pixChan(unsigned x, unsigned y, unsigned chan)const{
-		return this->buf_v[ASSCOND((y * this->dim().x + x) * this->numChannels() + chan, < this->buf_v.size())];
-	}
-
-	/**
-	 * @brief Get reference to specific channel for given pixel.
-	 * @param x - X pixel location.
-	 * @param y - Y pixel location.
-	 * @param chan - channel number to get reference to.
-	 * @return Reference to uint8_t representing a single color channel of given pixel.
-	 */
-	std::uint8_t& pixChan(unsigned x, unsigned y, unsigned chan){
-		return this->buf_v[ASSCOND((y * this->dim().x + x) * this->numChannels() + chan, < this->buf_v.size())];
-	}
 
 private:
 	static void PNG_CustomReadFunction(png_structp pngPtr, png_bytep data, png_size_t length){
