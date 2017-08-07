@@ -21,4 +21,20 @@ namespace svgren{
  */
 std::vector<std::uint32_t> render(const svgdom::SvgElement& svg, unsigned& width, unsigned& height, real dpi = 96, bool bgra = false);
 
+struct Parameters{
+	unsigned widthRequest = 0;
+	unsigned heightRequest = 0;
+	real dpi = 96;
+	bool bgra = false;
+	bool addOnePixelFrame = false;
+};
+
+struct Result{
+	std::vector<std::uint32_t> pixels;
+	unsigned width;
+	unsigned height;
+};
+
+Result render(const svgdom::SvgElement& svg, const Parameters& p = Parameters());
+
 }

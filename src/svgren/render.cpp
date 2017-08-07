@@ -11,8 +11,22 @@ using namespace svgren;
 
 
 std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, unsigned& width, unsigned& height, real dpi, bool bgra){
-	auto w = unsigned(svg.width.toPx(dpi));
-	auto h = unsigned(svg.height.toPx(dpi));
+	Parameters p;
+	p.widthRequest = width;
+	p.heightRequest = height;
+	p.dpi = dpi;
+	p.bgra = bgra;
+	auto r = render(svg, p);
+	width = r.width;
+	height = r.height;
+	return std::move(r.pixels);
+}
+	
+Result svgren::render(const svgdom::SvgElement& svg, const Parameters& p){
+	Result ret;
+	
+	auto w = unsigned(svg.width.toPx(p.dpi));
+	auto h = unsigned(svg.height.toPx(p.dpi));
 
 	if(w == 0 && svg.viewBox[2] > 0){
 		w = unsigned(svg.viewBox[2]);
@@ -23,37 +37,39 @@ std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, unsigne
 	}
 	
 	if(w == 0 || h == 0){
-		return std::vector<std::uint32_t>();
+		return ret;
 	}
 	
-	if(width == 0 && height == 0){
-		width = w;
-		height = h;
+	if(p.widthRequest == 0 && p.heightRequest == 0){
+		ret.width = w;
+		ret.height = h;
 	}else{
-		real aspectRatio = svg.aspectRatio(dpi);
+		real aspectRatio = svg.aspectRatio(p.dpi);
 		if (aspectRatio == 0){
-			return std::vector<std::uint32_t>();
+			return ret;
 		}
 		ASSERT(aspectRatio > 0)
-		if(width == 0 && height != 0){
-			width = unsigned(aspectRatio * real(height));
-		}else if(width != 0 && height == 0){
-			height = unsigned(real(width) / aspectRatio);
+		if(p.widthRequest == 0 && p.heightRequest != 0){
+			ret.width = unsigned(aspectRatio * real(p.heightRequest));
+			ret.height = p.heightRequest;
+		}else if(p.widthRequest != 0 && p.heightRequest == 0){
+			ret.height = unsigned(real(p.widthRequest) / aspectRatio);
+			ret.width = p.widthRequest;
 		}
 	}
 	
-	ASSERT(width != 0)
-	ASSERT(height != 0)
+	ASSERT(ret.width != 0)
+	ASSERT(ret.height != 0)
 	ASSERT(w != 0)
 	ASSERT(h != 0)
 	
-	int stride = width * sizeof(std::uint32_t);
+	int stride = ret.width * sizeof(std::uint32_t);
 	
-	TRACE(<< "width = " << width << " stride = " << stride / 4 << std::endl)
+	TRACE(<< "width = " << ret.width << " stride = " << stride / 4 << std::endl)
 	
-	std::vector<std::uint32_t> ret((stride / sizeof(std::uint32_t)) * height);
+	ret.pixels.resize((stride / sizeof(std::uint32_t)) * ret.height);
 	
-	for(auto& c : ret){
+	for(auto& c : ret.pixels){
 #ifdef M_SVGREN_WHITE_BACKGROUND
 		c = 0xffffffff;
 #else
@@ -66,14 +82,14 @@ std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, unsigne
 	});
 	
 	cairo_surface_t* surface = cairo_image_surface_create_for_data(
-			reinterpret_cast<unsigned char*>(&*ret.begin()),
+			reinterpret_cast<unsigned char*>(&*ret.pixels.begin()),
 			CAIRO_FORMAT_ARGB32,
-			width,
-			height,
+			ret.width,
+			ret.height,
 			stride
 		);
 	if(!surface){
-		ret.clear();
+		ret.pixels.clear();
 		return ret;
 	}
 	utki::ScopeExit scopeExitSurface([&surface](){
@@ -82,28 +98,28 @@ std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, unsigne
 	
 	cairo_t* cr = cairo_create(surface);
 	if(!cr){
-		ret.clear();
+		ret.pixels.clear();
 		return ret;
 	}
 	utki::ScopeExit scopeExitContext([&cr](){
 		cairo_destroy(cr);
 	});
 	
-	cairo_scale(cr, real(width) / real(w), real(height) / real(h));
+	cairo_scale(cr, real(ret.width) / real(w), real(ret.height) / real(h));
 	
-	Renderer r(cr, dpi, {{real(w), real(h)}}, svg);
+	Renderer r(cr, p.dpi, {{real(w), real(h)}}, svg);
 	
 	svg.accept(r);
 	
 	//swap Red and Blue
-	if(!bgra){
-		for(auto& c : ret){
+	if(!p.bgra){
+		for(auto& c : ret.pixels){
 			c = (c & 0xff00ff00) | ((c << 16) & 0xff0000) | ((c >> 16) & 0xff);
 		}
 	}
 	
 	//unpremultiply alpha
-	for(auto &c : ret){
+	for(auto &c : ret.pixels){
 		std::uint32_t a = (c >> 24);
 		if(a == 0xff){
 			continue;
