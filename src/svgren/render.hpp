@@ -79,6 +79,12 @@ struct Result{
 	unsigned height;
 };
 
+/**
+ * @brief Render SVG image to raster image.
+ * @param svg - the SVG document object model to render.
+ * @param p - render parameters.
+ * @return Rendering result.
+ */
 Result render(const svgdom::SvgElement& svg, const Parameters& p = Parameters());
 
 }
