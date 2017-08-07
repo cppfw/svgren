@@ -51,12 +51,6 @@ struct Parameters{
 	 * By default the output format is RGBA.
 	 */
 	bool bgra = false;
-	
-	/**
-	 * @brief Add one pixel wide frame.
-	 * Request to add a one pixel wide frame of transparent pixels to the resulting raster image.
-	 */
-	bool addOnePixelFrame = false;
 };
 
 /**
