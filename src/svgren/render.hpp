@@ -21,17 +21,61 @@ namespace svgren{
  */
 std::vector<std::uint32_t> render(const svgdom::SvgElement& svg, unsigned& width, unsigned& height, real dpi = 96, bool bgra = false);
 
+/**
+ * @brief SVG render parameters.
+ */
 struct Parameters{
+	/**
+	 * @brief Width request for the resulting raster image.
+	 * If width request is set to 0 then the width will be adjusted to preserve
+	 * aspect ratio of the SVG image or determined from the SVG root element if
+	 * height request is also set to zero.
+	 */
 	unsigned widthRequest = 0;
+	
+	/**
+	 * @brief Height request for the resulting raster image.
+	 * If height request is set to 0 then the height will be adjusted to preserve
+	 * aspect ratio of the SVG image or determined from the SVG root element if
+	 * width request is also set to zero.
+	 */
 	unsigned heightRequest = 0;
+	
+	/**
+	 * @brief Dots per inch to use for unit conversion to pixels.
+	 */
 	real dpi = 96;
+	
+	/**
+	 * @brief Request output format as BRGA.
+	 * By default the output format is RGBA.
+	 */
 	bool bgra = false;
+	
+	/**
+	 * @brief Add one pixel wide frame.
+	 * Request to add a one pixel wide frame of transparent pixels to the resulting raster image.
+	 */
 	bool addOnePixelFrame = false;
 };
 
+/**
+ * @brief SVG image rendering result.
+ */
 struct Result{
+	/**
+	 * @brief Array of pixels.
+	 */
 	std::vector<std::uint32_t> pixels;
+	
+	/**
+	 * @brief Resulting width of the raster image.
+	 */
 	unsigned width;
+	
+	/**
+	 * @brief Resulting height of the raster image.
+	 */
 	unsigned height;
 };
 
