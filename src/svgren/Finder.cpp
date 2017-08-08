@@ -33,15 +33,20 @@ public:
 		}
 		this->found.ss.stack.pop_back();
 	}
-	void visitElement(const svgdom::Element& e){
-		this->found.ss.stack.push_back(e);
+	void visitElement(const svgdom::Element& e, const svgdom::Styleable& s){
+		this->found.ss.stack.push_back(s);
 		if(this->id == e.id){
 			this->found.e = &e;
 			return;
 		}
 		this->found.ss.stack.pop_back();
 	}
-	
+	void defaultVisit(const svgdom::Element& e) override{
+		if(this->id == e.id){
+			this->found.e = &e;
+			return;
+		}
+	}
 	void visit(const svgdom::GElement& e) override{
 		this->visitContainer(e, e, e);
 	}
@@ -60,9 +65,32 @@ public:
 	void visit(const svgdom::DefsElement& e) override{
 		this->visitContainer(e, e, e);
 	}
-
-	void defaultVisit(const svgdom::Element& e) override{
-		this->visitElement(e);
+	void visit(const svgdom::PolylineElement& e) override{
+		this->visitElement(e, e);
+	}
+	void visit(const svgdom::CircleElement& e) override{
+		this->visitElement(e, e);
+	}
+	void visit(const svgdom::UseElement& e) override{
+		this->visitElement(e, e);
+	}
+	void visit(const svgdom::Gradient::StopElement& e) override{
+		this->visitElement(e, e);
+	}
+	void visit(const svgdom::PathElement& e) override{
+		this->visitElement(e, e);
+	}
+	void visit(const svgdom::RectElement& e) override{
+		this->visitElement(e, e);
+	}
+	void visit(const svgdom::LineElement& e) override{
+		this->visitElement(e, e);
+	}
+	void visit(const svgdom::EllipseElement& e) override{
+		this->visitElement(e, e);
+	}
+	void visit(const svgdom::PolygonElement& e) override{
+		this->visitElement(e, e);
 	}
 };
 }
