@@ -1,3 +1,9 @@
+libsvgren (0.4.28) unstable; urgency=medium
+
+  * svgdom::Element is not Styleable by default
+
+ -- Ivan Gagis <igagis@gmail.com>  Tue, 08 Aug 2017 10:52:12 +0300
+
 libsvgren (0.4.27) unstable; urgency=medium
 
   * test release
