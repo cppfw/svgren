@@ -235,11 +235,11 @@ void Renderer::applyFilter(const std::string& id) {
 				sd[1] = sd[0];
 			}
 			if(this->primitiveUnits == svgdom::CoordinateUnits_e::USER_SPACE_ON_USE){
-				double x = sd[0];
-				double y = sd[1];
+				double x = double(sd[0]);
+				double y = double(sd[1]);
 				cairo_user_to_device_distance(this->r.cr, &x, &y);
-				sd[0] = x;
-				sd[1] = y;
+				sd[0] = real(x);
+				sd[1] = real(y);
 			}else if(this->primitiveUnits == svgdom::CoordinateUnits_e::OBJECT_BOUNDING_BOX){
 				sd[0] = this->r.curBoundingBoxDim[0] * sd[0];
 				sd[1] = this->r.curBoundingBoxDim[1] * sd[1];
