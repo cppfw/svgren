@@ -1,15 +1,78 @@
 #include "util.hxx"
 
 #include <cstring>
+#include <cmath>
+#include <vector>
 
 #include <utki/debug.hpp>
-#include <vector>
+#include <utki/math.hpp>
 
 using namespace svgren;
 
+namespace{
+void boxBlurHorizontal(
+		std::uint8_t* dst,
+		const std::uint8_t* src,
+		unsigned stride,
+		unsigned numRows,
+		unsigned boxSize,
+		unsigned boxOffset,
+		unsigned channel
+	)
+{
+	for(unsigned y = 0; y != numRows; ++y){
+		unsigned sum = 0;
+		for(unsigned i = 0; i != boxSize; ++i){
+			int pos = i - boxOffset;
+			pos = std::max(pos, 0);
+			pos = std::min(pos, int(stride - 1));
+			sum += src[(stride * y + pos) * sizeof(std::uint32_t) + channel];
+		}
+		for(unsigned x = 0; x != stride; ++x){
+			int tmp = x - boxOffset;
+			int last = std::max(tmp, 0);
+			int next = std::min(tmp + boxSize, stride - 1);
+
+			dst[(stride * y + x) * sizeof(std::uint32_t) + channel] = sum / boxSize;
+
+			sum += src[(stride * y + next) * sizeof(std::uint32_t) + channel]
+					- src[(stride * y + last) * sizeof(std::uint32_t) + channel];
+		}
+	}
+}
+}
 
 namespace{
+void boxBlurVertical(
+		std::uint8_t* dst,
+		const std::uint8_t* src,
+		unsigned stride,
+		unsigned numRows,
+		unsigned boxSize,
+		unsigned boxOffset,
+		unsigned channel
+	)
+{
+	for(unsigned x = 0; x != stride; ++x){
+		unsigned sum = 0;
+		for(unsigned i = 0; i != boxSize; ++i){
+			int pos = i - boxOffset;
+			pos = std::max(pos, 0);
+			pos = std::min(pos, int(numRows - 1));
+			sum += src[(stride * pos + x) * sizeof(std::uint32_t) + channel];
+		}
+		for(unsigned y = 0; y != numRows; ++y){
+			int tmp = y - boxOffset;
+			int last = std::max(tmp, 0);
+			int next = std::min(tmp + boxSize, numRows - 1);
 
+			dst[(stride * y + x) * sizeof(std::uint32_t) + channel] = sum / boxSize;
+
+			sum += src[(x + stride * next) * sizeof(std::uint32_t) + channel]
+					- src[(x + stride * last) * sizeof(std::uint32_t) + channel];
+		}
+	}
+}
 }
 
 
@@ -23,66 +86,69 @@ void svgren::cairoImageSurfaceBlur(cairo_surface_t* surface, std::array<real, 2>
 	int width = cairo_image_surface_get_width(surface);
 	int height = cairo_image_surface_get_height(surface);
 	
+	//NOTE: see https://www.w3.org/TR/SVG/filters.html#feGaussianBlurElement for Gaussian Blur approximation algorithm.
 	
-	double radius = stdDeviation[0];
+	std::array<unsigned, 2> d;
+	for(unsigned i = 0; i != 2; ++i){
+		d[i] = unsigned(float(stdDeviation[i]) * 3 * std::sqrt(2 * utki::pi<float>()) / 4 + 0.5f);
+	}
 	
-	// Steve Hanov, 2009
-	// Released into the public domain.
+	std::uint8_t* src = cairo_image_surface_get_data(surface);
 	
-	std::vector<std::uint8_t> destination(width * height * 4);
-	std::vector<unsigned> precalculate(width * height * sizeof(unsigned));
+	std::vector<std::uint8_t> tmp(width * height * sizeof(std::uint32_t));
 	
-	unsigned char *src = cairo_image_surface_get_data(surface);
+	std::array<unsigned, 3> hBoxSize;
+	std::array<unsigned, 3> hOffset;
+	std::array<unsigned, 3> vBoxSize;
+	std::array<unsigned, 3> vOffset;
+	if(d[0] % 2 == 0){
+		hOffset[0] = d[0] / 2;
+		hBoxSize[0] = d[0];
+		hOffset[1] = d[0] / 2 + 1;
+		hBoxSize[1] = d[0];
+		hOffset[2] = d[0] / 2;
+		hBoxSize[2] = d[0] + 1;
+	}else{
+		hOffset[0] = d[0] / 2;
+		hBoxSize[0] = d[0];
+		hOffset[1] = d[0] / 2;
+		hBoxSize[1] = d[0];
+		hOffset[2] = d[0] / 2;
+		hBoxSize[2] = d[0];
+	}
 	
-	double mul = 1.0f / ((radius * 2) * (radius * 2));
-
-	// The number of times to perform the averaging. According to wikipedia,
-	// three iterations is good enough to pass for a gaussian.
-	const unsigned MAX_ITERATIONS = 3;
-
-	auto dst = &*destination.begin();
-	auto precalc = &*precalculate.begin();
-	memcpy(dst, src, width * height * 4);
-
-	for(unsigned iteration = 0; iteration < MAX_ITERATIONS; ++iteration){
-		for(unsigned channel = 0; channel < 4; channel++){
-			double x, y;
-
-			// Pre-computation step.
-			unsigned char *pix = src;
-			unsigned *pre = precalc;
-
-			pix += channel;
-			for (y = 0; y < height; y++) {
-				for (x = 0; x < width; x++) {
-					int tot = pix[0];
-					if (x > 0)
-						tot += pre[-1];
-					if (y > 0)
-						tot += pre[-width];
-					if (x > 0 && y > 0)
-						tot -= pre[-width - 1];
-					*pre++ = tot;
-					pix += 4;
-				}
-			}
-
-			// Blur step.
-			pix = dst + (int)radius * width * 4 + (int)radius * 4 + channel;
-			for (y = radius; y < height - radius; y++) {
-				for (x = radius; x < width - radius; x++) {
-					double l = x < radius ? 0 : x - radius;
-					double t = y < radius ? 0 : y - radius;
-					double r = x + radius >= width ? width - 1 : x + radius;
-					double b = y + radius >= height ? height - 1 : y + radius;
-					double tot = precalc[(int)(r + b * width)] + precalc[(int)(l + t * width)] - precalc[(int)(l + b * width)] -
-					precalc[(int)(r + t * width)];
-					*pix = (unsigned char)(tot * mul);
-					pix += 4;
-				}
-				pix += (int)radius * 2 * 4;
-			}
-		}
-		memcpy(src, dst, width * height * 4);
+	if(d[1] % 2 == 0){
+		vOffset[0] = d[0] / 2;
+		vBoxSize[0] = d[0];
+		vOffset[1] = d[0] / 2 + 1;
+		vBoxSize[1] = d[0];
+		vOffset[2] = d[0] / 2;
+		vBoxSize[2] = d[0] + 1;
+	}else{
+		vOffset[0] = d[0] / 2;
+		vBoxSize[0] = d[0];
+		vOffset[1] = d[0] / 2;
+		vBoxSize[1] = d[0];
+		vOffset[2] = d[0] / 2;
+		vBoxSize[2] = d[0];
+	}
+	
+	for(auto channel = 0; channel != 4; ++channel){
+		boxBlurHorizontal(&*tmp.begin(), src, width, height, hBoxSize[0], hOffset[0], channel);
+	}
+	for(auto channel = 0; channel != 4; ++channel){
+		boxBlurHorizontal(src, &*tmp.begin(), width, height, hBoxSize[1], hOffset[1], channel);
+	}
+	for(auto channel = 0; channel != 4; ++channel){
+		boxBlurHorizontal(&*tmp.begin(), src, width, height, hBoxSize[2], hOffset[2], channel);
+	}
+	for(auto channel = 0; channel != 4; ++channel){
+		boxBlurVertical(src, &*tmp.begin(), width, height, vBoxSize[0], vOffset[0], channel);
+	}
+	for(auto channel = 0; channel != 4; ++channel){
+		boxBlurVertical(&*tmp.begin(), src, width, height, vBoxSize[1], vOffset[1], channel);
+	}
+	for(auto channel = 0; channel != 4; ++channel){
+		boxBlurVertical(src, &*tmp.begin(), width, height, vBoxSize[2], vOffset[2], channel);
 	}
 }

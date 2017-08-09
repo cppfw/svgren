@@ -309,12 +309,34 @@ void Renderer::applyFilter(const std::string& id) {
 		
 		FilterApplyer(Renderer& r) : r(r) {}
 		
+		svgdom::CoordinateUnits_e primitiveUnits;
+		
 		void visit(const svgdom::FilterElement& e)override{
+			this->primitiveUnits = e.primitiveUnits;
 			e.relayAccept(*this);
 		}
 		
 		void visit(const svgdom::FeGaussianBlurElement& e)override{
-			cairoImageSurfaceBlur(cairo_get_target(r.cr), {{10, 10}});
+			if(!e.isStdDeviationSpecified()){
+				return;
+			}
+			auto sd = e.stdDeviation;
+			if(!e.isStdDeviationYSpecified()){
+				sd[1] = sd[0];
+			}
+			if(this->primitiveUnits == svgdom::CoordinateUnits_e::USER_SPACE_ON_USE){
+				double x = sd[0];
+				double y = sd[1];
+				cairo_user_to_device_distance(this->r.cr, &x, &y);
+				sd[0] = x;
+				sd[1] = y;
+			}else if(this->primitiveUnits == svgdom::CoordinateUnits_e::OBJECT_BOUNDING_BOX){
+				sd[0] = this->r.curBoundingBoxDim[0] * sd[0];
+				sd[1] = this->r.curBoundingBoxDim[1] * sd[1];
+			}else{
+				return;
+			}
+			cairoImageSurfaceBlur(cairo_get_target(r.cr), sd);
 		}
 	} visitor(*this);
 	
