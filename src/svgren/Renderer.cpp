@@ -151,8 +151,8 @@ void Renderer::applyViewBox(const svgdom::ViewBoxed& e) {
 	cairo_translate(this->cr, -e.viewBox[0], -e.viewBox[1]);
 }
 
-void Renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradient& g, const StyleStack& ss) {
-	StyleStack gradientSs(ss);
+void Renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradient& g, const svgdom::StyleStack& ss) {
+	svgdom::StyleStack gradientSs(ss);
 	if(gradientSs.stack.back().get().styles.size() == 0){
 		//gradient does not have styles attribute declared, need to inherit it from referenced
 		gradientSs.stack.push_back(this->gradientGetStyle(g));
@@ -160,12 +160,12 @@ void Renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradien
 	
 	struct ColorStopAdder : public svgdom::Visitor{
 		cairo_pattern_t& pat;
-		StyleStack& ss;
+		svgdom::StyleStack& ss;
 		
-		ColorStopAdder(cairo_pattern_t& pat, StyleStack& ss) : pat(pat), ss(ss) {}
+		ColorStopAdder(cairo_pattern_t& pat, svgdom::StyleStack& ss) : pat(pat), ss(ss) {}
 		
 		void visit(const svgdom::Gradient::StopElement& s)override{
-			StyleStack::Push stylePush(this->ss, s);
+			svgdom::StyleStack::Push stylePush(this->ss, s);
 			
 			svgdom::Rgb rgb;
 			if (auto p = this->ss.getStyleProperty(svgdom::StyleProperty_e::STOP_COLOR)) {
@@ -292,9 +292,9 @@ void Renderer::setGradient(const std::string& id) {
 	struct GradientSetter : public svgdom::Visitor{
 		Renderer& r;
 		
-		const StyleStack& ss;
+		const svgdom::StyleStack& ss;
 		
-		GradientSetter(Renderer& r, const StyleStack& ss) : r(r), ss(ss) {}
+		GradientSetter(Renderer& r, const svgdom::StyleStack& ss) : r(r), ss(ss) {}
 		
 		void visit(const svgdom::LinearGradientElement& gradient)override{
 			CommonGradientPush commonPush(this->r, gradient);
@@ -489,7 +489,7 @@ void Renderer::renderCurrentShape() {
 }
 
 void Renderer::renderSvgElement(const svgdom::SvgElement& e, const svgdom::Length& width, const svgdom::Length& height) {
-	StyleStack::Push pushStyles(this->styleStack, e);
+	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
 
 	SetTempCairoContext cairoTempContext(*this);
 
@@ -531,7 +531,7 @@ Renderer::Renderer(
 }
 
 void Renderer::visit(const svgdom::GElement& e) {
-	StyleStack::Push pushStyles(this->styleStack, e);
+	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
 
 	SetTempCairoContext cairoTempContext(*this);
 
@@ -548,7 +548,7 @@ void Renderer::visit(const svgdom::UseElement& e) {
 		return;
 	}
 	
-	StyleStack::Push pushStyles(this->styleStack, e);
+	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
 
 	SetTempCairoContext cairoTempContext(*this);
 
@@ -573,7 +573,7 @@ void Renderer::visit(const svgdom::UseElement& e) {
 		RefRenderer(Renderer& r, const svgdom::UseElement& e) : r(r), e(e){}
 		
 		void visit(const svgdom::SymbolElement& symbol)override{
-			StyleStack::Push pushSymbolStyles(this->r.styleStack, symbol);
+			svgdom::StyleStack::Push pushSymbolStyles(this->r.styleStack, symbol);
 
 			SetTempCairoContext symbolCairoTempContext(this->r);
 
@@ -618,7 +618,7 @@ void Renderer::visit(const svgdom::SvgElement& e) {
 }
 
 void Renderer::visit(const svgdom::PathElement& e) {
-	StyleStack::Push pushStyles(this->styleStack, e);
+	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
 
 	SetTempCairoContext cairoTempContext(*this);
 
@@ -940,7 +940,7 @@ void Renderer::visit(const svgdom::PathElement& e) {
 }
 
 void Renderer::visit(const svgdom::CircleElement& e) {
-	StyleStack::Push pushStyles(this->styleStack, e);
+	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
 
 	SetTempCairoContext cairoTempContext(*this);
 
@@ -961,7 +961,7 @@ void Renderer::visit(const svgdom::CircleElement& e) {
 }
 
 void Renderer::visit(const svgdom::PolylineElement& e) {
-	StyleStack::Push pushStyles(this->styleStack, e);
+	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
 
 	SetTempCairoContext cairoTempContext(*this);
 
@@ -985,7 +985,7 @@ void Renderer::visit(const svgdom::PolylineElement& e) {
 }
 
 void Renderer::visit(const svgdom::PolygonElement& e) {
-	StyleStack::Push pushStyles(this->styleStack, e);
+	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
 
 	SetTempCairoContext cairoTempContext(*this);
 
@@ -1011,7 +1011,7 @@ void Renderer::visit(const svgdom::PolygonElement& e) {
 }
 
 void Renderer::visit(const svgdom::LineElement& e) {
-	StyleStack::Push pushStyles(this->styleStack, e);
+	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
 
 	SetTempCairoContext cairoTempContext(*this);
 
@@ -1026,7 +1026,7 @@ void Renderer::visit(const svgdom::LineElement& e) {
 }
 
 void Renderer::visit(const svgdom::EllipseElement& e) {
-	StyleStack::Push pushStyles(this->styleStack, e);
+	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
 
 	SetTempCairoContext cairoTempContext(*this);
 
@@ -1048,7 +1048,7 @@ void Renderer::visit(const svgdom::EllipseElement& e) {
 }
 
 void Renderer::visit(const svgdom::RectElement& e) {
-	StyleStack::Push pushStyles(this->styleStack, e);
+	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
 
 	SetTempCairoContext cairoTempContext(*this);
 

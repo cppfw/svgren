@@ -11,10 +11,11 @@
 #endif
 
 #include <svgdom/Visitor.hpp>
+#include <svgdom/Finder.hpp>
+#include <svgdom/StyleStack.hpp>
 
 #include "config.hpp"
-#include "Finder.hxx"
-#include "StyleStack.hxx"
+
 
 namespace svgren{
 
@@ -22,7 +23,7 @@ namespace svgren{
 class Renderer : public svgdom::Visitor{
 	cairo_t* cr;
 	
-	Finder finder;
+	svgdom::Finder finder;
 	
 	const real dpi;
 	
@@ -31,7 +32,7 @@ class Renderer : public svgdom::Visitor{
 	std::array<real, 2> curBoundingBoxPos = {{0, 0}};
 	std::array<real, 2> curBoundingBoxDim = {{0, 0}};
 	
-	StyleStack styleStack;
+	svgdom::StyleStack styleStack;
 	
 	
 	class SetTempCairoContext{
@@ -51,7 +52,7 @@ class Renderer : public svgdom::Visitor{
 	
 	void applyCairoTransformations(const decltype(svgdom::Transformable::transformations)& transformations);
 	
-	void setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradient& g, const StyleStack& ss);
+	void setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradient& g, const svgdom::StyleStack& ss);
 	
 	void setGradient(const std::string& id);
 	
