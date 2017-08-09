@@ -33,7 +33,7 @@ define this_rules
 test:: $(prorab_this_name)
 	@prorab-running-test.sh $(this_test)
 	$(prorab_echo)cp $(d)../../src/*.dll $(d) || true
-	$(prorab_echo)(cd $(d) && LD_LIBRARY_PATH=$(d)../../src DYLD_LIBRARY_PATH=$$$$LD_LIBRARY_PATH ./tests); \
+	$(prorab_echo)(cd $(d) && LD_LIBRARY_PATH=../../src DYLD_LIBRARY_PATH=$$$$LD_LIBRARY_PATH ./tests); \
 		if [ $$$$? -ne 0 ]; then prorab-error.sh "test failed"; exit 1; fi
 	@prorab-passed.sh
 endef
