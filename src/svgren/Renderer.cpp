@@ -230,10 +230,7 @@ void Renderer::applyFilter(const std::string& id) {
 			if(!e.isStdDeviationSpecified()){
 				return;
 			}
-			auto sd = e.stdDeviation;
-			if(!e.isStdDeviationYSpecified()){
-				sd[1] = sd[0];
-			}
+			auto sd = e.getStdDeviation();
 			if(this->primitiveUnits == svgdom::CoordinateUnits_e::USER_SPACE_ON_USE){
 				double x = double(sd[0]);
 				double y = double(sd[1]);
