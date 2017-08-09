@@ -125,8 +125,8 @@ int main(int argc, char **argv){
 	
 	ASSERT_ALWAYS(dom)
 	
-	unsigned imWidth = 10;
-	unsigned imHeight = 10;
+	unsigned imWidth = 0;
+	unsigned imHeight = 0;
 	auto img = svgren::render(*dom, imWidth, imHeight, 96, false);
 	
 	TRACE(<< "imWidth = " << imWidth << " imHeight = " << imHeight << " img.size() = " << img.size() << std::endl)
