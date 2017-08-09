@@ -55,6 +55,11 @@ Result svgren::render(const svgdom::SvgElement& svg, const Parameters& p){
 		}else if(p.widthRequest != 0 && p.heightRequest == 0){
 			ret.height = unsigned(real(p.widthRequest) / aspectRatio);
 			ret.width = p.widthRequest;
+		}else{
+			ASSERT(p.widthRequest != 0)
+			ASSERT(p.heightRequest != 0)
+			ret.width = p.widthRequest;
+			ret.height = p.heightRequest;
 		}
 	}
 	
@@ -65,7 +70,7 @@ Result svgren::render(const svgdom::SvgElement& svg, const Parameters& p){
 	
 	int stride = ret.width * sizeof(std::uint32_t);
 	
-	TRACE(<< "width = " << ret.width << " stride = " << stride / 4 << std::endl)
+	TRACE(<< "width = " << ret.width << " height = " << ret.height << " stride = " << stride / 4 << std::endl)
 	
 	ret.pixels.resize((stride / sizeof(std::uint32_t)) * ret.height);
 	
