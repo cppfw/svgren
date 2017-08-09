@@ -145,11 +145,11 @@ before_script:
 script:
 - if [ "$BUILD_NAME" == "debian" ]; then
     prorab-deb-prepare.sh &&
-    sg sbuild -c "sbuild -A -d testing-amd64-sbuild --run-lintian --debbuildopts '-us -uc'";
+    sg sbuild -c "sbuild -n -A -d testing-amd64-sbuild --run-lintian --debbuildopts '-us -uc'";
   fi
 - if [ "$BUILD_NAME" == "ubuntu" ]; then
     prorab-deb-prepare.sh &&
-    sg sbuild -c "sbuild -A -d xenial-amd64-sbuild --debbuildopts '-us -uc'";
+    sg sbuild -c "sbuild -n -A -d xenial-amd64-sbuild --debbuildopts '-us -uc'";
   fi
 - if [ "$BUILD_NAME" == "clang" ]; then
     prorab-deb-prepare.sh &&
