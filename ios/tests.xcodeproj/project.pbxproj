@@ -8,11 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		2C0D7E871C676A09002E0FCB /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C0D7E861C676A09002E0FCB /* main.cpp */; };
-		2C81C6C01F2BE42900221B3C /* Finder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C81C6BD1F2BE42900221B3C /* Finder.cpp */; };
-		2C81C6C11F2BE42900221B3C /* Renderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C81C6BE1F2BE42900221B3C /* Renderer.cpp */; };
-		2C81C6C21F2BE42900221B3C /* StyleStack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C81C6BF1F2BE42900221B3C /* StyleStack.cpp */; };
 		2CEDD3C41C64CFE300DBD872 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2CEDD3C31C64CFE300DBD872 /* Assets.xcassets */; };
-		2CF1B5161C64D36300A800D1 /* render.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CF1B5151C64D36300A800D1 /* render.cpp */; };
 		3F0D0AEBA1381ACEF824E8A5 /* libPods-tests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 909576F3EFED85F5179DC737 /* libPods-tests.a */; };
 /* End PBXBuildFile section */
 
@@ -21,13 +17,9 @@
 		1E3C7CDB42B5D2F818FF8832 /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
 		1FD45B28863F3D6138ABBAF5 /* Pods-tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-tests.release.xcconfig"; path = "Pods/Target Support Files/Pods-tests/Pods-tests.release.xcconfig"; sourceTree = "<group>"; };
 		2C0D7E861C676A09002E0FCB /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = ../../tests/render/main.cpp; sourceTree = "<group>"; };
-		2C81C6BD1F2BE42900221B3C /* Finder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Finder.cpp; path = ../src/svgren/Finder.cpp; sourceTree = "<group>"; };
-		2C81C6BE1F2BE42900221B3C /* Renderer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Renderer.cpp; path = ../src/svgren/Renderer.cpp; sourceTree = "<group>"; };
-		2C81C6BF1F2BE42900221B3C /* StyleStack.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = StyleStack.cpp; path = ../src/svgren/StyleStack.cpp; sourceTree = "<group>"; };
 		2CEDD3B41C64CFE300DBD872 /* tests.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = tests.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2CEDD3C31C64CFE300DBD872 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2CEDD3C81C64CFE300DBD872 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		2CF1B5151C64D36300A800D1 /* render.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = render.cpp; path = ../src/svgren/render.cpp; sourceTree = "<group>"; };
 		909576F3EFED85F5179DC737 /* libPods-tests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-tests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BAF1F584BB1EF741ACFEBE8E /* Pods-tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-tests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-tests/Pods-tests.debug.xcconfig"; sourceTree = "<group>"; };
 		CDBADADD445217FAB60C67DE /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
@@ -57,10 +49,6 @@
 		2CEDD3AB1C64CFE300DBD872 = {
 			isa = PBXGroup;
 			children = (
-				2C81C6BD1F2BE42900221B3C /* Finder.cpp */,
-				2C81C6BE1F2BE42900221B3C /* Renderer.cpp */,
-				2C81C6BF1F2BE42900221B3C /* StyleStack.cpp */,
-				2CF1B5151C64D36300A800D1 /* render.cpp */,
 				2CEDD3B61C64CFE300DBD872 /* tests */,
 				2CEDD3B51C64CFE300DBD872 /* Products */,
 				B2D497D4C302F67AC0BC3A36 /* Pods */,
@@ -224,11 +212,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2C81C6C11F2BE42900221B3C /* Renderer.cpp in Sources */,
 				2C0D7E871C676A09002E0FCB /* main.cpp in Sources */,
-				2C81C6C01F2BE42900221B3C /* Finder.cpp in Sources */,
-				2CF1B5161C64D36300A800D1 /* render.cpp in Sources */,
-				2C81C6C21F2BE42900221B3C /* StyleStack.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
