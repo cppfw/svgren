@@ -2,101 +2,11 @@
 
 #include <utki/math.hpp>
 
+#include <svgdom/CoordinateUnits.hpp>
+
 #include "util.hxx"
 
 using namespace svgren;
-
-namespace{
-class CairoMatrixSaveRestore{
-	cairo_matrix_t m;
-	cairo_t* cr;
-public:
-	CairoMatrixSaveRestore(cairo_t* cr) :
-			cr(cr)
-	{
-		ASSERT(this->cr)
-		cairo_get_matrix(this->cr, &this->m);
-	}
-	~CairoMatrixSaveRestore()noexcept{
-		cairo_set_matrix(this->cr, &this->m);
-	}
-};
-}
-
-namespace{
-class CairoContextSaveRestore{
-	cairo_t* cr;
-	
-public:
-	CairoContextSaveRestore(cairo_t* cr) :
-			cr(cr)
-	{
-		ASSERT(this->cr)
-		cairo_save(this->cr);
-	}
-	
-	~CairoContextSaveRestore()noexcept{
-		cairo_restore(this->cr);
-	}
-};
-}
-
-namespace{
-void cairoRelQuadraticCurveTo(cairo_t *cr, double x1, double y1, double x, double y){
-	cairo_rel_curve_to(cr,
-			2.0 / 3.0 * x1,
-			2.0 / 3.0 * y1,
-			2.0 / 3.0 * x1 + 1.0 / 3.0 * x,
-			2.0 / 3.0 * y1 + 1.0 / 3.0 * y,
-			x,
-			y
-		);
-}
-}
-
-namespace{
-void cairoQuadraticCurveTo(cairo_t *cr, double x1, double y1, double x, double y){
-	double x0, y0; //current point, absolute coordinates
-	if (cairo_has_current_point(cr)) {
-		cairo_get_current_point(cr, &x0, &y0);
-	}
-	else {
-		cairo_move_to(cr, 0, 0);
-		x0 = 0;
-		y0 = 0;
-	}
-	cairo_curve_to(cr,
-			2.0 / 3.0 * x1 + 1.0 / 3.0 * x0,
-			2.0 / 3.0 * y1 + 1.0 / 3.0 * y0,
-			2.0 / 3.0 * x1 + 1.0 / 3.0 * x,
-			2.0 / 3.0 * y1 + 1.0 / 3.0 * y,
-			x,
-			y
-		);
-}
-}
-
-namespace{
-//convert degrees to radians
-real degToRad(real deg){
-	return deg * utki::pi<real>() / real(180);
-}
-}
-
-namespace{
-//Rotate a point by an angle around the origin point.
-std::tuple<real, real> rotate(real x, real y, real angle){
-    return std::make_tuple(x * std::cos(angle) - y * std::sin(angle), y * std::cos(angle) + x * std::sin(angle));
-}
-}
-
-namespace{
-//Return angle between x axis and point knowing given center.
-real pointAngle(real cx, real cy, real px, real py){
-    return std::atan2(py - cy, px - cx);
-}
-}
-
 
 
 real Renderer::lengthToPx(const svgdom::Length& l, unsigned coordIndex) const noexcept{
@@ -967,8 +877,8 @@ void Renderer::visit(const svgdom::PathElement& e) {
 						}
 
 						auto res = rotate(xx, yy, degToRad(-s.xAxisRotation));
-						xe = std::get<0>(res);
-						ye = std::get<1>(res);
+						xe = res[0];
+						ye = res[1];
 					}
 					ASSERT(radiiRatio > 0)
 					ye /= radiiRatio;
@@ -995,13 +905,13 @@ void Renderer::visit(const svgdom::PathElement& e) {
 					//Put the second point and the center back to their positions
 					{
 						auto res = rotate(xe, 0, angle);
-						xe = std::get<0>(res);
-						ye = std::get<1>(res);
+						xe = res[0];
+						ye = res[1];
 					}
 					{
 						auto res = rotate(xc, yc, angle);
-						xc = std::get<0>(res);
-						yc = std::get<1>(res);
+						xc = res[0];
+						yc = res[1];
 					}
 
 					real angle1 = pointAngle(xc, yc, 0, 0);

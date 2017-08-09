@@ -152,3 +152,70 @@ void svgren::cairoImageSurfaceBlur(cairo_surface_t* surface, std::array<real, 2>
 		boxBlurVertical(src, &*tmp.begin(), width, height, vBoxSize[2], vOffset[2], channel);
 	}
 }
+
+
+
+void svgren::cairoRelQuadraticCurveTo(cairo_t *cr, double x1, double y1, double x, double y){
+	cairo_rel_curve_to(cr,
+			2.0 / 3.0 * x1,
+			2.0 / 3.0 * y1,
+			2.0 / 3.0 * x1 + 1.0 / 3.0 * x,
+			2.0 / 3.0 * y1 + 1.0 / 3.0 * y,
+			x,
+			y
+		);
+}
+
+void svgren::cairoQuadraticCurveTo(cairo_t *cr, double x1, double y1, double x, double y){
+	double x0, y0; //current point, absolute coordinates
+	if (cairo_has_current_point(cr)) {
+		cairo_get_current_point(cr, &x0, &y0);
+	}
+	else {
+		cairo_move_to(cr, 0, 0);
+		x0 = 0;
+		y0 = 0;
+	}
+	cairo_curve_to(cr,
+			2.0 / 3.0 * x1 + 1.0 / 3.0 * x0,
+			2.0 / 3.0 * y1 + 1.0 / 3.0 * y0,
+			2.0 / 3.0 * x1 + 1.0 / 3.0 * x,
+			2.0 / 3.0 * y1 + 1.0 / 3.0 * y,
+			x,
+			y
+		);
+}
+
+real svgren::degToRad(real deg){
+	return deg * utki::pi<real>() / real(180);
+}
+
+std::array<real, 2> svgren::rotate(real x, real y, real angle){
+    return {{x * std::cos(angle) - y * std::sin(angle), y * std::cos(angle) + x * std::sin(angle)}};
+}
+
+real svgren::pointAngle(real cx, real cy, real px, real py){
+    return std::atan2(py - cy, px - cx);
+}
+
+CairoContextSaveRestore::CairoContextSaveRestore(cairo_t* cr) :
+		cr(cr)
+{
+	ASSERT(this->cr)
+	cairo_save(this->cr);
+}
+
+CairoMatrixSaveRestore::CairoMatrixSaveRestore(cairo_t* cr) :
+		cr(cr)
+{
+	ASSERT(this->cr)
+	cairo_get_matrix(this->cr, &this->m);
+}
+
+CairoContextSaveRestore::~CairoContextSaveRestore()noexcept{
+	cairo_restore(this->cr);
+}
+
+CairoMatrixSaveRestore::~CairoMatrixSaveRestore()noexcept{
+	cairo_set_matrix(this->cr, &this->m);
+}
