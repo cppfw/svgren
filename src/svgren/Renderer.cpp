@@ -2,6 +2,8 @@
 
 #include <utki/math.hpp>
 
+#include "util.hxx"
+
 using namespace svgren;
 
 namespace{
@@ -296,6 +298,30 @@ void Renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradien
 	cairo_set_source(this->cr, &pat);
 }
 
+void Renderer::applyFilter(const std::string& id) {
+	auto f = this->finder.findById(id);
+	if(!f){
+		return;
+	}
+	
+	struct FilterApplyer : public svgdom::Visitor{
+		Renderer& r;
+		
+		FilterApplyer(Renderer& r) : r(r) {}
+		
+		void visit(const svgdom::FilterElement& e)override{
+			e.relayAccept(*this);
+		}
+		
+		void visit(const svgdom::FeGaussianBlurElement& e)override{
+			cairoImageSurfaceBlur(cairo_get_target(r.cr), 5);
+		}
+	} visitor(*this);
+	
+	ASSERT(f.e)
+	f.e->accept(visitor);
+}
+
 void Renderer::setGradient(const std::string& id) {
 	auto g = this->finder.findById(id);
 	if(!g){
@@ -524,6 +550,10 @@ void Renderer::renderCurrentShape() {
 
 	//clear path if any left
 	cairo_new_path(this->cr);
+	
+	if(auto filter = this->styleStack.getStyleProperty(svgdom::StyleProperty_e::FILTER)){
+		this->applyFilter(filter->getLocalIdFromIri());
+	}
 }
 
 void Renderer::renderSvgElement(const svgdom::SvgElement& e, const svgdom::Length& width, const svgdom::Length& height) {
@@ -1166,22 +1196,26 @@ void Renderer::visit(const svgdom::RectElement& e) {
 Renderer::SetTempCairoContext::SetTempCairoContext(Renderer& renderer) :
 		renderer(renderer)
 {
-	if(auto p = this->renderer.styleStack.getStyleProperty(svgdom::StyleProperty_e::OPACITY)){
-		if(p->opacity < 1){
-			this->opacity = p->opacity;
-			this->surface = cairo_surface_create_similar_image(
-					cairo_get_target(renderer.cr),
-					cairo_image_surface_get_format(cairo_get_target(renderer.cr)),
-					cairo_image_surface_get_width(cairo_get_target(renderer.cr)),
-					cairo_image_surface_get_height(cairo_get_target(renderer.cr))
-				);
-			this->oldCr = renderer.cr;
-			renderer.cr = cairo_create(this->surface);
+	auto opacityP = this->renderer.styleStack.getStyleProperty(svgdom::StyleProperty_e::OPACITY);
+	auto filterP = this->renderer.styleStack.getStyleProperty(svgdom::StyleProperty_e::FILTER);
+	if((opacityP && opacityP->opacity < 1) || filterP){
+		this->surface = cairo_surface_create_similar_image(
+				cairo_get_target(renderer.cr),
+				cairo_image_surface_get_format(cairo_get_target(renderer.cr)),
+				cairo_image_surface_get_width(cairo_get_target(renderer.cr)),
+				cairo_image_surface_get_height(cairo_get_target(renderer.cr))
+			);
+		this->oldCr = renderer.cr;
+		renderer.cr = cairo_create(this->surface);
 
-			cairo_matrix_t m;
-			cairo_get_matrix(this->oldCr, &m);
+		cairo_matrix_t m;
+		cairo_get_matrix(this->oldCr, &m);
 
-			cairo_set_matrix(renderer.cr, &m);
+		cairo_set_matrix(renderer.cr, &m);
+		
+		
+		if(opacityP){
+			this->opacity = opacityP->opacity;
 		}
 	}
 }

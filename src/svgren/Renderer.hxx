@@ -39,7 +39,7 @@ class Renderer : public svgdom::Visitor{
 		cairo_surface_t* surface = nullptr;
 		Renderer& renderer;
 
-		real opacity;
+		real opacity = 1;
 	public:
 		SetTempCairoContext(Renderer& renderer);
 		~SetTempCairoContext()noexcept;
@@ -54,6 +54,8 @@ class Renderer : public svgdom::Visitor{
 	void setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradient& g, const StyleStack& ss);
 	
 	void setGradient(const std::string& id);
+	
+	void applyFilter(const std::string& id);
 	
 	void updateCurBoundingBox();
 	

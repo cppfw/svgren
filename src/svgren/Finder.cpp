@@ -12,7 +12,7 @@ Finder::Finder(const svgdom::Element& root) :
 }
 
 namespace{
-class FindByIdVisitor : public svgdom::Visitor{
+class FindByIdVisitor : virtual public svgdom::Visitor{
 	const std::string& id;
 public:
 	FindByIdVisitor(const std::string& id) :
@@ -47,6 +47,7 @@ public:
 			return;
 		}
 	}
+	
 	void visit(const svgdom::GElement& e) override{
 		this->visitContainer(e, e, e);
 	}
@@ -65,6 +66,10 @@ public:
 	void visit(const svgdom::DefsElement& e) override{
 		this->visitContainer(e, e, e);
 	}
+	void visit(const svgdom::FilterElement& e) override{
+		this->visitContainer(e, e, e);
+	}
+	
 	void visit(const svgdom::PolylineElement& e) override{
 		this->visitElement(e, e);
 	}
@@ -90,6 +95,9 @@ public:
 		this->visitElement(e, e);
 	}
 	void visit(const svgdom::PolygonElement& e) override{
+		this->visitElement(e, e);
+	}	
+	void visit(const svgdom::FeGaussianBlurElement& e) override{
 		this->visitElement(e, e);
 	}
 };

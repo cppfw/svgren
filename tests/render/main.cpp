@@ -125,7 +125,7 @@ int main(int argc, char **argv){
 	
 	ASSERT_ALWAYS(dom)
 	
-	unsigned imWidth = 0;
+	unsigned imWidth = 1000;
 	unsigned imHeight = 0;
 	auto img = svgren::render(*dom, imWidth, imHeight, 96, false);
 	
