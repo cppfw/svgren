@@ -214,9 +214,10 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <flagsDictionary>
-        <element flagsID="0"
+        <element flagsID="0" commonFlags="-funsigned-char -std=c++11 -fPIC"/>
+        <element flagsID="1"
                  commonFlags="-mtune=generic -march=x86-64 -std=c++11 -funsigned-char -fPIC"/>
-        <element flagsID="1" commonFlags="-std=c++11"/>
+        <element flagsID="2" commonFlags="-std=c++11"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -226,7 +227,7 @@
           <buildCommand>${MAKE} -f makefile debug=true CXXFLAGS=-DM_SVGREN_WHITE_BACKGROUND</buildCommand>
           <cleanCommand>${MAKE} -f makefile clean</cleanCommand>
           <executablePath>tests/render/tests</executablePath>
-          <ccTool flags="0">
+          <ccTool flags="1">
           </ccTool>
         </makeTool>
         <preBuild>
@@ -246,7 +247,7 @@
         </ccTool>
       </folder>
       <item path="src/svgren/Finder.cpp" ex="false" tool="1" flavor2="8">
-        <ccTool flags="0">
+        <ccTool flags="1">
           <incDir>
             <pElem>src/svgren</pElem>
             <pElem>/usr/include/utki</pElem>
@@ -259,17 +260,16 @@
       <item path="src/svgren/Renderer.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/include/svgdom</pElem>
-            <pElem>/usr/include/svgdom/elements</pElem>
-            <pElem>src/svgren</pElem>
-            <pElem>/usr/include/utki</pElem>
-            <pElem>/usr/include/cairo</pElem>
             <pElem>.</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>DEBUG</Elem>
+            <Elem>M_SVGREN_WHITE_BACKGROUND</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="src/svgren/StyleStack.cpp" ex="false" tool="1" flavor2="8">
-        <ccTool flags="0">
+        <ccTool flags="1">
           <incDir>
             <pElem>src/svgren</pElem>
             <pElem>/usr/include/svgdom</pElem>
@@ -279,7 +279,7 @@
         </ccTool>
       </item>
       <item path="src/svgren/render.cpp" ex="false" tool="1" flavor2="8">
-        <ccTool flags="0">
+        <ccTool flags="1">
           <incDir>
             <pElem>/usr/include/utki</pElem>
             <pElem>/usr/include/svgdom</pElem>
@@ -294,18 +294,20 @@
       <item path="src/svgren/util.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
           <incDir>
-            <pElem>src/svgren</pElem>
-            <pElem>/usr/include/cairo</pElem>
             <pElem>.</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>DEBUG</Elem>
+            <Elem>M_SVGREN_WHITE_BACKGROUND</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="tests/render/main.cpp" ex="false" tool="1" flavor2="8">
-        <ccTool flags="1">
+        <ccTool flags="2">
         </ccTool>
       </item>
       <item path="tests/samples/checksvg.cpp" ex="false" tool="1" flavor2="8">
-        <ccTool flags="1">
+        <ccTool flags="2">
         </ccTool>
       </item>
     </conf>

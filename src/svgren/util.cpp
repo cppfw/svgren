@@ -3,36 +3,49 @@
 #include <cstring>
 
 #include <utki/debug.hpp>
+#include <vector>
 
 using namespace svgren;
 
 
-void svgren::cairoImageSurfaceBlur(cairo_surface_t* surface, double radius){
-	// Steve Hanov, 2009
-	// Released into the public domain.
+namespace{
 
+}
+
+
+
+void svgren::cairoImageSurfaceBlur(cairo_surface_t* surface, std::array<real, 2> stdDeviation){
 	if(cairo_image_surface_get_format (surface) != CAIRO_FORMAT_ARGB32){
 		TRACE(<< "cairo_image_surface_blur(): ERROR: wrong surface format, only ARGB32 is supported." << std::endl)
 		return;
 	}
 
-	// get width, height
 	int width = cairo_image_surface_get_width(surface);
 	int height = cairo_image_surface_get_height(surface);
-	unsigned char *dst = (unsigned char *)malloc(width * height * 4);
-	unsigned *precalc = (unsigned *)malloc(width * height * sizeof(unsigned));
+	
+	
+	double radius = stdDeviation[0];
+	
+	// Steve Hanov, 2009
+	// Released into the public domain.
+	
+	std::vector<std::uint8_t> destination(width * height * 4);
+	std::vector<unsigned> precalculate(width * height * sizeof(unsigned));
+	
 	unsigned char *src = cairo_image_surface_get_data(surface);
-	double mul = 1.f / ((radius * 2) * (radius * 2));
-	int channel;
+	
+	double mul = 1.0f / ((radius * 2) * (radius * 2));
 
 	// The number of times to perform the averaging. According to wikipedia,
 	// three iterations is good enough to pass for a gaussian.
 	const unsigned MAX_ITERATIONS = 3;
 
+	auto dst = &*destination.begin();
+	auto precalc = &*precalculate.begin();
 	memcpy(dst, src, width * height * 4);
 
-	for (unsigned iteration = 0; iteration < MAX_ITERATIONS; ++iteration) {
-		for (channel = 0; channel < 4; channel++) {
+	for(unsigned iteration = 0; iteration < MAX_ITERATIONS; ++iteration){
+		for(unsigned channel = 0; channel < 4; channel++){
 			double x, y;
 
 			// Pre-computation step.
@@ -72,7 +85,4 @@ void svgren::cairoImageSurfaceBlur(cairo_surface_t* surface, double radius){
 		}
 		memcpy(src, dst, width * height * 4);
 	}
-
-	free(dst);
-	free(precalc);
 }

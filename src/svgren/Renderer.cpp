@@ -314,7 +314,7 @@ void Renderer::applyFilter(const std::string& id) {
 		}
 		
 		void visit(const svgdom::FeGaussianBlurElement& e)override{
-			cairoImageSurfaceBlur(cairo_get_target(r.cr), 5);
+			cairoImageSurfaceBlur(cairo_get_target(r.cr), {{10, 10}});
 		}
 	} visitor(*this);
 	
