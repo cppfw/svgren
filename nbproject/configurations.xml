@@ -84,6 +84,10 @@
         <ccTool flags="0">
         </ccTool>
       </item>
+      <item path="src/svgren/util.cpp" ex="false" tool="1" flavor2="8">
+        <ccTool flags="0">
+        </ccTool>
+      </item>
       <item path="tests/render/main.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="1">
         </ccTool>

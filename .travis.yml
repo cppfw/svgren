@@ -135,6 +135,11 @@ before_script:
       export PATH=$PATH:${ANDROID_NDK_HOME} &&
       env;
     fi
+  - if [ "$BUILD_NAME" == "ios" ]; then
+      curl -L https://github.com/zackslash/Xcode-Proj-Adder/raw/master/bin/XcodeProjAdder -O &&
+      chmod +x XcodeProjAdder &&
+      (cd ios && ../XcodeProjAdder -XCP tests.xcodeproj -SCSV `echo $(find ../src -type f -name *.cpp) | sed -n -e 's/ /,/gp'`);
+    fi
 
 script:
 - if [ "$BUILD_NAME" == "debian" ]; then
