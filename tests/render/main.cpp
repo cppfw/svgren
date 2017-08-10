@@ -156,11 +156,11 @@ int main(int argc, char **argv){
 				imWidth = std::max(int(imWidth) - 2, 0);
 				imHeight = std::max(int(imHeight) - 2, 0);
 				
-				TRACE(<< "imWidth = " << imWidth << " imHeight = " << imHeight << std::endl)
+//				TRACE(<< "imWidth = " << imWidth << " imHeight = " << imHeight << std::endl)
 				
 				auto img = svgren::render(*dom, imWidth, imHeight, 96, true);
 
-				TRACE(<< "imWidth = " << imWidth << " imHeight = " << imHeight << " img.size() = " << img.size() << std::endl)
+//				TRACE(<< "imWidth = " << imWidth << " imHeight = " << imHeight << " img.size() = " << img.size() << std::endl)
 				
 				auto ximage = XCreateImage(display, visual, 24, ZPixmap, 0, reinterpret_cast<char*>(&*img.begin()), imWidth, imHeight, 8, 0);
 				utki::ScopeExit scopeexit([ximage](){

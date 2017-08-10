@@ -74,7 +74,7 @@ Result svgren::render(const svgdom::SvgElement& svg, const Parameters& p){
 	
 	int stride = ret.width * sizeof(std::uint32_t);
 	
-	TRACE(<< "width = " << ret.width << " height = " << ret.height << " stride = " << stride / 4 << std::endl)
+//	TRACE(<< "width = " << ret.width << " height = " << ret.height << " stride = " << stride / 4 << std::endl)
 	
 	ret.pixels.resize((stride / sizeof(std::uint32_t)) * ret.height);
 	

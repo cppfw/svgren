@@ -99,6 +99,8 @@ void svgren::cairoImageSurfaceBlur(cairo_surface_t* surface, std::array<real, 2>
 		d[i] = unsigned(float(stdDeviation[i]) * 3 * std::sqrt(2 * utki::pi<float>()) / 4 + 0.5f);
 	}
 	
+//	TRACE(<< "d = " << d[0] << ", " << d[1] << std::endl)
+	
 	std::uint8_t* src = cairo_image_surface_get_data(surface);
 	
 	std::vector<std::uint8_t> tmp(width * height * sizeof(std::uint32_t));
@@ -110,7 +112,7 @@ void svgren::cairoImageSurfaceBlur(cairo_surface_t* surface, std::array<real, 2>
 	if(d[0] % 2 == 0){
 		hOffset[0] = d[0] / 2;
 		hBoxSize[0] = d[0];
-		hOffset[1] = d[0] / 2 + 1;
+		hOffset[1] = d[0] / 2 - 1; //it is ok if d[0] is 0 and -1 will give a large number because box size is also 0 in that case and blur will have no effect anyway
 		hBoxSize[1] = d[0];
 		hOffset[2] = d[0] / 2;
 		hBoxSize[2] = d[0] + 1;
@@ -124,19 +126,19 @@ void svgren::cairoImageSurfaceBlur(cairo_surface_t* surface, std::array<real, 2>
 	}
 	
 	if(d[1] % 2 == 0){
-		vOffset[0] = d[0] / 2;
-		vBoxSize[0] = d[0];
-		vOffset[1] = d[0] / 2 + 1;
-		vBoxSize[1] = d[0];
-		vOffset[2] = d[0] / 2;
-		vBoxSize[2] = d[0] + 1;
+		vOffset[0] = d[1] / 2;
+		vBoxSize[0] = d[1];
+		vOffset[1] = d[1] / 2 - 1; //it is ok if d[0] is 0 and -1 will give a large number because box size is also 0 in that case and blur will have no effect anyway
+		vBoxSize[1] = d[1];
+		vOffset[2] = d[1] / 2;
+		vBoxSize[2] = d[1] + 1;
 	}else{
-		vOffset[0] = d[0] / 2;
-		vBoxSize[0] = d[0];
-		vOffset[1] = d[0] / 2;
-		vBoxSize[1] = d[0];
-		vOffset[2] = d[0] / 2;
-		vBoxSize[2] = d[0];
+		vOffset[0] = d[1] / 2;
+		vBoxSize[0] = d[1];
+		vOffset[1] = d[1] / 2;
+		vBoxSize[1] = d[1];
+		vOffset[2] = d[1] / 2;
+		vBoxSize[2] = d[1];
 	}
 	
 	for(auto channel = 0; channel != 4; ++channel){
