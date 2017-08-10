@@ -27,24 +27,24 @@ std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, unsigne
 Result svgren::render(const svgdom::SvgElement& svg, const Parameters& p){
 	Result ret;
 	
-	auto w = unsigned(std::round(svg.width.toPx(p.dpi)));
-	auto h = unsigned(std::round(svg.height.toPx(p.dpi)));
+	real w = svg.width.toPx(p.dpi);
+	real h = svg.height.toPx(p.dpi);
 
-	if(w == 0 && svg.viewBox[2] > 0){
-		w = unsigned(std::round(svg.viewBox[2]));
+	if(w <= 0 && svg.viewBox[2] > 0){
+		w = svg.viewBox[2];
 	}
 	
-	if(h == 0 && svg.viewBox[3] > 0){
-		h = unsigned(std::round(svg.viewBox[3]));
+	if(h <= 0 && svg.viewBox[3] > 0){
+		h = svg.viewBox[3];
 	}
 	
-	if(w == 0 || h == 0){
+	if(w <= 0 || h <= 0){
 		return ret;
 	}
 	
 	if(p.widthRequest == 0 && p.heightRequest == 0){
-		ret.width = w;
-		ret.height = h;
+		ret.width = unsigned(std::ceil(w));
+		ret.height = unsigned(std::ceil(h));
 	}else{
 		real aspectRatio = svg.aspectRatio(p.dpi);
 		if (aspectRatio == 0){
@@ -69,8 +69,8 @@ Result svgren::render(const svgdom::SvgElement& svg, const Parameters& p){
 	
 	ASSERT(ret.width != 0)
 	ASSERT(ret.height != 0)
-	ASSERT(w != 0)
-	ASSERT(h != 0)
+	ASSERT(w > 0)
+	ASSERT(h > 0)
 	
 	int stride = ret.width * sizeof(std::uint32_t);
 	
@@ -114,9 +114,9 @@ Result svgren::render(const svgdom::SvgElement& svg, const Parameters& p){
 		cairo_destroy(cr);
 	});
 	
-	cairo_scale(cr, real(ret.width) / real(w), real(ret.height) / real(h));
+	cairo_scale(cr, real(ret.width) / w, real(ret.height) / h);
 	
-	Renderer r(cr, p.dpi, {{real(w), real(h)}}, svg);
+	Renderer r(cr, p.dpi, {{w, h}}, svg);
 	
 	svg.accept(r);
 	

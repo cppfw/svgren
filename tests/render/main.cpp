@@ -112,7 +112,7 @@ int main(int argc, char **argv){
 	
 	unsigned imWidth = 0;
 	unsigned imHeight = 0;
-	auto img = svgren::render(*dom, imWidth, imHeight, 96, false);
+	auto img = svgren::render(*dom, imWidth, imHeight);
 	
 	TRACE(<< "imWidth = " << imWidth << " imHeight = " << imHeight << " img.size() = " << img.size() << std::endl)
 

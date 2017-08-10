@@ -26,19 +26,20 @@ endif
 $(eval $(prorab-build-app))
 
 
-#ifeq ($(prorab_os),windows)
-#    this_test_cmd := $(prorab_echo)(cd $(d); cp ../../src/libsvgren$(soext) .; $$^)
-#else
-#    this_test_cmd := $(prorab_echo)(cd $(d); LD_LIBRARY_PATH=../../src $$^)
-#endif
+ifeq ($(os),windows)
+    this_run_cmd := $(prorab_echo)cp $(d)../../src/libsvgren$(soext) $(d) && $$^)
+else
+    this_run_cmd := $(prorab_echo)(cd $(d); LD_LIBRARY_PATH=../../src $$^)
+endif
 
 
-#define this_rules
-#test:: $(prorab_this_name)
-#	@echo running $$^...
-#	$(this_test_cmd)
-#endef
-#$(eval $(this_rules))
+define this_rules
+run:: $(prorab_this_name)
+	@echo running $$^...
+	$(prorab_echo)cp $(d)../../src/libsvgren$(soext) . || true
+	$(prorab_echo)LD_LIBRARY_PATH=$(d)../../src $(d)./tests $(svg)
+endef
+$(eval $(this_rules))
 
 #add dependency on libsvgren
 $(prorab_this_name): $(abspath $(d)../../src/libsvgren$(soext))

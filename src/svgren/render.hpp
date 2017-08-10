@@ -65,12 +65,12 @@ struct Result{
 	/**
 	 * @brief Resulting width of the raster image.
 	 */
-	unsigned width;
+	unsigned width = 0;
 	
 	/**
 	 * @brief Resulting height of the raster image.
 	 */
-	unsigned height;
+	unsigned height = 0;
 };
 
 /**
