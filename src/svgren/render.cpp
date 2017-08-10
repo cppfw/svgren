@@ -53,9 +53,11 @@ Result svgren::render(const svgdom::SvgElement& svg, const Parameters& p){
 		ASSERT(aspectRatio > 0)
 		if(p.widthRequest == 0 && p.heightRequest != 0){
 			ret.width = unsigned(std::round(aspectRatio * real(p.heightRequest)));
+			ret.width = std::max(ret.width, unsigned(1));//we don't want zero width
 			ret.height = p.heightRequest;
 		}else if(p.widthRequest != 0 && p.heightRequest == 0){
 			ret.height = unsigned(std::round(real(p.widthRequest) / aspectRatio));
+			ret.height = std::max(ret.height, unsigned(1));//we don't want zero height
 			ret.width = p.widthRequest;
 		}else{
 			ASSERT(p.widthRequest != 0)

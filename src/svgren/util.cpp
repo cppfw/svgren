@@ -20,6 +20,9 @@ void boxBlurHorizontal(
 		unsigned channel
 	)
 {
+	if(boxSize == 0){
+		return;
+	}
 	for(unsigned y = 0; y != numRows; ++y){
 		unsigned sum = 0;
 		for(unsigned i = 0; i != boxSize; ++i){
@@ -53,6 +56,9 @@ void boxBlurVertical(
 		unsigned channel
 	)
 {
+	if(boxSize == 0){
+		return;
+	}
 	for(unsigned x = 0; x != stride; ++x){
 		unsigned sum = 0;
 		for(unsigned i = 0; i != boxSize; ++i){
