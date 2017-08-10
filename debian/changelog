@@ -1,3 +1,9 @@
+libsvgren (0.4.32) unstable; urgency=medium
+
+  * bug fixed in blur
+
+ -- Ivan Gagis <igagis@gmail.com>  Thu, 10 Aug 2017 15:44:54 +0300
+
 libsvgren (0.4.31) unstable; urgency=medium
 
   * bugfix release
