@@ -39,9 +39,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="7.919596"
-     inkscape:cx="65.23522"
-     inkscape:cy="12.604796"
+     inkscape:zoom="11.2"
+     inkscape:cx="35.376617"
+     inkscape:cy="10.88741"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -73,12 +73,12 @@
      id="layer1"
      transform="translate(1.3890625,-292.96511)">
     <ellipse
-       style="opacity:0.8;fill:#33b1b8;fill-opacity:1;stroke:#8e8adf;stroke-width:0.66145831;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="opacity:0.8;fill:#33b1b8;fill-opacity:1;stroke:#8e8adf;stroke-width:0.25780097;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="path4485"
-       cx="9.6692142"
-       cy="295.8667"
-       rx="4.6772165"
-       ry="2.7228081" />
+       cx="7.8713536"
+       cy="295.67709"
+       rx="3.8398495"
+       ry="2.5830786" />
     <path
        style="opacity:0.8;fill:#4b1515;fill-opacity:1;stroke:#711f1f;stroke-width:0.66145831;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;filter:url(#filter4618)"
        d="m 43.65625,295.4125 v 0.52917 L 0,297 v -2.64583 z"

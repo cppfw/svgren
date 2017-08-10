@@ -1,5 +1,7 @@
 #include "render.hpp"
 
+#include <cmath>
+
 #include <utki/config.hpp>
 #include <utki/util.hpp>
 
@@ -25,15 +27,15 @@ std::vector<std::uint32_t> svgren::render(const svgdom::SvgElement& svg, unsigne
 Result svgren::render(const svgdom::SvgElement& svg, const Parameters& p){
 	Result ret;
 	
-	auto w = unsigned(svg.width.toPx(p.dpi));
-	auto h = unsigned(svg.height.toPx(p.dpi));
+	auto w = unsigned(std::round(svg.width.toPx(p.dpi)));
+	auto h = unsigned(std::round(svg.height.toPx(p.dpi)));
 
 	if(w == 0 && svg.viewBox[2] > 0){
-		w = unsigned(svg.viewBox[2]);
+		w = unsigned(std::round(svg.viewBox[2]));
 	}
 	
 	if(h == 0 && svg.viewBox[3] > 0){
-		h = unsigned(svg.viewBox[3]);
+		h = unsigned(std::round(svg.viewBox[3]));
 	}
 	
 	if(w == 0 || h == 0){
@@ -50,10 +52,10 @@ Result svgren::render(const svgdom::SvgElement& svg, const Parameters& p){
 		}
 		ASSERT(aspectRatio > 0)
 		if(p.widthRequest == 0 && p.heightRequest != 0){
-			ret.width = unsigned(aspectRatio * real(p.heightRequest));
+			ret.width = unsigned(std::round(aspectRatio * real(p.heightRequest)));
 			ret.height = p.heightRequest;
 		}else if(p.widthRequest != 0 && p.heightRequest == 0){
-			ret.height = unsigned(real(p.widthRequest) / aspectRatio);
+			ret.height = unsigned(std::round(real(p.widthRequest) / aspectRatio));
 			ret.width = p.widthRequest;
 		}else{
 			ASSERT(p.widthRequest != 0)

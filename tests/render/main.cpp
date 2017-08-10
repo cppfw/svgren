@@ -13,22 +13,7 @@
 
 #if M_OS == M_OS_LINUX
 #	include <X11/Xlib.h>
-#endif
-
-
-#if M_OS == M_OS_LINUX
-void processEvent(Display *display, Window window, XImage *ximage, int width, int height){
-	XEvent ev;
-	XNextEvent(display, &ev);
-	switch(ev.type)
-	{
-	case Expose:
-		XPutImage(display, window, DefaultGC(display, 0), ximage, 0, 0, 1, 1, width, height);
-		break;
-	case ButtonPress:
-		exit(0);
-	}
-}
+#	include <X11/Xutil.h>
 #endif
 
 
@@ -135,13 +120,8 @@ int main(int argc, char **argv){
 
 	
 #if M_OS == M_OS_LINUX
-	for(auto& c : img){
-		c = (c & 0xff00ff00) | ((c << 16) & 0xff0000) | ((c >> 16) & 0xff);
-	}
-	
-	XImage *ximage;
-	
-	int width = imWidth, height=imHeight;
+	int width = imWidth + 2;
+	int height = imHeight + 2;
 
 	Display *display = XOpenDisplay(NULL);
 	
@@ -152,16 +132,48 @@ int main(int argc, char **argv){
 	if(visual->c_class != TrueColor){
 		TRACE_ALWAYS(<< "Cannot handle non true color visual ...\n" << std::endl)
 		return 1;
-	}
-
-	ximage = XCreateImage(display, visual, 24, ZPixmap, 0, reinterpret_cast<char*>(&*img.begin()), imWidth, imHeight, 8, 0);
+	}	
 	
 	XSelectInput(display, window, ButtonPressMask|ExposureMask);
 	
 	XMapWindow(display, window);
 	
 	while(true){
-		processEvent(display, window, ximage, imWidth, imHeight);
+		XEvent ev;
+		XNextEvent(display, &ev);
+		switch(ev.type)
+		{
+		case Expose:
+			{
+				int dummyInt;
+				unsigned dummyUnsigned;
+				Window dummyWindow;
+				unsigned imWidth = 0;
+				unsigned imHeight = 0;
+				
+				XGetGeometry(display, window, &dummyWindow, &dummyInt, &dummyInt, &imWidth, &imHeight, &dummyUnsigned, &dummyUnsigned);
+				
+				imWidth = std::max(int(imWidth) - 2, 0);
+				imHeight = std::max(int(imHeight) - 2, 0);
+				
+				TRACE(<< "imWidth = " << imWidth << " imHeight = " << imHeight << std::endl)
+				
+				auto img = svgren::render(*dom, imWidth, imHeight, 96, true);
+
+				TRACE(<< "imWidth = " << imWidth << " imHeight = " << imHeight << " img.size() = " << img.size() << std::endl)
+				
+				auto ximage = XCreateImage(display, visual, 24, ZPixmap, 0, reinterpret_cast<char*>(&*img.begin()), imWidth, imHeight, 8, 0);
+				utki::ScopeExit scopeexit([ximage](){
+					ximage->data = nullptr;//Xlib will try to deallocate data which is owned by 'img' variable.
+					XDestroyImage(ximage);
+				});
+				
+				XPutImage(display, window, DefaultGC(display, 0), ximage, 0, 0, 1, 1, imWidth, imHeight);
+			}
+			break;
+		case ButtonPress:
+			exit(0);
+		}
 	}
 #endif
 
