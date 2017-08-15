@@ -158,7 +158,7 @@ void Renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradien
 		gradientSs.stack.push_back(this->gradientGetStyle(g));
 	}
 	
-	struct ColorStopAdder : public svgdom::Visitor{
+	struct ColorStopAdder : public svgdom::ConstVisitor{
 		cairo_pattern_t& pat;
 		svgdom::StyleStack& ss;
 		
@@ -214,7 +214,7 @@ void Renderer::applyFilter(const std::string& id) {
 		return;
 	}
 	
-	struct FilterApplyer : public svgdom::Visitor{
+	struct FilterApplyer : public svgdom::ConstVisitor{
 		Renderer& r;
 		
 		FilterApplyer(Renderer& r) : r(r) {}
@@ -223,7 +223,7 @@ void Renderer::applyFilter(const std::string& id) {
 		
 		void visit(const svgdom::FilterElement& e)override{
 			this->primitiveUnits = e.primitiveUnits;
-			e.relayAccept(*this);
+			this->relayAccept(e);
 		}
 		
 		void visit(const svgdom::FeGaussianBlurElement& e)override{
@@ -286,7 +286,7 @@ void Renderer::setGradient(const std::string& id) {
 		}
 	};
 	
-	struct GradientSetter : public svgdom::Visitor{
+	struct GradientSetter : public svgdom::ConstVisitor{
 		Renderer& r;
 		
 		const svgdom::StyleStack& ss;
@@ -511,7 +511,7 @@ void Renderer::renderSvgElement(const svgdom::SvgElement& e, const svgdom::Lengt
 
 	this->applyViewBox(e);
 
-	e.relayAccept(*this);
+	this->relayAccept(e);
 }
 
 Renderer::Renderer(
@@ -536,7 +536,7 @@ void Renderer::visit(const svgdom::GElement& e) {
 
 	this->applyCairoTransformations(e.transformations);
 
-	e.relayAccept(*this);
+	this->relayAccept(e);
 }
 
 void Renderer::visit(const svgdom::UseElement& e) {
@@ -563,7 +563,7 @@ void Renderer::visit(const svgdom::UseElement& e) {
 		this->applyCairoTransformation(t);
 	}
 
-	struct RefRenderer : public svgdom::Visitor{
+	struct RefRenderer : public svgdom::ConstVisitor{
 		Renderer& r;
 		const svgdom::UseElement& e;
 		
@@ -588,7 +588,7 @@ void Renderer::visit(const svgdom::UseElement& e) {
 
 			this->r.applyViewBox(symbol);
 
-			symbol.relayAccept(this->r);
+			this->r.relayAccept(symbol);
 		}
 		
 		void visit(const svgdom::SvgElement& svg)override{
@@ -1169,7 +1169,7 @@ Renderer::SetTempCairoContext::~SetTempCairoContext()noexcept{
 }
 
 namespace{
-struct GradientCaster : public svgdom::Visitor{
+struct GradientCaster : public svgdom::ConstVisitor{
 	const svgdom::LinearGradientElement* linear;
 	const svgdom::RadialGradientElement* radial;
 	const svgdom::Gradient* gradient;

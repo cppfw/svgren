@@ -20,7 +20,7 @@
 namespace svgren{
 
 
-class Renderer : public svgdom::Visitor{
+class Renderer : public svgdom::ConstVisitor{
 	cairo_t* cr;
 	
 	svgdom::Finder finder;
@@ -92,6 +92,10 @@ public:
 			std::array<real, 2> canvasSize,
 			const svgdom::SvgElement& root
 		);
+	
+	void relayAccept(const svgdom::Container& e){
+		this->ConstVisitor::relayAccept(e);
+	}
 	
 	void visit(const svgdom::GElement& e)override;
 	void visit(const svgdom::UseElement& e)override;
