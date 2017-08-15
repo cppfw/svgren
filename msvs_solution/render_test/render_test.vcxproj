@@ -322,10 +322,10 @@
     <Import Project="..\packages\pixman_static.0.32.4.4\build\native\pixman_static.targets" Condition="Exists('..\packages\pixman_static.0.32.4.4\build\native\pixman_static.targets')" />
     <Import Project="..\packages\libpng.1.6.28.1\build\native\libpng.targets" Condition="Exists('..\packages\libpng.1.6.28.1\build\native\libpng.targets')" />
     <Import Project="..\packages\cairo_static.1.15.4.1\build\native\cairo_static.targets" Condition="Exists('..\packages\cairo_static.1.15.4.1\build\native\cairo_static.targets')" />
-    <Import Project="..\packages\libutki.1.1.7\build\native\libutki.targets" Condition="Exists('..\packages\libutki.1.1.7\build\native\libutki.targets')" />
-    <Import Project="..\packages\libpapki.1.0.40\build\native\libpapki.targets" Condition="Exists('..\packages\libpapki.1.0.40\build\native\libpapki.targets')" />
-    <Import Project="..\packages\pugixml.1.8.2\build\native\pugixml.targets" Condition="Exists('..\packages\pugixml.1.8.2\build\native\pugixml.targets')" />
-    <Import Project="..\packages\libsvgdom.0.2.41\build\native\libsvgdom.targets" Condition="Exists('..\packages\libsvgdom.0.2.41\build\native\libsvgdom.targets')" />
+    <Import Project="..\packages\libutki.1.1.11\build\native\libutki.targets" Condition="Exists('..\packages\libutki.1.1.11\build\native\libutki.targets')" />
+    <Import Project="..\packages\libpapki.1.0.42\build\native\libpapki.targets" Condition="Exists('..\packages\libpapki.1.0.42\build\native\libpapki.targets')" />
+    <Import Project="..\packages\pugixml.1.8.3\build\native\pugixml.targets" Condition="Exists('..\packages\pugixml.1.8.3\build\native\pugixml.targets')" />
+    <Import Project="..\packages\libsvgdom.0.2.68\build\native\libsvgdom.targets" Condition="Exists('..\packages\libsvgdom.0.2.68\build\native\libsvgdom.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -337,9 +337,9 @@
     <Error Condition="!Exists('..\packages\pixman_static.0.32.4.4\build\native\pixman_static.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\pixman_static.0.32.4.4\build\native\pixman_static.targets'))" />
     <Error Condition="!Exists('..\packages\libpng.1.6.28.1\build\native\libpng.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libpng.1.6.28.1\build\native\libpng.targets'))" />
     <Error Condition="!Exists('..\packages\cairo_static.1.15.4.1\build\native\cairo_static.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\cairo_static.1.15.4.1\build\native\cairo_static.targets'))" />
-    <Error Condition="!Exists('..\packages\libutki.1.1.7\build\native\libutki.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libutki.1.1.7\build\native\libutki.targets'))" />
-    <Error Condition="!Exists('..\packages\libpapki.1.0.40\build\native\libpapki.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libpapki.1.0.40\build\native\libpapki.targets'))" />
-    <Error Condition="!Exists('..\packages\pugixml.1.8.2\build\native\pugixml.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\pugixml.1.8.2\build\native\pugixml.targets'))" />
-    <Error Condition="!Exists('..\packages\libsvgdom.0.2.41\build\native\libsvgdom.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libsvgdom.0.2.41\build\native\libsvgdom.targets'))" />
+    <Error Condition="!Exists('..\packages\libutki.1.1.11\build\native\libutki.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libutki.1.1.11\build\native\libutki.targets'))" />
+    <Error Condition="!Exists('..\packages\libpapki.1.0.42\build\native\libpapki.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libpapki.1.0.42\build\native\libpapki.targets'))" />
+    <Error Condition="!Exists('..\packages\pugixml.1.8.3\build\native\pugixml.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\pugixml.1.8.3\build\native\pugixml.targets'))" />
+    <Error Condition="!Exists('..\packages\libsvgdom.0.2.68\build\native\libsvgdom.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libsvgdom.0.2.68\build\native\libsvgdom.targets'))" />
   </Target>
 </Project>
