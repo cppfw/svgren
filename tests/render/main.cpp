@@ -1,5 +1,7 @@
 #include "../../src/svgren/render.hpp"
 
+#include <chrono>
+
 #include <utki/debug.hpp>
 #include <utki/config.hpp>
 
@@ -76,6 +78,12 @@ int writePng(const char* filename, int width, int height, std::uint32_t *buffer)
    return code;
 }
 
+namespace{
+std::uint32_t getTicks(){
+	return std::uint32_t(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count());
+}
+}
+
 
 int main(int argc, char **argv){
 	std::string filename;
@@ -105,14 +113,22 @@ int main(int argc, char **argv){
 			outFilename = argv[2];
 			break;
 	}
-		
-	auto dom = svgdom::load(papki::FSFile(filename));
 	
+	auto loadStart = getTicks();
+	
+	auto dom = svgdom::load(papki::FSFile(filename));
 	ASSERT_ALWAYS(dom)
+	
+	TRACE(<< "SVG loaded in " << float(getTicks() - loadStart) / 1000.0f << " sec." << std::endl)
+	
+	
+	auto renderStart = getTicks();
 	
 	unsigned imWidth = 0;
 	unsigned imHeight = 0;
 	auto img = svgren::render(*dom, imWidth, imHeight);
+	
+	TRACE(<< "SVG rendered in " << float(getTicks() - renderStart) / 1000.0f << " sec." << std::endl)
 	
 	TRACE(<< "imWidth = " << imWidth << " imHeight = " << imHeight << " img.size() = " << img.size() << std::endl)
 
