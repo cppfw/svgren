@@ -153,9 +153,9 @@ void Renderer::applyViewBox(const svgdom::ViewBoxed& e) {
 
 void Renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradient& g, const svgdom::StyleStack& ss) {
 	svgdom::StyleStack gradientSs(ss);
-	if(gradientSs.stack.back().get().styles.size() == 0){
+	if(gradientSs.stack.back()->styles.size() == 0){
 		//gradient does not have styles attribute declared, need to inherit it from referenced
-		gradientSs.stack.push_back(this->gradientGetStyle(g));
+		gradientSs.stack.push_back(&this->gradientGetStyle(g));
 	}
 	
 	struct ColorStopAdder : public svgdom::ConstVisitor{
