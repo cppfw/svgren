@@ -153,9 +153,9 @@ void Renderer::applyViewBox(const svgdom::ViewBoxed& e) {
 
 void Renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradient& g, const svgdom::StyleStack& ss) {
 	svgdom::StyleStack gradientSs(ss);
-	if(gradientSs.stack.back().get().styles.size() == 0){
+	if(gradientSs.stack.back()->styles.size() == 0){
 		//gradient does not have styles attribute declared, need to inherit it from referenced
-		gradientSs.stack.push_back(this->gradientGetStyle(g));
+		gradientSs.stack.push_back(&this->gradientGetStyle(g));
 	}
 	
 	struct ColorStopAdder : public svgdom::ConstVisitor{
@@ -528,6 +528,7 @@ Renderer::Renderer(
 }
 
 void Renderer::visit(const svgdom::GElement& e) {
+//	TRACE(<< "rendering GElement" << std::endl)
 	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
 
 	SetTempCairoContext cairoTempContext(*this);
@@ -540,6 +541,7 @@ void Renderer::visit(const svgdom::GElement& e) {
 }
 
 void Renderer::visit(const svgdom::UseElement& e) {
+//	TRACE(<< "rendering UseElement" << std::endl)
 	auto ref = this->finder.findById(e.getLocalIdFromIri());
 	if(!ref){
 		return;
@@ -611,10 +613,12 @@ void Renderer::visit(const svgdom::UseElement& e) {
 }
 
 void Renderer::visit(const svgdom::SvgElement& e) {
+//	TRACE(<< "rendering SvgElement" << std::endl)
 	renderSvgElement(e, e.width, e.height);
 }
 
 void Renderer::visit(const svgdom::PathElement& e) {
+//	TRACE(<< "rendering PathElement" << std::endl)
 	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
 
 	SetTempCairoContext cairoTempContext(*this);
@@ -937,6 +941,7 @@ void Renderer::visit(const svgdom::PathElement& e) {
 }
 
 void Renderer::visit(const svgdom::CircleElement& e) {
+//	TRACE(<< "rendering CircleElement" << std::endl)
 	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
 
 	SetTempCairoContext cairoTempContext(*this);
@@ -958,6 +963,7 @@ void Renderer::visit(const svgdom::CircleElement& e) {
 }
 
 void Renderer::visit(const svgdom::PolylineElement& e) {
+//	TRACE(<< "rendering PolylineElement" << std::endl)
 	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
 
 	SetTempCairoContext cairoTempContext(*this);
@@ -982,6 +988,7 @@ void Renderer::visit(const svgdom::PolylineElement& e) {
 }
 
 void Renderer::visit(const svgdom::PolygonElement& e) {
+//	TRACE(<< "rendering PolygonElement" << std::endl)
 	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
 
 	SetTempCairoContext cairoTempContext(*this);
@@ -1008,6 +1015,7 @@ void Renderer::visit(const svgdom::PolygonElement& e) {
 }
 
 void Renderer::visit(const svgdom::LineElement& e) {
+//	TRACE(<< "rendering LineElement" << std::endl)
 	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
 
 	SetTempCairoContext cairoTempContext(*this);
@@ -1023,6 +1031,7 @@ void Renderer::visit(const svgdom::LineElement& e) {
 }
 
 void Renderer::visit(const svgdom::EllipseElement& e) {
+//	TRACE(<< "rendering EllipseElement" << std::endl)
 	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
 
 	SetTempCairoContext cairoTempContext(*this);
@@ -1045,6 +1054,7 @@ void Renderer::visit(const svgdom::EllipseElement& e) {
 }
 
 void Renderer::visit(const svgdom::RectElement& e) {
+//	TRACE(<< "rendering RectElement" << std::endl)
 	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
 
 	SetTempCairoContext cairoTempContext(*this);
@@ -1128,6 +1138,7 @@ Renderer::SetTempCairoContext::SetTempCairoContext(Renderer& renderer) :
 	auto opacityP = this->renderer.styleStack.getStyleProperty(svgdom::StyleProperty_e::OPACITY);
 	auto filterP = this->renderer.styleStack.getStyleProperty(svgdom::StyleProperty_e::FILTER);
 	if((opacityP && opacityP->opacity < 1) || filterP){
+//		TRACE(<< "setting temp context" << std::endl)
 		this->surface = cairo_surface_create_similar_image(
 				cairo_get_target(renderer.cr),
 				cairo_image_surface_get_format(cairo_get_target(renderer.cr)),
