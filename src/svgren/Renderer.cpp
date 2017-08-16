@@ -81,19 +81,19 @@ void Renderer::applyCairoTransformations(const decltype(svgdom::Transformable::t
 	}
 }
 
-void Renderer::applyViewBox(const svgdom::ViewBoxed& e) {
+void Renderer::applyViewBox(const svgdom::ViewBoxed& e, const svgdom::AspectRatioed& ar) {
 	if (!e.isViewBoxSpecified()) {
 		return;
 	}
 
-	if (e.preserveAspectRatio.preserve != svgdom::ViewBoxed::PreserveAspectRatio_e::NONE) {
+	if (ar.preserveAspectRatio.preserve != svgdom::AspectRatioed::PreserveAspectRatio_e::NONE) {
 		if (e.viewBox[3] >= 0 && this->viewportStack.back()[1] >= 0) { //if viewBox width and viewport width are not 0
 			real scaleFactor, dx, dy;
 
 			real viewBoxAspect = e.viewBox[2] / e.viewBox[3];
 			real viewportAspect = this->viewportStack.back()[0] / this->viewportStack.back()[1];
 
-			if ((viewBoxAspect >= viewportAspect && e.preserveAspectRatio.slice) || (viewBoxAspect < viewportAspect && !e.preserveAspectRatio.slice)) {
+			if ((viewBoxAspect >= viewportAspect && ar.preserveAspectRatio.slice) || (viewBoxAspect < viewportAspect && !ar.preserveAspectRatio.slice)) {
 				//fit by Y
 				scaleFactor = this->viewportStack.back()[1] / e.viewBox[3];
 				dx = e.viewBox[2] - this->viewportStack.back()[0];
@@ -104,35 +104,35 @@ void Renderer::applyViewBox(const svgdom::ViewBoxed& e) {
 				dx = 0;
 				dy = e.viewBox[3] - this->viewportStack.back()[1];
 			}
-			switch (e.preserveAspectRatio.preserve) {
-				case svgdom::ViewBoxed::PreserveAspectRatio_e::NONE:
+			switch (ar.preserveAspectRatio.preserve) {
+				case svgdom::AspectRatioed::PreserveAspectRatio_e::NONE:
 					ASSERT(false)
 				default:
 					break;
-				case svgdom::ViewBoxed::PreserveAspectRatio_e::X_MIN_Y_MAX:
+				case svgdom::AspectRatioed::PreserveAspectRatio_e::X_MIN_Y_MAX:
 					cairo_translate(this->cr, 0, dy);
 					break;
-				case svgdom::ViewBoxed::PreserveAspectRatio_e::X_MIN_Y_MID:
+				case svgdom::AspectRatioed::PreserveAspectRatio_e::X_MIN_Y_MID:
 					cairo_translate(this->cr, 0, dy / 2);
 					break;
-				case svgdom::ViewBoxed::PreserveAspectRatio_e::X_MIN_Y_MIN:
+				case svgdom::AspectRatioed::PreserveAspectRatio_e::X_MIN_Y_MIN:
 					break;
-				case svgdom::ViewBoxed::PreserveAspectRatio_e::X_MID_Y_MAX:
+				case svgdom::AspectRatioed::PreserveAspectRatio_e::X_MID_Y_MAX:
 					cairo_translate(this->cr, dx / 2, dy);
 					break;
-				case svgdom::ViewBoxed::PreserveAspectRatio_e::X_MID_Y_MID:
+				case svgdom::AspectRatioed::PreserveAspectRatio_e::X_MID_Y_MID:
 					cairo_translate(this->cr, dx / 2, dy / 2);
 					break;
-				case svgdom::ViewBoxed::PreserveAspectRatio_e::X_MID_Y_MIN:
+				case svgdom::AspectRatioed::PreserveAspectRatio_e::X_MID_Y_MIN:
 					cairo_translate(this->cr, dx / 2, 0);
 					break;
-				case svgdom::ViewBoxed::PreserveAspectRatio_e::X_MAX_Y_MAX:
+				case svgdom::AspectRatioed::PreserveAspectRatio_e::X_MAX_Y_MAX:
 					cairo_translate(this->cr, dx, dy);
 					break;
-				case svgdom::ViewBoxed::PreserveAspectRatio_e::X_MAX_Y_MID:
+				case svgdom::AspectRatioed::PreserveAspectRatio_e::X_MAX_Y_MID:
 					cairo_translate(this->cr, dx, dy / 2);
 					break;
-				case svgdom::ViewBoxed::PreserveAspectRatio_e::X_MAX_Y_MIN:
+				case svgdom::AspectRatioed::PreserveAspectRatio_e::X_MAX_Y_MIN:
 					cairo_translate(this->cr, dx, 0);
 					break;
 			}
@@ -247,8 +247,8 @@ void Renderer::applyFilter(const std::string& id) {
 		}
 	} visitor(*this);
 	
-	ASSERT(f.e)
-	f.e->accept(visitor);
+	ASSERT(f)
+	f->e.accept(visitor);
 }
 
 void Renderer::setGradient(const std::string& id) {
@@ -341,10 +341,9 @@ void Renderer::setGradient(const std::string& id) {
 		void defaultVisit(const svgdom::Element&)override{
 			cairo_set_source_rgba(this->r.cr, 0, 0, 0, 0);
 		}
-	} visitor(*this, g.ss);
+	} visitor(*this, g->ss);
 	
-	ASSERT(g.e)
-	g.e->accept(visitor);
+	g->e.accept(visitor);
 }
 
 void Renderer::updateCurBoundingBox() {
@@ -509,7 +508,7 @@ void Renderer::renderSvgElement(const svgdom::SvgElement& e, const svgdom::Lengt
 		this->viewportStack.pop_back();
 	});
 
-	this->applyViewBox(e);
+	this->applyViewBox(e, e);
 
 	this->relayAccept(e);
 }
@@ -588,7 +587,7 @@ void Renderer::visit(const svgdom::UseElement& e) {
 				this->r.viewportStack.pop_back();
 			});
 
-			this->r.applyViewBox(symbol);
+			this->r.applyViewBox(symbol, symbol);
 
 			this->r.relayAccept(symbol);
 		}
@@ -607,9 +606,9 @@ void Renderer::visit(const svgdom::UseElement& e) {
 		}
 	} visitor(*this, e);
 	
-	ASSERT(ref.e)
+	ASSERT(ref)
 	
-	ref.e->accept(visitor);
+	ref->e.accept(visitor);
 }
 
 void Renderer::visit(const svgdom::SvgElement& e) {
@@ -1208,7 +1207,7 @@ svgdom::Length Renderer::gradientGetX1(const svgdom::LinearGradientElement& g){
 		
 		if(ref){
 			GradientCaster caster;
-			ref.e->accept(caster);
+			ref->e.accept(caster);
 			if(caster.linear){
 				return this->gradientGetX1(*caster.linear);
 			}
@@ -1228,7 +1227,7 @@ svgdom::Length Renderer::gradientGetY1(const svgdom::LinearGradientElement& g) {
 		
 		if(ref){
 			GradientCaster caster;
-			ref.e->accept(caster);
+			ref->e.accept(caster);
 			if(caster.linear){
 				return this->gradientGetY1(*caster.linear);
 			}
@@ -1248,7 +1247,7 @@ svgdom::Length Renderer::gradientGetX2(const svgdom::LinearGradientElement& g) {
 		
 		if(ref){
 			GradientCaster caster;
-			ref.e->accept(caster);
+			ref->e.accept(caster);
 			if(caster.linear){
 				return this->gradientGetX2(*caster.linear);
 			}
@@ -1268,7 +1267,7 @@ svgdom::Length Renderer::gradientGetY2(const svgdom::LinearGradientElement& g) {
 		
 		if(ref){
 			GradientCaster caster;
-			ref.e->accept(caster);
+			ref->e.accept(caster);
 			if(caster.linear){
 				return this->gradientGetY2(*caster.linear);
 			}
@@ -1288,7 +1287,7 @@ svgdom::Length Renderer::gradientGetCx(const svgdom::RadialGradientElement& g) {
 		
 		if(ref){
 			GradientCaster caster;
-			ref.e->accept(caster);
+			ref->e.accept(caster);
 			if(caster.radial){
 				return this->gradientGetCx(*caster.radial);
 			}
@@ -1308,7 +1307,7 @@ svgdom::Length Renderer::gradientGetCy(const svgdom::RadialGradientElement& g) {
 		
 		if(ref){
 			GradientCaster caster;
-			ref.e->accept(caster);
+			ref->e.accept(caster);
 			if(caster.radial){
 				return this->gradientGetCy(*caster.radial);
 			}
@@ -1328,7 +1327,7 @@ svgdom::Length Renderer::gradientGetR(const svgdom::RadialGradientElement& g) {
 		
 		if(ref){
 			GradientCaster caster;
-			ref.e->accept(caster);
+			ref->e.accept(caster);
 			if(caster.radial){
 				return this->gradientGetR(*caster.radial);
 			}
@@ -1348,7 +1347,7 @@ svgdom::Length Renderer::gradientGetFx(const svgdom::RadialGradientElement& g) {
 		
 		if(ref){
 			GradientCaster caster;
-			ref.e->accept(caster);
+			ref->e.accept(caster);
 			if(caster.radial){
 				return this->gradientGetFx(*caster.radial);
 			}
@@ -1368,7 +1367,7 @@ svgdom::Length Renderer::gradientGetFy(const svgdom::RadialGradientElement& g) {
 		
 		if(ref){
 			GradientCaster caster;
-			ref.e->accept(caster);
+			ref->e.accept(caster);
 			if(caster.radial){
 				return this->gradientGetFy(*caster.radial);
 			}
@@ -1388,7 +1387,7 @@ const decltype(svgdom::Container::children)&  Renderer::gradientGetStops(const s
 		
 		if(ref){
 			GradientCaster caster;
-			ref.e->accept(caster);
+			ref->e.accept(caster);
 			if(caster.gradient){
 				return this->gradientGetStops(*caster.gradient);
 			}
@@ -1409,7 +1408,7 @@ const svgdom::Styleable& Renderer::gradientGetStyle(const svgdom::Gradient& g) {
 		
 		if(ref){
 			GradientCaster caster;
-			ref.e->accept(caster);
+			ref->e.accept(caster);
 			if(caster.gradient){
 				return this->gradientGetStyle(*caster.gradient);
 			}
@@ -1432,7 +1431,7 @@ svgdom::Gradient::SpreadMethod_e Renderer::gradientGetSpreadMethod(const svgdom:
 		
 		if(ref){
 			GradientCaster caster;
-			ref.e->accept(caster);
+			ref->e.accept(caster);
 			if(caster.gradient){
 				return this->gradientGetSpreadMethod(*caster.gradient);
 			}

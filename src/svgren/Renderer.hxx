@@ -13,6 +13,8 @@
 #include <svgdom/Visitor.hpp>
 #include <svgdom/Finder.hpp>
 #include <svgdom/StyleStack.hpp>
+#include <svgdom/elements/AspectRatioed.hpp>
+
 
 #include "config.hpp"
 
@@ -62,7 +64,7 @@ class Renderer : public svgdom::ConstVisitor{
 	
 	void renderCurrentShape();
 	
-	void applyViewBox(const svgdom::ViewBoxed& e);
+	void applyViewBox(const svgdom::ViewBoxed& e, const svgdom::AspectRatioed& ar);
 	
 	void renderSvgElement(
 			const svgdom::SvgElement& e,

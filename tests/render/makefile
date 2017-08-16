@@ -2,6 +2,11 @@ include prorab.mk
 
 this_name := tests
 
+ifeq ($(gprof), true)
+    this_cxxflags += -pg
+    this_ldflags += -pg
+endif
+
 this_cxxflags += -g
 this_cxxflags += -Wall
 this_cxxflags += -Wno-format #no warnings about format

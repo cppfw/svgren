@@ -18,7 +18,10 @@ ifeq ($(debug),true)
     this_cxxflags += -DDEBUG
 endif
 
-
+ifeq ($(gprof), true)
+    this_cxxflags += -pg
+    this_ldflags += -pg
+endif
 
 
 this_cxxflags += -Wall #enable all warnings
