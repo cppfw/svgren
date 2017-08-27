@@ -316,7 +316,6 @@
 					"-l\"libpixman\"",
 					"-l\"libpng_igagis\"",
 					"-l\"libsvgdom\"",
-					"-l\"pugixml\"",
 					"-l\"z\"",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.igagis.tests;
@@ -339,7 +338,6 @@
 					"-l\"libpixman\"",
 					"-l\"libpng_igagis\"",
 					"-l\"libsvgdom\"",
-					"-l\"pugixml\"",
 					"-l\"z\"",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.igagis.tests;
