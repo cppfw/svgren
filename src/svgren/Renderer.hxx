@@ -94,11 +94,7 @@ public:
 			std::array<real, 2> canvasSize,
 			const svgdom::SvgElement& root
 		);
-	
-	void relayAccept(const svgdom::Container& e){
-		this->ConstVisitor::relayAccept(e);
-	}
-	
+
 	void visit(const svgdom::GElement& e)override;
 	void visit(const svgdom::UseElement& e)override;
 	void visit(const svgdom::SvgElement& e)override;
@@ -109,6 +105,9 @@ public:
 	void visit(const svgdom::LineElement& e) override;
 	void visit(const svgdom::EllipseElement& e) override;
 	void visit(const svgdom::RectElement& e) override;
+	void visit(const svgdom::DefsElement& e) override{
+		//do not render anything
+	}
 };
 
 
