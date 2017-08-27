@@ -95,6 +95,12 @@ public:
 			const svgdom::SvgElement& root
 		);
 
+	//WORKAROUND: MSVS compiler complains about cannot access protected member,
+	//            Declare public method which calls protected one.
+	void relayAccept(const svgdom::Container& e){
+		this->ConstVisitor::relayAccept(e);
+	}
+
 	void visit(const svgdom::GElement& e)override;
 	void visit(const svgdom::UseElement& e)override;
 	void visit(const svgdom::SvgElement& e)override;

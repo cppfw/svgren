@@ -606,7 +606,7 @@ void Renderer::visit(const svgdom::UseElement& e) {
 		}
 		
 		void defaultVisit(const svgdom::Element& element, const svgdom::Container& c)override{
-			element.accept(this->r);
+			this->defaultVisit(element);
 		}
 	} visitor(*this, e);
 	
