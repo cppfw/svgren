@@ -326,7 +326,7 @@
     <Import Project="..\packages\libpapki.1.0.43\build\native\libpapki.targets" Condition="Exists('..\packages\libpapki.1.0.43\build\native\libpapki.targets')" />
     <Import Project="..\packages\libunikod.2.0.17\build\native\libunikod.targets" Condition="Exists('..\packages\libunikod.2.0.17\build\native\libunikod.targets')" />
     <Import Project="..\packages\libsvgdom.0.3.1\build\native\libsvgdom.targets" Condition="Exists('..\packages\libsvgdom.0.3.1\build\native\libsvgdom.targets')" />
-    <Import Project="..\packages\libmikroxml.0.1.2\build\native\libmikroxml.targets" Condition="Exists('..\packages\libmikroxml.0.1.2\build\native\libmikroxml.targets')" />
+    <Import Project="..\packages\libmikroxml.0.1.3\build\native\libmikroxml.targets" Condition="Exists('..\packages\libmikroxml.0.1.3\build\native\libmikroxml.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -342,6 +342,6 @@
     <Error Condition="!Exists('..\packages\libpapki.1.0.43\build\native\libpapki.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libpapki.1.0.43\build\native\libpapki.targets'))" />
     <Error Condition="!Exists('..\packages\libunikod.2.0.17\build\native\libunikod.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libunikod.2.0.17\build\native\libunikod.targets'))" />
     <Error Condition="!Exists('..\packages\libsvgdom.0.3.1\build\native\libsvgdom.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libsvgdom.0.3.1\build\native\libsvgdom.targets'))" />
-    <Error Condition="!Exists('..\packages\libmikroxml.0.1.2\build\native\libmikroxml.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libmikroxml.0.1.2\build\native\libmikroxml.targets'))" />
+    <Error Condition="!Exists('..\packages\libmikroxml.0.1.3\build\native\libmikroxml.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libmikroxml.0.1.3\build\native\libmikroxml.targets'))" />
   </Target>
 </Project>

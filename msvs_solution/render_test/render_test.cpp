@@ -33,7 +33,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
-	auto dom = svgdom::load(papki::FSFile("tiger.svg"));
+	auto dom = svgdom::load(papki::FSFile("tiger_0D0A.svg"));
 	ASSERT_ALWAYS(dom)
 
 	unsigned imWidth = 0;
