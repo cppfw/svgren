@@ -11,6 +11,7 @@ SVG renderer library in C++.
 - all shapes support
 - all path elements support
 - render to memory
+- gaussian blur effect support
 
 **svgren** uses **[svgdom](https://github.com/igagis/svgdom)** to read the SVG file and **[cairo](http://cairographics.org)** to render graphics.
 
