@@ -1,3 +1,9 @@
+libsvgren (0.4.39) unstable; urgency=medium
+
+  * implemented support of 'display' style property
+
+ -- Ivan Gagis <igagis@gmail.com>  Mon, 11 Sep 2017 20:50:37 +0300
+
 libsvgren (0.4.38) unstable; urgency=medium
 
   * update to latest svgdom
