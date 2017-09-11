@@ -416,7 +416,7 @@ void Renderer::renderCurrentShape() {
 
 	if (stroke && !stroke->isNone()) {
 		if (auto p = this->styleStack.getStyleProperty(svgdom::StyleProperty_e::STROKE_WIDTH)) {
-			cairo_set_line_width(this->cr, this->lengthToPx(p->length));
+			cairo_set_line_width(this->cr, this->lengthToPx(p->strokeWidth));
 		} else {
 			cairo_set_line_width(this->cr, 1);
 		}
@@ -487,6 +487,10 @@ void Renderer::renderCurrentShape() {
 void Renderer::renderSvgElement(const svgdom::SvgElement& e, const svgdom::Length& width, const svgdom::Length& height) {
 	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
 
+	if(this->isInvisible()){
+		return;
+	}
+	
 	SetTempCairoContext cairoTempContext(*this);
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
@@ -527,9 +531,13 @@ Renderer::Renderer(
 }
 
 void Renderer::visit(const svgdom::GElement& e) {
-//	TRACE(<< "rendering GElement" << std::endl)
+//	TRACE(<< "rendering GElement: id = " << e.id << std::endl)
 	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
 
+	if(this->isInvisible()){
+		return;
+	}
+	
 	SetTempCairoContext cairoTempContext(*this);
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
@@ -548,6 +556,10 @@ void Renderer::visit(const svgdom::UseElement& e) {
 	
 	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
 
+	if(this->isInvisible()){
+		return;
+	}
+	
 	SetTempCairoContext cairoTempContext(*this);
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
@@ -620,10 +632,24 @@ void Renderer::visit(const svgdom::SvgElement& e) {
 	renderSvgElement(e, e.width, e.height);
 }
 
+bool Renderer::isInvisible() {
+	if(auto p = this->styleStack.getStyleProperty(svgdom::StyleProperty_e::DISPLAY)){
+		if(p->display == svgdom::Display_e::NONE){
+			return true;
+		}
+	}
+	return false;
+}
+
+
 void Renderer::visit(const svgdom::PathElement& e) {
 //	TRACE(<< "rendering PathElement" << std::endl)
 	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
 
+	if(this->isInvisible()){
+		return;
+	}
+	
 	SetTempCairoContext cairoTempContext(*this);
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
@@ -947,6 +973,10 @@ void Renderer::visit(const svgdom::CircleElement& e) {
 //	TRACE(<< "rendering CircleElement" << std::endl)
 	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
 
+	if(this->isInvisible()){
+		return;
+	}
+	
 	SetTempCairoContext cairoTempContext(*this);
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
@@ -969,6 +999,10 @@ void Renderer::visit(const svgdom::PolylineElement& e) {
 //	TRACE(<< "rendering PolylineElement" << std::endl)
 	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
 
+	if(this->isInvisible()){
+		return;
+	}
+	
 	SetTempCairoContext cairoTempContext(*this);
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
@@ -994,6 +1028,10 @@ void Renderer::visit(const svgdom::PolygonElement& e) {
 //	TRACE(<< "rendering PolygonElement" << std::endl)
 	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
 
+	if(this->isInvisible()){
+		return;
+	}
+	
 	SetTempCairoContext cairoTempContext(*this);
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
@@ -1021,6 +1059,10 @@ void Renderer::visit(const svgdom::LineElement& e) {
 //	TRACE(<< "rendering LineElement" << std::endl)
 	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
 
+	if(this->isInvisible()){
+		return;
+	}
+	
 	SetTempCairoContext cairoTempContext(*this);
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
@@ -1037,6 +1079,10 @@ void Renderer::visit(const svgdom::EllipseElement& e) {
 //	TRACE(<< "rendering EllipseElement" << std::endl)
 	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
 
+	if(this->isInvisible()){
+		return;
+	}
+	
 	SetTempCairoContext cairoTempContext(*this);
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
@@ -1060,6 +1106,10 @@ void Renderer::visit(const svgdom::RectElement& e) {
 //	TRACE(<< "rendering RectElement" << std::endl)
 	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
 
+	if(this->isInvisible()){
+		return;
+	}
+	
 	SetTempCairoContext cairoTempContext(*this);
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);

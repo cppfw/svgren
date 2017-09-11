@@ -87,6 +87,8 @@ class Renderer : public svgdom::ConstVisitor{
 	const svgdom::Styleable& gradientGetStyle(const svgdom::Gradient& g);
 	svgdom::Gradient::SpreadMethod_e gradientGetSpreadMethod(const svgdom::Gradient& g);
 	
+	bool isInvisible();
+	
 public:
 	Renderer(
 			cairo_t* cr,
