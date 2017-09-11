@@ -336,7 +336,7 @@ int main(int argc, char** argv) {
 					std::swap(c1, c2);
 				}
 				
-				if(c2 - c1 > 1){ //allow difference in 1
+				if(c2 - c1 > 2){ //allow difference in 1
 					std::uint32_t pixel =
 						std::uint32_t(png.buf()[i * png.numChannels()]) |
 						(std::uint32_t(png.buf()[i * png.numChannels() + 1]) << 8) |
@@ -344,7 +344,7 @@ int main(int argc, char** argv) {
 						(std::uint32_t(png.buf()[i * png.numChannels() + 3]) << 24)
 					;
 					
-					std::cout << "Error: PNG pixel #" << std::dec << i << " (0x" << std::hex << pixel << ") did not match SVG pixel (0x" << img[i] << ")" << std::endl;
+					std::cout << "Error: PNG pixel #" << std::dec << i << " [" << (i % imWidth) << ", " << (i / imWidth) << "] " << " (0x" << std::hex << pixel << ") did not match SVG pixel (0x" << img[i] << ")" << std::endl;
 					return 1;
 				}
 			}
