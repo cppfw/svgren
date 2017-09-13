@@ -302,11 +302,11 @@
     <Import Project="..\packages\pixman_static.0.32.4.4\build\native\pixman_static.targets" Condition="Exists('..\packages\pixman_static.0.32.4.4\build\native\pixman_static.targets')" />
     <Import Project="..\packages\libpng.1.6.28.1\build\native\libpng.targets" Condition="Exists('..\packages\libpng.1.6.28.1\build\native\libpng.targets')" />
     <Import Project="..\packages\cairo_static.1.15.4.1\build\native\cairo_static.targets" Condition="Exists('..\packages\cairo_static.1.15.4.1\build\native\cairo_static.targets')" />
-    <Import Project="..\packages\libutki.1.1.13\build\native\libutki.targets" Condition="Exists('..\packages\libutki.1.1.13\build\native\libutki.targets')" />
     <Import Project="..\packages\libpapki.1.0.43\build\native\libpapki.targets" Condition="Exists('..\packages\libpapki.1.0.43\build\native\libpapki.targets')" />
     <Import Project="..\packages\libunikod.2.0.17\build\native\libunikod.targets" Condition="Exists('..\packages\libunikod.2.0.17\build\native\libunikod.targets')" />
-    <Import Project="..\packages\libsvgdom.0.3.1\build\native\libsvgdom.targets" Condition="Exists('..\packages\libsvgdom.0.3.1\build\native\libsvgdom.targets')" />
     <Import Project="..\packages\libmikroxml.0.1.3\build\native\libmikroxml.targets" Condition="Exists('..\packages\libmikroxml.0.1.3\build\native\libmikroxml.targets')" />
+    <Import Project="..\packages\libutki.1.1.15\build\native\libutki.targets" Condition="Exists('..\packages\libutki.1.1.15\build\native\libutki.targets')" />
+    <Import Project="..\packages\libsvgdom.0.3.3\build\native\libsvgdom.targets" Condition="Exists('..\packages\libsvgdom.0.3.3\build\native\libsvgdom.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -318,10 +318,10 @@
     <Error Condition="!Exists('..\packages\pixman_static.0.32.4.4\build\native\pixman_static.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\pixman_static.0.32.4.4\build\native\pixman_static.targets'))" />
     <Error Condition="!Exists('..\packages\libpng.1.6.28.1\build\native\libpng.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libpng.1.6.28.1\build\native\libpng.targets'))" />
     <Error Condition="!Exists('..\packages\cairo_static.1.15.4.1\build\native\cairo_static.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\cairo_static.1.15.4.1\build\native\cairo_static.targets'))" />
-    <Error Condition="!Exists('..\packages\libutki.1.1.13\build\native\libutki.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libutki.1.1.13\build\native\libutki.targets'))" />
     <Error Condition="!Exists('..\packages\libpapki.1.0.43\build\native\libpapki.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libpapki.1.0.43\build\native\libpapki.targets'))" />
     <Error Condition="!Exists('..\packages\libunikod.2.0.17\build\native\libunikod.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libunikod.2.0.17\build\native\libunikod.targets'))" />
-    <Error Condition="!Exists('..\packages\libsvgdom.0.3.1\build\native\libsvgdom.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libsvgdom.0.3.1\build\native\libsvgdom.targets'))" />
     <Error Condition="!Exists('..\packages\libmikroxml.0.1.3\build\native\libmikroxml.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libmikroxml.0.1.3\build\native\libmikroxml.targets'))" />
+    <Error Condition="!Exists('..\packages\libutki.1.1.15\build\native\libutki.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libutki.1.1.15\build\native\libutki.targets'))" />
+    <Error Condition="!Exists('..\packages\libsvgdom.0.3.3\build\native\libsvgdom.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libsvgdom.0.3.3\build\native\libsvgdom.targets'))" />
   </Target>
 </Project>
