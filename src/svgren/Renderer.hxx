@@ -59,6 +59,7 @@ class Renderer : public svgdom::ConstVisitor{
 	void setGradient(const std::string& id);
 	
 	void applyFilter(const std::string& id);
+	void applyFilter();
 	
 	void updateCurBoundingBox();
 	

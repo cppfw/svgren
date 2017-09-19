@@ -79,8 +79,8 @@ Result svgren::render(const svgdom::SvgElement& svg, const Parameters& p){
 	ret.pixels.resize((stride / sizeof(std::uint32_t)) * ret.height);
 	
 	for(auto& c : ret.pixels){
-#ifdef M_SVGREN_WHITE_BACKGROUND
-		c = 0xffffffff;
+#ifdef M_SVGREN_BACKGROUND
+		c = M_SVGREN_BACKGROUND;
 #else
 		c = 0;
 #endif

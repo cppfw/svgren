@@ -208,6 +208,13 @@ void Renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradien
 	cairo_set_source(this->cr, &pat);
 }
 
+void Renderer::applyFilter() {
+	if(auto filter = this->styleStack.getStyleProperty(svgdom::StyleProperty_e::FILTER)){
+		this->applyFilter(filter->getLocalIdFromIri());
+	}
+}
+
+
 void Renderer::applyFilter(const std::string& id) {
 	auto f = this->finder.findById(id);
 	if(!f){
@@ -479,9 +486,7 @@ void Renderer::renderCurrentShape() {
 	//clear path if any left
 	cairo_new_path(this->cr);
 	
-	if(auto filter = this->styleStack.getStyleProperty(svgdom::StyleProperty_e::FILTER)){
-		this->applyFilter(filter->getLocalIdFromIri());
-	}
+	this->applyFilter();
 }
 
 void Renderer::renderSvgElement(const svgdom::SvgElement& e, const svgdom::Length& width, const svgdom::Length& height) {
@@ -515,6 +520,8 @@ void Renderer::renderSvgElement(const svgdom::SvgElement& e, const svgdom::Lengt
 	this->applyViewBox(e, e);
 
 	this->relayAccept(e);
+	
+	this->applyFilter();
 }
 
 Renderer::Renderer(
@@ -545,6 +552,8 @@ void Renderer::visit(const svgdom::GElement& e) {
 	this->applyCairoTransformations(e.transformations);
 
 	this->relayAccept(e);
+	
+	this->applyFilter();
 }
 
 void Renderer::visit(const svgdom::UseElement& e) {
@@ -602,6 +611,8 @@ void Renderer::visit(const svgdom::UseElement& e) {
 			this->r.applyViewBox(symbol, symbol);
 
 			this->r.relayAccept(symbol);
+			
+			this->r.applyFilter();
 		}
 		
 		void visit(const svgdom::SvgElement& svg)override{
