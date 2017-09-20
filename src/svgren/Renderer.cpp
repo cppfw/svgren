@@ -250,7 +250,7 @@ void Renderer::applyFilter(const std::string& id) {
 			}else{
 				return;
 			}
-			cairoImageSurfaceBlur(cairo_get_target(r.cr), sd);
+			cairoImageSurfaceBlur(cairo_get_group_target(r.cr), sd);
 		}
 	} visitor(*this);
 	
@@ -1201,46 +1201,28 @@ Renderer::SetTempCairoContext::SetTempCairoContext(Renderer& renderer) :
 {
 	auto opacityP = this->renderer.styleStack.getStyleProperty(svgdom::StyleProperty_e::OPACITY);
 	auto filterP = this->renderer.styleStack.getStyleProperty(svgdom::StyleProperty_e::FILTER);
-	if((opacityP && opacityP->opacity < 1) || filterP){
+	
+	this->groupPushed = (opacityP && opacityP->opacity < 1) || filterP;
+	
+	if(this->groupPushed){
 //		TRACE(<< "setting temp context" << std::endl)
-		this->surface = cairo_surface_create_similar_image(
-				cairo_get_target(renderer.cr),
-				cairo_image_surface_get_format(cairo_get_target(renderer.cr)),
-				cairo_image_surface_get_width(cairo_get_target(renderer.cr)),
-				cairo_image_surface_get_height(cairo_get_target(renderer.cr))
-			);
-		this->oldCr = renderer.cr;
-		renderer.cr = cairo_create(this->surface);
-
-		cairo_matrix_t m;
-		cairo_get_matrix(this->oldCr, &m);
-
-		cairo_set_matrix(renderer.cr, &m);
-		
+		cairo_push_group(this->renderer.cr);
 		
 		if(opacityP){
 			this->opacity = opacityP->opacity;
 		}
+		
+		this->groupPushed = true;
 	}
 }
 
 Renderer::SetTempCairoContext::~SetTempCairoContext()noexcept{
-	if(this->oldCr){
-		//blit surface
-		{
-			CairoContextSaveRestore saveRestore(this->oldCr);
-			cairo_identity_matrix(this->oldCr);
-			cairo_set_source_surface(this->oldCr, this->surface, 0, 0);
-			cairo_paint_with_alpha(this->oldCr, this->opacity);
-		}
-		
-		ASSERT(this->surface)
-		cairo_destroy(this->renderer.cr);
-		cairo_surface_destroy(this->surface);
-		this->renderer.cr = this->oldCr;
-	}else{
-		ASSERT(!this->surface)
+	if(!this->groupPushed){
+		return;
 	}
+	
+	cairo_pop_group_to_source(this->renderer.cr);
+	cairo_paint_with_alpha(this->renderer.cr, this->opacity);
 }
 
 namespace{

@@ -38,11 +38,10 @@ class Renderer : public svgdom::ConstVisitor{
 	
 	
 	class SetTempCairoContext{
-		cairo_t* oldCr = nullptr;
-		cairo_surface_t* surface = nullptr;
+		bool groupPushed;
 		Renderer& renderer;
 
-		real opacity = 1;
+		real opacity = real(1);
 	public:
 		SetTempCairoContext(Renderer& renderer);
 		~SetTempCairoContext()noexcept;
