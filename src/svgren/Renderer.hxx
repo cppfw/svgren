@@ -23,6 +23,7 @@ namespace svgren{
 
 
 class Renderer : public svgdom::ConstVisitor{
+public:
 	cairo_t* cr;
 	
 	svgdom::Finder finder;
