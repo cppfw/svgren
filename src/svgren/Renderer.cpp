@@ -496,7 +496,9 @@ void Renderer::renderSvgElement(const svgdom::SvgElement& e, const svgdom::Lengt
 		return;
 	}
 	
-	SetTempCairoContext cairoTempContext(*this);
+	PushBackgroundIfNeeded pushBackground(*this);
+	
+	PushCairoGroupIfNeeded cairoTempContext(*this, pushBackground.isPushed());
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
@@ -537,6 +539,25 @@ Renderer::Renderer(
 	this->viewportStack.push_back(canvasSize);
 }
 
+Renderer::PushBackgroundIfNeeded::PushBackgroundIfNeeded(Renderer& r) :
+		r(r)
+{
+	this->backgroundPushed = false;
+	if(auto p = this->r.styleStack.getStyleProperty(svgdom::StyleProperty_e::ENABLE_BACKGROUND)){
+		if(p->enableBackground.value == svgdom::EnableBackground_e::NEW){
+			this->r.backgroundStack.push_back(cairo_get_group_target(this->r.cr));
+			this->backgroundPushed = true;
+		}
+	}
+}
+
+Renderer::PushBackgroundIfNeeded::~PushBackgroundIfNeeded()noexcept{
+	if(this->backgroundPushed){
+		this->r.backgroundStack.pop_back();
+	}
+}
+
+
 void Renderer::visit(const svgdom::GElement& e) {
 //	TRACE(<< "rendering GElement: id = " << e.id << std::endl)
 	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
@@ -545,7 +566,9 @@ void Renderer::visit(const svgdom::GElement& e) {
 		return;
 	}
 	
-	SetTempCairoContext cairoTempContext(*this);
+	PushBackgroundIfNeeded pushBackground(*this);
+	
+	PushCairoGroupIfNeeded cairoTempContext(*this, pushBackground.isPushed());
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
@@ -569,7 +592,7 @@ void Renderer::visit(const svgdom::UseElement& e) {
 		return;
 	}
 	
-	SetTempCairoContext cairoTempContext(*this);
+	PushCairoGroupIfNeeded cairoTempContext(*this);
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
@@ -594,7 +617,7 @@ void Renderer::visit(const svgdom::UseElement& e) {
 		void visit(const svgdom::SymbolElement& symbol)override{
 			svgdom::StyleStack::Push pushSymbolStyles(this->r.styleStack, symbol);
 
-			SetTempCairoContext symbolCairoTempContext(this->r);
+			PushCairoGroupIfNeeded symbolCairoTempContext(this->r);
 
 			CairoContextSaveRestore symbolCairoMatrixPush(this->r.cr);
 
@@ -661,7 +684,7 @@ void Renderer::visit(const svgdom::PathElement& e) {
 		return;
 	}
 	
-	SetTempCairoContext cairoTempContext(*this);
+	PushCairoGroupIfNeeded cairoTempContext(*this);
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
@@ -988,7 +1011,7 @@ void Renderer::visit(const svgdom::CircleElement& e) {
 		return;
 	}
 	
-	SetTempCairoContext cairoTempContext(*this);
+	PushCairoGroupIfNeeded cairoTempContext(*this);
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
@@ -1014,7 +1037,7 @@ void Renderer::visit(const svgdom::PolylineElement& e) {
 		return;
 	}
 	
-	SetTempCairoContext cairoTempContext(*this);
+	PushCairoGroupIfNeeded cairoTempContext(*this);
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
@@ -1043,7 +1066,7 @@ void Renderer::visit(const svgdom::PolygonElement& e) {
 		return;
 	}
 	
-	SetTempCairoContext cairoTempContext(*this);
+	PushCairoGroupIfNeeded cairoTempContext(*this);
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
@@ -1074,7 +1097,7 @@ void Renderer::visit(const svgdom::LineElement& e) {
 		return;
 	}
 	
-	SetTempCairoContext cairoTempContext(*this);
+	PushCairoGroupIfNeeded cairoTempContext(*this);
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
@@ -1094,7 +1117,7 @@ void Renderer::visit(const svgdom::EllipseElement& e) {
 		return;
 	}
 	
-	SetTempCairoContext cairoTempContext(*this);
+	PushCairoGroupIfNeeded cairoTempContext(*this);
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
@@ -1121,7 +1144,7 @@ void Renderer::visit(const svgdom::RectElement& e) {
 		return;
 	}
 	
-	SetTempCairoContext cairoTempContext(*this);
+	PushCairoGroupIfNeeded cairoTempContext(*this);
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
@@ -1196,13 +1219,18 @@ void Renderer::visit(const svgdom::RectElement& e) {
 
 
 
-Renderer::SetTempCairoContext::SetTempCairoContext(Renderer& renderer) :
+Renderer::PushCairoGroupIfNeeded::PushCairoGroupIfNeeded(Renderer& renderer, bool forcePush) :
 		renderer(renderer)
 {
 	auto opacityP = this->renderer.styleStack.getStyleProperty(svgdom::StyleProperty_e::OPACITY);
-	auto filterP = this->renderer.styleStack.getStyleProperty(svgdom::StyleProperty_e::FILTER);
 	
-	this->groupPushed = (opacityP && opacityP->opacity < 1) || filterP;
+	if(forcePush){
+		this->groupPushed = true;
+	}else{
+		auto filterP = this->renderer.styleStack.getStyleProperty(svgdom::StyleProperty_e::FILTER);
+	
+		this->groupPushed = (opacityP && opacityP->opacity < 1) || filterP;
+	}
 	
 	if(this->groupPushed){
 //		TRACE(<< "setting temp context" << std::endl)
@@ -1216,7 +1244,7 @@ Renderer::SetTempCairoContext::SetTempCairoContext(Renderer& renderer) :
 	}
 }
 
-Renderer::SetTempCairoContext::~SetTempCairoContext()noexcept{
+Renderer::PushCairoGroupIfNeeded::~PushCairoGroupIfNeeded()noexcept{
 	if(!this->groupPushed){
 		return;
 	}

@@ -36,15 +36,29 @@ class Renderer : public svgdom::ConstVisitor{
 	
 	svgdom::StyleStack styleStack;
 	
+	std::vector<cairo_surface_t*> backgroundStack;
 	
-	class SetTempCairoContext{
+	class PushBackgroundIfNeeded{
+		bool backgroundPushed;
+		Renderer& r;
+		
+	public:
+		PushBackgroundIfNeeded(Renderer& r);
+		~PushBackgroundIfNeeded()noexcept;
+		
+		bool isPushed()const noexcept{
+			return this->backgroundPushed;
+		}
+	};
+	
+	class PushCairoGroupIfNeeded{
 		bool groupPushed;
 		Renderer& renderer;
 
 		real opacity = real(1);
 	public:
-		SetTempCairoContext(Renderer& renderer);
-		~SetTempCairoContext()noexcept;
+		PushCairoGroupIfNeeded(Renderer& renderer, bool forcePush = false);
+		~PushCairoGroupIfNeeded()noexcept;
 	};
 	
 	real lengthToPx(const svgdom::Length& l, unsigned coordIndex = 0)const noexcept;
