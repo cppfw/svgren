@@ -617,7 +617,9 @@ void Renderer::visit(const svgdom::UseElement& e) {
 		void visit(const svgdom::SymbolElement& symbol)override{
 			svgdom::StyleStack::Push pushSymbolStyles(this->r.styleStack, symbol);
 
-			PushCairoGroupIfNeeded symbolCairoTempContext(this->r);
+			PushBackgroundIfNeeded pushBackground(this->r);
+			
+			PushCairoGroupIfNeeded symbolCairoTempContext(this->r, pushBackground.isPushed());
 
 			CairoContextSaveRestore symbolCairoMatrixPush(this->r.cr);
 
