@@ -13,8 +13,10 @@ namespace{
 void boxBlurHorizontal(
 		std::uint8_t* dst,
 		const std::uint8_t* src,
-		unsigned stride,
-		unsigned numRows,
+		unsigned dstStride,
+		unsigned srcStride,
+		unsigned width,
+		unsigned height,
 		unsigned boxSize,
 		unsigned boxOffset,
 		unsigned channel
@@ -23,23 +25,23 @@ void boxBlurHorizontal(
 	if(boxSize == 0){
 		return;
 	}
-	for(unsigned y = 0; y != numRows; ++y){
+	for(unsigned y = 0; y != height; ++y){
 		unsigned sum = 0;
 		for(unsigned i = 0; i != boxSize; ++i){
 			int pos = i - boxOffset;
 			pos = std::max(pos, 0);
-			pos = std::min(pos, int(stride - 1));
-			sum += src[(stride * y + pos) * sizeof(std::uint32_t) + channel];
+			pos = std::min(pos, int(width - 1));
+			sum += src[(srcStride * y + pos) * sizeof(std::uint32_t) + channel];
 		}
-		for(unsigned x = 0; x != stride; ++x){
+		for(unsigned x = 0; x != width; ++x){
 			int tmp = x - boxOffset;
 			int last = std::max(tmp, 0);
-			int next = std::min(tmp + boxSize, stride - 1);
+			int next = std::min(tmp + boxSize, width - 1);
 
-			dst[(stride * y + x) * sizeof(std::uint32_t) + channel] = sum / boxSize;
+			dst[(dstStride * y + x) * sizeof(std::uint32_t) + channel] = sum / boxSize;
 
-			sum += src[(stride * y + next) * sizeof(std::uint32_t) + channel]
-					- src[(stride * y + last) * sizeof(std::uint32_t) + channel];
+			sum += src[(srcStride * y + next) * sizeof(std::uint32_t) + channel]
+					- src[(srcStride * y + last) * sizeof(std::uint32_t) + channel];
 		}
 	}
 }
@@ -49,8 +51,10 @@ namespace{
 void boxBlurVertical(
 		std::uint8_t* dst,
 		const std::uint8_t* src,
-		unsigned stride,
-		unsigned numRows,
+		unsigned dstStride,
+		unsigned srcStride,
+		unsigned width,
+		unsigned height,
 		unsigned boxSize,
 		unsigned boxOffset,
 		unsigned channel
@@ -59,23 +63,23 @@ void boxBlurVertical(
 	if(boxSize == 0){
 		return;
 	}
-	for(unsigned x = 0; x != stride; ++x){
+	for(unsigned x = 0; x != width; ++x){
 		unsigned sum = 0;
 		for(unsigned i = 0; i != boxSize; ++i){
 			int pos = i - boxOffset;
 			pos = std::max(pos, 0);
-			pos = std::min(pos, int(numRows - 1));
-			sum += src[(stride * pos + x) * sizeof(std::uint32_t) + channel];
+			pos = std::min(pos, int(height - 1));
+			sum += src[(srcStride * pos + x) * sizeof(std::uint32_t) + channel];
 		}
-		for(unsigned y = 0; y != numRows; ++y){
+		for(unsigned y = 0; y != height; ++y){
 			int tmp = y - boxOffset;
 			int last = std::max(tmp, 0);
-			int next = std::min(tmp + boxSize, numRows - 1);
+			int next = std::min(tmp + boxSize, height - 1);
 
-			dst[(stride * y + x) * sizeof(std::uint32_t) + channel] = sum / boxSize;
+			dst[(dstStride * y + x) * sizeof(std::uint32_t) + channel] = sum / boxSize;
 
-			sum += src[(x + stride * next) * sizeof(std::uint32_t) + channel]
-					- src[(x + stride * last) * sizeof(std::uint32_t) + channel];
+			sum += src[(x + srcStride * next) * sizeof(std::uint32_t) + channel]
+					- src[(x + srcStride * last) * sizeof(std::uint32_t) + channel];
 		}
 	}
 }
@@ -132,22 +136,22 @@ void svgren::cairoImageSurfaceBlur(const SubSurface& s, std::array<real, 2> stdD
 	}
 	
 	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurHorizontal(&*tmp.begin(), s.data, s.width, s.height, hBoxSize[0], hOffset[0], channel);
+		boxBlurHorizontal(&*tmp.begin(), s.data, s.width, s.stride, s.width, s.height, hBoxSize[0], hOffset[0], channel);
 	}
 	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurHorizontal(s.data, &*tmp.begin(), s.width, s.height, hBoxSize[1], hOffset[1], channel);
+		boxBlurHorizontal(s.data, &*tmp.begin(), s.stride, s.width, s.width, s.height, hBoxSize[1], hOffset[1], channel);
 	}
 	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurHorizontal(&*tmp.begin(), s.data, s.width, s.height, hBoxSize[2], hOffset[2], channel);
+		boxBlurHorizontal(&*tmp.begin(), s.data, s.width, s.stride, s.width, s.height, hBoxSize[2], hOffset[2], channel);
 	}
 	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurVertical(s.data, &*tmp.begin(), s.width, s.height, vBoxSize[0], vOffset[0], channel);
+		boxBlurVertical(s.data, &*tmp.begin(), s.stride, s.width, s.width, s.height, vBoxSize[0], vOffset[0], channel);
 	}
 	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurVertical(&*tmp.begin(), s.data, s.width, s.height, vBoxSize[1], vOffset[1], channel);
+		boxBlurVertical(&*tmp.begin(), s.data, s.width, s.stride, s.width, s.height, vBoxSize[1], vOffset[1], channel);
 	}
 	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurVertical(s.data, &*tmp.begin(), s.width, s.height, vBoxSize[2], vOffset[2], channel);
+		boxBlurVertical(s.data, &*tmp.begin(), s.stride, s.width, s.width, s.height, vBoxSize[2], vOffset[2], channel);
 	}
 }
 
