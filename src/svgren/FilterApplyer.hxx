@@ -12,6 +12,8 @@ class FilterApplyer : public svgdom::ConstVisitor{
 	Renderer& r;
 
 	decltype(svgdom::FilterElement::primitiveUnits) primitiveUnits;
+
+	std::array<unsigned, 4> filterRegion; // x, y, width, height
 	
 public:
 	

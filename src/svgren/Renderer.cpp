@@ -327,12 +327,13 @@ void Renderer::setGradient(const std::string& id) {
 void Renderer::updateCurBoundingBox() {
 	double x1, y1, x2, y2;
 
-	cairo_path_extents(this->cr,
+	cairo_path_extents(
+			this->cr,
 			&x1,
 			&y1,
 			&x2,
 			&y2
-			);
+		);
 
 	this->curBoundingBoxPos[0] = svgren::real(x1);
 	this->curBoundingBoxPos[1] = svgren::real(y1);
