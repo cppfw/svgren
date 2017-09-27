@@ -26,5 +26,5 @@ void FilterApplyer::visit(const svgdom::FeGaussianBlurElement& e) {
 	} else {
 		return;
 	}
-	cairoImageSurfaceBlur(cairo_get_group_target(this->r.cr), sd);
+	cairoImageSurfaceBlur(getSubSurface(this->r.cr), sd);
 }

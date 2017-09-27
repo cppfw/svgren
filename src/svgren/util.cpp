@@ -83,15 +83,7 @@ void boxBlurVertical(
 
 
 
-void svgren::cairoImageSurfaceBlur(cairo_surface_t* surface, std::array<real, 2> stdDeviation){
-	if(cairo_image_surface_get_format (surface) != CAIRO_FORMAT_ARGB32){
-		TRACE(<< "cairo_image_surface_blur(): ERROR: wrong surface format, only ARGB32 is supported." << std::endl)
-		return;
-	}
-
-	int width = cairo_image_surface_get_width(surface);
-	int height = cairo_image_surface_get_height(surface);
-	
+void svgren::cairoImageSurfaceBlur(const SubSurface& s, std::array<real, 2> stdDeviation){
 	//NOTE: see https://www.w3.org/TR/SVG/filters.html#feGaussianBlurElement for Gaussian Blur approximation algorithm.
 	
 	std::array<unsigned, 2> d;
@@ -101,9 +93,7 @@ void svgren::cairoImageSurfaceBlur(cairo_surface_t* surface, std::array<real, 2>
 	
 //	TRACE(<< "d = " << d[0] << ", " << d[1] << std::endl)
 	
-	std::uint8_t* src = cairo_image_surface_get_data(surface);
-	
-	std::vector<std::uint8_t> tmp(width * height * sizeof(std::uint32_t));
+	std::vector<std::uint8_t> tmp(s.width * s.height * sizeof(std::uint32_t));
 	
 	std::array<unsigned, 3> hBoxSize;
 	std::array<unsigned, 3> hOffset;
@@ -142,22 +132,22 @@ void svgren::cairoImageSurfaceBlur(cairo_surface_t* surface, std::array<real, 2>
 	}
 	
 	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurHorizontal(&*tmp.begin(), src, width, height, hBoxSize[0], hOffset[0], channel);
+		boxBlurHorizontal(&*tmp.begin(), s.data, s.width, s.height, hBoxSize[0], hOffset[0], channel);
 	}
 	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurHorizontal(src, &*tmp.begin(), width, height, hBoxSize[1], hOffset[1], channel);
+		boxBlurHorizontal(s.data, &*tmp.begin(), s.width, s.height, hBoxSize[1], hOffset[1], channel);
 	}
 	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurHorizontal(&*tmp.begin(), src, width, height, hBoxSize[2], hOffset[2], channel);
+		boxBlurHorizontal(&*tmp.begin(), s.data, s.width, s.height, hBoxSize[2], hOffset[2], channel);
 	}
 	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurVertical(src, &*tmp.begin(), width, height, vBoxSize[0], vOffset[0], channel);
+		boxBlurVertical(s.data, &*tmp.begin(), s.width, s.height, vBoxSize[0], vOffset[0], channel);
 	}
 	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurVertical(&*tmp.begin(), src, width, height, vBoxSize[1], vOffset[1], channel);
+		boxBlurVertical(&*tmp.begin(), s.data, s.width, s.height, vBoxSize[1], vOffset[1], channel);
 	}
 	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurVertical(src, &*tmp.begin(), width, height, vBoxSize[2], vOffset[2], channel);
+		boxBlurVertical(s.data, &*tmp.begin(), s.width, s.height, vBoxSize[2], vOffset[2], channel);
 	}
 }
 
