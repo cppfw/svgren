@@ -227,3 +227,17 @@ CairoContextSaveRestore::~CairoContextSaveRestore()noexcept{
 CairoMatrixSaveRestore::~CairoMatrixSaveRestore()noexcept{
 	cairo_set_matrix(this->cr, &this->m);
 }
+
+
+SubSurface svgren::getSubSurface(cairo_t* cr){
+	SubSurface ret;
+	auto s = cairo_get_group_target(cr);
+	ASSERT(s)
+	ret.width = cairo_image_surface_get_width(s);
+	ret.height = cairo_image_surface_get_height(s);
+	ret.data = cairo_image_surface_get_data(s);
+	ret.posx = 0;
+	ret.posy = 0;
+	ret.stride = ret.width;
+	return ret;
+}

@@ -6,6 +6,7 @@
         <in>FilterApplyer.cpp</in>
         <in>FilterApplyer.hxx</in>
         <in>Renderer.cpp</in>
+        <in>SubSurface.hxx</in>
         <in>render.cpp</in>
         <in>util.cpp</in>
       </df>
@@ -89,6 +90,8 @@
         <ccTool flags="0">
         </ccTool>
       </item>
+      <item path="src/svgren/SubSurface.hxx" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/svgren/render.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
         </ccTool>
@@ -159,6 +162,8 @@
           </incDir>
         </ccTool>
       </item>
+      <item path="src/svgren/SubSurface.hxx" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/svgren/render.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
           <incDir>
@@ -214,6 +219,9 @@
           <cleanCommand>${MAKE} -f makefile clean</cleanCommand>
           <executablePath>tests/render/tests</executablePath>
           <ccTool flags="0">
+            <incDir>
+              <pElem>.</pElem>
+            </incDir>
             <preprocessorList>
               <Elem>DEBUG</Elem>
               <Elem>M_SVGREN_BACKGROUND=0xffffffff</Elem>
@@ -225,47 +233,20 @@
           <preBuildCommand></preBuildCommand>
         </preBuild>
       </makefileType>
-      <folder path="0">
-        <ccTool>
-          <incDir>
-            <pElem>/usr/include/utki</pElem>
-          </incDir>
-        </ccTool>
-      </folder>
-      <folder path="1">
-        <ccTool>
-          <incDir>
-            <pElem>.</pElem>
-          </incDir>
-        </ccTool>
-      </folder>
       <item path="src/svgren/FilterApplyer.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
-          <incDir>
-            <pElem>.</pElem>
-          </incDir>
         </ccTool>
       </item>
       <item path="src/svgren/Renderer.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
-          <incDir>
-            <pElem>.</pElem>
-          </incDir>
         </ccTool>
       </item>
       <item path="src/svgren/render.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
-          <incDir>
-            <pElem>/usr/include/utki</pElem>
-            <pElem>.</pElem>
-          </incDir>
         </ccTool>
       </item>
       <item path="src/svgren/util.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
-          <incDir>
-            <pElem>.</pElem>
-          </incDir>
         </ccTool>
       </item>
       <item path="tests/render/main.cpp" ex="false" tool="1" flavor2="8">

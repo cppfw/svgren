@@ -15,8 +15,8 @@
 #include <svgdom/StyleStack.hpp>
 #include <svgdom/elements/AspectRatioed.hpp>
 
-
 #include "config.hpp"
+#include "SubSurface.hxx"
 
 
 namespace svgren{
@@ -37,7 +37,7 @@ public:
 	
 	svgdom::StyleStack styleStack;
 	
-	std::vector<cairo_surface_t*> backgroundStack;
+	std::vector<SubSurface> backgroundStack;
 	
 	class PushBackgroundIfNeeded{
 		bool backgroundPushed;

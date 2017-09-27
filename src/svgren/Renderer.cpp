@@ -516,7 +516,7 @@ Renderer::PushBackgroundIfNeeded::PushBackgroundIfNeeded(Renderer& r) :
 	this->backgroundPushed = false;
 	if(auto p = this->r.styleStack.getStyleProperty(svgdom::StyleProperty_e::ENABLE_BACKGROUND)){
 		if(p->enableBackground.value == svgdom::EnableBackground_e::NEW){
-			this->r.backgroundStack.push_back(cairo_get_group_target(this->r.cr));
+			this->r.backgroundStack.push_back(getSubSurface(this->r.cr));
 			this->backgroundPushed = true;
 		}
 	}

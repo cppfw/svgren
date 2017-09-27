@@ -4,13 +4,14 @@
 
 #include <utki/config.hpp>
 
-#include "config.hpp"
-
 #if M_OS == M_OS_WINDOWS || M_OS_NAME == M_OS_NAME_IOS
 #	include <cairo.h>
 #else
 #	include <cairo/cairo.h>
 #endif
+
+#include "config.hpp"
+#include "SubSurface.hxx"
 
 namespace svgren{
 
@@ -43,5 +44,7 @@ public:
 	CairoContextSaveRestore(cairo_t* cr);
 	~CairoContextSaveRestore()noexcept;
 };
+
+SubSurface getSubSurface(cairo_t* cr);
 
 }

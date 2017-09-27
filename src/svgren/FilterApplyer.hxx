@@ -5,7 +5,9 @@
 #include "Renderer.hxx"
 
 namespace svgren{
-	
+
+
+
 class FilterApplyer : public svgdom::ConstVisitor{
 	Renderer& r;
 
