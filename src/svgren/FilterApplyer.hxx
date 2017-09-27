@@ -11,7 +11,7 @@ namespace svgren{
 class FilterApplyer : public svgdom::ConstVisitor{
 	Renderer& r;
 
-	svgdom::CoordinateUnits_e primitiveUnits;
+	decltype(svgdom::FilterElement::primitiveUnits) primitiveUnits;
 	
 public:
 	
