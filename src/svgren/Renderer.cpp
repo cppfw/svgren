@@ -52,7 +52,7 @@ void Renderer::applyCairoTransformation(const svgdom::Transformable::Transformat
 			cairo_matrix_t matrix;
 			matrix.xx = 1;
 			matrix.yx = 0;
-			matrix.xy = std::tan(t.angle);
+			matrix.xy = std::tan(degToRad(t.angle));
 			matrix.yy = 1;
 			matrix.x0 = 0;
 			matrix.y0 = 0;
@@ -63,7 +63,7 @@ void Renderer::applyCairoTransformation(const svgdom::Transformable::Transformat
 		{
 			cairo_matrix_t matrix;
 			matrix.xx = 1;
-			matrix.yx = std::tan(t.angle);
+			matrix.yx = std::tan(degToRad(t.angle));
 			matrix.xy = 0;
 			matrix.yy = 1;
 			matrix.x0 = 0;
