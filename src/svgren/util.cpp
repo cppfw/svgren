@@ -7,6 +7,8 @@
 #include <utki/debug.hpp>
 #include <utki/math.hpp>
 
+#include <svgdom/Length.hpp>
+
 using namespace svgren;
 
 namespace{
@@ -234,4 +236,15 @@ SubSurface svgren::getSubSurface(cairo_t* cr){
 	ret.posy = 0;
 	ret.stride = ret.width;
 	return ret;
+}
+
+
+real svgren::percentLengthToFraction(const svgdom::Length& l){
+	if(l.isPercent()){
+		return l.value / real(100);
+	}
+	if(l.unit == svgdom::Length::Unit_e::NUMBER){
+		return l.value;
+	}
+	return 0;
 }

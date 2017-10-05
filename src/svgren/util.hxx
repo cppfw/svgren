@@ -4,6 +4,8 @@
 
 #include <utki/config.hpp>
 
+#include <svgdom/Length.hpp>
+
 #if M_OS == M_OS_WINDOWS || M_OS_NAME == M_OS_NAME_IOS
 #	include <cairo.h>
 #else
@@ -46,5 +48,7 @@ public:
 };
 
 SubSurface getSubSurface(cairo_t* cr);
+
+real percentLengthToFraction(const svgdom::Length& l);
 
 }

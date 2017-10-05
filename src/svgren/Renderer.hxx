@@ -35,6 +35,10 @@ public:
 	std::array<real, 2> curBoundingBoxPos = {{0, 0}};
 	std::array<real, 2> curBoundingBoxDim = {{0, 0}};
 	
+	const std::array<real, 2>& getBoundingBoxDim()const noexcept{
+		return this->curBoundingBoxDim;
+	}
+	
 	svgdom::StyleStack styleStack;
 	
 	std::vector<SubSurface> backgroundStack;
