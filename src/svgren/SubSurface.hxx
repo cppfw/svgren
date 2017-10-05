@@ -7,6 +7,8 @@ struct SubSurface{
 	unsigned stride;
 	unsigned width;
 	unsigned height;
+	
+	//TODO: remove these?
 	unsigned posx;
 	unsigned posy;
 };

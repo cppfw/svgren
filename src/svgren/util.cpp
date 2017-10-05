@@ -225,16 +225,22 @@ CairoMatrixSaveRestore::~CairoMatrixSaveRestore()noexcept{
 }
 
 
-SubSurface svgren::getSubSurface(cairo_t* cr){
+SubSurface svgren::getSubSurface(cairo_t* cr, const std::array<unsigned, 4>& region){
 	SubSurface ret;
 	auto s = cairo_get_group_target(cr);
 	ASSERT(s)
-	ret.width = cairo_image_surface_get_width(s);
-	ret.height = cairo_image_surface_get_height(s);
-	ret.data = cairo_image_surface_get_data(s);
+	
+	ret.stride = cairo_image_surface_get_stride(s) / 4; //stride is returned in bytes
+			
+	auto sw = unsigned(cairo_image_surface_get_width(s));
+	auto sh = unsigned(cairo_image_surface_get_height(s));
+
+	ret.width = std::min(region[2], sw - region[0]);
+	ret.height = std::min(region[3], sh - region[1]);
+	ret.data = cairo_image_surface_get_data(s) + 4 * (region[1] * ret.stride + region[0]);
 	ret.posx = 0;
 	ret.posy = 0;
-	ret.stride = ret.width;
+
 	return ret;
 }
 

@@ -47,7 +47,7 @@ public:
 	~CairoContextSaveRestore()noexcept;
 };
 
-SubSurface getSubSurface(cairo_t* cr);
+SubSurface getSubSurface(cairo_t* cr, const std::array<unsigned, 4>& region = {{0, 0, unsigned(-1), unsigned(-1)}});
 
 real percentLengthToFraction(const svgdom::Length& l);
 

@@ -327,7 +327,7 @@ void Renderer::setGradient(const std::string& id) {
 void Renderer::updateCurBoundingBox() {
 	double x1, y1, x2, y2;
 
-	cairo_path_extents(
+	cairo_stroke_extents(
 			this->cr,
 			&x1,
 			&y1,

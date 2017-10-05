@@ -28,7 +28,7 @@ void FilterApplyer::visit(const svgdom::FilterElement& e) {
 			height = this->r.lengthToPx(e.height, 1);
 			break;
 	}
-	
+		
 	cairo_user_to_device(this->r.cr, &x, &y);
 	cairo_user_to_device_distance(this->r.cr, &width, &height);
 
@@ -45,22 +45,25 @@ void FilterApplyer::visit(const svgdom::FeGaussianBlurElement& e) {
 		return;
 	}
 	auto sd = e.getStdDeviation();
-	switch(this->primitiveUnits){
-		default:
-		case svgdom::CoordinateUnits_e::USER_SPACE_ON_USE:
-			{
-				double x = double(sd[0]);
-				double y = double(sd[1]);
-				cairo_user_to_device_distance(this->r.cr, &x, &y);
-				sd[0] = real(x);
-				sd[1] = real(y);
-			}
-			break;
-		case svgdom::CoordinateUnits_e::OBJECT_BOUNDING_BOX:
-			sd[0] = this->r.curBoundingBoxDim[0] * sd[0];
-			sd[1] = this->r.curBoundingBoxDim[1] * sd[1];
-			break;
+	
+	{
+		double x, y;
+
+		switch(this->primitiveUnits){
+			default:
+			case svgdom::CoordinateUnits_e::USER_SPACE_ON_USE:
+				x = double(sd[0]);
+				y = double(sd[1]);
+				break;
+			case svgdom::CoordinateUnits_e::OBJECT_BOUNDING_BOX:
+				x = double(this->r.getBoundingBoxDim()[0] * sd[0]);
+				y = double(this->r.getBoundingBoxDim()[1] * sd[1]);
+				break;
+		}
+		cairo_user_to_device_distance(this->r.cr, &x, &y);
+		sd[0] = real(x);
+		sd[1] = real(y);
 	}
 
-	cairoImageSurfaceBlur(getSubSurface(this->r.cr), sd);
+	cairoImageSurfaceBlur(getSubSurface(this->r.cr, this->filterRegion), sd);
 }

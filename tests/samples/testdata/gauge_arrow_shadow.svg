@@ -22,10 +22,10 @@
        inkscape:collect="always"
        style="color-interpolation-filters:sRGB"
        id="filter4618"
-       x="-0.031818181"
-       width="1.0636364"
-       y="-0.52500063"
-       height="2.0500011">
+       x="0"
+       width="0.5"
+       y="0"
+       height="50%">
       <feGaussianBlur
          inkscape:collect="always"
          stdDeviation="0.578776"
