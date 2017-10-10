@@ -249,8 +249,8 @@ void Renderer::setGradient(const std::string& id) {
 				cairoMatrixPush(r.cr)
 		{
 			if (this->gradient.isBoundingBoxUnits()) {
-				cairo_translate(this->r.cr, this->r.curBoundingBoxPos[0], this->r.curBoundingBoxPos[1]);
-				cairo_scale(this->r.cr, this->r.curBoundingBoxDim[0], this->r.curBoundingBoxDim[1]);
+				cairo_translate(this->r.cr, this->r.curUserSpaceShapeBoundingBoxPos[0], this->r.curUserSpaceShapeBoundingBoxPos[1]);
+				cairo_scale(this->r.cr, this->r.curUserSpaceShapeBoundingBoxDim[0], this->r.curUserSpaceShapeBoundingBoxDim[1]);
 				this->r.viewportStack.push_back({{1, 1}});
 			}
 
@@ -335,10 +335,10 @@ void Renderer::updateCurBoundingBox() {
 			&y2
 		);
 
-	this->curBoundingBoxPos[0] = svgren::real(x1);
-	this->curBoundingBoxPos[1] = svgren::real(y1);
-	this->curBoundingBoxDim[0] = svgren::real(x2 - x1);
-	this->curBoundingBoxDim[1] = svgren::real(y2 - y1);
+	this->curUserSpaceShapeBoundingBoxPos[0] = svgren::real(x1);
+	this->curUserSpaceShapeBoundingBoxPos[1] = svgren::real(y1);
+	this->curUserSpaceShapeBoundingBoxDim[0] = svgren::real(x2 - x1);
+	this->curUserSpaceShapeBoundingBoxDim[1] = svgren::real(y2 - y1);
 }
 
 void Renderer::renderCurrentShape() {

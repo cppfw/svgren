@@ -251,28 +251,25 @@
         </ccTool>
       </item>
       <item path="src/svgren/Renderer.cpp" ex="false" tool="1" flavor2="8">
-        <ccTool flags="1">
+        <ccTool flags="0">
           <incDir>
-            <pElem>/usr/include/utki</pElem>
-            <pElem>/usr/include/svgdom</pElem>
-            <pElem>/usr/include/svgdom/elements</pElem>
-            <pElem>src/svgren</pElem>
-            <pElem>/usr/include/cairo</pElem>
             <pElem>.</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>DEBUG</Elem>
+            <Elem>M_SVGREN_BACKGROUND=0xffffffff</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="src/svgren/render.cpp" ex="false" tool="1" flavor2="8">
-        <ccTool flags="1">
+        <ccTool flags="0">
           <incDir>
-            <pElem>/usr/include/utki</pElem>
-            <pElem>/usr/include/svgdom</pElem>
-            <pElem>src/svgren</pElem>
-            <pElem>/usr/include/papki</pElem>
-            <pElem>/usr/include/svgdom/elements</pElem>
-            <pElem>/usr/include/cairo</pElem>
             <pElem>.</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>DEBUG</Elem>
+            <Elem>M_SVGREN_BACKGROUND=0xffffffff</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="src/svgren/util.cpp" ex="false" tool="1" flavor2="8">

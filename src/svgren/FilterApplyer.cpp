@@ -13,7 +13,7 @@ void FilterApplyer::visit(const svgdom::FilterElement& e) {
 		default:
 		case svgdom::CoordinateUnits_e::OBJECT_BOUNDING_BOX:
 			{
-				auto& bb = this->r.getBoundingBoxDim();
+				auto& bb = this->r.getDeviceSpaceBoundingBoxDim();
 				
 				x = percentLengthToFraction(e.x) * bb[0];
 				y = percentLengthToFraction(e.y) * bb[1];
@@ -56,8 +56,8 @@ void FilterApplyer::visit(const svgdom::FeGaussianBlurElement& e) {
 				y = double(sd[1]);
 				break;
 			case svgdom::CoordinateUnits_e::OBJECT_BOUNDING_BOX:
-				x = double(this->r.getBoundingBoxDim()[0] * sd[0]);
-				y = double(this->r.getBoundingBoxDim()[1] * sd[1]);
+				x = double(this->r.getDeviceSpaceBoundingBoxDim()[0] * sd[0]);
+				y = double(this->r.getDeviceSpaceBoundingBoxDim()[1] * sd[1]);
 				break;
 		}
 		cairo_user_to_device_distance(this->r.cr, &x, &y);
