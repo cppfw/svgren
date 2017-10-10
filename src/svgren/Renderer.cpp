@@ -498,6 +498,8 @@ void Renderer::renderSvgElement(const svgdom::SvgElement& e, const svgdom::Lengt
 	
 	PushCairoGroupIfNeeded cairoTempContext(*this, pushBackground.isPushed());
 
+	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
+	
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 	
 	if (this->viewportStack.size() > 1) { //if not the outermost 'svg' element
@@ -518,8 +520,6 @@ void Renderer::renderSvgElement(const svgdom::SvgElement& e, const svgdom::Lengt
 	});
 
 	this->applyViewBox(e, e);
-
-	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 		
 	this->relayAccept(e);
 	
@@ -572,11 +572,11 @@ void Renderer::visit(const svgdom::GElement& e) {
 	
 	PushCairoGroupIfNeeded cairoTempContext(*this, pushBackground.isPushed());
 
+	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
+	
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 	
 	this->applyCairoTransformations(e.transformations);
-	
-	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
 	this->relayAccept(e);
 	
@@ -626,9 +626,9 @@ void Renderer::visit(const svgdom::UseElement& e) {
 			
 			PushCairoGroupIfNeeded symbolCairoTempContext(this->r, pushBackground.isPushed());
 
+			DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(this->r);
+			
 			CairoContextSaveRestore symbolCairoMatrixPush(this->r.cr);
-
-
 
 			const auto hundredPercent = svgdom::Length::make(100, svgdom::Length::Unit_e::PERCENT);
 			this->r.viewportStack.push_back({
@@ -641,8 +641,6 @@ void Renderer::visit(const svgdom::UseElement& e) {
 			});
 
 			this->r.applyViewBox(symbol, symbol);
-
-			DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(this->r);
 			
 			this->r.relayAccept(symbol);
 			
@@ -1051,6 +1049,8 @@ void Renderer::visit(const svgdom::PolylineElement& e) {
 	if(this->isInvisible()){
 		return;
 	}
+	
+	//TODO: make a common push class for shapes
 	
 	PushCairoGroupIfNeeded cairoTempContext(*this);
 	
