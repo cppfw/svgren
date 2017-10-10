@@ -17,7 +17,7 @@
 
 #include "config.hpp"
 #include "SubSurface.hxx"
-
+#include "util.hxx"
 
 namespace svgren{
 
@@ -37,13 +37,8 @@ public:
 	std::array<real, 2> curUserSpaceShapeBoundingBoxPos = {{0, 0}};
 	std::array<real, 2> curUserSpaceShapeBoundingBoxDim = {{0, 0}};
 	
-	struct DeviceSpaceBoundingBox{
-		int x, y;
-		unsigned width, height;
-	};
-	
 	//this bounding box is used for filter region calculation.
-	DeviceSpaceBoundingBox boundingBoxStack;
+	DeviceSpaceBoundingBox deviceSpaceBoundingBox;
 	
 	const std::array<real, 2>& getDeviceSpaceBoundingBoxDim()const noexcept{
 		//TODO:

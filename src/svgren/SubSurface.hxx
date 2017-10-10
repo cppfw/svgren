@@ -8,7 +8,6 @@ struct SubSurface{
 	unsigned width;
 	unsigned height;
 	
-	//TODO: remove these?
 	unsigned posx;
 	unsigned posy;
 };
