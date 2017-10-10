@@ -500,6 +500,8 @@ void Renderer::renderSvgElement(const svgdom::SvgElement& e, const svgdom::Lengt
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
+	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
+	
 	if (this->viewportStack.size() > 1) { //if not the outermost 'svg' element
 		cairo_translate(
 				this->cr,
@@ -519,11 +521,7 @@ void Renderer::renderSvgElement(const svgdom::SvgElement& e, const svgdom::Lengt
 
 	this->applyViewBox(e, e);
 
-	{
-		DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
-		
-		this->relayAccept(e);
-	}
+	this->relayAccept(e);
 	
 	this->applyFilter();
 }
@@ -576,13 +574,11 @@ void Renderer::visit(const svgdom::GElement& e) {
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 	
+	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
+	
 	this->applyCairoTransformations(e.transformations);
 
-	{
-		DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
-		
-		this->relayAccept(e);
-	}
+	this->relayAccept(e);
 	
 	this->applyFilter();
 }
@@ -632,6 +628,8 @@ void Renderer::visit(const svgdom::UseElement& e) {
 
 			CairoContextSaveRestore symbolCairoMatrixPush(this->r.cr);
 
+			DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(this->r);
+			
 			const auto hundredPercent = svgdom::Length::make(100, svgdom::Length::Unit_e::PERCENT);
 			this->r.viewportStack.push_back({
 				{
@@ -644,11 +642,7 @@ void Renderer::visit(const svgdom::UseElement& e) {
 
 			this->r.applyViewBox(symbol, symbol);
 
-			{
-				DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(this->r);
-				
-				this->r.relayAccept(symbol);
-			}
+			this->r.relayAccept(symbol);
 			
 			this->r.applyFilter();
 		}
@@ -703,6 +697,8 @@ void Renderer::visit(const svgdom::PathElement& e) {
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
+	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
+	
 	this->applyCairoTransformations(e.transformations);
 
 	double prevQuadraticX1 = 0;
@@ -1030,6 +1026,8 @@ void Renderer::visit(const svgdom::CircleElement& e) {
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
+	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
+	
 	this->applyCairoTransformations(e.transformations);
 
 	cairo_arc(
@@ -1056,6 +1054,8 @@ void Renderer::visit(const svgdom::PolylineElement& e) {
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
+	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
+	
 	this->applyCairoTransformations(e.transformations);
 
 	if (e.points.size() == 0) {
@@ -1085,6 +1085,8 @@ void Renderer::visit(const svgdom::PolygonElement& e) {
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
+	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
+	
 	this->applyCairoTransformations(e.transformations);
 
 	if (e.points.size() == 0) {
@@ -1116,6 +1118,8 @@ void Renderer::visit(const svgdom::LineElement& e) {
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
+	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
+	
 	this->applyCairoTransformations(e.transformations);
 
 	cairo_move_to(this->cr, this->lengthToPx(e.x1, 0), this->lengthToPx(e.y1, 1));
@@ -1136,6 +1140,8 @@ void Renderer::visit(const svgdom::EllipseElement& e) {
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
+	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
+	
 	this->applyCairoTransformations(e.transformations);
 
 	{
@@ -1162,6 +1168,8 @@ void Renderer::visit(const svgdom::RectElement& e) {
 	PushCairoGroupIfNeeded cairoTempContext(*this);
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
+	
+	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
 	this->applyCairoTransformations(e.transformations);
 
