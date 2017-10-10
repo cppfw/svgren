@@ -51,4 +51,25 @@ SubSurface getSubSurface(cairo_t* cr, const std::array<unsigned, 4>& region = {{
 
 real percentLengthToFraction(const svgdom::Length& l);
 
+
+struct DeviceSpaceBoundingBox{
+	real left, top, right, bottom;
+	
+	void setEmpty();
+	bool isEmpty()const noexcept;
+	
+	void merge(const DeviceSpaceBoundingBox& bb);
+	
+	real width()const noexcept;
+	real height()const noexcept;
+};
+
+class DeviceSpaceBoundingBoxPush{
+	class Renderer& r;
+	DeviceSpaceBoundingBox oldBb;
+public:
+	DeviceSpaceBoundingBoxPush(Renderer& r);
+	~DeviceSpaceBoundingBoxPush()noexcept;
+};
+
 }

@@ -17,7 +17,7 @@
 
 #include "config.hpp"
 #include "SubSurface.hxx"
-
+#include "util.hxx"
 
 namespace svgren{
 
@@ -30,13 +30,19 @@ public:
 	
 	const real dpi;
 	
-	std::vector<std::array<real, 2>> viewportStack;//stack of width, height
+	//TODO: refactor, get rid of stack and save old viewport on program stack
+	std::vector<std::array<real, 2>> viewportStack;//stack of {width, height} pairs
 	
-	std::array<real, 2> curBoundingBoxPos = {{0, 0}};
-	std::array<real, 2> curBoundingBoxDim = {{0, 0}};
+	//this bounding box is used for gradients
+	std::array<real, 2> curUserSpaceShapeBoundingBoxPos = {{0, 0}};
+	std::array<real, 2> curUserSpaceShapeBoundingBoxDim = {{0, 0}};
 	
-	const std::array<real, 2>& getBoundingBoxDim()const noexcept{
-		return this->curBoundingBoxDim;
+	//this bounding box is used for filter region calculation.
+	DeviceSpaceBoundingBox deviceSpaceBoundingBox;
+	
+	const std::array<real, 2>& getDeviceSpaceBoundingBoxDim()const noexcept{
+		//TODO:
+		return this->curUserSpaceShapeBoundingBoxDim;
 	}
 	
 	svgdom::StyleStack styleStack;

@@ -9,6 +9,8 @@
 
 #include <svgdom/Length.hpp>
 
+#include "Renderer.hxx"
+
 using namespace svgren;
 
 namespace{
@@ -91,6 +93,8 @@ void boxBlurVertical(
 
 void svgren::cairoImageSurfaceBlur(const SubSurface& s, std::array<real, 2> stdDeviation){
 	//NOTE: see https://www.w3.org/TR/SVG/filters.html#feGaussianBlurElement for Gaussian Blur approximation algorithm.
+	
+	ASSERT(s.width <= s.stride)
 	
 	std::array<unsigned, 2> d;
 	for(unsigned i = 0; i != 2; ++i){
@@ -226,6 +230,8 @@ CairoMatrixSaveRestore::~CairoMatrixSaveRestore()noexcept{
 
 
 SubSurface svgren::getSubSurface(cairo_t* cr, const std::array<unsigned, 4>& region){
+//	TRACE(<< "region = (" << region[0] << ", " << region[1] << ") (" << region[2] << ", " << region[3] << ")" << std::endl)
+	
 	SubSurface ret;
 	auto s = cairo_get_group_target(cr);
 	ASSERT(s)
@@ -238,8 +244,8 @@ SubSurface svgren::getSubSurface(cairo_t* cr, const std::array<unsigned, 4>& reg
 	ret.width = std::min(region[2], sw - region[0]);
 	ret.height = std::min(region[3], sh - region[1]);
 	ret.data = cairo_image_surface_get_data(s) + 4 * (region[1] * ret.stride + region[0]);
-	ret.posx = 0;
-	ret.posy = 0;
+	ret.posx = region[0];
+	ret.posy = region[1];
 
 	return ret;
 }
@@ -254,3 +260,45 @@ real svgren::percentLengthToFraction(const svgdom::Length& l){
 	}
 	return 0;
 }
+
+void DeviceSpaceBoundingBox::setEmpty() {
+	this->left = std::numeric_limits<decltype(this->left)>::max();
+	this->top = std::numeric_limits<decltype(this->top)>::max();
+	this->right = std::numeric_limits<decltype(this->right)>::min();
+	this->bottom = std::numeric_limits<decltype(this->bottom)>::min();
+}
+
+bool DeviceSpaceBoundingBox::isEmpty() const noexcept{
+	return this->right - this->left < 0;
+}
+
+void DeviceSpaceBoundingBox::merge(const DeviceSpaceBoundingBox& bb) {
+	this->left = std::min(this->left, bb.left);
+	this->top = std::min(this->top, bb.top);
+	this->right = std::max(this->right, bb.right);
+	this->bottom = std::max(this->bottom, bb.bottom);
+}
+
+real DeviceSpaceBoundingBox::width() const noexcept{
+	auto w = this->right - this->left;
+	return std::max(w, decltype(w)(0));
+}
+
+real DeviceSpaceBoundingBox::height() const noexcept{
+	auto h = this->bottom - this->top;
+	return std::max(h, decltype(h)(0));
+}
+
+DeviceSpaceBoundingBoxPush::DeviceSpaceBoundingBoxPush(Renderer& r) :
+		r(r),
+		oldBb(r.deviceSpaceBoundingBox)
+{
+	this->r.deviceSpaceBoundingBox.setEmpty();
+}
+
+DeviceSpaceBoundingBoxPush::~DeviceSpaceBoundingBoxPush() {
+	this->oldBb.merge(this->r.deviceSpaceBoundingBox);
+	this->r.deviceSpaceBoundingBox = this->oldBb;
+}
+
+
