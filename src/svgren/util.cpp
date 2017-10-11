@@ -229,7 +229,7 @@ CairoMatrixSaveRestore::~CairoMatrixSaveRestore()noexcept{
 }
 
 
-SubSurface svgren::getSubSurface(cairo_t* cr, const std::array<unsigned, 4>& region){
+SubSurface svgren::getSubSurface(cairo_t* cr, const CanvasRegion& region){
 //	TRACE(<< "region = (" << region[0] << ", " << region[1] << ") (" << region[2] << ", " << region[3] << ")" << std::endl)
 	
 	SubSurface ret;
@@ -241,11 +241,11 @@ SubSurface svgren::getSubSurface(cairo_t* cr, const std::array<unsigned, 4>& reg
 	auto sw = unsigned(cairo_image_surface_get_width(s));
 	auto sh = unsigned(cairo_image_surface_get_height(s));
 
-	ret.width = std::min(region[2], sw - region[0]);
-	ret.height = std::min(region[3], sh - region[1]);
-	ret.data = cairo_image_surface_get_data(s) + 4 * (region[1] * ret.stride + region[0]);
-	ret.posx = region[0];
-	ret.posy = region[1];
+	ret.width = std::min(region.width, sw - region.x);
+	ret.height = std::min(region.height, sh - region.y);
+	ret.data = cairo_image_surface_get_data(s) + 4 * (region.y * ret.stride + region.x);
+	ret.x = region.x;
+	ret.x = region.y;
 
 	return ret;
 }

@@ -3,6 +3,8 @@
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df root="src" name="0">
       <df name="svgren">
+        <in>CanvasRegion.cpp</in>
+        <in>CanvasRegion.hxx</in>
         <in>FilterApplyer.cpp</in>
         <in>FilterApplyer.hxx</in>
         <in>Renderer.cpp</in>
@@ -82,6 +84,10 @@
           <preBuildCommand></preBuildCommand>
         </preBuild>
       </makefileType>
+      <item path="src/svgren/CanvasRegion.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="src/svgren/CanvasRegion.hxx" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/svgren/FilterApplyer.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="src/svgren/FilterApplyer.hxx" ex="false" tool="3" flavor2="0">
@@ -145,6 +151,10 @@
           </preprocessorList>
         </ccTool>
       </folder>
+      <item path="src/svgren/CanvasRegion.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="src/svgren/CanvasRegion.hxx" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/svgren/FilterApplyer.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
         </ccTool>
@@ -212,6 +222,14 @@
           </preprocessorList>
         </ccTool>
       </folder>
+      <item path="src/svgren/CanvasRegion.cpp" ex="false" tool="1" flavor2="8">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>src/svgren</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
+      </item>
       <item path="src/svgren/FilterApplyer.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
           <incDir>
@@ -252,8 +270,8 @@
         <ccTool flags="0">
           <incDir>
             <pElem>/usr/include/svgdom</pElem>
-            <pElem>/usr/include/utki</pElem>
             <pElem>src/svgren</pElem>
+            <pElem>/usr/include/utki</pElem>
             <pElem>/usr/include/cairo</pElem>
             <pElem>.</pElem>
           </incDir>

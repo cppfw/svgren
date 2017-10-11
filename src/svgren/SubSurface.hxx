@@ -1,17 +1,12 @@
 #pragma once
 
+#include "CanvasRegion.hxx"
+
 namespace svgren{
 
-struct SubSurface{
+struct SubSurface : public CanvasRegion{
 	std::uint8_t* data; //RGBA premultiplied alpha
 	unsigned stride;
-	
-	unsigned width;
-	unsigned height;
-	
-	//position of subsurface on the canvas
-	unsigned posx;
-	unsigned posy;
 };
 
 }

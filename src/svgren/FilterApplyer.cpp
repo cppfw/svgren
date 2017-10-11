@@ -62,10 +62,10 @@ void FilterApplyer::visit(const svgdom::FilterElement& e) {
 			break;
 	}
 	
-	this->filterRegion[0] = unsigned(std::max(frX, decltype(frX)(0)));
-	this->filterRegion[1] = unsigned(std::max(frY, decltype(frY)(0)));
-	this->filterRegion[2] = unsigned(std::max(frWidth, decltype(frWidth)(0)));
-	this->filterRegion[3] = unsigned(std::max(frHeight, decltype(frHeight)(0)));
+	this->filterRegion.x = unsigned(std::max(frX, decltype(frX)(0)));
+	this->filterRegion.y = unsigned(std::max(frY, decltype(frY)(0)));
+	this->filterRegion.width = unsigned(std::max(frWidth, decltype(frWidth)(0)));
+	this->filterRegion.height = unsigned(std::max(frHeight, decltype(frHeight)(0)));
 	
 	this->relayAccept(e);
 }
