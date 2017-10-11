@@ -327,6 +327,8 @@ void Renderer::setGradient(const std::string& id) {
 void Renderer::updateCurBoundingBox() {
 	double x1, y1, x2, y2;
 
+	//According to SVG spec https://www.w3.org/TR/SVG/coords.html#ObjectBoundingBox
+	//"The bounding box is computed exclusive of any values for clipping, masking, filter effects, opacity and stroke-width"
 	cairo_path_extents(
 			this->cr,
 			&x1,
@@ -411,11 +413,7 @@ void Renderer::renderCurrentShape() {
 			cairo_set_source_rgba(this->cr, fillRgb.r, fillRgb.g, fillRgb.b, opacity);
 		}
 
-		if (stroke && !stroke->isNone()) {
-			cairo_fill_preserve(this->cr);
-		} else {
-			cairo_fill(this->cr);
-		}
+		cairo_fill_preserve(this->cr);
 	}
 
 	if (stroke && !stroke->isNone()) {
@@ -477,7 +475,7 @@ void Renderer::renderCurrentShape() {
 			cairo_set_source_rgba(this->cr, rgb.r, rgb.g, rgb.b, opacity);
 		}
 
-		cairo_stroke(this->cr);
+		cairo_stroke_preserve(this->cr);
 	}
 
 	//clear path if any left
