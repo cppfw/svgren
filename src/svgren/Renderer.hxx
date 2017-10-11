@@ -16,7 +16,7 @@
 #include <svgdom/elements/AspectRatioed.hpp>
 
 #include "config.hpp"
-#include "SubSurface.hxx"
+#include "Surface.hxx"
 #include "util.hxx"
 
 namespace svgren{
@@ -43,7 +43,7 @@ public:
 	
 	svgdom::StyleStack styleStack;
 	
-	std::vector<SubSurface> backgroundStack;
+	std::vector<Surface> backgroundStack;
 	
 	real lengthToPx(const svgdom::Length& l, unsigned coordIndex = 0)const noexcept;
 	

@@ -91,7 +91,7 @@ void boxBlurVertical(
 
 
 
-void svgren::cairoImageSurfaceBlur(const SubSurface& s, std::array<real, 2> stdDeviation){
+void svgren::cairoImageSurfaceBlur(const Surface& s, std::array<real, 2> stdDeviation){
 	//NOTE: see https://www.w3.org/TR/SVG/filters.html#feGaussianBlurElement for Gaussian Blur approximation algorithm.
 	
 	ASSERT(s.width <= s.stride)
@@ -229,10 +229,10 @@ CairoMatrixSaveRestore::~CairoMatrixSaveRestore()noexcept{
 }
 
 
-SubSurface svgren::getSubSurface(cairo_t* cr, const CanvasRegion& region){
+Surface svgren::getSubSurface(cairo_t* cr, const CanvasRegion& region){
 //	TRACE(<< "region = (" << region[0] << ", " << region[1] << ") (" << region[2] << ", " << region[3] << ")" << std::endl)
 	
-	SubSurface ret;
+	Surface ret;
 	auto s = cairo_get_group_target(cr);
 	ASSERT(s)
 	

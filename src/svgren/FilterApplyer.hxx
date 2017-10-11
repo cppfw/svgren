@@ -15,6 +15,11 @@ class FilterApplyer : public svgdom::ConstVisitor{
 	
 	CanvasRegion filterRegion;
 	
+	struct FilterResult{
+		std::vector<std::uint8_t> data;
+		Surface surface;
+	};
+	
 public:
 	
 	FilterApplyer(Renderer& r) : r(r) {}

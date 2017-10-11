@@ -8,7 +8,7 @@
         <in>FilterApplyer.cpp</in>
         <in>FilterApplyer.hxx</in>
         <in>Renderer.cpp</in>
-        <in>SubSurface.hxx</in>
+        <in>Surface.hxx</in>
         <in>render.cpp</in>
         <in>util.cpp</in>
       </df>
@@ -96,7 +96,7 @@
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="src/svgren/SubSurface.hxx" ex="false" tool="3" flavor2="0">
+      <item path="src/svgren/Surface.hxx" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/svgren/render.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">

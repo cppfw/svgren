@@ -13,12 +13,12 @@
 #endif
 
 #include "config.hpp"
-#include "SubSurface.hxx"
+#include "Surface.hxx"
 #include "CanvasRegion.hxx"
 
 namespace svgren{
 
-void cairoImageSurfaceBlur(const SubSurface& s, std::array<real, 2> stdDeviation);
+void cairoImageSurfaceBlur(const Surface& s, std::array<real, 2> stdDeviation);
 
 void cairoRelQuadraticCurveTo(cairo_t *cr, double x1, double y1, double x, double y);
 
@@ -49,7 +49,7 @@ public:
 };
 
 
-SubSurface getSubSurface(cairo_t* cr, const CanvasRegion& region = CanvasRegion());
+Surface getSubSurface(cairo_t* cr, const CanvasRegion& region = CanvasRegion());
 
 real percentLengthToFraction(const svgdom::Length& l);
 

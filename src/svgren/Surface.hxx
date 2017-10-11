@@ -4,7 +4,7 @@
 
 namespace svgren{
 
-struct SubSurface : public CanvasRegion{
+struct Surface : public CanvasRegion{
 	std::uint8_t* data; //RGBA premultiplied alpha
 	unsigned stride;
 };
