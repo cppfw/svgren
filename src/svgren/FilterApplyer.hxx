@@ -20,6 +20,12 @@ class FilterApplyer : public svgdom::ConstVisitor{
 		Surface surface;
 	};
 	
+	std::map<std::string, FilterResult> results;
+	
+	//TODO:
+//	Surface getSource(const std::string& in, );
+//	void setResult
+	
 public:
 	
 	FilterApplyer(Renderer& r) : r(r) {}
