@@ -249,8 +249,8 @@ void Renderer::setGradient(const std::string& id) {
 				cairoMatrixPush(r.cr)
 		{
 			if (this->gradient.isBoundingBoxUnits()) {
-				cairo_translate(this->r.cr, this->r.curUserSpaceShapeBoundingBoxPos[0], this->r.curUserSpaceShapeBoundingBoxPos[1]);
-				cairo_scale(this->r.cr, this->r.curUserSpaceShapeBoundingBoxDim[0], this->r.curUserSpaceShapeBoundingBoxDim[1]);
+				cairo_translate(this->r.cr, this->r.userSpaceShapeBoundingBoxPos[0], this->r.userSpaceShapeBoundingBoxPos[1]);
+				cairo_scale(this->r.cr, this->r.userSpaceShapeBoundingBoxDim[0], this->r.userSpaceShapeBoundingBoxDim[1]);
 				this->r.viewportStack.push_back({{1, 1}});
 			}
 
@@ -337,12 +337,12 @@ void Renderer::updateCurBoundingBox() {
 			&y2
 		);
 
-	this->curUserSpaceShapeBoundingBoxPos[0] = svgren::real(x1);
-	this->curUserSpaceShapeBoundingBoxPos[1] = svgren::real(y1);
-	this->curUserSpaceShapeBoundingBoxDim[0] = svgren::real(x2 - x1);
-	this->curUserSpaceShapeBoundingBoxDim[1] = svgren::real(y2 - y1);
+	this->userSpaceShapeBoundingBoxPos[0] = svgren::real(x1);
+	this->userSpaceShapeBoundingBoxPos[1] = svgren::real(y1);
+	this->userSpaceShapeBoundingBoxDim[0] = svgren::real(x2 - x1);
+	this->userSpaceShapeBoundingBoxDim[1] = svgren::real(y2 - y1);
 	
-	if(this->curUserSpaceShapeBoundingBoxDim[0] == 0){
+	if(this->userSpaceShapeBoundingBoxDim[0] == 0){
 		//empty path
 		return;
 	}

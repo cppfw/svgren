@@ -34,16 +34,11 @@ public:
 	std::vector<std::array<real, 2>> viewportStack;//stack of {width, height} pairs
 	
 	//this bounding box is used for gradients
-	std::array<real, 2> curUserSpaceShapeBoundingBoxPos = {{0, 0}};
-	std::array<real, 2> curUserSpaceShapeBoundingBoxDim = {{0, 0}};
+	std::array<real, 2> userSpaceShapeBoundingBoxPos = {{0, 0}};
+	std::array<real, 2> userSpaceShapeBoundingBoxDim = {{0, 0}};
 	
 	//this bounding box is used for filter region calculation.
 	DeviceSpaceBoundingBox deviceSpaceBoundingBox;
-	
-	const std::array<real, 2>& getDeviceSpaceBoundingBoxDim()const noexcept{
-		//TODO:
-		return this->curUserSpaceShapeBoundingBoxDim;
-	}
 	
 	svgdom::StyleStack styleStack;
 	

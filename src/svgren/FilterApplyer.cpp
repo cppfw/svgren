@@ -86,8 +86,8 @@ void FilterApplyer::visit(const svgdom::FeGaussianBlurElement& e) {
 				y = double(sd[1]);
 				break;
 			case svgdom::CoordinateUnits_e::OBJECT_BOUNDING_BOX:
-				x = double(this->r.getDeviceSpaceBoundingBoxDim()[0] * sd[0]);
-				y = double(this->r.getDeviceSpaceBoundingBoxDim()[1] * sd[1]);
+				x = double(this->r.userSpaceShapeBoundingBoxDim[0] * sd[0]);
+				y = double(this->r.userSpaceShapeBoundingBoxDim[1] * sd[1]);
 				break;
 		}
 		cairo_user_to_device_distance(this->r.cr, &x, &y);
