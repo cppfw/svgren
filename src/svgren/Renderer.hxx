@@ -30,8 +30,7 @@ public:
 	
 	const real dpi;
 	
-	//TODO: refactor, get rid of stack and save old viewport on program stack
-	std::vector<std::array<real, 2>> viewportStack;//stack of {width, height} pairs
+	std::array<real, 2> viewport;//width, height
 	
 	//this bounding box is used for gradients
 	std::array<real, 2> userSpaceShapeBoundingBoxPos = {{0, 0}};
@@ -40,10 +39,12 @@ public:
 	//this bounding box is used for filter region calculation.
 	DeviceSpaceBoundingBox deviceSpaceBoundingBox;
 	
+	bool isOutermostElement = true;
 	svgdom::StyleStack styleStack;
 	
 	std::vector<SubSurface> backgroundStack;
 	
+	//TODO: move to util.hxx
 	class PushBackgroundIfNeeded{
 		bool backgroundPushed;
 		Renderer& r;

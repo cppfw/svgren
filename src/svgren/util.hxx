@@ -74,4 +74,12 @@ public:
 	~DeviceSpaceBoundingBoxPush()noexcept;
 };
 
+class ViewportPush{
+	class Renderer& r;
+	std::array<real, 2> oldViewport;
+public:
+	ViewportPush(Renderer& r, const decltype(oldViewport)& viewport);
+	~ViewportPush()noexcept;
+};
+
 }

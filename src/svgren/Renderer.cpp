@@ -13,11 +13,8 @@ using namespace svgren;
 
 real Renderer::lengthToPx(const svgdom::Length& l, unsigned coordIndex) const noexcept{
 	if (l.isPercent()) {
-		if (this->viewportStack.size() == 0) {
-			return 0;
-		}
-		ASSERT(coordIndex < this->viewportStack.back().size())
-		return this->viewportStack.back()[coordIndex] * (l.value / 100);
+		ASSERT(coordIndex < this->viewport.size())
+		return this->viewport[coordIndex] * (l.value / 100);
 	}
 	return l.toPx(this->dpi);
 }
@@ -89,22 +86,22 @@ void Renderer::applyViewBox(const svgdom::ViewBoxed& e, const svgdom::AspectRati
 	}
 
 	if (ar.preserveAspectRatio.preserve != svgdom::AspectRatioed::PreserveAspectRatio_e::NONE) {
-		if (e.viewBox[3] >= 0 && this->viewportStack.back()[1] >= 0) { //if viewBox width and viewport width are not 0
+		if (e.viewBox[3] >= 0 && this->viewport[1] >= 0) { //if viewBox width and viewport width are not 0
 			real scaleFactor, dx, dy;
 
 			real viewBoxAspect = e.viewBox[2] / e.viewBox[3];
-			real viewportAspect = this->viewportStack.back()[0] / this->viewportStack.back()[1];
+			real viewportAspect = this->viewport[0] / this->viewport[1];
 
 			if ((viewBoxAspect >= viewportAspect && ar.preserveAspectRatio.slice) || (viewBoxAspect < viewportAspect && !ar.preserveAspectRatio.slice)) {
 				//fit by Y
-				scaleFactor = this->viewportStack.back()[1] / e.viewBox[3];
-				dx = e.viewBox[2] - this->viewportStack.back()[0];
+				scaleFactor = this->viewport[1] / e.viewBox[3];
+				dx = e.viewBox[2] - this->viewport[0];
 				dy = 0;
 			} else {//viewBoxAspect < viewportAspect
 				//fit by X
-				scaleFactor = this->viewportStack.back()[0] / e.viewBox[2];
+				scaleFactor = this->viewport[0] / e.viewBox[2];
 				dx = 0;
-				dy = e.viewBox[3] - this->viewportStack.back()[1];
+				dy = e.viewBox[3] - this->viewport[1];
 			}
 			switch (ar.preserveAspectRatio.preserve) {
 				case svgdom::AspectRatioed::PreserveAspectRatio_e::NONE:
@@ -145,9 +142,9 @@ void Renderer::applyViewBox(const svgdom::ViewBoxed& e, const svgdom::AspectRati
 		if (e.viewBox[2] != 0 && e.viewBox[3] != 0) { //if viewBox width and height are not 0
 			cairo_scale(
 					this->cr,
-					this->viewportStack.back()[0] / e.viewBox[2],
-					this->viewportStack.back()[1] / e.viewBox[3]
-					);
+					this->viewport[0] / e.viewBox[2],
+					this->viewport[1] / e.viewBox[3]
+				);
 		}
 	}
 	cairo_translate(this->cr, -e.viewBox[0], -e.viewBox[1]);
@@ -243,6 +240,8 @@ void Renderer::setGradient(const std::string& id) {
 		
 		CairoMatrixSaveRestore cairoMatrixPush; //here we need to save/restore only matrix
 		
+		std::unique_ptr<ViewportPush> viewportPush;
+		
 		CommonGradientPush(Renderer& r, const svgdom::Gradient& gradient) :
 				r(r),
 				gradient(gradient),
@@ -251,17 +250,13 @@ void Renderer::setGradient(const std::string& id) {
 			if (this->gradient.isBoundingBoxUnits()) {
 				cairo_translate(this->r.cr, this->r.userSpaceShapeBoundingBoxPos[0], this->r.userSpaceShapeBoundingBoxPos[1]);
 				cairo_scale(this->r.cr, this->r.userSpaceShapeBoundingBoxDim[0], this->r.userSpaceShapeBoundingBoxDim[1]);
-				this->r.viewportStack.push_back({{1, 1}});
+				this->viewportPush = std::unique_ptr<ViewportPush>(new ViewportPush(this->r, {{1, 1}}));
 			}
 
 			this->r.applyCairoTransformations(this->gradient.transformations);
 		}
 		
-		~CommonGradientPush()noexcept{
-			if(this->gradient.isBoundingBoxUnits()) {
-				this->r.viewportStack.pop_back();
-			}
-		}
+		~CommonGradientPush()noexcept{}
 	};
 	
 	struct GradientSetter : public svgdom::ConstVisitor{
@@ -491,7 +486,7 @@ void Renderer::renderSvgElement(const svgdom::SvgElement& e, const svgdom::Lengt
 		return;
 	}
 	
-	//TODO: push background after device specific bounding box is updated? Because it may have a rectangle specified in bounding box units...
+	//TODO: push background after device space bounding box is updated? Because it may have a rectangle specified in bounding box units...
 	PushBackgroundIfNeeded pushBackground(*this);
 	
 	PushCairoGroupIfNeeded cairoTempContext(*this, pushBackground.isPushed());
@@ -500,26 +495,33 @@ void Renderer::renderSvgElement(const svgdom::SvgElement& e, const svgdom::Lengt
 	
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 	
-	if (this->viewportStack.size() > 1) { //if not the outermost 'svg' element
+	if (this->isOutermostElement) {
 		cairo_translate(
 				this->cr,
 				this->lengthToPx(e.x, 0),
 				this->lengthToPx(e.y, 1)
-				);
+			);
 	}
 
-	this->viewportStack.push_back({
-		{
-			this->lengthToPx(width, 0),
-			this->lengthToPx(height, 1)
-		}});
-	utki::ScopeExit scopeExit([this]() {
-		this->viewportStack.pop_back();
-	});
+	ViewportPush viewportPush(
+			*this,
+			{{
+				this->lengthToPx(width, 0),
+				this->lengthToPx(height, 1)
+			}}
+		);
 
 	this->applyViewBox(e, e);
+	
+	{
+		bool oldOutermostElementFlag = this->isOutermostElement;
+		this->isOutermostElement = false;
+		utki::ScopeExit scopeExit([oldOutermostElementFlag, this](){
+			this->isOutermostElement = oldOutermostElementFlag;
+		});
 		
-	this->relayAccept(e);
+		this->relayAccept(e);
+	}
 	
 	this->applyFilter();
 }
@@ -532,9 +534,9 @@ Renderer::Renderer(
 	) :
 		cr(cr),
 		finder(root),
-		dpi(dpi)
+		dpi(dpi),
+		viewport(canvasSize)
 {
-	this->viewportStack.push_back(canvasSize);
 	this->deviceSpaceBoundingBox.setEmpty();
 }
 
@@ -629,14 +631,14 @@ void Renderer::visit(const svgdom::UseElement& e) {
 			CairoContextSaveRestore symbolCairoMatrixPush(this->r.cr);
 
 			const auto hundredPercent = svgdom::Length::make(100, svgdom::Length::Unit_e::PERCENT);
-			this->r.viewportStack.push_back({
-				{
-					this->r.lengthToPx(this->e.width.isValid() ? this->e.width : hundredPercent, 0),
-					this->r.lengthToPx(this->e.height.isValid() ? this->e.height : hundredPercent, 1)
-				}});
-			utki::ScopeExit symbolScopeExit([this]() {
-				this->r.viewportStack.pop_back();
-			});
+			
+			ViewportPush viewportPush(
+					this->r,
+					{{
+						this->r.lengthToPx(this->e.width.isValid() ? this->e.width : hundredPercent, 0),
+						this->r.lengthToPx(this->e.height.isValid() ? this->e.height : hundredPercent, 1)
+					}}
+				);
 
 			this->r.applyViewBox(symbol, symbol);
 			

@@ -24,7 +24,7 @@
        id="filter4618"
        x="0"
        width="0.5"
-       y="0"
+       y="-0.2"
        height="50%">
       <feGaussianBlur
          inkscape:collect="always"

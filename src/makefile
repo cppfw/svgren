@@ -14,16 +14,6 @@ this_srcs := $(call prorab-src-dir,.)
 
 this_cxxflags := 
 
-ifeq ($(debug),true)
-    this_cxxflags += -DDEBUG
-endif
-
-ifeq ($(gprof), true)
-    this_cxxflags += -pg
-    this_ldflags += -pg
-endif
-
-
 this_cxxflags += -Wall #enable all warnings
 this_cxxflags += -Wno-comment #no warnings on nested comments
 this_cxxflags += -funsigned-char #the 'char' type is unsigned
@@ -36,6 +26,17 @@ this_cxxflags += -std=c++11
 this_cxxflags += -g #include debugging symbols
                 #-P -E #-Wreorder
                 #-O3 -funroll-loops -fomit-frame-pointer
+
+ifeq ($(debug),true)
+    this_cxxflags += -DDEBUG
+else
+    this_cxxflags += -O3
+endif
+
+ifeq ($(gprof), true)
+    this_cxxflags += -pg
+    this_ldflags += -pg
+endif
 
 this_ldlibs += `pkg-config --libs cairo` -lsvgdom -lstdc++ -lm
 

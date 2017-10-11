@@ -301,4 +301,13 @@ DeviceSpaceBoundingBoxPush::~DeviceSpaceBoundingBoxPush() {
 	this->r.deviceSpaceBoundingBox = this->oldBb;
 }
 
+ViewportPush::ViewportPush(Renderer& r, const decltype(oldViewport)& viewport) :
+		r(r),
+		oldViewport(r.viewport)
+{
+	this->r.viewport = viewport;
+}
 
+ViewportPush::~ViewportPush() noexcept{
+	this->r.viewport = this->oldViewport;
+}
