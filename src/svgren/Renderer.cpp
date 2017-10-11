@@ -540,24 +540,6 @@ Renderer::Renderer(
 	this->deviceSpaceBoundingBox.setEmpty();
 }
 
-Renderer::PushBackgroundIfNeeded::PushBackgroundIfNeeded(Renderer& r) :
-		r(r)
-{
-	this->backgroundPushed = false;
-	if(auto p = this->r.styleStack.getStyleProperty(svgdom::StyleProperty_e::ENABLE_BACKGROUND)){
-		if(p->enableBackground.value == svgdom::EnableBackground_e::NEW){
-			this->r.backgroundStack.push_back(getSubSurface(this->r.cr));
-			this->backgroundPushed = true;
-		}
-	}
-}
-
-Renderer::PushBackgroundIfNeeded::~PushBackgroundIfNeeded()noexcept{
-	if(this->backgroundPushed){
-		this->r.backgroundStack.pop_back();
-	}
-}
-
 
 void Renderer::visit(const svgdom::GElement& e) {
 //	TRACE(<< "rendering GElement: id = " << e.id << std::endl)
@@ -1241,41 +1223,6 @@ void Renderer::visit(const svgdom::RectElement& e) {
 	this->renderCurrentShape();
 }
 
-
-
-Renderer::PushCairoGroupIfNeeded::PushCairoGroupIfNeeded(Renderer& renderer, bool forcePush) :
-		renderer(renderer)
-{
-	auto opacityP = this->renderer.styleStack.getStyleProperty(svgdom::StyleProperty_e::OPACITY);
-	
-	if(forcePush){
-		this->groupPushed = true;
-	}else{
-		auto filterP = this->renderer.styleStack.getStyleProperty(svgdom::StyleProperty_e::FILTER);
-	
-		this->groupPushed = (opacityP && opacityP->opacity < 1) || filterP;
-	}
-	
-	if(this->groupPushed){
-//		TRACE(<< "setting temp context" << std::endl)
-		cairo_push_group(this->renderer.cr);
-		
-		if(opacityP){
-			this->opacity = opacityP->opacity;
-		}
-		
-		this->groupPushed = true;
-	}
-}
-
-Renderer::PushCairoGroupIfNeeded::~PushCairoGroupIfNeeded()noexcept{
-	if(!this->groupPushed){
-		return;
-	}
-	
-	cairo_pop_group_to_source(this->renderer.cr);
-	cairo_paint_with_alpha(this->renderer.cr, this->opacity);
-}
 
 namespace{
 struct GradientCaster : public svgdom::ConstVisitor{

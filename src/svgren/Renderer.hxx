@@ -30,6 +30,8 @@ public:
 	
 	const real dpi;
 	
+	bool isOutermostElement = true;
+	
 	std::array<real, 2> viewport;//width, height
 	
 	//this bounding box is used for gradients
@@ -39,34 +41,9 @@ public:
 	//this bounding box is used for filter region calculation.
 	DeviceSpaceBoundingBox deviceSpaceBoundingBox;
 	
-	bool isOutermostElement = true;
 	svgdom::StyleStack styleStack;
 	
 	std::vector<SubSurface> backgroundStack;
-	
-	//TODO: move to util.hxx
-	class PushBackgroundIfNeeded{
-		bool backgroundPushed;
-		Renderer& r;
-		
-	public:
-		PushBackgroundIfNeeded(Renderer& r);
-		~PushBackgroundIfNeeded()noexcept;
-		
-		bool isPushed()const noexcept{
-			return this->backgroundPushed;
-		}
-	};
-	
-	class PushCairoGroupIfNeeded{
-		bool groupPushed;
-		Renderer& renderer;
-
-		real opacity = real(1);
-	public:
-		PushCairoGroupIfNeeded(Renderer& renderer, bool forcePush = false);
-		~PushCairoGroupIfNeeded()noexcept;
-	};
 	
 	real lengthToPx(const svgdom::Length& l, unsigned coordIndex = 0)const noexcept;
 	

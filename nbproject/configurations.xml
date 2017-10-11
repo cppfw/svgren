@@ -309,6 +309,7 @@
             <pElem>/usr/include/svgdom</pElem>
             <pElem>src/svgren</pElem>
             <pElem>/usr/include/utki</pElem>
+            <pElem>/usr/include/svgdom/elements</pElem>
             <pElem>/usr/include/cairo</pElem>
             <pElem>.</pElem>
           </incDir>
