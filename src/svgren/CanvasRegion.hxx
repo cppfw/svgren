@@ -21,6 +21,16 @@ struct CanvasRegion{
 			width(width),
 			height(height)
 	{}
+	
+	void intersect(const CanvasRegion& r);
+	
+	unsigned right()const{
+		return this->x + this->width;
+	}
+	
+	unsigned bottom()const{
+		return this->y + this->height;
+	}
 };
 
 }
