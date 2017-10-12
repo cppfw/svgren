@@ -67,8 +67,8 @@ before_install:
     brew update > /dev/null &&
     brew install prorab &&
 
-    rvm install ruby-2.2.2 &&
-    rvm use ruby-2.2.2 &&
+    rvm install ruby-2.3.0 &&
+    rvm use ruby-2.3.0 &&
     
     rvm 2.2.1 do gem uninstall bundler -v '>1.12.5' --force &&
     rvm 2.2.1 do gem install bundler -v 1.12.5 --no-rdoc --no-ri --no-document --quiet &&
