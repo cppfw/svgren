@@ -296,7 +296,7 @@ DeviceSpaceBoundingBoxPush::DeviceSpaceBoundingBoxPush(Renderer& r) :
 	this->r.deviceSpaceBoundingBox.setEmpty();
 }
 
-DeviceSpaceBoundingBoxPush::~DeviceSpaceBoundingBoxPush() {
+DeviceSpaceBoundingBoxPush::~DeviceSpaceBoundingBoxPush() noexcept{
 	this->oldBb.merge(this->r.deviceSpaceBoundingBox);
 	this->r.deviceSpaceBoundingBox = this->oldBb;
 }

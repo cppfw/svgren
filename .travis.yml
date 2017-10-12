@@ -70,6 +70,7 @@ before_install:
     rvm install ruby-2.3.3 &&
     rvm use ruby-2.3.3 &&
     
+    brew update > /dev/null &&
     brew tap igagis/tap &&
     brew update > /dev/null &&
     brew install prorab &&
