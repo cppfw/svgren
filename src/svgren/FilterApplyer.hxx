@@ -23,8 +23,8 @@ class FilterApplyer : public svgdom::ConstVisitor{
 	std::map<std::string, FilterResult> results;
 	
 	//TODO:
-//	Surface getSource(const std::string& in, );
-//	void setResult
+	Surface getSource(const std::string& in);
+	void setResult(const std::string& name, FilterResult&& result);
 	
 public:
 	
