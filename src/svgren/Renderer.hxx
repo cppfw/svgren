@@ -43,7 +43,7 @@ public:
 	
 	svgdom::StyleStack styleStack;
 	
-	std::vector<Surface> backgroundStack;
+	Surface background; //for accessing background image from filter effects
 	
 	real lengthToPx(const svgdom::Length& l, unsigned coordIndex = 0)const noexcept;
 	

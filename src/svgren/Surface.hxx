@@ -5,7 +5,7 @@
 namespace svgren{
 
 struct Surface : public CanvasRegion{
-	std::uint8_t* data; //RGBA premultiplied alpha
+	std::uint8_t* data = nullptr; //RGBA data
 	unsigned stride;
 };
 

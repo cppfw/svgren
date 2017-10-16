@@ -313,36 +313,21 @@ ViewportPush::~ViewportPush() noexcept{
 }
 
 
-PushBackgroundIfNeeded::PushBackgroundIfNeeded(Renderer& r) :
-		r(r)
-{
-	this->backgroundPushed = false;
-	if(auto p = this->r.styleStack.getStyleProperty(svgdom::StyleProperty_e::ENABLE_BACKGROUND)){
-		if(p->enableBackground.value == svgdom::EnableBackground_e::NEW){
-			this->r.backgroundStack.push_back(getSubSurface(this->r.cr));
-			this->backgroundPushed = true;
-		}
-	}
-}
-
-PushBackgroundIfNeeded::~PushBackgroundIfNeeded()noexcept{
-	if(this->backgroundPushed){
-		this->r.backgroundStack.pop_back();
-	}
-}
-
-PushCairoGroupIfNeeded::PushCairoGroupIfNeeded(Renderer& renderer, bool forcePush) :
+PushCairoGroupIfNeeded::PushCairoGroupIfNeeded(Renderer& renderer) :
 		renderer(renderer)
 {
 	auto opacityP = this->renderer.styleStack.getStyleProperty(svgdom::StyleProperty_e::OPACITY);
 	
-	if(forcePush){
-		this->groupPushed = true;
-	}else{
-		auto filterP = this->renderer.styleStack.getStyleProperty(svgdom::StyleProperty_e::FILTER);
+	auto backgroundP = this->renderer.styleStack.getStyleProperty(svgdom::StyleProperty_e::ENABLE_BACKGROUND);
 	
-		this->groupPushed = (opacityP && opacityP->opacity < 1) || filterP;
+	if(backgroundP && backgroundP->enableBackground.value == svgdom::EnableBackground_e::NEW){
+		this->oldBackground = this->renderer.background;
+		this->renderer.background = getSubSurface(this->renderer.cr);
 	}
+	
+	auto filterP = this->renderer.styleStack.getStyleProperty(svgdom::StyleProperty_e::FILTER);
+	
+	this->groupPushed = (opacityP && opacityP->opacity < svgdom::real(1)) || filterP || this->oldBackground.data;
 	
 	if(this->groupPushed){
 //		TRACE(<< "setting temp context" << std::endl)
@@ -351,8 +336,6 @@ PushCairoGroupIfNeeded::PushCairoGroupIfNeeded(Renderer& renderer, bool forcePus
 		if(opacityP){
 			this->opacity = opacityP->opacity;
 		}
-		
-		this->groupPushed = true;
 	}
 }
 
@@ -363,4 +346,9 @@ PushCairoGroupIfNeeded::~PushCairoGroupIfNeeded()noexcept{
 	
 	cairo_pop_group_to_source(this->renderer.cr);
 	cairo_paint_with_alpha(this->renderer.cr, this->opacity);
+	
+	//restore background if it was pushed
+	if(this->oldBackground.data){
+		this->renderer.background = this->oldBackground;
+	}
 }

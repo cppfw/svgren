@@ -485,11 +485,8 @@ void Renderer::renderSvgElement(const svgdom::SvgElement& e, const svgdom::Lengt
 	if(this->isInvisible()){
 		return;
 	}
-	
-	//TODO: push background after device space bounding box is updated? Because it may have a rectangle specified in bounding box units...
-	PushBackgroundIfNeeded pushBackground(*this);
-	
-	PushCairoGroupIfNeeded cairoTempContext(*this, pushBackground.isPushed());
+		
+	PushCairoGroupIfNeeded cairoTempContext(*this);
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 	
@@ -538,6 +535,7 @@ Renderer::Renderer(
 		viewport(canvasSize)
 {
 	this->deviceSpaceBoundingBox.setEmpty();
+	this->background = getSubSurface(this->cr);
 }
 
 
@@ -549,10 +547,7 @@ void Renderer::visit(const svgdom::GElement& e) {
 		return;
 	}
 	
-	//TODO: push background after device specific bounding box is updated? Because it may have a rectangle specified in bounding box units...
-	PushBackgroundIfNeeded pushBackground(*this);
-	
-	PushCairoGroupIfNeeded cairoTempContext(*this, pushBackground.isPushed());
+	PushCairoGroupIfNeeded cairoTempContext(*this);
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 	
@@ -603,10 +598,7 @@ void Renderer::visit(const svgdom::UseElement& e) {
 		void visit(const svgdom::SymbolElement& symbol)override{
 			svgdom::StyleStack::Push pushSymbolStyles(this->r.styleStack, symbol);
 
-			//TODO: push background after device specific bounding box is updated? Because it may have a rectangle specified in bounding box units...
-			PushBackgroundIfNeeded pushBackground(this->r);
-			
-			PushCairoGroupIfNeeded symbolCairoTempContext(this->r, pushBackground.isPushed());
+			PushCairoGroupIfNeeded symbolCairoTempContext(this->r);
 
 			DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(this->r);
 			

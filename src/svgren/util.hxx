@@ -82,26 +82,14 @@ public:
 	~ViewportPush()noexcept;
 };
 
-class PushBackgroundIfNeeded{
-	bool backgroundPushed;
-	class Renderer& r;
-
-public:
-	PushBackgroundIfNeeded(Renderer& r);
-	~PushBackgroundIfNeeded()noexcept;
-
-	bool isPushed()const noexcept{
-		return this->backgroundPushed;
-	}
-};
-
 class PushCairoGroupIfNeeded{
 	bool groupPushed;
+	Surface oldBackground;
 	class Renderer& renderer;
 
 	real opacity = real(1);
 public:
-	PushCairoGroupIfNeeded(Renderer& renderer, bool forcePush = false);
+	PushCairoGroupIfNeeded(Renderer& renderer);
 	~PushCairoGroupIfNeeded()noexcept;
 };
 
