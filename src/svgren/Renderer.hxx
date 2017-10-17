@@ -45,6 +45,9 @@ public:
 	
 	Surface background; //for accessing background image from filter effects
 	
+	//blit surface to current cairo surface
+	void blit(const Surface& s);
+	
 	real lengthToPx(const svgdom::Length& l, unsigned coordIndex = 0)const noexcept;
 	
 	void applyCairoTransformation(const svgdom::Transformable::Transformation& t);

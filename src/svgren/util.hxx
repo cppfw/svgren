@@ -18,8 +18,6 @@
 
 namespace svgren{
 
-void cairoImageSurfaceBlur(const Surface& src, std::array<real, 2> stdDeviation);
-
 void cairoRelQuadraticCurveTo(cairo_t *cr, double x1, double y1, double x, double y);
 
 void cairoQuadraticCurveTo(cairo_t *cr, double x1, double y1, double x, double y);

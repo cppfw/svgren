@@ -6,7 +6,10 @@
 
 namespace svgren{
 
-
+struct FilterResult{
+	std::vector<std::uint8_t> data;
+	Surface surface;
+};
 
 class FilterApplyer : public svgdom::ConstVisitor{
 	Renderer& r;
@@ -15,18 +18,18 @@ class FilterApplyer : public svgdom::ConstVisitor{
 	
 	CanvasRegion filterRegion;
 	
-	struct FilterResult{
-		std::vector<std::uint8_t> data;
-		Surface surface;
-	};
-	
 	std::map<std::string, FilterResult> results;
 	
-	//TODO:
+	FilterResult* lastResult = nullptr;
+	
 	Surface getSource(const std::string& in);
 	void setResult(const std::string& name, FilterResult&& result);
 	
+	Surface getSourceGraphic();
+	
 public:
+	
+	Surface getLastResult();
 	
 	FilterApplyer(Renderer& r) : r(r) {}
 	

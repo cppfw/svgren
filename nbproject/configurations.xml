@@ -96,6 +96,8 @@
         <ccTool flags="0">
         </ccTool>
       </item>
+      <item path="src/svgren/Surface.cpp" ex="false" tool="1" flavor2="0">
+      </item>
       <item path="src/svgren/Surface.hxx" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/svgren/render.cpp" ex="false" tool="1" flavor2="8">
@@ -183,6 +185,8 @@
             <pElem>.</pElem>
           </incDir>
         </ccTool>
+      </item>
+      <item path="src/svgren/Surface.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="src/svgren/render.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
@@ -288,6 +292,18 @@
             <pElem>/usr/include/cairo</pElem>
             <pElem>.</pElem>
           </incDir>
+        </ccTool>
+      </item>
+      <item path="src/svgren/Surface.cpp" ex="false" tool="1" flavor2="8">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>.</pElem>
+            <pElem>src/svgren</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>DEBUG</Elem>
+            <Elem>M_SVGREN_BACKGROUND=0xffffffff</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="src/svgren/render.cpp" ex="false" tool="1" flavor2="8">

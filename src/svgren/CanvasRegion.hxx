@@ -8,7 +8,7 @@ namespace svgren{
  * @brief rectangular region on canvas.
  */
 struct CanvasRegion{
-	unsigned x, y, width, height;// in pixels
+	unsigned x = 0, y = 0, width = 0, height = 0;// in pixels
 	
 	CanvasRegion(
 			unsigned x = 0,

@@ -224,6 +224,8 @@ void Renderer::applyFilter(const std::string& id) {
 	
 	ASSERT(f)
 	f->e.accept(visitor);
+	
+	this->blit(visitor.getLastResult());
 }
 
 void Renderer::setGradient(const std::string& id) {
@@ -1477,4 +1479,27 @@ svgdom::Gradient::SpreadMethod_e Renderer::gradientGetSpreadMethod(const svgdom:
 	}
 	
 	return svgdom::Gradient::SpreadMethod_e::PAD;
+}
+
+void Renderer::blit(const Surface& s) {
+	if(!s.data || s.width == 0 || s.height == 0){
+		return;
+	}
+	ASSERT(s.data && s.width != 0 && s.height != 0)
+	auto cs = cairo_image_surface_create_for_data(s.data, CAIRO_FORMAT_ARGB32, int(s.width), int(s.height), int(s.stride) * 4);
+	if(!cs){
+		return;
+	}
+	utki::ScopeExit scopeExit([cs](){
+		cairo_surface_destroy(cs);
+	});
+	
+	CairoContextSaveRestore cairoContextSaveRestore(this->cr);
+
+	cairo_matrix_t m;
+	cairo_matrix_init_identity(&m);
+	cairo_set_matrix(this->cr, &m);
+	cairo_set_source_surface(this->cr, cs, s.x, s.y);
+	cairo_set_operator(this->cr, CAIRO_OPERATOR_SOURCE);
+	cairo_paint(this->cr);
 }
