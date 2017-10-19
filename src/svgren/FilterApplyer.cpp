@@ -318,13 +318,15 @@ void FilterApplyer::visit(const svgdom::FeGaussianBlurElement& e) {
 		sd[0] = real(x);
 		sd[1] = real(y);
 	}
+	
+	//TODO: set filter sub-region
 
 	this->setResult(e.result, cairoImageSurfaceBlur(this->getSource(e.in), sd));
 }
 
 
 void FilterApplyer::visit(const svgdom::FeColorMatrixElement& e){
-	std::array<std::array<real, 5>, 5> m; //first index = row, second index = column
+	std::array<std::array<real, 5>, 4> m; //first index = row, second index = column
 	
 	switch(e.type){
 		case svgdom::FeColorMatrixElement::Type_e::MATRIX:
@@ -334,10 +336,6 @@ void FilterApplyer::visit(const svgdom::FeColorMatrixElement& e){
 					m[i][j] = e.values[p];
 				}
 			}
-			for(unsigned i = 0; i != m[4].size() - 1; ++i){
-				m[4][i] = real(0);
-			}
-			m[4][4] = real(1);
 			break;
 		case svgdom::FeColorMatrixElement::Type_e::SATURATE:
 			/*
@@ -354,8 +352,7 @@ void FilterApplyer::visit(const svgdom::FeColorMatrixElement& e){
 					{{ real(0.213) + real(0.787) * s, real(0.715) - real(0.715) * s, real(0.072) - real(0.072) * s, real(0), real(0)}},
 					{{ real(0.213) - real(0.213) * s, real(0.715) + real(0.285) * s, real(0.072) - real(0.072) * s, real(0), real(0)}},
 					{{ real(0.213) - real(0.213) * s, real(0.715) - real(0.715) * s, real(0.072) + real(0.928) * s, real(0), real(0)}},
-					{{ real(0),                       real(0),                       real(0),                       real(1), real(0)}},
-					{{ real(0),                       real(0),                       real(0),                       real(0), real(1)}}
+					{{ real(0),                       real(0),                       real(0),                       real(1), real(0)}}
 				}};
 			}
 			break;
@@ -388,8 +385,7 @@ void FilterApplyer::visit(const svgdom::FeColorMatrixElement& e){
 					{{ real(0.213) + cosa * real(0.787) - sina * real(0.213), real(0.715) - cosa * real(0.715) - sina * real(0.715), real(0.072) - cosa * real(0.072) + sina * real(0.928), real(0), real(0) }},
 					{{ real(0.213) - cosa * real(0.213) + sina * real(0.143), real(0.715) + cosa * real(0.285) + sina * real(0.140), real(0.072) - cosa * real(0.072) - sina * real(0.283), real(0), real(0) }},
 					{{ real(0.213) - cosa * real(0.213) - sina * real(0.787), real(0.715) - cosa * real(0.715) + sina * real(0.715), real(0.072) + cosa * real(0.928) + sina * real(0.072), real(0), real(0) }},
-					{{ real(0),                                               real(0),                                               real(0),                                               real(1), real(0) }},
-					{{ real(0),                                               real(0),                                               real(0),                                               real(0), real(1) }}
+					{{ real(0),                                               real(0),                                               real(0),                                               real(1), real(0) }}
 				}};
 			}
 			break;
@@ -405,10 +401,24 @@ void FilterApplyer::visit(const svgdom::FeColorMatrixElement& e){
 				{{ real(0),      real(0),      real(0),      real(0), real(0) }},
 				{{ real(0),      real(0),      real(0),      real(0), real(0) }},
 				{{ real(0),      real(0),      real(0),      real(0), real(0) }},
-				{{ real(0.2125), real(0.7154), real(0.0721), real(0), real(0) }},
-				{{ real(0),      real(0),      real(0),      real(0), real(1) }}
+				{{ real(0.2125), real(0.7154), real(0.0721), real(0), real(0) }}
 			}};
 			break;
 	}
+	
+	//TODO: set filter sub-region
+	
+	auto s = this->getSource(e.in);
+	
+	FilterResult res;
+	res.data.resize(s.width * s.height * 4);
+	res.surface = s;
+	res.surface.data = &*res.data.begin();
+	res.surface.stride = res.surface.width;
+	
+	
 	//TODO:
+	
+	
+	this->setResult(e.result, std::move(res));
 }
