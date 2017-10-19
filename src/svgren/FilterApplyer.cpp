@@ -169,6 +169,62 @@ FilterResult cairoImageSurfaceBlur(const Surface& src, std::array<real, 2> stdDe
 }
 
 
+Surface FilterApplyer::getSourceGraphic() {
+	return getSubSurface(this->r.cr, this->filterRegion);
+}
+
+
+void FilterApplyer::setResult(const std::string& name, FilterResult&& result) {
+	this->results[name] = std::move(result);
+	this->lastResult = &this->results[name];
+	ASSERT(this->lastResult->surface.data == &*this->lastResult->data.begin())
+}
+
+Surface FilterApplyer::getSource(const std::string& in) {
+	if(in == "SourceGraphic"){
+		return this->getSourceGraphic();
+	}
+	if(in == "SourceAlpha"){
+		//TODO: implement
+		throw utki::Exc("not implemented");
+	}
+	if(in == "BackgroundImage"){
+		return this->r.background;
+	}
+	if(in == "BackgroundAlpha"){
+		//TODO: implement
+		throw utki::Exc("not implemented");
+	}
+	if(in == "FillPaint"){
+		//TODO: implement
+		throw utki::Exc("not implemented");
+	}
+	if(in == "StrokePaint"){
+		//TODO: implement
+		throw utki::Exc("not implemented");
+	}
+	
+	auto i = this->results.find(in);
+	if(i != this->results.end()){
+		return i->second.surface;
+	}
+	
+	if(in.length() == 0){
+		return this->getSourceGraphic();
+	}
+	
+	//return empty surface
+	return Surface();
+}
+
+Surface FilterApplyer::getLastResult() {
+	if (!this->lastResult) {
+		return Surface();
+	}
+	return this->lastResult->surface;
+}
+
+
 void FilterApplyer::visit(const svgdom::FilterElement& e) {
 	this->primitiveUnits = e.primitiveUnits;
 	
@@ -266,57 +322,93 @@ void FilterApplyer::visit(const svgdom::FeGaussianBlurElement& e) {
 	this->setResult(e.result, cairoImageSurfaceBlur(this->getSource(e.in), sd));
 }
 
-Surface FilterApplyer::getSourceGraphic() {
-	return getSubSurface(this->r.cr, this->filterRegion);
-}
 
-
-void FilterApplyer::setResult(const std::string& name, FilterResult&& result) {
-	this->results[name] = std::move(result);
-	this->lastResult = &this->results[name];
-	ASSERT(this->lastResult->surface.data == &*this->lastResult->data.begin())
-}
-
-Surface FilterApplyer::getSource(const std::string& in) {
-	if(in == "SourceGraphic"){
-		return this->getSourceGraphic();
-	}
-	if(in == "SourceAlpha"){
-		//TODO: implement
-		throw utki::Exc("not implemented");
-	}
-	if(in == "BackgroundImage"){
-		return this->r.background;
-	}
-	if(in == "BackgroundAlpha"){
-		//TODO: implement
-		throw utki::Exc("not implemented");
-	}
-	if(in == "FillPaint"){
-		//TODO: implement
-		throw utki::Exc("not implemented");
-	}
-	if(in == "StrokePaint"){
-		//TODO: implement
-		throw utki::Exc("not implemented");
-	}
+void FilterApplyer::visit(const svgdom::FeColorMatrixElement& e){
+	std::array<std::array<real, 5>, 5> m; //first index = row, second index = column
 	
-	auto i = this->results.find(in);
-	if(i != this->results.end()){
-		return i->second.surface;
-	}
-	
-	if(in.length() == 0){
-		return this->getSourceGraphic();
-	}
-	
-	//return empty surface
-	return Surface();
-}
+	switch(e.type){
+		case svgdom::FeColorMatrixElement::Type_e::MATRIX:
+			for(unsigned i = 0, p = 0; i != m.size() - 1; ++i){
+				for(unsigned j = 0; j != m[i].size(); ++j, ++p){
+					ASSERT(p < e.values.size())
+					m[i][j] = e.values[p];
+				}
+			}
+			for(unsigned i = 0; i != m[4].size() - 1; ++i){
+				m[4][i] = real(0);
+			}
+			m[4][4] = real(1);
+			break;
+		case svgdom::FeColorMatrixElement::Type_e::SATURATE:
+			/*
+				| R' |     |0.213+0.787s  0.715-0.715s  0.072-0.072s 0  0 |   | R |
+				| G' |     |0.213-0.213s  0.715+0.285s  0.072-0.072s 0  0 |   | G |
+				| B' |  =  |0.213-0.213s  0.715-0.715s  0.072+0.928s 0  0 | * | B |
+				| A' |     |           0            0             0  1  0 |   | A |
+				| 1  |     |           0            0             0  0  1 |   | 1 |
+			 */
+			{
+				auto s = real(e.values[0]);
+				
+				m = {{
+					{{ real(0.213) + real(0.787) * s, real(0.715) - real(0.715) * s, real(0.072) - real(0.072) * s, real(0), real(0)}},
+					{{ real(0.213) - real(0.213) * s, real(0.715) + real(0.285) * s, real(0.072) - real(0.072) * s, real(0), real(0)}},
+					{{ real(0.213) - real(0.213) * s, real(0.715) - real(0.715) * s, real(0.072) + real(0.928) * s, real(0), real(0)}},
+					{{ real(0),                       real(0),                       real(0),                       real(1), real(0)}},
+					{{ real(0),                       real(0),                       real(0),                       real(0), real(1)}}
+				}};
+			}
+			break;
+		case svgdom::FeColorMatrixElement::Type_e::HUE_ROTATE:
+			/*
+				| R' |     | a00  a01  a02  0  0 |   | R |
+				| G' |     | a10  a11  a12  0  0 |   | G |
+				| B' |  =  | a20  a21  a22  0  0 | * | B |
+				| A' |     | 0    0    0    1  0 |   | A |
+				| 1  |     | 0    0    0    0  1 |   | 1 |
+			
+				| a00 a01 a02 |   |+0.213 +0.715 +0.072|
+				| a10 a11 a12 | = |+0.213 +0.715 +0.072| +
+				| a20 a21 a22 |   |+0.213 +0.715 +0.072|
 
-Surface FilterApplyer::getLastResult() {
-	if (!this->lastResult) {
-		return Surface();
+				         |+0.787 -0.715 -0.072|
+				cos(a) * |-0.213 +0.285 -0.072| +
+				         |-0.213 -0.715 +0.928|
+
+				         |-0.213 -0.715+0.928|
+				sin(a) * |+0.143 +0.140-0.283|
+				         |-0.787 +0.715+0.072|
+			*/
+			{
+				auto a = degToRad(real(e.values[0]));
+				auto sina = std::sin(a);
+				auto cosa = std::cos(a);
+				
+				m = {{
+					{{ real(0.213) + cosa * real(0.787) - sina * real(0.213), real(0.715) - cosa * real(0.715) - sina * real(0.715), real(0.072) - cosa * real(0.072) + sina * real(0.928), real(0), real(0) }},
+					{{ real(0.213) - cosa * real(0.213) + sina * real(0.143), real(0.715) + cosa * real(0.285) + sina * real(0.140), real(0.072) - cosa * real(0.072) - sina * real(0.283), real(0), real(0) }},
+					{{ real(0.213) - cosa * real(0.213) - sina * real(0.787), real(0.715) - cosa * real(0.715) + sina * real(0.715), real(0.072) + cosa * real(0.928) + sina * real(0.072), real(0), real(0) }},
+					{{ real(0),                                               real(0),                                               real(0),                                               real(1), real(0) }},
+					{{ real(0),                                               real(0),                                               real(0),                                               real(0), real(1) }}
+				}};
+			}
+			break;
+		case svgdom::FeColorMatrixElement::Type_e::LUMINANCE_TO_ALPHA:
+			/*
+				| R' |     |      0        0        0  0  0 |   | R |
+				| G' |     |      0        0        0  0  0 |   | G |
+				| B' |  =  |      0        0        0  0  0 | * | B |
+				| A' |     | 0.2125   0.7154   0.0721  0  0 |   | A |
+				| 1  |     |      0        0        0  0  1 |   | 1 |
+			 */
+			m = {{
+				{{ real(0),      real(0),      real(0),      real(0), real(0) }},
+				{{ real(0),      real(0),      real(0),      real(0), real(0) }},
+				{{ real(0),      real(0),      real(0),      real(0), real(0) }},
+				{{ real(0.2125), real(0.7154), real(0.0721), real(0), real(0) }},
+				{{ real(0),      real(0),      real(0),      real(0), real(1) }}
+			}};
+			break;
 	}
-	return this->lastResult->surface;
+	//TODO:
 }

@@ -34,7 +34,10 @@ public:
 	FilterApplyer(Renderer& r) : r(r) {}
 	
 	void visit(const svgdom::FilterElement& e)override;
+	
 	void visit(const svgdom::FeGaussianBlurElement& e)override;
+	void visit(const svgdom::FeColorMatrixElement& e) override;
+
 };
 
 }
