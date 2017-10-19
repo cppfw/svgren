@@ -87,6 +87,18 @@ void boxBlurVertical(
 }
 }
 
+namespace{
+FilterResult allocateResult(const Surface& src){
+	FilterResult ret;
+	ret.data.resize(src.width * src.height * sizeof(std::uint32_t));
+	ret.surface = src;
+	ret.surface.data = &*ret.data.begin();
+	ret.surface.stride = ret.surface.width;
+	
+	return ret;
+}
+}
+
 
 namespace{
 FilterResult cairoImageSurfaceBlur(const Surface& src, std::array<real, 2> stdDeviation){
@@ -101,11 +113,7 @@ FilterResult cairoImageSurfaceBlur(const Surface& src, std::array<real, 2> stdDe
 	
 //	TRACE(<< "d = " << d[0] << ", " << d[1] << std::endl)
 	
-	FilterResult ret;
-	ret.data.resize(src.width * src.height * sizeof(std::uint32_t));
-	ret.surface = src;
-	ret.surface.data = &*ret.data.begin();
-	ret.surface.stride = ret.surface.width;
+	FilterResult ret = allocateResult(src);
 	
 	std::vector<std::uint8_t> tmp(ret.data.size());
 	
@@ -410,11 +418,7 @@ void FilterApplyer::visit(const svgdom::FeColorMatrixElement& e){
 	
 	auto s = this->getSource(e.in);
 	
-	FilterResult res;
-	res.data.resize(s.width * s.height * 4);
-	res.surface = s;
-	res.surface.data = &*res.data.begin();
-	res.surface.stride = res.surface.width;
+	FilterResult res = allocateResult(s);
 	
 	
 	//TODO:
