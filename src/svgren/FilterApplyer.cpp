@@ -332,6 +332,55 @@ void FilterApplyer::visit(const svgdom::FeGaussianBlurElement& e) {
 	this->setResult(e.result, cairoImageSurfaceBlur(this->getSource(e.in), sd));
 }
 
+namespace{
+FilterResult colorMatrix(const Surface& s, const std::array<std::array<real, 5>, 4>& m){
+	FilterResult ret = allocateResult(s);
+	
+	for(unsigned y = 0; y != s.height; ++y){
+		auto sp = &s.data[(y * s.stride) * sizeof(std::uint32_t)];
+		auto dp = &ret.surface.data[(y * ret.surface.stride) * sizeof(std::uint32_t)];
+		for(unsigned x = 0; x != s.width; ++x){
+			auto r0 = real(*sp) / real(0xff);
+			++sp;
+			auto g0 = real(*sp) / real(0xff);
+			++sp;
+			auto b0 = real(*sp) / real(0xff);
+			++sp;
+			auto isOpaque = (*sp == 0xff);
+			auto a0 = real(*sp) / real(0xff);
+			++sp;
+			
+			if(!isOpaque){
+				//unpremultiply alpha
+				r0 /= a0;
+				g0 /= a0;
+				b0 /= a0;
+			}
+			
+			auto r1 = m[0][0] * r0 + m[0][1] * g0 + m[0][2] * b0 + m[0][3] * a0 + m[0][4];
+			auto g1 = m[1][0] * r0 + m[1][1] * g0 + m[1][2] * b0 + m[1][3] * a0 + m[1][4];
+			auto b1 = m[2][0] * r0 + m[2][1] * g0 + m[2][2] * b0 + m[2][3] * a0 + m[2][4];
+			auto a1 = m[3][0] * r0 + m[3][1] * g0 + m[3][2] * b0 + m[3][3] * a0 + m[3][4];
+			
+			//Alpha can change, so always premultiply alpha back
+			r1 *= a1;
+			g1 *= a1;
+			b1 *= a1;
+			
+			*dp = std::uint8_t(r1 * real(0xff));
+			++dp;
+			*dp = std::uint8_t(g1 * real(0xff));
+			++dp;
+			*dp = std::uint8_t(b1 * real(0xff));
+			++dp;
+			*dp = std::uint8_t(a1 * real(0xff));
+			++dp;
+		}
+	}
+	
+	return ret;
+}
+}
 
 void FilterApplyer::visit(const svgdom::FeColorMatrixElement& e){
 	std::array<std::array<real, 5>, 4> m; //first index = row, second index = column
@@ -416,13 +465,7 @@ void FilterApplyer::visit(const svgdom::FeColorMatrixElement& e){
 	
 	//TODO: set filter sub-region
 	
-	auto s = this->getSource(e.in);
+	auto s = this->getSource(e.in);	
 	
-	FilterResult res = allocateResult(s);
-	
-	
-	//TODO:
-	
-	
-	this->setResult(e.result, std::move(res));
+	this->setResult(e.result, colorMatrix(s, m));
 }
