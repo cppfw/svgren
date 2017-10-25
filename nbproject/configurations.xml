@@ -280,11 +280,14 @@
         </ccTool>
       </folder>
       <item path="src/svgren/CanvasRegion.cpp" ex="false" tool="1" flavor2="8">
-        <ccTool flags="1">
+        <ccTool flags="0">
           <incDir>
-            <pElem>src/svgren</pElem>
             <pElem>.</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>DEBUG</Elem>
+            <Elem>M_SVGREN_BACKGROUND=0xffffffff</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="src/svgren/FilterApplyer.cpp" ex="false" tool="1" flavor2="8">

@@ -327,9 +327,11 @@ void FilterApplyer::visit(const svgdom::FeGaussianBlurElement& e) {
 		sd[1] = real(y);
 	}
 	
+	auto s = this->getSource(e.in).intersectionSurface(this->filterRegion);
+	
 	//TODO: set filter sub-region
 
-	this->setResult(e.result, cairoImageSurfaceBlur(this->getSource(e.in), sd));
+	this->setResult(e.result, cairoImageSurfaceBlur(s, sd));
 }
 
 namespace{
@@ -463,9 +465,9 @@ void FilterApplyer::visit(const svgdom::FeColorMatrixElement& e){
 			break;
 	}
 	
-	//TODO: set filter sub-region
+	auto s = this->getSource(e.in).intersectionSurface(this->filterRegion);	
 	
-	auto s = this->getSource(e.in);	
+	//TODO: set filter sub-region
 	
 	this->setResult(e.result, colorMatrix(s, m));
 }
@@ -473,10 +475,11 @@ void FilterApplyer::visit(const svgdom::FeColorMatrixElement& e){
 
 namespace{
 FilterResult blend(const Surface& in, const Surface& in2, svgdom::FeBlendElement::Mode_e mode){
+//	TRACE(<< "in.width = " << in.width << " in2.width = " << in2.width << std::endl)
 	auto s1 = in.intersectionSurface(in2);
 	auto s2 = in2.intersectionSurface(in);
 	
-	ASSERT(s1.width == s2.width)
+	ASSERT_INFO(s1.width == s2.width, "s1.width = " << s1.width << " s2.width = " << s2.width)
 	ASSERT(s1.height == s2.height)
 	ASSERT(s1.x == s2.x)
 	ASSERT(s1.y == s2.y)
@@ -576,12 +579,12 @@ FilterResult blend(const Surface& in, const Surface& in2, svgdom::FeBlendElement
 }
 
 void FilterApplyer::visit(const svgdom::FeBlendElement& e){
-	auto s1 = this->getSource(e.in);
+	auto s1 = this->getSource(e.in).intersectionSurface(this->filterRegion);
 	if(!s1.data){
 		return;
 	}
 	
-	auto s2 = this->getSource(e.in2);
+	auto s2 = this->getSource(e.in2).intersectionSurface(this->filterRegion);
 	if(!s2.data){
 		return;
 	}
@@ -589,4 +592,39 @@ void FilterApplyer::visit(const svgdom::FeBlendElement& e){
 	//TODO: set filter sub-region
 	
 	this->setResult(e.result, blend(s1, s2, e.mode));
+}
+
+namespace{
+FilterResult composite(const Surface& in, const Surface& in2, svgdom::FeCompositeElement::Operator_e op){
+//	TRACE(<< "in.width = " << in.width << " in2.width = " << in2.width << std::endl)
+	auto s1 = in.intersectionSurface(in2);
+	auto s2 = in2.intersectionSurface(in);
+	
+	ASSERT_INFO(s1.width == s2.width, "s1.width = " << s1.width << " s2.width = " << s2.width)
+	ASSERT(s1.height == s2.height)
+	ASSERT(s1.x == s2.x)
+	ASSERT(s1.y == s2.y)
+	
+	auto ret = allocateResult(s1);
+	
+	//TODO:
+	
+	return ret;
+}
+}
+
+void FilterApplyer::visit(const svgdom::FeCompositeElement& e){
+	auto s1 = this->getSource(e.in).intersectionSurface(this->filterRegion);
+	if(!s1.data){
+		return;
+	}
+	
+	auto s2 = this->getSource(e.in2).intersectionSurface(this->filterRegion);
+	if(!s2.data){
+		return;
+	}
+	
+	//TODO: set filter sub-region
+	
+	this->setResult(e.result, composite(s1, s2, e.operator_v));
 }
