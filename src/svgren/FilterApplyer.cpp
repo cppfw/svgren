@@ -469,3 +469,124 @@ void FilterApplyer::visit(const svgdom::FeColorMatrixElement& e){
 	
 	this->setResult(e.result, colorMatrix(s, m));
 }
+
+
+namespace{
+FilterResult blend(const Surface& in, const Surface& in2, svgdom::FeBlendElement::Mode_e mode){
+	auto s1 = in.intersectionSurface(in2);
+	auto s2 = in2.intersectionSurface(in);
+	
+	ASSERT(s1.width == s2.width)
+	ASSERT(s1.height == s2.height)
+	ASSERT(s1.x == s2.x)
+	ASSERT(s1.y == s2.y)
+	
+	auto ret = allocateResult(s1);
+	
+	for(unsigned y = 0; y != ret.surface.height; ++y){
+		auto sp1 = &s1.data[(y * s1.stride) * sizeof(std::uint32_t)];
+		auto sp2 = &s2.data[(y * s2.stride) * sizeof(std::uint32_t)];
+		auto dp = &ret.surface.data[(y * ret.surface.stride) * sizeof(std::uint32_t)];
+		for(unsigned x = 0; x != ret.surface.width; ++x){
+			//TODO: optimize by using integer arithmetics instead of floating point
+			auto r01 = real(*sp1) / real(0xff);
+			auto r02 = real(*sp2) / real(0xff);
+			++sp1;
+			++sp2;
+			auto g01 = real(*sp1) / real(0xff);
+			auto g02 = real(*sp2) / real(0xff);
+			++sp1;
+			++sp2;
+			auto b01 = real(*sp1) / real(0xff);
+			auto b02 = real(*sp2) / real(0xff);
+			++sp1;
+			++sp2;
+			auto a01 = real(*sp1) / real(0xff);
+			auto a02 = real(*sp2) / real(0xff);
+			++sp1;
+			++sp2;
+			
+			/*
+				cr = Result color (RGB) - premultiplied 
+				qa = Opacity value at a given pixel for image A 
+				qb = Opacity value at a given pixel for image B 
+				ca = Color (RGB) at a given pixel for image A - premultiplied 
+				cb = Color (RGB) at a given pixel for image B - premultiplied 
+			*/
+			switch(mode){
+				case svgdom::FeBlendElement::Mode_e::NORMAL:
+					//cr = (1 - qa) * cb + ca
+					*dp = std::uint8_t( ((1 - a01) * r02 + r01) * real(0xff));
+					++dp;
+					*dp = std::uint8_t( ((1 - a01) * g02 + g01) * real(0xff));
+					++dp;
+					*dp = std::uint8_t( ((1 - a01) * b02 + b01) * real(0xff));
+					++dp;
+					break;
+				case svgdom::FeBlendElement::Mode_e::MULTIPLY:
+					//cr = (1-qa)*cb + (1-qb)*ca + ca*cb
+					*dp = std::uint8_t( ((1 - a01) * r02 + (1 - a02) * r01 + r01 * r02) * real(0xff));
+					++dp;
+					*dp = std::uint8_t( ((1 - a01) * g02 + (1 - a02) * g01 + g01 * g02) * real(0xff));
+					++dp;
+					*dp = std::uint8_t( ((1 - a01) * b02 + (1 - a02) * b01 + b01 * b02) * real(0xff));
+					++dp;
+					break;
+				case svgdom::FeBlendElement::Mode_e::SCREEN:
+					//cr = cb + ca - ca * cb
+					*dp = std::uint8_t( (r02 + r01 - r01 * r02) * real(0xff));
+					++dp;
+					*dp = std::uint8_t( (g02 + g01 - g01 * g02) * real(0xff));
+					++dp;
+					*dp = std::uint8_t( (b02 + b01 - b01 * b02) * real(0xff));
+					++dp;
+					break;
+				case svgdom::FeBlendElement::Mode_e::DARKEN:
+					//cr = Min ((1 - qa) * cb + ca, (1 - qb) * ca + cb)
+					*dp = std::uint8_t( std::min((1 - a01) * r02 + r01, (1 - a02) * r01 + r02) * real(0xff));
+					++dp;
+					*dp = std::uint8_t( std::min((1 - a01) * g02 + g01, (1 - a02) * g01 + g02) * real(0xff));
+					++dp;
+					*dp = std::uint8_t( std::min((1 - a01) * b02 + b01, (1 - a02) * b01 + b02) * real(0xff));
+					++dp;
+					break;
+				case svgdom::FeBlendElement::Mode_e::LIGHTEN:
+					//cr = Max ((1 - qa) * cb + ca, (1 - qb) * ca + cb)
+					*dp = std::uint8_t( std::max((1 - a01) * r02 + r01, (1 - a02) * r01 + r02) * real(0xff));
+					++dp;
+					*dp = std::uint8_t( std::max((1 - a01) * g02 + g01, (1 - a02) * g01 + g02) * real(0xff));
+					++dp;
+					*dp = std::uint8_t( std::max((1 - a01) * b02 + b01, (1 - a02) * b01 + b02) * real(0xff));
+					++dp;
+					break;
+				default:
+					ASSERT(false)
+					dp += 3;
+					break;
+			}
+			
+			//qr = 1 - (1-qa)*(1-qb)
+			*dp = std::uint8_t((1 - (1 - a01)* (1 - a02)) * real(0xff));
+			++dp;
+		}
+	}
+	
+	return ret;
+}
+}
+
+void FilterApplyer::visit(const svgdom::FeBlendElement& e){
+	auto s1 = this->getSource(e.in);
+	if(!s1.data){
+		return;
+	}
+	
+	auto s2 = this->getSource(e.in2);
+	if(!s2.data){
+		return;
+	}
+	
+	//TODO: set filter sub-region
+	
+	this->setResult(e.result, blend(s1, s2, e.mode));
+}

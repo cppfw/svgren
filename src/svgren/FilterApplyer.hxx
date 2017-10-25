@@ -37,6 +37,7 @@ public:
 	
 	void visit(const svgdom::FeGaussianBlurElement& e)override;
 	void visit(const svgdom::FeColorMatrixElement& e) override;
+	void visit(const svgdom::FeBlendElement& e) override;
 
 };
 
