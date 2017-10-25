@@ -280,17 +280,26 @@
         </ccTool>
       </folder>
       <item path="src/svgren/CanvasRegion.cpp" ex="false" tool="1" flavor2="8">
-        <ccTool flags="0">
+        <ccTool flags="1">
           <incDir>
+            <pElem>src/svgren</pElem>
+            <pElem>/usr/include/utki</pElem>
             <pElem>.</pElem>
           </incDir>
-          <preprocessorList>
-            <Elem>DEBUG</Elem>
-            <Elem>M_SVGREN_BACKGROUND=0xffffffff</Elem>
-          </preprocessorList>
         </ccTool>
       </item>
       <item path="src/svgren/FilterApplyer.cpp" ex="false" tool="1" flavor2="8">
+        <ccTool flags="1">
+          <incDir>
+            <pElem>/usr/include/svgdom/elements</pElem>
+            <pElem>/usr/include/svgdom</pElem>
+            <pElem>src/svgren</pElem>
+            <pElem>/usr/include/utki</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="src/svgren/Renderer.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
           <incDir>
             <pElem>.</pElem>
@@ -299,18 +308,6 @@
             <Elem>DEBUG</Elem>
             <Elem>M_SVGREN_BACKGROUND=0xffffffff</Elem>
           </preprocessorList>
-        </ccTool>
-      </item>
-      <item path="src/svgren/Renderer.cpp" ex="false" tool="1" flavor2="8">
-        <ccTool flags="1">
-          <incDir>
-            <pElem>/usr/include/utki</pElem>
-            <pElem>/usr/include/svgdom</pElem>
-            <pElem>/usr/include/svgdom/elements</pElem>
-            <pElem>src/svgren</pElem>
-            <pElem>/usr/include/cairo</pElem>
-            <pElem>.</pElem>
-          </incDir>
         </ccTool>
       </item>
       <item path="src/svgren/Surface.cpp" ex="false" tool="1" flavor2="8">

@@ -570,7 +570,7 @@ void Renderer::visit(const svgdom::UseElement& e) {
 	}
 	
 	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
-
+	
 	if(this->isInvisible()){
 		return;
 	}

@@ -595,7 +595,11 @@ void FilterApplyer::visit(const svgdom::FeBlendElement& e){
 }
 
 namespace{
-FilterResult composite(const Surface& in, const Surface& in2, svgdom::FeCompositeElement::Operator_e op){
+FilterResult composite(const Surface& in, const Surface& in2, const svgdom::FeCompositeElement& e){
+	if(e.operator_v == svgdom::FeCompositeElement::Operator_e::OVER){
+		return blend(in, in2, svgdom::FeBlendElement::Mode_e::NORMAL);
+	}
+	
 //	TRACE(<< "in.width = " << in.width << " in2.width = " << in2.width << std::endl)
 	auto s1 = in.intersectionSurface(in2);
 	auto s2 = in2.intersectionSurface(in);
@@ -607,7 +611,99 @@ FilterResult composite(const Surface& in, const Surface& in2, svgdom::FeComposit
 	
 	auto ret = allocateResult(s1);
 	
-	//TODO:
+	for(unsigned y = 0; y != ret.surface.height; ++y){
+		auto sp1 = &s1.data[(y * s1.stride) * sizeof(std::uint32_t)];
+		auto sp2 = &s2.data[(y * s2.stride) * sizeof(std::uint32_t)];
+		auto dp = &ret.surface.data[(y * ret.surface.stride) * sizeof(std::uint32_t)];
+		for(unsigned x = 0; x != ret.surface.width; ++x){
+			//TODO: optimize by using integer arithmetics instead of floating point
+			auto r01 = real(*sp1) / real(0xff);
+			auto r02 = real(*sp2) / real(0xff);
+			++sp1;
+			++sp2;
+			auto g01 = real(*sp1) / real(0xff);
+			auto g02 = real(*sp2) / real(0xff);
+			++sp1;
+			++sp2;
+			auto b01 = real(*sp1) / real(0xff);
+			auto b02 = real(*sp2) / real(0xff);
+			++sp1;
+			++sp2;
+			auto a01 = real(*sp1) / real(0xff);
+			auto a02 = real(*sp2) / real(0xff);
+			++sp1;
+			++sp2;
+			
+			switch(e.operator_v){
+				case svgdom::FeCompositeElement::Operator_e::OVER:
+					ASSERT(false) //should not get here, since OVER operator is handled above
+					break;
+				case svgdom::FeCompositeElement::Operator_e::IN:
+					//co = as * Cs * ab
+					//ao = as x ab
+					*dp = std::uint8_t( (r01 * a02) * real(0xff));
+					++dp;
+					*dp = std::uint8_t( (g01 * a02) * real(0xff));
+					++dp;
+					*dp = std::uint8_t( (b01 * a02) * real(0xff));
+					++dp;
+					*dp = std::uint8_t( (a01 * a02) * real(0xff));
+					++dp;
+					break;
+				case svgdom::FeCompositeElement::Operator_e::OUT:
+					//co = as * Cs * (1 – ab)
+					//ao = as * (1 – ab)
+					*dp = std::uint8_t( (r01 * (1 - a02)) * real(0xff));
+					++dp;
+					*dp = std::uint8_t( (g01 * (1 - a02)) * real(0xff));
+					++dp;
+					*dp = std::uint8_t( (b01 * (1 - a02)) * real(0xff));
+					++dp;
+					*dp = std::uint8_t( (a01 * (1 - a02)) * real(0xff));
+					++dp;
+					break;
+				case svgdom::FeCompositeElement::Operator_e::ATOP:
+					//co = as * Cs * ab + ab * Cb * (1 – as)
+					//ao = as * ab + ab * (1 – as)
+					*dp = std::uint8_t( (r01 * a02 + r02 * (1 - a01)) * real(0xff));
+					++dp;
+					*dp = std::uint8_t( (g01 * a02 + g02 * (1 - a01)) * real(0xff));
+					++dp;
+					*dp = std::uint8_t( (b01 * a02 + b02 * (1 - a01)) * real(0xff));
+					++dp;
+					*dp = std::uint8_t( (a01 * a02 + a02 * (1 - a01)) * real(0xff));
+					++dp;
+					break;
+				case svgdom::FeCompositeElement::Operator_e::XOR:
+					//co = as * Cs * (1 - ab) + ab * Cb * (1 – as)
+					//ao = as * (1 - ab) + ab * (1 – as)
+					*dp = std::uint8_t( (r01 * (1 - a02) + r02 * (1 - a01)) * real(0xff));
+					++dp;
+					*dp = std::uint8_t( (g01 * (1 - a02) + g02 * (1 - a01)) * real(0xff));
+					++dp;
+					*dp = std::uint8_t( (b01 * (1 - a02) + b02 * (1 - a01)) * real(0xff));
+					++dp;
+					*dp = std::uint8_t( (a01 * (1 - a02) + a02 * (1 - a01)) * real(0xff));
+					++dp;
+					break;
+				case svgdom::FeCompositeElement::Operator_e::ARITHMETIC:
+					//result = k1*i1*i2 + k2*i1 + k3*i2 + k4
+					*dp = std::uint8_t( (e.k1 * r01 * r02 + e.k2 * r01 + e.k3 * r02 + e.k4) * real(0xff));
+					++dp;
+					*dp = std::uint8_t( (e.k1 * g01 * g02 + e.k2 * g01 + e.k3 * g02 + e.k4) * real(0xff));
+					++dp;
+					*dp = std::uint8_t( (e.k1 * b01 * b02 + e.k2 * b01 + e.k3 * b02 + e.k4) * real(0xff));
+					++dp;
+					*dp = std::uint8_t( (e.k1 * a01 * a02 + e.k2 * a01 + e.k3 * a02 + e.k4) * real(0xff));
+					++dp;
+					break;
+				default:
+					ASSERT(false)
+					dp += 4;
+					break;
+			}
+		}
+	}
 	
 	return ret;
 }
@@ -626,5 +722,5 @@ void FilterApplyer::visit(const svgdom::FeCompositeElement& e){
 	
 	//TODO: set filter sub-region
 	
-	this->setResult(e.result, composite(s1, s2, e.operator_v));
+	this->setResult(e.result, composite(s1, s2, e));
 }
