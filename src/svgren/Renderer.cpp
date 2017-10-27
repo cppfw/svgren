@@ -683,7 +683,7 @@ void Renderer::visit(const svgdom::UseElement& e) {
 				}
 			};
 			
-			this->fakeGElement.children.push_back(utki::makeUnique<FakeSvgElement>(this->r, this->ue, element));
+			this->fakeGElement.children.push_back(utki::makeUnique<FakeSvgElement>(this->r, element));
 			this->fakeGElement.accept(this->r);
 		}
 		
