@@ -326,6 +326,7 @@
       <item path="src/svgren/Surface.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
           <incDir>
+            <pElem>/usr/include/utki</pElem>
             <pElem>src/svgren</pElem>
             <pElem>.</pElem>
           </incDir>
@@ -367,11 +368,6 @@
       <item path="tests/samples/checksvg.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="1">
         </ccTool>
-      </item>
-      <item path="tests/samples/testdata/composite.svg"
-            ex="false"
-            tool="3"
-            flavor2="0">
       </item>
     </conf>
   </confs>

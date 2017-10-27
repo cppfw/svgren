@@ -606,10 +606,6 @@ void FilterApplyer::visit(const svgdom::FeBlendElement& e){
 
 namespace{
 FilterResult composite(const Surface& in, const Surface& in2, const svgdom::FeCompositeElement& e){
-	if(e.operator_v == svgdom::FeCompositeElement::Operator_e::OVER){
-		return blend(in, in2, svgdom::FeBlendElement::Mode_e::NORMAL);
-	}
-	
 //	TRACE(<< "in.width = " << in.width << " in2.width = " << in2.width << std::endl)
 	auto s1 = in.intersectionSurface(in2);
 	auto s2 = in2.intersectionSurface(in);
@@ -646,7 +642,16 @@ FilterResult composite(const Surface& in, const Surface& in2, const svgdom::FeCo
 			
 			switch(e.operator_v){
 				case svgdom::FeCompositeElement::Operator_e::OVER:
-					ASSERT(false) //should not get here, since OVER operator is handled above
+					//co = as * Cs + ab * Cb * (1 – as)
+					//ao = as + ab * (1 – as)
+					*dp = std::uint8_t( (r01 + r02 * (1 - a01)) * real(0xff));
+					++dp;
+					*dp = std::uint8_t( (g01 + g02 * (1 - a01)) * real(0xff));
+					++dp;
+					*dp = std::uint8_t( (b01 + b02 * (1 - a01)) * real(0xff));
+					++dp;
+					*dp = std::uint8_t( (a01 + a02 * (1 - a01)) * real(0xff));
+					++dp;
 					break;
 				case svgdom::FeCompositeElement::Operator_e::IN:
 					//co = as * Cs * ab
