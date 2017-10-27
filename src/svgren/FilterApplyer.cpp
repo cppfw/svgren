@@ -363,20 +363,15 @@ FilterResult colorMatrix(const Surface& s, const std::array<std::array<real, 5>,
 				}
 			}
 			
-//			ASSERT_INFO(real(0) <= r0 && r0 <= real(1), "r0 = " << r0)
-//			ASSERT_INFO(real(0) <= g0 && g0 <= real(1), "g0 = " << g0)
-//			ASSERT_INFO(real(0) <= b0 && b0 <= real(1), "b0 = " << b0)
-//			ASSERT_INFO(real(0) <= a0 && a0 <= real(1), "a0 = " << a0)
+			ASSERT_INFO(real(0) <= r0 && r0 <= real(1), "r0 = " << r0)
+			ASSERT_INFO(real(0) <= g0 && g0 <= real(1), "g0 = " << g0)
+			ASSERT_INFO(real(0) <= b0 && b0 <= real(1), "b0 = " << b0)
+			ASSERT_INFO(real(0) <= a0 && a0 <= real(1), "a0 = " << a0)
 			
-			auto r1 = utki::clampedRange(m[0][0] * r0 + m[0][1] * g0 + m[0][2] * b0 + m[0][3] * a0 + m[0][4], real(0), real(1));
-			auto g1 = utki::clampedRange(m[1][0] * r0 + m[1][1] * g0 + m[1][2] * b0 + m[1][3] * a0 + m[1][4], real(0), real(1));
-			auto b1 = utki::clampedRange(m[2][0] * r0 + m[2][1] * g0 + m[2][2] * b0 + m[2][3] * a0 + m[2][4], real(0), real(1));
-			auto a1 = utki::clampedRange(m[3][0] * r0 + m[3][1] * g0 + m[3][2] * b0 + m[3][3] * a0 + m[3][4], real(0), real(1));
-			
-//			ASSERT_INFO(real(0) <= r1 && r1 <= real(1), "r1 = " << r1)
-//			ASSERT_INFO(real(0) <= g1 && g1 <= real(1), "g1 = " << g1)
-//			ASSERT_INFO(real(0) <= b1 && b1 <= real(1), "b1 = " << b1)
-//			ASSERT_INFO(real(0) <= a1 && a1 <= real(1), "a1 = " << a1)
+			auto r1 = m[0][0] * r0 + m[0][1] * g0 + m[0][2] * b0 + m[0][3] * a0 + m[0][4];
+			auto g1 = m[1][0] * r0 + m[1][1] * g0 + m[1][2] * b0 + m[1][3] * a0 + m[1][4];
+			auto b1 = m[2][0] * r0 + m[2][1] * g0 + m[2][2] * b0 + m[2][3] * a0 + m[2][4];
+			auto a1 = m[3][0] * r0 + m[3][1] * g0 + m[3][2] * b0 + m[3][3] * a0 + m[3][4];
 			
 			//Alpha can change, so always premultiply alpha back
 			r1 *= a1;
