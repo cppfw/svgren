@@ -293,10 +293,10 @@ void FilterApplyer::visit(const svgdom::FilterElement& e) {
 				break;
 		}
 
-		this->filterRegion.x = unsigned(std::max(frX, decltype(frX)(0)));
-		this->filterRegion.y = unsigned(std::max(frY, decltype(frY)(0)));
-		this->filterRegion.width = unsigned(std::max(frWidth, decltype(frWidth)(0)));
-		this->filterRegion.height = unsigned(std::max(frHeight, decltype(frHeight)(0)));
+		this->filterRegion.x = unsigned(std::max(std::floor(frX), decltype(frX)(0)));
+		this->filterRegion.y = unsigned(std::max(std::floor(frY), decltype(frY)(0)));
+		this->filterRegion.width = unsigned(std::max(std::ceil(frWidth), decltype(frWidth)(0)));
+		this->filterRegion.height = unsigned(std::max(std::ceil(frHeight), decltype(frHeight)(0)));
 	}
 	
 	this->relayAccept(e);
@@ -336,6 +336,7 @@ void FilterApplyer::visit(const svgdom::FeGaussianBlurElement& e) {
 
 namespace{
 FilterResult colorMatrix(const Surface& s, const std::array<std::array<real, 5>, 4>& m){
+//	TRACE(<< "colorMatrix(): s.width = " << s.width << " s.height = " << s.height << std::endl)
 	FilterResult ret = allocateResult(s);
 	
 	for(unsigned y = 0; y != s.height; ++y){
@@ -343,6 +344,7 @@ FilterResult colorMatrix(const Surface& s, const std::array<std::array<real, 5>,
 		auto dp = &ret.surface.data[(y * ret.surface.stride) * sizeof(std::uint32_t)];
 		for(unsigned x = 0; x != s.width; ++x){
 			auto r0 = real(*sp) / real(0xff);
+//			TRACE(<< "r0 = " << r0 << std::endl)
 			++sp;
 			auto g0 = real(*sp) / real(0xff);
 			++sp;
@@ -353,16 +355,28 @@ FilterResult colorMatrix(const Surface& s, const std::array<std::array<real, 5>,
 			++sp;
 			
 			if(!isOpaque){
-				//unpremultiply alpha
-				r0 /= a0;
-				g0 /= a0;
-				b0 /= a0;
+				if(a0 > 0){
+					//unpremultiply alpha
+					r0 /= a0;
+					g0 /= a0;
+					b0 /= a0;
+				}
 			}
 			
-			auto r1 = m[0][0] * r0 + m[0][1] * g0 + m[0][2] * b0 + m[0][3] * a0 + m[0][4];
-			auto g1 = m[1][0] * r0 + m[1][1] * g0 + m[1][2] * b0 + m[1][3] * a0 + m[1][4];
-			auto b1 = m[2][0] * r0 + m[2][1] * g0 + m[2][2] * b0 + m[2][3] * a0 + m[2][4];
-			auto a1 = m[3][0] * r0 + m[3][1] * g0 + m[3][2] * b0 + m[3][3] * a0 + m[3][4];
+//			ASSERT_INFO(real(0) <= r0 && r0 <= real(1), "r0 = " << r0)
+//			ASSERT_INFO(real(0) <= g0 && g0 <= real(1), "g0 = " << g0)
+//			ASSERT_INFO(real(0) <= b0 && b0 <= real(1), "b0 = " << b0)
+//			ASSERT_INFO(real(0) <= a0 && a0 <= real(1), "a0 = " << a0)
+			
+			auto r1 = utki::clampedRange(m[0][0] * r0 + m[0][1] * g0 + m[0][2] * b0 + m[0][3] * a0 + m[0][4], real(0), real(1));
+			auto g1 = utki::clampedRange(m[1][0] * r0 + m[1][1] * g0 + m[1][2] * b0 + m[1][3] * a0 + m[1][4], real(0), real(1));
+			auto b1 = utki::clampedRange(m[2][0] * r0 + m[2][1] * g0 + m[2][2] * b0 + m[2][3] * a0 + m[2][4], real(0), real(1));
+			auto a1 = utki::clampedRange(m[3][0] * r0 + m[3][1] * g0 + m[3][2] * b0 + m[3][3] * a0 + m[3][4], real(0), real(1));
+			
+//			ASSERT_INFO(real(0) <= r1 && r1 <= real(1), "r1 = " << r1)
+//			ASSERT_INFO(real(0) <= g1 && g1 <= real(1), "g1 = " << g1)
+//			ASSERT_INFO(real(0) <= b1 && b1 <= real(1), "b1 = " << b1)
+//			ASSERT_INFO(real(0) <= a1 && a1 <= real(1), "a1 = " << a1)
 			
 			//Alpha can change, so always premultiply alpha back
 			r1 *= a1;
@@ -389,10 +403,11 @@ void FilterApplyer::visit(const svgdom::FeColorMatrixElement& e){
 	
 	switch(e.type){
 		case svgdom::FeColorMatrixElement::Type_e::MATRIX:
-			for(unsigned i = 0, p = 0; i != m.size() - 1; ++i){
+			for(unsigned i = 0, p = 0; i != m.size(); ++i){
 				for(unsigned j = 0; j != m[i].size(); ++j, ++p){
 					ASSERT(p < e.values.size())
 					m[i][j] = e.values[p];
+//					TRACE(<< "m[" << i << "][" << j << "] = " << m[i][j] << std::endl)
 				}
 			}
 			break;
