@@ -21,7 +21,6 @@
 
 namespace svgren{
 
-
 class Renderer : public svgdom::ConstVisitor{
 public:
 	cairo_t* cr;
@@ -52,7 +51,7 @@ public:
 	
 	void applyCairoTransformation(const svgdom::Transformable::Transformation& t);
 	
-	void applyCairoTransformations(const decltype(svgdom::Transformable::transformations)& transformations);
+	void applyTransformations(const decltype(svgdom::Transformable::transformations)& transformations);
 	
 	void setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradient& g, const svgdom::StyleStack& ss);
 	
@@ -68,7 +67,12 @@ public:
 	void applyViewBox(const svgdom::ViewBoxed& e, const svgdom::AspectRatioed& ar);
 	
 	void renderSvgElement(
-			const svgdom::SvgElement& e,
+			const svgdom::Container& c,
+			const svgdom::Styleable& s,
+			const svgdom::ViewBoxed& v,
+			const svgdom::AspectRatioed& a,
+			const svgdom::Length& x,
+			const svgdom::Length& y,
 			const svgdom::Length& width,
 			const svgdom::Length& height
 		);

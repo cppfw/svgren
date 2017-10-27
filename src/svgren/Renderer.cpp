@@ -74,7 +74,7 @@ void Renderer::applyCairoTransformation(const svgdom::Transformable::Transformat
 	}
 }
 
-void Renderer::applyCairoTransformations(const decltype(svgdom::Transformable::transformations)& transformations) {
+void Renderer::applyTransformations(const decltype(svgdom::Transformable::transformations)& transformations) {
 	for (auto& t : transformations) {
 		this->applyCairoTransformation(t);
 	}
@@ -255,7 +255,7 @@ void Renderer::setGradient(const std::string& id) {
 				this->viewportPush = std::unique_ptr<ViewportPush>(new ViewportPush(this->r, {{1, 1}}));
 			}
 
-			this->r.applyCairoTransformations(this->gradient.transformations);
+			this->r.applyTransformations(this->gradient.transformations);
 		}
 		
 		~CommonGradientPush()noexcept{}
@@ -481,8 +481,18 @@ void Renderer::renderCurrentShape() {
 	this->applyFilter();
 }
 
-void Renderer::renderSvgElement(const svgdom::SvgElement& e, const svgdom::Length& width, const svgdom::Length& height) {
-	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
+void Renderer::renderSvgElement(
+		const svgdom::Container& e,
+		const svgdom::Styleable& s,
+		const svgdom::ViewBoxed& v,
+		const svgdom::AspectRatioed& a,
+		const svgdom::Length& x,
+		const svgdom::Length& y,
+		const svgdom::Length& width,
+		const svgdom::Length& height
+	)
+{
+	svgdom::StyleStack::Push pushStyles(this->styleStack, s);
 
 	if(this->isInvisible()){
 		return;
@@ -497,8 +507,8 @@ void Renderer::renderSvgElement(const svgdom::SvgElement& e, const svgdom::Lengt
 	if (this->isOutermostElement) {
 		cairo_translate(
 				this->cr,
-				this->lengthToPx(e.x, 0),
-				this->lengthToPx(e.y, 1)
+				this->lengthToPx(x, 0),
+				this->lengthToPx(y, 1)
 			);
 	}
 
@@ -510,7 +520,7 @@ void Renderer::renderSvgElement(const svgdom::SvgElement& e, const svgdom::Lengt
 			}}
 		);
 
-	this->applyViewBox(e, e);
+	this->applyViewBox(v, a);
 	
 	{
 		bool oldOutermostElementFlag = this->isOutermostElement;
@@ -555,7 +565,7 @@ void Renderer::visit(const svgdom::GElement& e) {
 	
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 	
-	this->applyCairoTransformations(e.transformations);
+	this->applyTransformations(e.transformations);
 
 	this->relayAccept(e);
 	
@@ -568,72 +578,113 @@ void Renderer::visit(const svgdom::UseElement& e) {
 	if(!ref){
 		return;
 	}
-	
-	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
-	
-	if(this->isInvisible()){
-		return;
-	}
-	
-	PushCairoGroupIfNeeded cairoTempContext(*this);
-
-	CairoContextSaveRestore cairoMatrixPush(this->cr);
-
-	this->applyCairoTransformations(e.transformations);
-
-	//Apply x and y transformation
-	{
-		svgdom::Transformable::Transformation t;
-		t.type = svgdom::Transformable::Transformation::Type_e::TRANSLATE;
-		t.x = this->lengthToPx(e.x, 0);
-		t.y = this->lengthToPx(e.y, 1);
-
-		this->applyCairoTransformation(t);
-	}
 
 	struct RefRenderer : public svgdom::ConstVisitor{
 		Renderer& r;
-		const svgdom::UseElement& e;
+		const svgdom::UseElement& ue;
+		svgdom::GElement fakeGElement;
 		
-		RefRenderer(Renderer& r, const svgdom::UseElement& e) : r(r), e(e){}
+		RefRenderer(Renderer& r, const svgdom::UseElement& e) :
+				r(r), ue(e)
+		{	
+			this->fakeGElement.styles = e.styles;
+			this->fakeGElement.transformations = e.transformations;
+
+			//Add x and y transformation
+			{
+				svgdom::Transformable::Transformation t;
+				t.type = svgdom::Transformable::Transformation::Type_e::TRANSLATE;
+				t.x = this->r.lengthToPx(e.x, 0);
+				t.y = this->r.lengthToPx(e.y, 1);
+
+				this->fakeGElement.transformations.push_back(t);
+			}
+		}
 		
 		void visit(const svgdom::SymbolElement& symbol)override{
-			svgdom::StyleStack::Push pushSymbolStyles(this->r.styleStack, symbol);
+			struct FakeSvgElement : public svgdom::Element{
+				Renderer& r;
+				const svgdom::UseElement& ue;
+				const svgdom::SymbolElement& se;
 
-			PushCairoGroupIfNeeded symbolCairoTempContext(this->r);
+				FakeSvgElement(Renderer& r, const svgdom::UseElement& ue, const svgdom::SymbolElement& se) :
+						r(r), ue(ue), se(se)
+				{}
 
-			DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(this->r);
+				void accept(svgdom::Visitor& visitor)override{
+					ASSERT(false)
+				}
+				void accept(svgdom::ConstVisitor& visitor) const override{
+					const auto hundredPercent = svgdom::Length::make(100, svgdom::Length::Unit_e::PERCENT);
+					
+					this->r.renderSvgElement(
+							this->se,
+							this->se,
+							this->se,
+							this->se,
+							svgdom::Length::make(0),
+							svgdom::Length::make(0),
+							this->ue.width.isValid() ? this->ue.width : hundredPercent,
+							this->ue.height.isValid() ? this->ue.height : hundredPercent
+						);
+				}
+			};
 			
-			CairoContextSaveRestore symbolCairoMatrixPush(this->r.cr);
-
-			const auto hundredPercent = svgdom::Length::make(100, svgdom::Length::Unit_e::PERCENT);
-			
-			ViewportPush viewportPush(
-					this->r,
-					{{
-						this->r.lengthToPx(this->e.width.isValid() ? this->e.width : hundredPercent, 0),
-						this->r.lengthToPx(this->e.height.isValid() ? this->e.height : hundredPercent, 1)
-					}}
-				);
-
-			this->r.applyViewBox(symbol, symbol);
-			
-			this->r.relayAccept(symbol);
-			
-			this->r.applyFilter();
+			this->fakeGElement.children.push_back(utki::makeUnique<FakeSvgElement>(this->r, this->ue, symbol));
+			this->fakeGElement.accept(this->r);
 		}
 		
 		void visit(const svgdom::SvgElement& svg)override{
-			//width and height of <use> element override those of <svg> element.
-			this->r.renderSvgElement(
-					svg,
-					this->e.width.isValid() ? this->e.width : svg.width,
-					this->e.height.isValid() ? this->e.height : svg.height
-				);
+			struct FakeSvgElement : public svgdom::Element{
+				Renderer& r;
+				const svgdom::UseElement& ue;
+				const svgdom::SvgElement& se;
+
+				FakeSvgElement(Renderer& r, const svgdom::UseElement& ue, const svgdom::SvgElement& se) :
+						r(r), ue(ue), se(se)
+				{}
+
+				void accept(svgdom::Visitor& visitor)override{
+					ASSERT(false)
+				}
+				void accept(svgdom::ConstVisitor& visitor) const override{
+					//width and height of <use> element override those of <svg> element.
+					this->r.renderSvgElement(
+							this->se,
+							this->se,
+							this->se,
+							this->se,
+							this->se.x,
+							this->se.y,
+							this->ue.width.isValid() ? this->ue.width : this->se.width,
+							this->ue.height.isValid() ? this->ue.height : this->se.height
+						);
+				}
+			};
+			
+			this->fakeGElement.children.push_back(utki::makeUnique<FakeSvgElement>(this->r, this->ue, svg));
+			this->fakeGElement.accept(this->r);
 		}
 		
 		void defaultVisit(const svgdom::Element& element)override{
-			element.accept(this->r);
+			struct FakeSvgElement : public svgdom::Element{
+				Renderer& r;
+				const svgdom::Element& e;
+
+				FakeSvgElement(Renderer& r, const svgdom::Element& e) :
+						r(r), e(e)
+				{}
+
+				void accept(svgdom::Visitor& visitor)override{
+					ASSERT(false)
+				}
+				void accept(svgdom::ConstVisitor& visitor) const override{
+					this->e.accept(this->r);
+				}
+			};
+			
+			this->fakeGElement.children.push_back(utki::makeUnique<FakeSvgElement>(this->r, this->ue, element));
+			this->fakeGElement.accept(this->r);
 		}
 		
 		void defaultVisit(const svgdom::Element& element, const svgdom::Container& c)override{
@@ -648,7 +699,7 @@ void Renderer::visit(const svgdom::UseElement& e) {
 
 void Renderer::visit(const svgdom::SvgElement& e) {
 //	TRACE(<< "rendering SvgElement" << std::endl)
-	renderSvgElement(e, e.width, e.height);
+	renderSvgElement(e, e, e, e, e.x, e.y, e.width, e.height);
 }
 
 bool Renderer::isInvisible() {
@@ -675,7 +726,7 @@ void Renderer::visit(const svgdom::PathElement& e) {
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 	
-	this->applyCairoTransformations(e.transformations);
+	this->applyTransformations(e.transformations);
 
 	double prevQuadraticX1 = 0;
 	double prevQuadraticY1 = 0;
@@ -1004,7 +1055,7 @@ void Renderer::visit(const svgdom::CircleElement& e) {
 	
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 	
-	this->applyCairoTransformations(e.transformations);
+	this->applyTransformations(e.transformations);
 
 	cairo_arc(
 			this->cr,
@@ -1034,7 +1085,7 @@ void Renderer::visit(const svgdom::PolylineElement& e) {
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 	
-	this->applyCairoTransformations(e.transformations);
+	this->applyTransformations(e.transformations);
 
 	if (e.points.size() == 0) {
 		return;
@@ -1065,7 +1116,7 @@ void Renderer::visit(const svgdom::PolygonElement& e) {
 	
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 	
-	this->applyCairoTransformations(e.transformations);
+	this->applyTransformations(e.transformations);
 
 	if (e.points.size() == 0) {
 		return;
@@ -1098,7 +1149,7 @@ void Renderer::visit(const svgdom::LineElement& e) {
 	
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 	
-	this->applyCairoTransformations(e.transformations);
+	this->applyTransformations(e.transformations);
 
 	cairo_move_to(this->cr, this->lengthToPx(e.x1, 0), this->lengthToPx(e.y1, 1));
 	cairo_line_to(this->cr, this->lengthToPx(e.x2, 0), this->lengthToPx(e.y2, 1));
@@ -1120,7 +1171,7 @@ void Renderer::visit(const svgdom::EllipseElement& e) {
 	
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 	
-	this->applyCairoTransformations(e.transformations);
+	this->applyTransformations(e.transformations);
 
 	{
 		CairoContextSaveRestore saveRestore(this->cr);
@@ -1148,7 +1199,7 @@ void Renderer::visit(const svgdom::RectElement& e) {
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
-	this->applyCairoTransformations(e.transformations);
+	this->applyTransformations(e.transformations);
 
 	if ((e.rx.value == 0 || !e.rx.isValid())
 			&& (e.ry.value == 0 || !e.ry.isValid())) {
