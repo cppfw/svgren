@@ -703,13 +703,13 @@ FilterResult composite(const Surface& in, const Surface& in2, const svgdom::FeCo
 					break;
 				case svgdom::FeCompositeElement::Operator_e::ARITHMETIC:
 					//result = k1*i1*i2 + k2*i1 + k3*i2 + k4
-					*dp = std::uint8_t( (e.k1 * r01 * r02 + e.k2 * r01 + e.k3 * r02 + e.k4) * real(0xff));
+					*dp = std::uint8_t( std::min(e.k1 * r01 * r02 + e.k2 * r01 + e.k3 * r02 + e.k4, real(1)) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( (e.k1 * g01 * g02 + e.k2 * g01 + e.k3 * g02 + e.k4) * real(0xff));
+					*dp = std::uint8_t( std::min(e.k1 * g01 * g02 + e.k2 * g01 + e.k3 * g02 + e.k4, real(1)) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( (e.k1 * b01 * b02 + e.k2 * b01 + e.k3 * b02 + e.k4) * real(0xff));
+					*dp = std::uint8_t( std::min(e.k1 * b01 * b02 + e.k2 * b01 + e.k3 * b02 + e.k4, real(1)) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( (e.k1 * a01 * a02 + e.k2 * a01 + e.k3 * a02 + e.k4) * real(0xff));
+					*dp = std::uint8_t( std::min(e.k1 * a01 * a02 + e.k2 * a01 + e.k3 * a02 + e.k4, real(1)) * real(0xff));
 					++dp;
 					break;
 				default:

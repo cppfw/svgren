@@ -173,7 +173,6 @@ PushCairoGroupIfNeeded::PushCairoGroupIfNeeded(Renderer& renderer) :
 	
 	if(backgroundP && backgroundP->enableBackground.value == svgdom::EnableBackground_e::NEW){
 		this->oldBackground = this->renderer.background;
-		this->renderer.background = getSubSurface(this->renderer.cr);
 	}
 	
 	auto filterP = this->renderer.styleStack.getStyleProperty(svgdom::StyleProperty_e::FILTER);
@@ -187,6 +186,10 @@ PushCairoGroupIfNeeded::PushCairoGroupIfNeeded(Renderer& renderer) :
 		if(opacityP){
 			this->opacity = opacityP->opacity;
 		}
+	}
+	
+	if(this->oldBackground.data){
+		this->renderer.background = getSubSurface(this->renderer.cr);
 	}
 }
 
