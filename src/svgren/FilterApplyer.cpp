@@ -94,6 +94,7 @@ FilterResult allocateResult(const Surface& src){
 	ret.surface = src;
 	ret.surface.data = &*ret.data.begin();
 	ret.surface.stride = ret.surface.width;
+	ret.surface.end = &*ret.data.begin() + ret.data.size();
 	
 	return ret;
 }
@@ -339,44 +340,51 @@ FilterResult colorMatrix(const Surface& s, const std::array<std::array<real, 5>,
 //	TRACE(<< "colorMatrix(): s.width = " << s.width << " s.height = " << s.height << std::endl)
 	FilterResult ret = allocateResult(s);
 	
+	ASSERT(s.data)
+	
 	for(unsigned y = 0; y != s.height; ++y){
 		auto sp = &s.data[(y * s.stride) * sizeof(std::uint32_t)];
+		ASSERT_INFO(sp < s.end, "sp = " << std::hex << (unsigned long)(sp) << " s.end = " << (unsigned long)(s.end))
 		auto dp = &ret.surface.data[(y * ret.surface.stride) * sizeof(std::uint32_t)];
 		for(unsigned x = 0; x != s.width; ++x){
-			auto r0 = real(*sp) / real(0xff);
+			auto r = real(*sp) / real(0xff);
 //			TRACE(<< "r0 = " << r0 << std::endl)
 			++sp;
-			auto g0 = real(*sp) / real(0xff);
+			auto g = real(*sp) / real(0xff);
 			++sp;
-			auto b0 = real(*sp) / real(0xff);
+			auto b = real(*sp) / real(0xff);
 			++sp;
 			auto isOpaque = (*sp == 0xff);
-			auto a0 = real(*sp) / real(0xff);
+			auto a = real(*sp) / real(0xff);
 			++sp;
 			
-			ASSERT_INFO(real(0) <= r0 && r0 <= real(1), "r0 = " << r0)
-			ASSERT_INFO(real(0) <= g0 && g0 <= real(1), "g0 = " << g0)
-			ASSERT_INFO(real(0) <= b0 && b0 <= real(1), "b0 = " << b0)
-			ASSERT_INFO(real(0) <= a0 && a0 <= real(1), "a0 = " << a0)
+#ifdef DEBUG
+			auto r0 = r, g0 = g, b0 = b, a0 = a;
+#endif
+			
+			ASSERT_INFO(real(0) <= r && r <= real(1), "r0 = " << r)
+			ASSERT_INFO(real(0) <= g && g <= real(1), "g0 = " << g)
+			ASSERT_INFO(real(0) <= b && b <= real(1), "b0 = " << b)
+			ASSERT_INFO(real(0) <= a && a <= real(1), "a0 = " << a)
 			
 			if(!isOpaque){
-				if(a0 > 0){
+				if(a > 0){
 					//unpremultiply alpha
-					r0 /= a0;
-					g0 /= a0;
-					b0 /= a0;
+					r /= a;
+					g /= a;
+					b /= a;
 				}
 			}
 			
-			ASSERT_INFO(real(0) <= r0 && r0 <= real(1), "r0 = " << r0 << " a0 = " << a0)
-			ASSERT_INFO(real(0) <= g0 && g0 <= real(1), "g0 = " << g0 << " a0 = " << a0)
-			ASSERT_INFO(real(0) <= b0 && b0 <= real(1), "b0 = " << b0 << " a0 = " << a0)
-			ASSERT_INFO(real(0) <= a0 && a0 <= real(1), "a0 = " << a0 << " a0 = " << a0)
+			ASSERT_INFO(real(0) <= r && r <= real(1), "r = " << r << " r0 = " << r0 << " a0 = " << a0)
+			ASSERT_INFO(real(0) <= g && g <= real(1), "g = " << g << " g0 = " << g0 << " a0 = " << a0)
+			ASSERT_INFO(real(0) <= b && b <= real(1), "b = " << b << " b0 = " << b0 << " a0 = " << a0)
+			ASSERT_INFO(real(0) <= a && a <= real(1), "a0 = " << a0)
 			
-			auto r1 = m[0][0] * r0 + m[0][1] * g0 + m[0][2] * b0 + m[0][3] * a0 + m[0][4];
-			auto g1 = m[1][0] * r0 + m[1][1] * g0 + m[1][2] * b0 + m[1][3] * a0 + m[1][4];
-			auto b1 = m[2][0] * r0 + m[2][1] * g0 + m[2][2] * b0 + m[2][3] * a0 + m[2][4];
-			auto a1 = m[3][0] * r0 + m[3][1] * g0 + m[3][2] * b0 + m[3][3] * a0 + m[3][4];
+			auto r1 = m[0][0] * r + m[0][1] * g + m[0][2] * b + m[0][3] * a + m[0][4];
+			auto g1 = m[1][0] * r + m[1][1] * g + m[1][2] * b + m[1][3] * a + m[1][4];
+			auto b1 = m[2][0] * r + m[2][1] * g + m[2][2] * b + m[2][3] * a + m[2][4];
+			auto a1 = m[3][0] * r + m[3][1] * g + m[3][2] * b + m[3][3] * a + m[3][4];
 			
 			//Alpha can change, so always premultiply alpha back
 			r1 *= a1;
