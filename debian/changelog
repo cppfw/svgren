@@ -1,3 +1,9 @@
+libsvgren (0.4.43) unstable; urgency=medium
+
+  * crash fix
+
+ -- Ivan Gagis <igagis@gmail.com>  Wed, 01 Nov 2017 14:26:26 +0200
+
 libsvgren (0.4.42) unstable; urgency=medium
 
   * color matrix, blend, composite filters implemented
