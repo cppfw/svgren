@@ -354,6 +354,11 @@ FilterResult colorMatrix(const Surface& s, const std::array<std::array<real, 5>,
 			auto a0 = real(*sp) / real(0xff);
 			++sp;
 			
+			ASSERT_INFO(real(0) <= r0 && r0 <= real(1), "r0 = " << r0)
+			ASSERT_INFO(real(0) <= g0 && g0 <= real(1), "g0 = " << g0)
+			ASSERT_INFO(real(0) <= b0 && b0 <= real(1), "b0 = " << b0)
+			ASSERT_INFO(real(0) <= a0 && a0 <= real(1), "a0 = " << a0)
+			
 			if(!isOpaque){
 				if(a0 > 0){
 					//unpremultiply alpha
@@ -363,10 +368,10 @@ FilterResult colorMatrix(const Surface& s, const std::array<std::array<real, 5>,
 				}
 			}
 			
-			ASSERT_INFO(real(0) <= r0 && r0 <= real(1), "r0 = " << r0)
-			ASSERT_INFO(real(0) <= g0 && g0 <= real(1), "g0 = " << g0)
-			ASSERT_INFO(real(0) <= b0 && b0 <= real(1), "b0 = " << b0)
-			ASSERT_INFO(real(0) <= a0 && a0 <= real(1), "a0 = " << a0)
+			ASSERT_INFO(real(0) <= r0 && r0 <= real(1), "r0 = " << r0 << " a0 = " << a0)
+			ASSERT_INFO(real(0) <= g0 && g0 <= real(1), "g0 = " << g0 << " a0 = " << a0)
+			ASSERT_INFO(real(0) <= b0 && b0 <= real(1), "b0 = " << b0 << " a0 = " << a0)
+			ASSERT_INFO(real(0) <= a0 && a0 <= real(1), "a0 = " << a0 << " a0 = " << a0)
 			
 			auto r1 = m[0][0] * r0 + m[0][1] * g0 + m[0][2] * b0 + m[0][3] * a0 + m[0][4];
 			auto g1 = m[1][0] * r0 + m[1][1] * g0 + m[1][2] * b0 + m[1][3] * a0 + m[1][4];
