@@ -77,11 +77,7 @@ before_install:
     brew update > /dev/null &&
     brew install prorab &&
     
-    rvm 2.2.1 do gem uninstall bundler -v '>1.12.5' --force &&
-    rvm 2.2.1 do gem install bundler -v 1.12.5 --no-rdoc --no-ri --no-document --quiet &&
-    
     sudo gem install cocoapods &&
-    rvm 2.2.1 do gem install cocoapods &&
     pod repo add --silent igagis https://$PRORAB_GIT_USERNAME:$PRORAB_GIT_ACCESS_TOKEN@github.com/igagis/cocoapods-repo.git &&
     pod install --project-directory=ios;
   fi
