@@ -5,6 +5,8 @@ class Libsvgren < Formula
   sha256 "$(sha256)"
 
   depends_on "prorab" => :build
+  depends_on "prorab-extra" => :build
+  depends_on "myci" => :build
   depends_on "cairo" => :build
   depends_on "libkolme" => :build
   depends_on "libpng" => :build

@@ -8,10 +8,10 @@ version: "{branch}-{build}"
 clone_folder: c:\projects\build
 
 environment:
-  PRORAB_GIT_USERNAME: igagis
-  PRORAB_GIT_ACCESS_TOKEN:
+  MYCI_GIT_USERNAME: igagis
+  MYCI_GIT_ACCESS_TOKEN:
     secure: mpW6B2ols1a2FkshjKjryBuvBt8A1TpU9WGn+/d6PIQiZlzA0Rpo1ETKpmy0bnvX
-  DEPS: make,gcc-g++,prorab,utki,svgdom,libcairo-devel,libpugixml-devel,kolme
+  DEPS: make,gcc-g++,prorab,prorab-extra,myci,utki,svgdom,libcairo-devel,libpugixml-devel,kolme
 
 
 install:
@@ -31,10 +31,10 @@ before_build:
 build_script:
 # cyggport downloads tagged sources from github, so use cygport only for tagged commits, otherwise build with just make.
   - cmd: if "%APPVEYOR_REPO_TAG%"=="true" (
-            C:\cygwin64\bin\bash -e -l -c "prorab-apply-version.sh -v `prorab-deb-version.sh debian/changelog` cygwin/*.in" &&
+            C:\cygwin64\bin\bash -e -l -c "myci-apply-version.sh -v `myci-deb-version.sh debian/changelog` cygwin/*.in" &&
             C:\cygwin64\bin\bash -e -l -c "cygport cygwin/*.cygport download" &&
             C:\cygwin64\bin\bash -e -l -c "cygport cygwin/*.cygport all" &&
-            C:\cygwin\bin\bash -e -l -c "prorab-apply-version.sh -v `prorab-deb-version.sh debian/changelog` cygwin/*.in" &&
+            C:\cygwin\bin\bash -e -l -c "myci-apply-version.sh -v `myci-deb-version.sh debian/changelog` cygwin/*.in" &&
             C:\cygwin\bin\bash -e -l -c "cygport cygwin/*.cygport download" &&
             C:\cygwin\bin\bash -e -l -c "cygport cygwin/*.cygport all"
         ) else (
@@ -49,7 +49,7 @@ test_script:
 #  - ps: .\tests\autotest-appveyor.ps1
 
 before_deploy:
-  - cmd: if "%APPVEYOR_REPO_TAG%"=="true" (C:\cygwin64\bin\bash -e -l -c "prorab-deploy-cygwin.sh -r igagis/cygwin-repo" && C:\cygwin\bin\bash -e -l -c "prorab-deploy-cygwin.sh -r igagis/cygwin-repo") else (echo Skipping deploy because not a tagged commit.)
+  - cmd: if "%APPVEYOR_REPO_TAG%"=="true" (C:\cygwin64\bin\bash -e -l -c "myci-deploy-cygwin.sh -r igagis/cygwin-repo" && C:\cygwin\bin\bash -e -l -c "myci-deploy-cygwin.sh -r igagis/cygwin-repo") else (echo Skipping deploy because not a tagged commit.)
 
 
 deploy:
