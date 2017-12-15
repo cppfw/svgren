@@ -1,3 +1,9 @@
+libsvgren (0.4.44) unstable; urgency=medium
+
+  * refactoring, update to latest svgdom
+
+ -- Ivan Gagis <igagis@gmail.com>  Fri, 15 Dec 2017 13:53:48 +0200
+
 libsvgren (0.4.43) unstable; urgency=medium
 
   * crash fix
