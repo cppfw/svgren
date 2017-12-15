@@ -30,14 +30,14 @@ this_test := $(word $(words $(this_dirs)),$(this_dirs))
 
 define this_rules
 test:: $(prorab_this_name)
-	@prorab-running-test.sh $(this_test)
+	@myci-running-test.sh $(this_test)
 	$(prorab_echo)cp $(d)../../src/*.dll . || true
 	$(prorab_echo)for f in $(this_svgs); do \
 	    echo "checking file $$$$f.svg..." && \
 	    LD_LIBRARY_PATH=$(d)../../src $(d)./checksvg $$$$f.svg $$$$f.png; \
-	    if [ $$$$? -ne 0 ]; then prorab-error.sh "rendered SVG did not match etalon sample"; exit 1; fi \
+	    if [ $$$$? -ne 0 ]; then myci-error.sh "rendered SVG did not match etalon sample"; exit 1; fi \
 	done
-	@prorab-passed.sh
+	@myci-passed.sh
 endef
 $(eval $(this_rules))
 
