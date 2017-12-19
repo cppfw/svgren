@@ -5,6 +5,7 @@
 
 #include <utki/debug.hpp>
 #include <utki/math.hpp>
+#include <utki/Exc.hpp>
 
 #include <svgdom/Length.hpp>
 
@@ -186,6 +187,9 @@ PushCairoGroupIfNeeded::PushCairoGroupIfNeeded(Renderer& renderer) :
 	if(this->groupPushed){
 //		TRACE(<< "setting temp context" << std::endl)
 		cairo_push_group(this->renderer.cr);
+		if(cairo_status(this->renderer.cr) != CAIRO_STATUS_SUCCESS){
+			throw utki::Exc("cairo_push_group() failed");
+		}
 		
 		if(opacityP){
 			this->opacity = opacityP->opacity;

@@ -2,7 +2,7 @@
 
 #include <utki/math.hpp>
 
-#include <svgdom/CoordinateUnits.hpp>
+#include <svgdom/elements/CoordinateUnits.hpp>
 
 #include "util.hxx"
 
@@ -367,6 +367,9 @@ void Renderer::updateCurBoundingBox() {
 
 void Renderer::renderCurrentShape() {
 	this->updateCurBoundingBox();
+	
+	//apply masking
+	//TODO:
 	
 	if (auto p = this->styleStack.getStyleProperty(svgdom::StyleProperty_e::FILL_RULE)) {
 		switch (p->fillRule) {
@@ -1064,7 +1067,7 @@ void Renderer::visit(const svgdom::CircleElement& e) {
 			this->lengthToPx(e.r),
 			0,
 			2 * utki::pi<double>()
-			);
+		);
 
 	this->renderCurrentShape();
 }
