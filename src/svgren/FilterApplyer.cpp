@@ -195,22 +195,22 @@ Surface FilterApplyer::getSource(const std::string& in) {
 	}
 	if(in == "SourceAlpha"){
 		//TODO: implement
-		throw utki::Exc("not implemented");
+		throw utki::Exc("SourceAlpha not implemented");
 	}
 	if(in == "BackgroundImage"){
 		return this->r.background;
 	}
 	if(in == "BackgroundAlpha"){
 		//TODO: implement
-		throw utki::Exc("not implemented");
+		throw utki::Exc("BackgroundAlpha not implemented");
 	}
 	if(in == "FillPaint"){
 		//TODO: implement
-		throw utki::Exc("not implemented");
+		throw utki::Exc("FillPaint not implemented");
 	}
 	if(in == "StrokePaint"){
 		//TODO: implement
-		throw utki::Exc("not implemented");
+		throw utki::Exc("StrokePaint not implemented");
 	}
 	
 	auto i = this->results.find(in);
@@ -239,6 +239,7 @@ void FilterApplyer::visit(const svgdom::FilterElement& e) {
 	
 	//set filter region
 	{
+		//filter region
 		real frX;
 		real frY;
 		real frWidth;
