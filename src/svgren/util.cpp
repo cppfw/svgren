@@ -212,7 +212,7 @@ PushCairoGroupIfNeeded::~PushCairoGroupIfNeeded()noexcept{
 		return;
 	}
 	
-	//apply mask
+	//render mask
 	cairo_pattern_t* mask = nullptr;
 	try{
 		if(this->maskElement){
@@ -225,20 +225,27 @@ PushCairoGroupIfNeeded::~PushCairoGroupIfNeeded()noexcept{
 				mask = cairo_pop_group(this->renderer.cr);
 			});
 			
+			//TODO: setup the correct coordinate system based on maskContentUnits value (userSpaceOnUse/objectBoundingBox)
+			//      Currently nothing on that is done which is equivalent to userSpaceOnUse
+			
 			this->maskElement->accept(this->renderer);
 			
 			appendLuminanceToAlpha(getSubSurface(this->renderer.cr));
 		}
 	}catch(...){
-		//applying mask failed, just ignore it
-		mask = nullptr;
+		//rendering mask failed, just ignore it
 	}
+	
+	utki::ScopeExit scopeExit([mask](){
+		if(mask){
+			cairo_pattern_destroy(mask);
+		}
+	});
 	
 	cairo_pop_group_to_source(this->renderer.cr);
 	
 	if(mask){
 		cairo_mask(this->renderer.cr, mask);
-		cairo_pattern_destroy(mask);
 	}else{
 		cairo_paint_with_alpha(this->renderer.cr, this->opacity);
 	}

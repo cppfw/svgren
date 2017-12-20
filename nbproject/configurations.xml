@@ -222,11 +222,11 @@
       <item path="src/svgren/util.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
           <incDir>
+            <pElem>/usr/include/utki</pElem>
             <pElem>src/svgren</pElem>
             <pElem>/usr/include/svgdom</pElem>
             <pElem>/usr/include/svgdom/elements</pElem>
             <pElem>/usr/include/cairo</pElem>
-            <pElem>/usr/include/utki</pElem>
             <pElem>.</pElem>
           </incDir>
         </ccTool>
@@ -242,8 +242,6 @@
       <item path="tests/samples/checksvg.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="1">
         </ccTool>
-      </item>
-      <item path="tests/samples/testdata/masking.svg" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
     <conf name="Debug_whiteBG" type="0">
