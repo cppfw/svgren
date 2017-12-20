@@ -3,7 +3,7 @@ Section: libs
 Priority: extra
 Maintainer: Ivan Gagis <igagis@gmail.com>
 Build-Depends: debhelper (>= 9), prorab, prorab-extra, myci,
-		libc6-dev, libutki-dev, libsvgdom-dev, libcairo2-dev,
+		libc6-dev, libutki-dev, libsvgdom-dev (>= 0.3.8), libcairo2-dev,
 		libkolme-dev, libpng-dev
 Build-Depends-Indep: doxygen
 Standards-Version: 3.9.2
