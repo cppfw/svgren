@@ -575,6 +575,12 @@ void Renderer::visit(const svgdom::GElement& e) {
 	this->applyFilter();
 }
 
+void Renderer::visit(const svgdom::MaskElement& e){
+	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
+	
+	this->relayAccept(e);
+}
+
 void Renderer::visit(const svgdom::UseElement& e) {
 //	TRACE(<< "rendering UseElement" << std::endl)
 	auto ref = this->finder.findById(e.getLocalIdFromIri());
