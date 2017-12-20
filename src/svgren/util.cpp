@@ -263,7 +263,7 @@ void svgren::appendLuminanceToAlpha(Surface s){
 	
 	//Luminance is calculated using formula L = 0.2126 * R + 0.7152 * G + 0.0722 * B
 	//For faster calculation it can be simplified to L = (2 * R + 3 * G + B) / 6
-			
+		
 	for(auto p = s.data; p != s.end; ++p){
 		std::uint32_t l = 2 * std::uint32_t(*p);
 		++p;
@@ -274,8 +274,8 @@ void svgren::appendLuminanceToAlpha(Surface s){
 		
 		l /= 6;
 		
-		std::uint32_t a = (std::uint32_t(*p) * l) / 255;
-		ASSERT(a <= 255)
-		*p = std::uint8_t(a);
+		//Cairo uses premultiplied alpha, so no need to multiply alpha by liminance.
+		ASSERT(l <= 255)
+		*p = std::uint8_t(l);
 	}
 }
