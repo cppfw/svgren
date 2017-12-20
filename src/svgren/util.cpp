@@ -5,6 +5,7 @@
 
 #include <utki/debug.hpp>
 #include <utki/math.hpp>
+#include <utki/Exc.hpp>
 
 #include <svgdom/Length.hpp>
 
@@ -181,11 +182,20 @@ PushCairoGroupIfNeeded::PushCairoGroupIfNeeded(Renderer& renderer) :
 	
 	auto filterP = this->renderer.styleStack.getStyleProperty(svgdom::StyleProperty_e::FILTER);
 	
-	this->groupPushed = (opacityP && opacityP->opacity < svgdom::real(1)) || filterP || this->oldBackground.data;
+	if(auto maskP = this->renderer.styleStack.getStyleProperty(svgdom::StyleProperty_e::MASK)){
+		if(auto ei = this->renderer.finder.findById(maskP->getLocalIdFromIri())){
+			this->maskElement = &ei->e;
+		}
+	}
+	
+	this->groupPushed = (opacityP && opacityP->opacity < svgdom::real(1)) || filterP || this->maskElement || this->oldBackground.data;
 	
 	if(this->groupPushed){
 //		TRACE(<< "setting temp context" << std::endl)
 		cairo_push_group(this->renderer.cr);
+		if(cairo_status(this->renderer.cr) != CAIRO_STATUS_SUCCESS){
+			throw utki::Exc("cairo_push_group() failed");
+		}
 		
 		if(opacityP){
 			this->opacity = opacityP->opacity;
@@ -202,11 +212,70 @@ PushCairoGroupIfNeeded::~PushCairoGroupIfNeeded()noexcept{
 		return;
 	}
 	
+	//render mask
+	cairo_pattern_t* mask = nullptr;
+	try{
+		if(this->maskElement){
+			cairo_push_group(this->renderer.cr);
+			if(cairo_status(this->renderer.cr) != CAIRO_STATUS_SUCCESS){
+				throw utki::Exc("cairo_push_group() failed");
+			}
+			
+			utki::ScopeExit scopeExit([&mask, this](){
+				mask = cairo_pop_group(this->renderer.cr);
+			});
+			
+			//TODO: setup the correct coordinate system based on maskContentUnits value (userSpaceOnUse/objectBoundingBox)
+			//      Currently nothing on that is done which is equivalent to userSpaceOnUse
+			
+			this->maskElement->accept(this->renderer);
+			
+			appendLuminanceToAlpha(getSubSurface(this->renderer.cr));
+		}
+	}catch(...){
+		//rendering mask failed, just ignore it
+	}
+	
+	utki::ScopeExit scopeExit([mask](){
+		if(mask){
+			cairo_pattern_destroy(mask);
+		}
+	});
+	
 	cairo_pop_group_to_source(this->renderer.cr);
-	cairo_paint_with_alpha(this->renderer.cr, this->opacity);
+	
+	if(mask){
+		cairo_mask(this->renderer.cr, mask);
+	}else{
+		cairo_paint_with_alpha(this->renderer.cr, this->opacity);
+	}
 	
 	//restore background if it was pushed
 	if(this->oldBackground.data){
 		this->renderer.background = this->oldBackground;
+	}
+}
+
+
+
+void svgren::appendLuminanceToAlpha(Surface s){
+	ASSERT((s.end - s.data) % 4 == 0)
+	
+	//Luminance is calculated using formula L = 0.2126 * R + 0.7152 * G + 0.0722 * B
+	//For faster calculation it can be simplified to L = (2 * R + 3 * G + B) / 6
+		
+	for(auto p = s.data; p != s.end; ++p){
+		std::uint32_t l = 2 * std::uint32_t(*p);
+		++p;
+		l += 3 * std::uint32_t(*p);
+		++p;
+		l += std::uint32_t(*p);
+		++p;
+		
+		l /= 6;
+		
+		//Cairo uses premultiplied alpha, so no need to multiply alpha by liminance.
+		ASSERT(l <= 255)
+		*p = std::uint8_t(l);
 	}
 }

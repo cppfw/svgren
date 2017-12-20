@@ -5,6 +5,7 @@
 #include <utki/config.hpp>
 
 #include <svgdom/Length.hpp>
+#include <svgdom/elements/Element.hpp>
 
 #if M_OS == M_OS_WINDOWS || M_OS_NAME == M_OS_NAME_IOS
 #	include <cairo.h>
@@ -51,6 +52,7 @@ Surface getSubSurface(cairo_t* cr, const CanvasRegion& region = CanvasRegion());
 
 real percentLengthToFraction(const svgdom::Length& l);
 
+void appendLuminanceToAlpha(Surface s);
 
 struct DeviceSpaceBoundingBox{
 	real left, top, right, bottom;
@@ -86,6 +88,8 @@ class PushCairoGroupIfNeeded{
 	class Renderer& renderer;
 
 	real opacity = real(1);
+	
+	const svgdom::Element* maskElement = nullptr;
 public:
 	PushCairoGroupIfNeeded(Renderer& renderer);
 	~PushCairoGroupIfNeeded()noexcept;
