@@ -1,7 +1,7 @@
 # WiKi main page
 
 Istallation:
-- [Windows (Visual Studio 2015)](InstallMSVS.md)
+- [Windows (Visual Studio 2015+)](InstallMSVS.md)
 - [Windows (Cygwin)](InstallCygwin.adoc)
 - [Linux](InstallLinux.md)
 - [MacOSX](InstallMacOSX.md)
