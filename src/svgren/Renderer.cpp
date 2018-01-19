@@ -368,9 +368,6 @@ void Renderer::updateCurBoundingBox() {
 void Renderer::renderCurrentShape() {
 	this->updateCurBoundingBox();
 	
-	//apply masking
-	//TODO:
-	
 	if (auto p = this->styleStack.getStyleProperty(svgdom::StyleProperty_e::FILL_RULE)) {
 		switch (p->fillRule) {
 			default:
@@ -573,12 +570,6 @@ void Renderer::visit(const svgdom::GElement& e) {
 	this->relayAccept(e);
 	
 	this->applyFilter();
-}
-
-void Renderer::visit(const svgdom::MaskElement& e){
-	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
-	
-	this->relayAccept(e);
 }
 
 void Renderer::visit(const svgdom::UseElement& e) {

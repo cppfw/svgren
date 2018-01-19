@@ -228,7 +228,19 @@ PushCairoGroupIfNeeded::~PushCairoGroupIfNeeded()noexcept{
 			//TODO: setup the correct coordinate system based on maskContentUnits value (userSpaceOnUse/objectBoundingBox)
 			//      Currently nothing on that is done which is equivalent to userSpaceOnUse
 			
-			this->maskElement->accept(this->renderer);
+			class MaskRenderer : public svgdom::ConstVisitor{
+				Renderer& r;
+			public:
+				MaskRenderer(Renderer& r) : r(r){}
+				
+				void visit(const svgdom::MaskElement& e)override{
+					svgdom::StyleStack::Push pushStyles(this->r.styleStack, e);
+	
+					this->r.relayAccept(e);
+				}
+			} maskRenderer(this->renderer);
+			
+			this->maskElement->accept(maskRenderer);
 			
 			appendLuminanceToAlpha(getSubSurface(this->renderer.cr));
 		}

@@ -118,7 +118,6 @@ public:
 	void visit(const svgdom::LineElement& e) override;
 	void visit(const svgdom::EllipseElement& e) override;
 	void visit(const svgdom::RectElement& e) override;
-	void visit(const svgdom::MaskElement& e) override;
 
 	void defaultVisit(const svgdom::Element& e, const svgdom::Container& c) override{
 		//do nothing by default
