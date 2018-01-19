@@ -1,3 +1,9 @@
+libsvgren (0.4.46) unstable; urgency=medium
+
+  * do not render mask elements which are outside of defs element
+
+ -- Ivan Gagis <igagis@gmail.com>  Fri, 19 Jan 2018 15:44:36 +0200
+
 libsvgren (0.4.45) unstable; urgency=medium
 
   * masking implemented
