@@ -171,7 +171,7 @@
         <ccTool flags="0">
           <incDir>
             <pElem>src/svgren</pElem>
-            <pElem>tests/samples</pElem>
+            <pElem>.</pElem>
           </incDir>
         </ccTool>
       </item>
@@ -183,7 +183,7 @@
             <pElem>src/svgren</pElem>
             <pElem>/usr/include/svgdom/elements</pElem>
             <pElem>/usr/include/cairo</pElem>
-            <pElem>tests/samples</pElem>
+            <pElem>.</pElem>
           </incDir>
         </ccTool>
       </item>
@@ -203,7 +203,7 @@
         <ccTool flags="0">
           <incDir>
             <pElem>src/svgren</pElem>
-            <pElem>tests/samples</pElem>
+            <pElem>.</pElem>
           </incDir>
         </ccTool>
       </item>
@@ -216,7 +216,7 @@
             <pElem>/usr/include/papki</pElem>
             <pElem>/usr/include/svgdom/elements</pElem>
             <pElem>/usr/include/cairo</pElem>
-            <pElem>tests/samples</pElem>
+            <pElem>.</pElem>
           </incDir>
         </ccTool>
       </item>
@@ -299,6 +299,7 @@
             <pElem>/usr/include/svgdom</pElem>
             <pElem>src/svgren</pElem>
             <pElem>/usr/include/utki</pElem>
+            <pElem>/usr/include/cairo</pElem>
             <pElem>.</pElem>
           </incDir>
         </ccTool>

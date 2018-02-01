@@ -106,6 +106,7 @@ Result svgren::render(const svgdom::SvgElement& svg, const Parameters& p){
 	});
 	
 	cairo_scale(cr, real(ret.width) / wh[0], real(ret.height) / wh[1]);
+	ASSERT(cairo_status(cr) == CAIRO_STATUS_SUCCESS)
 	
 	Renderer r(cr, p.dpi, {{wh[0], wh[1]}}, svg);
 	

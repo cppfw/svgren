@@ -278,6 +278,7 @@ void FilterApplyer::visit(const svgdom::FilterElement& e) {
 
 					for(auto& vertex : rectVertices){
 						cairo_user_to_device(this->r.cr, &vertex[0], &vertex[1]);
+						ASSERT(cairo_status(this->r.cr) == CAIRO_STATUS_SUCCESS)
 
 						DeviceSpaceBoundingBox bb;
 						bb.left = decltype(bb.left)(vertex[0]);
@@ -325,6 +326,7 @@ void FilterApplyer::visit(const svgdom::FeGaussianBlurElement& e) {
 				break;
 		}
 		cairo_user_to_device_distance(this->r.cr, &x, &y);
+		ASSERT(cairo_status(this->r.cr) == CAIRO_STATUS_SUCCESS)
 		sd[0] = real(x);
 		sd[1] = real(y);
 	}

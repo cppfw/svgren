@@ -23,50 +23,62 @@ void Renderer::applyCairoTransformation(const svgdom::Transformable::Transformat
 	switch (t.type) {
 		case svgdom::Transformable::Transformation::Type_e::TRANSLATE:
 			cairo_translate(this->cr, t.x, t.y);
+			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 			break;
 		case svgdom::Transformable::Transformation::Type_e::MATRIX:
-		{
-			cairo_matrix_t matrix;
-			matrix.xx = t.a;
-			matrix.yx = t.b;
-			matrix.xy = t.c;
-			matrix.yy = t.d;
-			matrix.x0 = t.e;
-			matrix.y0 = t.f;
-			cairo_transform(this->cr, &matrix);
-		}
+			{
+				cairo_matrix_t matrix;
+				matrix.xx = t.a;
+				matrix.yx = t.b;
+				matrix.xy = t.c;
+				matrix.yy = t.d;
+				matrix.x0 = t.e;
+				matrix.y0 = t.f;
+				cairo_transform(this->cr, &matrix);
+				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+			}
 			break;
 		case svgdom::Transformable::Transformation::Type_e::SCALE:
-			cairo_scale(this->cr, t.x, t.y);
+			if(t.x * t.y != 0){ //cairo does not allow non-invertible scaling
+				cairo_scale(this->cr, t.x, t.y);
+				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+			}else{
+				TRACE(<< "WARNING: non-invertible scaling encountered at " << __FILE__ << ":" << __LINE__ << std::endl)
+			}
 			break;
 		case svgdom::Transformable::Transformation::Type_e::ROTATE:
 			cairo_translate(this->cr, t.x, t.y);
+			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 			cairo_rotate(this->cr, degToRad(t.angle));
+			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 			cairo_translate(this->cr, -t.x, -t.y);
+			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 			break;
 		case svgdom::Transformable::Transformation::Type_e::SKEWX:
-		{
-			cairo_matrix_t matrix;
-			matrix.xx = 1;
-			matrix.yx = 0;
-			matrix.xy = std::tan(degToRad(t.angle));
-			matrix.yy = 1;
-			matrix.x0 = 0;
-			matrix.y0 = 0;
-			cairo_transform(this->cr, &matrix);
-		}
+			{
+				cairo_matrix_t matrix;
+				matrix.xx = 1;
+				matrix.yx = 0;
+				matrix.xy = std::tan(degToRad(t.angle));
+				matrix.yy = 1;
+				matrix.x0 = 0;
+				matrix.y0 = 0;
+				cairo_transform(this->cr, &matrix);
+				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+			}
 			break;
 		case svgdom::Transformable::Transformation::Type_e::SKEWY:
-		{
-			cairo_matrix_t matrix;
-			matrix.xx = 1;
-			matrix.yx = std::tan(degToRad(t.angle));
-			matrix.xy = 0;
-			matrix.yy = 1;
-			matrix.x0 = 0;
-			matrix.y0 = 0;
-			cairo_transform(this->cr, &matrix);
-		}
+			{
+				cairo_matrix_t matrix;
+				matrix.xx = 1;
+				matrix.yx = std::tan(degToRad(t.angle));
+				matrix.xy = 0;
+				matrix.yy = 1;
+				matrix.x0 = 0;
+				matrix.y0 = 0;
+				cairo_transform(this->cr, &matrix);
+				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+			}
 			break;
 		default:
 			ASSERT(false)
@@ -110,44 +122,63 @@ void Renderer::applyViewBox(const svgdom::ViewBoxed& e, const svgdom::AspectRati
 					break;
 				case svgdom::AspectRatioed::PreserveAspectRatio_e::X_MIN_Y_MAX:
 					cairo_translate(this->cr, 0, dy);
+					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					break;
 				case svgdom::AspectRatioed::PreserveAspectRatio_e::X_MIN_Y_MID:
 					cairo_translate(this->cr, 0, dy / 2);
+					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					break;
 				case svgdom::AspectRatioed::PreserveAspectRatio_e::X_MIN_Y_MIN:
 					break;
 				case svgdom::AspectRatioed::PreserveAspectRatio_e::X_MID_Y_MAX:
 					cairo_translate(this->cr, dx / 2, dy);
+					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					break;
 				case svgdom::AspectRatioed::PreserveAspectRatio_e::X_MID_Y_MID:
 					cairo_translate(this->cr, dx / 2, dy / 2);
+					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					break;
 				case svgdom::AspectRatioed::PreserveAspectRatio_e::X_MID_Y_MIN:
 					cairo_translate(this->cr, dx / 2, 0);
+					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					break;
 				case svgdom::AspectRatioed::PreserveAspectRatio_e::X_MAX_Y_MAX:
 					cairo_translate(this->cr, dx, dy);
+					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					break;
 				case svgdom::AspectRatioed::PreserveAspectRatio_e::X_MAX_Y_MID:
 					cairo_translate(this->cr, dx, dy / 2);
+					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					break;
 				case svgdom::AspectRatioed::PreserveAspectRatio_e::X_MAX_Y_MIN:
 					cairo_translate(this->cr, dx, 0);
+					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					break;
 			}
 
-			cairo_scale(this->cr, scaleFactor, scaleFactor);
+			if(scaleFactor != 0){ //cairo does not allow non-invertible scaling
+				cairo_scale(this->cr, scaleFactor, scaleFactor);
+			}else{
+				TRACE(<< "WARNING: non-invertible scaling encountered at " << __FILE__ << ":" << __LINE__ << std::endl)
+			}
+			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 		}
 	} else {//if no preserveAspectRatio enforced
 		if (e.viewBox[2] != 0 && e.viewBox[3] != 0) { //if viewBox width and height are not 0
-			cairo_scale(
-					this->cr,
-					this->viewport[0] / e.viewBox[2],
-					this->viewport[1] / e.viewBox[3]
-				);
+			if(this->viewport[0] * this->viewport[1] != 0){ //cairo does not allow non-invertible scaling
+				cairo_scale(
+						this->cr,
+						this->viewport[0] / e.viewBox[2],
+						this->viewport[1] / e.viewBox[3]
+					);
+			}else{
+				TRACE(<< "WARNING: non-invertible scaling encountered at " << __FILE__ << ":" << __LINE__ << std::endl)
+			}
+			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 		}
 	}
 	cairo_translate(this->cr, -e.viewBox[0], -e.viewBox[1]);
+	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 }
 
 void Renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradient& g, const svgdom::StyleStack& ss) {
@@ -182,6 +213,7 @@ void Renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradien
 				opacity = 1;
 			}
 			cairo_pattern_add_color_stop_rgba(&this->pat, s.offset, rgb.r, rgb.g, rgb.b, opacity);
+			ASSERT(cairo_pattern_status(&this->pat) == CAIRO_STATUS_SUCCESS)
 		}
 	} visitor(pat, gradientSs);
 	
@@ -196,15 +228,19 @@ void Renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradien
 			break;
 		case svgdom::Gradient::SpreadMethod_e::PAD:
 			cairo_pattern_set_extend(&pat, CAIRO_EXTEND_PAD);
+			ASSERT(cairo_pattern_status(&pat) == CAIRO_STATUS_SUCCESS)
 			break;
 		case svgdom::Gradient::SpreadMethod_e::REFLECT:
 			cairo_pattern_set_extend(&pat, CAIRO_EXTEND_REFLECT);
+			ASSERT(cairo_pattern_status(&pat) == CAIRO_STATUS_SUCCESS)
 			break;
 		case svgdom::Gradient::SpreadMethod_e::REPEAT:
 			cairo_pattern_set_extend(&pat, CAIRO_EXTEND_REPEAT);
+			ASSERT(cairo_pattern_status(&pat) == CAIRO_STATUS_SUCCESS)
 			break;
 	}
 	cairo_set_source(this->cr, &pat);
+	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 }
 
 void Renderer::applyFilter() {
@@ -232,30 +268,31 @@ void Renderer::setGradient(const std::string& id) {
 	auto g = this->finder.findById(id);
 	if(!g){
 		cairo_set_source_rgba(this->cr, 0, 0, 0, 0);
+		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 		return;
 	}
 	
 	struct CommonGradientPush{
-		Renderer& r;
-		
-		const svgdom::Gradient& gradient;
-		
 		CairoMatrixSaveRestore cairoMatrixPush; //here we need to save/restore only matrix
 		
 		std::unique_ptr<ViewportPush> viewportPush;
 		
 		CommonGradientPush(Renderer& r, const svgdom::Gradient& gradient) :
-				r(r),
-				gradient(gradient),
 				cairoMatrixPush(r.cr)
 		{
-			if (this->gradient.isBoundingBoxUnits()) {
-				cairo_translate(this->r.cr, this->r.userSpaceShapeBoundingBoxPos[0], this->r.userSpaceShapeBoundingBoxPos[1]);
-				cairo_scale(this->r.cr, this->r.userSpaceShapeBoundingBoxDim[0], this->r.userSpaceShapeBoundingBoxDim[1]);
-				this->viewportPush = std::unique_ptr<ViewportPush>(new ViewportPush(this->r, {{1, 1}}));
+			if (gradient.isBoundingBoxUnits()) {
+				cairo_translate(r.cr, r.userSpaceShapeBoundingBoxPos[0], r.userSpaceShapeBoundingBoxPos[1]);
+				ASSERT(cairo_status(r.cr) == CAIRO_STATUS_SUCCESS)
+				if(r.userSpaceShapeBoundingBoxDim[0] * r.userSpaceShapeBoundingBoxDim[1] != 0){ //cairo does not allow non-invertible scaling
+					cairo_scale(r.cr, r.userSpaceShapeBoundingBoxDim[0], r.userSpaceShapeBoundingBoxDim[1]);
+				}else{
+					TRACE(<< "WARNING: non-invertible scaling encountered at " << __FILE__ << ":" << __LINE__ << std::endl)
+				}
+				ASSERT_INFO(cairo_status(r.cr) == CAIRO_STATUS_SUCCESS, "cairo status = " << cairo_status_to_string(cairo_status(r.cr)))
+				this->viewportPush = std::unique_ptr<ViewportPush>(new ViewportPush(r, {{1, 1}}));
 			}
 
-			this->r.applyTransformations(this->gradient.transformations);
+			r.applyTransformations(gradient.transformations);
 		}
 		
 		~CommonGradientPush()noexcept{}
@@ -315,6 +352,7 @@ void Renderer::setGradient(const std::string& id) {
 		
 		void defaultVisit(const svgdom::Element&)override{
 			cairo_set_source_rgba(this->r.cr, 0, 0, 0, 0);
+			ASSERT(cairo_status(this->r.cr) == CAIRO_STATUS_SUCCESS)
 		}
 	} visitor(*this, g->ss);
 	
@@ -333,6 +371,7 @@ void Renderer::updateCurBoundingBox() {
 			&x2,
 			&y2
 		);
+	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 
 	this->userSpaceShapeBoundingBoxPos[0] = svgren::real(x1);
 	this->userSpaceShapeBoundingBoxPos[1] = svgren::real(y1);
@@ -354,6 +393,7 @@ void Renderer::updateCurBoundingBox() {
 	
 	for(auto& vertex : rectVertices){
 		cairo_user_to_device(this->cr, &vertex[0], &vertex[1]);
+		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 		
 		DeviceSpaceBoundingBox bb;
 		bb.left = decltype(bb.left)(vertex[0]);
@@ -375,13 +415,16 @@ void Renderer::renderCurrentShape() {
 				break;
 			case svgdom::FillRule_e::EVENODD:
 				cairo_set_fill_rule(this->cr, CAIRO_FILL_RULE_EVEN_ODD);
+				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				break;
 			case svgdom::FillRule_e::NONZERO:
 				cairo_set_fill_rule(this->cr, CAIRO_FILL_RULE_WINDING);
+				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				break;
 		}
 	} else {
 		cairo_set_fill_rule(this->cr, CAIRO_FILL_RULE_WINDING);
+		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	}
 
 	svgdom::StyleValue blackFill;
@@ -408,16 +451,20 @@ void Renderer::renderCurrentShape() {
 
 			auto fillRgb = fill->getRgb();
 			cairo_set_source_rgba(this->cr, fillRgb.r, fillRgb.g, fillRgb.b, opacity);
+			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 		}
 
 		cairo_fill_preserve(this->cr);
+		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	}
 
 	if (stroke && !stroke->isNone()) {
 		if (auto p = this->styleStack.getStyleProperty(svgdom::StyleProperty_e::STROKE_WIDTH)) {
 			cairo_set_line_width(this->cr, this->lengthToPx(p->strokeWidth));
+			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 		} else {
 			cairo_set_line_width(this->cr, 1);
+			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 		}
 
 		if (auto p = this->styleStack.getStyleProperty(svgdom::StyleProperty_e::STROKE_LINECAP)) {
@@ -427,16 +474,20 @@ void Renderer::renderCurrentShape() {
 					break;
 				case svgdom::StrokeLineCap_e::BUTT:
 					cairo_set_line_cap(this->cr, CAIRO_LINE_CAP_BUTT);
+					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					break;
 				case svgdom::StrokeLineCap_e::ROUND:
 					cairo_set_line_cap(this->cr, CAIRO_LINE_CAP_ROUND);
+					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					break;
 				case svgdom::StrokeLineCap_e::SQUARE:
 					cairo_set_line_cap(this->cr, CAIRO_LINE_CAP_SQUARE);
+					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					break;
 			}
 		} else {
 			cairo_set_line_cap(this->cr, CAIRO_LINE_CAP_BUTT);
+			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 		}
 
 		if (auto p = this->styleStack.getStyleProperty(svgdom::StyleProperty_e::STROKE_LINEJOIN)) {
@@ -446,16 +497,20 @@ void Renderer::renderCurrentShape() {
 					break;
 				case svgdom::StrokeLineJoin_e::MITER:
 					cairo_set_line_join(this->cr, CAIRO_LINE_JOIN_MITER);
+					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					break;
 				case svgdom::StrokeLineJoin_e::ROUND:
 					cairo_set_line_join(this->cr, CAIRO_LINE_JOIN_ROUND);
+					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					break;
 				case svgdom::StrokeLineJoin_e::BEVEL:
 					cairo_set_line_join(this->cr, CAIRO_LINE_JOIN_BEVEL);
+					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					break;
 			}
 		} else {
 			cairo_set_line_join(this->cr, CAIRO_LINE_JOIN_MITER);
+			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 		}
 
 		if (stroke->isUrl()) {
@@ -470,13 +525,16 @@ void Renderer::renderCurrentShape() {
 
 			auto rgb = stroke->getRgb();
 			cairo_set_source_rgba(this->cr, rgb.r, rgb.g, rgb.b, opacity);
+			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 		}
 
 		cairo_stroke_preserve(this->cr);
+		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	}
 
 	//clear path if any left
 	cairo_new_path(this->cr);
+	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	
 	this->applyFilter();
 }
@@ -510,6 +568,7 @@ void Renderer::renderSvgElement(
 				this->lengthToPx(x, 0),
 				this->lengthToPx(y, 1)
 			);
+		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	}
 
 	ViewportPush viewportPush(
@@ -737,49 +796,67 @@ void Renderer::visit(const svgdom::PathElement& e) {
 		switch (s.type) {
 			case svgdom::PathElement::Step::Type_e::MOVE_ABS:
 				cairo_move_to(this->cr, s.x, s.y);
+				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				break;
 			case svgdom::PathElement::Step::Type_e::MOVE_REL:
 				if (!cairo_has_current_point(this->cr)) {
+					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					cairo_move_to(this->cr, 0, 0);
+					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				}
+				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				cairo_rel_move_to(this->cr, s.x, s.y);
+				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				break;
 			case svgdom::PathElement::Step::Type_e::LINE_ABS:
 				cairo_line_to(this->cr, s.x, s.y);
+				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				break;
 			case svgdom::PathElement::Step::Type_e::LINE_REL:
 				cairo_rel_line_to(this->cr, s.x, s.y);
+				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				break;
 			case svgdom::PathElement::Step::Type_e::HORIZONTAL_LINE_ABS:
 				{
 					double x, y;
 					if (cairo_has_current_point(this->cr)) {
+						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 						cairo_get_current_point(this->cr, &x, &y);
+						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					} else {
+						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 						y = 0;
 					}
 					cairo_line_to(this->cr, s.x, y);
+					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				}
 				break;
 			case svgdom::PathElement::Step::Type_e::HORIZONTAL_LINE_REL:
 				cairo_rel_line_to(this->cr, s.x, 0);
+				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				break;
 			case svgdom::PathElement::Step::Type_e::VERTICAL_LINE_ABS:
 				{
 					double x, y;
 					if (cairo_has_current_point(this->cr)) {
+						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 						cairo_get_current_point(this->cr, &x, &y);
+						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					} else {
+						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 						x = 0;
 					}
 					cairo_line_to(this->cr, x, s.y);
+					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				}
 				break;
 			case svgdom::PathElement::Step::Type_e::VERTICAL_LINE_REL:
 				cairo_rel_line_to(this->cr, 0, s.y);
+				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				break;
 			case svgdom::PathElement::Step::Type_e::CLOSE:
 				cairo_close_path(this->cr);
+				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				break;
 			case svgdom::PathElement::Step::Type_e::QUADRATIC_ABS:
 				cairoQuadraticCurveTo(this->cr, s.x1, s.y1, s.x, s.y);
@@ -791,9 +868,13 @@ void Renderer::visit(const svgdom::PathElement& e) {
 				{
 					double x0, y0; //current point, absolute coordinates
 					if (cairo_has_current_point(this->cr)) {
+						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 						cairo_get_current_point(this->cr, &x0, &y0);
+						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					} else {
+						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 						cairo_move_to(this->cr, 0, 0);
+						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 						x0 = 0;
 						y0 = 0;
 					}
@@ -832,9 +913,13 @@ void Renderer::visit(const svgdom::PathElement& e) {
 				{
 					double x0, y0; //current point, absolute coordinates
 					if (cairo_has_current_point(this->cr)) {
+						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 						cairo_get_current_point(this->cr, &x0, &y0);
+						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					} else {
+						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 						cairo_move_to(this->cr, 0, 0);
+						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 						x0 = 0;
 						y0 = 0;
 					}
@@ -871,17 +956,23 @@ void Renderer::visit(const svgdom::PathElement& e) {
 				break;
 			case svgdom::PathElement::Step::Type_e::CUBIC_ABS:
 				cairo_curve_to(this->cr, s.x1, s.y1, s.x2, s.y2, s.x, s.y);
+				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				break;
 			case svgdom::PathElement::Step::Type_e::CUBIC_REL:
 				cairo_rel_curve_to(this->cr, s.x1, s.y1, s.x2, s.y2, s.x, s.y);
+				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				break;
 			case svgdom::PathElement::Step::Type_e::CUBIC_SMOOTH_ABS:
 				{
 					double x0, y0; //current point, absolute coordinates
 					if (cairo_has_current_point(this->cr)) {
+						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 						cairo_get_current_point(this->cr, &x0, &y0);
+						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					} else {
+						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 						cairo_move_to(this->cr, 0, 0);
+						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 						x0 = 0;
 						y0 = 0;
 					}
@@ -906,15 +997,20 @@ void Renderer::visit(const svgdom::PathElement& e) {
 							break;
 					}
 					cairo_curve_to(this->cr, x1, y1, s.x2, s.y2, s.x, s.y);
+					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				}
 				break;
 			case svgdom::PathElement::Step::Type_e::CUBIC_SMOOTH_REL:
 				{
 					double x0, y0; //current point, absolute coordinates
 					if (cairo_has_current_point(this->cr)) {
+						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 						cairo_get_current_point(this->cr, &x0, &y0);
+						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					} else {
+						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 						cairo_move_to(this->cr, 0, 0);
+						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 						x0 = 0;
 						y0 = 0;
 					}
@@ -939,6 +1035,7 @@ void Renderer::visit(const svgdom::PathElement& e) {
 							break;
 					}
 					cairo_rel_curve_to(this->cr, x1, y1, s.x2, s.y2, s.x, s.y);
+					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				}
 				break;
 			case svgdom::PathElement::Step::Type_e::ARC_ABS:
@@ -946,11 +1043,14 @@ void Renderer::visit(const svgdom::PathElement& e) {
 				{
 					real x, y;
 					if (cairo_has_current_point(this->cr)) {
+						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 						double xx, yy;
 						cairo_get_current_point(this->cr, &xx, &yy);
+						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 						x = real(xx);
 						y = real(yy);
 					} else {
+						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 						x = 0;
 						y = 0;
 					}
@@ -1022,12 +1122,21 @@ void Renderer::visit(const svgdom::PathElement& e) {
 					CairoContextSaveRestore cairoMatrixPush1(this->cr);
 
 					cairo_translate(this->cr, x, y);
+					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					cairo_rotate(this->cr, degToRad(s.xAxisRotation));
-					cairo_scale(this->cr, 1, radiiRatio);
+					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+					if(radiiRatio != 0){ //cairo does not allow non-invertible scaling
+						cairo_scale(this->cr, 1, radiiRatio);
+						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+					}else{
+						TRACE(<< "WARNING: non-invertible scaling encountered at " << __FILE__ << ":" << __LINE__ << std::endl)
+					}
 					if (s.flags.sweep) {
 						cairo_arc(this->cr, xc, yc, rx, angle1, angle2);
+						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					} else {
 						cairo_arc_negative(this->cr, xc, yc, rx, angle1, angle2);
+						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					}
 				}
 				break;
@@ -1065,6 +1174,7 @@ void Renderer::visit(const svgdom::CircleElement& e) {
 			0,
 			2 * utki::pi<double>()
 		);
+	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 
 	this->renderCurrentShape();
 }
@@ -1093,10 +1203,12 @@ void Renderer::visit(const svgdom::PolylineElement& e) {
 
 	auto i = e.points.begin();
 	cairo_move_to(this->cr, (*i)[0], (*i)[1]);
+	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	++i;
 
 	for (; i != e.points.end(); ++i) {
 		cairo_line_to(this->cr, (*i)[0], (*i)[1]);
+		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	}
 	
 	this->renderCurrentShape();
@@ -1124,13 +1236,16 @@ void Renderer::visit(const svgdom::PolygonElement& e) {
 
 	auto i = e.points.begin();
 	cairo_move_to(this->cr, (*i)[0], (*i)[1]);
+	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	++i;
 
 	for (; i != e.points.end(); ++i) {
 		cairo_line_to(this->cr, (*i)[0], (*i)[1]);
+		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	}
 
 	cairo_close_path(this->cr);
+	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	
 	this->renderCurrentShape();
 }
@@ -1152,7 +1267,9 @@ void Renderer::visit(const svgdom::LineElement& e) {
 	this->applyTransformations(e.transformations);
 
 	cairo_move_to(this->cr, this->lengthToPx(e.x1, 0), this->lengthToPx(e.y1, 1));
+	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	cairo_line_to(this->cr, this->lengthToPx(e.x2, 0), this->lengthToPx(e.y2, 1));
+	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 
 	this->renderCurrentShape();
 }
@@ -1177,9 +1294,21 @@ void Renderer::visit(const svgdom::EllipseElement& e) {
 		CairoContextSaveRestore saveRestore(this->cr);
 
 		cairo_translate(this->cr, this->lengthToPx(e.cx, 0), this->lengthToPx(e.cy, 1));
-		cairo_scale(this->cr, this->lengthToPx(e.rx, 0), this->lengthToPx(e.ry, 1));
+		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+		{
+			auto dx = this->lengthToPx(e.rx, 0);
+			auto dy = this->lengthToPx(e.ry, 1);
+			if(dx * dy != 0){ //cairo doesn't allow non-invertible scaling
+				cairo_scale(this->cr, dx, dy);
+				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+			}else{
+				TRACE(<< "WARNING: non-invertible scaling encountered at " << __FILE__ << ":" << __LINE__ << std::endl)
+			}
+		}
 		cairo_arc(this->cr, 0, 0, 1, 0, 2 * utki::pi<double>());
+		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 		cairo_close_path(this->cr);
+		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	}
 
 	this->renderCurrentShape();
@@ -1204,6 +1333,7 @@ void Renderer::visit(const svgdom::RectElement& e) {
 	if ((e.rx.value == 0 || !e.rx.isValid())
 			&& (e.ry.value == 0 || !e.ry.isValid())) {
 		cairo_rectangle(this->cr, this->lengthToPx(e.x, 0), this->lengthToPx(e.y, 1), this->lengthToPx(e.width, 0), this->lengthToPx(e.height, 1));
+		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	} else {
 		//compute real rx and ry
 		auto rx = e.rx;
@@ -1226,43 +1356,93 @@ void Renderer::visit(const svgdom::RectElement& e) {
 		}
 
 		cairo_move_to(this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1));
+		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 		cairo_line_to(this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(e.width, 0) - this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1));
+		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 
 		{
 			CairoContextSaveRestore saveRestore(this->cr);
 			cairo_translate(this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(e.width, 0) - this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(ry, 1));
-			cairo_scale(this->cr, this->lengthToPx(rx, 0), this->lengthToPx(ry, 1));
+			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+			{
+				auto dx = this->lengthToPx(rx, 0);
+				auto dy = this->lengthToPx(ry, 1);
+				if(dx * dy != 0){ //cairo doesn't allow non-invertible scaling
+					cairo_scale(this->cr, dx, dy);
+					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+				}else{
+					TRACE(<< "WARNING: non-invertible scaling encountered at " << __FILE__ << ":" << __LINE__ << std::endl)
+				}
+			}
 			cairo_arc(this->cr, 0, 0, 1, -utki::pi<double>() / 2, 0);
+			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 		}
 
 		cairo_line_to(this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(e.width, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(e.height, 1) - this->lengthToPx(ry, 1));
+		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 
 		{
 			CairoContextSaveRestore saveRestore(this->cr);
 			cairo_translate(this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(e.width, 0) - this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(e.height, 1) - this->lengthToPx(ry, 1));
-			cairo_scale(this->cr, this->lengthToPx(rx, 0), this->lengthToPx(ry, 1));
+			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+			{
+				auto dx = this->lengthToPx(rx, 0);
+				auto dy = this->lengthToPx(ry, 1);
+				if(dx * dy != 0){ //cairo doesn't allow non-invertible scaling 
+					cairo_scale(this->cr, dx, dy);
+					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+				}else{
+					TRACE(<< "WARNING: non-invertible scaling encountered at " << __FILE__ << ":" << __LINE__ << std::endl)
+				}
+			}
 			cairo_arc(this->cr, 0, 0, 1, 0, utki::pi<double>() / 2);
+			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 		}
 
 		cairo_line_to(this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(e.height, 1));
+		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 
 		{
 			CairoContextSaveRestore saveRestore(this->cr);
 			cairo_translate(this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(e.height, 1) - this->lengthToPx(ry, 1));
-			cairo_scale(this->cr, this->lengthToPx(rx, 0), this->lengthToPx(ry, 1));
+			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+			{
+				auto dx = this->lengthToPx(rx, 0);
+				auto dy = this->lengthToPx(ry, 1);
+				if(dx * dy != 0){ //cairo doesn't allow non-invertible scaling 
+					cairo_scale(this->cr, dx, dy);
+					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+				}else{
+					TRACE(<< "WARNING: non-invertible scaling encountered at " << __FILE__ << ":" << __LINE__ << std::endl)
+				}
+			}
 			cairo_arc(this->cr, 0, 0, 1, utki::pi<double>() / 2, utki::pi<double>());
+			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 		}
 
 		cairo_line_to(this->cr, this->lengthToPx(e.x, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(ry, 1));
-
+		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+		
 		{
 			CairoContextSaveRestore saveRestore(this->cr);
 			cairo_translate(this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(ry, 1));
-			cairo_scale(this->cr, this->lengthToPx(rx, 0), this->lengthToPx(ry, 1));
+			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+			{
+				auto dx = this->lengthToPx(rx, 0);
+				auto dy = this->lengthToPx(ry, 1);
+				if(dx * dy != 0){ //cairo doesn't allow non-invertible scaling
+					cairo_scale(this->cr, dx, dy);
+					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+				}else{
+					TRACE(<< "WARNING: non-invertible scaling encountered at " << __FILE__ << ":" << __LINE__ << std::endl)
+				}
+			}
 			cairo_arc(this->cr, 0, 0, 1, utki::pi<double>(), utki::pi<double>() * 3 / 2);
+			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 		}
 
 		cairo_close_path(this->cr);
+		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	}
 	
 	this->renderCurrentShape();

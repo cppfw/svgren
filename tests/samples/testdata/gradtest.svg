@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" height="548.05" version="1.1" viewBox="2.05 90.05 429.05 548.05" width="429.05">
+   <defs>
+      <linearGradient id="fill1">
+         <stop stop-color="#CCCC66" />
+      </linearGradient>
+      <linearGradient id="fill2">
+         <stop stop-color="#640ED9" />
+      </linearGradient>
+      <linearGradient id="fill3">
+         <stop offset="0%" stop-color="#FFFFFF" />
+         <stop offset="100%" stop-color="#000000" />
+      </linearGradient>
+   </defs>
+   <path d="M 392 112.05 L 427 112.05 L 427 236.05 L 392 236.05 L 392 112.05 " fill="url(#fill1)" stroke="#CC0000" stroke-linecap="square" stroke-width="29.25" />
+   <path d="M 176 351 L 90 351 L 90 213.05 L 371 213.05 L 371 351 L 313 351 " fill="url(#fill2)" stroke="#CC0000" stroke-linecap="square" stroke-width="29.25" />
+   <path d="M 186 90.05 L 305.5 90.05 L 305.5 209.55 L 186 209.55 L 186 90.05 M 30.05 125.05 L 125 125.05 L 125 191.05 L 30.05 191.05 L 30.05 125.05 M 2.05 327 L 78.5 327 L 78.5 403.45 L 2.05 403.45 L 2.05 327 " fill="url(#fill1)" stroke="#CC0000" stroke-linecap="square" stroke-width="29.25" />
+   <path d="M 313 351 L 176 351 " fill="url(#fill2)" stroke="#CC0000" stroke-linecap="square" stroke-width="29.25" />
+   <path d="M 313 351 L 313 458 L 176 458 L 176 351 " fill="url(#fill3)" stroke="#CC0000" stroke-linecap="square" stroke-width="29.25" />
+</svg>
