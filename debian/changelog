@@ -1,3 +1,9 @@
+libsvgren (0.4.47) unstable; urgency=medium
+
+  * bugfix: prevent passing zero arguments to cairo_scale()
+
+ -- Ivan Gagis <igagis@gmail.com>  Thu, 01 Feb 2018 19:23:04 +0200
+
 libsvgren (0.4.46) unstable; urgency=medium
 
   * do not render mask elements which are outside of defs element
