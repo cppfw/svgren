@@ -137,9 +137,10 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <flagsDictionary>
-        <element flagsID="0"
+        <element flagsID="0" commonFlags="-funsigned-char -std=c++11 -O3 -fPIC"/>
+        <element flagsID="1"
                  commonFlags="-mtune=generic -march=x86-64 -O3 -std=c++11 -funsigned-char -fPIC"/>
-        <element flagsID="1" commonFlags="-std=c++11"/>
+        <element flagsID="2" commonFlags="-std=c++11"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -168,7 +169,7 @@
         </ccTool>
       </folder>
       <item path="src/svgren/CanvasRegion.cpp" ex="false" tool="1" flavor2="8">
-        <ccTool flags="0">
+        <ccTool flags="1">
           <incDir>
             <pElem>src/svgren</pElem>
             <pElem>.</pElem>
@@ -178,17 +179,12 @@
       <item path="src/svgren/FilterApplyer.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/include/svgdom</pElem>
-            <pElem>/usr/include/utki</pElem>
-            <pElem>src/svgren</pElem>
-            <pElem>/usr/include/svgdom/elements</pElem>
-            <pElem>/usr/include/cairo</pElem>
             <pElem>.</pElem>
           </incDir>
         </ccTool>
       </item>
       <item path="src/svgren/Renderer.cpp" ex="false" tool="1" flavor2="8">
-        <ccTool flags="0">
+        <ccTool flags="1">
           <incDir>
             <pElem>src/svgren</pElem>
             <pElem>/usr/include/svgdom/elements</pElem>
@@ -200,7 +196,7 @@
         </ccTool>
       </item>
       <item path="src/svgren/Surface.cpp" ex="false" tool="1" flavor2="8">
-        <ccTool flags="0">
+        <ccTool flags="1">
           <incDir>
             <pElem>src/svgren</pElem>
             <pElem>.</pElem>
@@ -208,7 +204,7 @@
         </ccTool>
       </item>
       <item path="src/svgren/render.cpp" ex="false" tool="1" flavor2="8">
-        <ccTool flags="0">
+        <ccTool flags="1">
           <incDir>
             <pElem>src/svgren</pElem>
             <pElem>/usr/include/svgdom</pElem>
@@ -221,7 +217,7 @@
         </ccTool>
       </item>
       <item path="src/svgren/util.cpp" ex="false" tool="1" flavor2="8">
-        <ccTool flags="0">
+        <ccTool flags="1">
           <incDir>
             <pElem>/usr/include/utki</pElem>
             <pElem>/usr/include/svgdom</pElem>
@@ -233,15 +229,15 @@
         </ccTool>
       </item>
       <item path="tests/render/main.cpp" ex="false" tool="1" flavor2="8">
-        <ccTool flags="1">
+        <ccTool flags="2">
         </ccTool>
       </item>
       <item path="tests/renderDim/main.cpp" ex="false" tool="1" flavor2="8">
-        <ccTool flags="1">
+        <ccTool flags="2">
         </ccTool>
       </item>
       <item path="tests/samples/checksvg.cpp" ex="false" tool="1" flavor2="8">
-        <ccTool flags="1">
+        <ccTool flags="2">
         </ccTool>
       </item>
     </conf>

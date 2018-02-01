@@ -347,7 +347,7 @@ FilterResult colorMatrix(const Surface& s, const std::array<std::array<real, 5>,
 	
 	for(unsigned y = 0; y != s.height; ++y){
 		auto sp = &s.data[(y * s.stride) * sizeof(std::uint32_t)];
-		ASSERT_INFO(sp < s.end, "sp = " << std::hex << (unsigned long)(sp) << " s.end = " << (unsigned long)(s.end))
+		ASSERT_INFO(sp < s.end, "sp = " << std::hex << static_cast<void*>(sp) << " s.end = " << static_cast<void*>(s.end))
 		auto dp = &ret.surface.data[(y * ret.surface.stride) * sizeof(std::uint32_t)];
 		for(unsigned x = 0; x != s.width; ++x){
 			auto r = real(*sp) / real(0xff);
