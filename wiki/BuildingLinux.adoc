@@ -1,0 +1,10 @@
+= Building in Linux
+
+== Installing build dependencies
+
+First of all one needs to install all the software packages needed for building.
+The list of needed packages can be seen in `debian/control.in` files's `Build-Depends:` section.
+
+== Building
+
+Building is easy, just use `make`.
