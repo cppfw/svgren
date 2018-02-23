@@ -17,12 +17,13 @@ int main(int argc, char **argv){
 
 		ASSERT_ALWAYS(dom)
 
-		unsigned imWidth = 10;
-		unsigned imHeight = 10;
-		auto img = svgren::render(*dom, imWidth, imHeight, 96, false);
+		svgren::Parameters p;
+		p.heightRequest = 10;
+		p.widthRequest = 10;
+		auto res = svgren::render(*dom, p);
 
-		ASSERT_ALWAYS(imWidth == 10)
-		ASSERT_ALWAYS(imHeight == 10)
+		ASSERT_ALWAYS(res.width == 10)
+		ASSERT_ALWAYS(res.height == 10)
 		
 //		TRACE(<< "imWidth = " << imWidth << " imHeight = " << imHeight << " img.size() = " << img.size() << std::endl)
 	}

@@ -298,22 +298,21 @@ int main(int argc, char** argv) {
 		
 		auto dom = svgdom::load(papki::FSFile(argv[1]));
 		
-		unsigned imWidth = 0;
-		unsigned imHeight = 0;
-		auto img = svgren::render(*dom, imWidth, imHeight);
+		auto res = svgren::render(*dom);
+		auto& img = res.pixels;
 		
 		if(png.colorDepth() != Image::ColorDepth_e::RGBA){
 			std::cout << "Error: PNG color depth is not RGBA: " << unsigned(png.colorDepth()) << std::endl;
 			return 1;
 		}
 		
-		if(imWidth != png.dim().x){
-			std::cout << "Error: svg width (" << imWidth << ") did not match png width (" << png.dim().x << ")" << std::endl;
+		if(res.width != png.dim().x){
+			std::cout << "Error: svg width (" << res.width << ") did not match png width (" << png.dim().x << ")" << std::endl;
 			return 1;
 		}
 		
-		if(imHeight != png.dim().y){
-			std::cout << "Error: svg height (" << imHeight << ") did not match png height (" << png.dim().y << ")" << std::endl;
+		if(res.height != png.dim().y){
+			std::cout << "Error: svg height (" << res.height << ") did not match png height (" << png.dim().y << ")" << std::endl;
 			return 1;
 		}
 		
@@ -344,7 +343,7 @@ int main(int argc, char** argv) {
 						(std::uint32_t(png.buf()[i * png.numChannels() + 3]) << 24)
 					;
 					
-					std::cout << "Error: PNG pixel #" << std::dec << i << " [" << (i % imWidth) << ", " << (i / imWidth) << "] " << " (0x" << std::hex << pixel << ") did not match SVG pixel (0x" << img[i] << ")" << std::endl;
+					std::cout << "Error: PNG pixel #" << std::dec << i << " [" << (i % res.width) << ", " << (i / res.width) << "] " << " (0x" << std::hex << pixel << ") did not match SVG pixel (0x" << img[i] << ")" << std::endl;
 					return 1;
 				}
 			}
