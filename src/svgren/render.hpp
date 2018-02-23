@@ -81,7 +81,7 @@ Result render(const svgdom::SvgElement& svg, const Parameters& p = Parameters())
  * @return An array of RGBA values representing the resulting raster image.
  */
 //TODO: remove deprecated function
-std::vector<std::uint32_t> render(const svgdom::SvgElement& svg, unsigned& width, unsigned& height, real dpi = 96, bool bgra = false){
+inline std::vector<std::uint32_t> render(const svgdom::SvgElement& svg, unsigned& width, unsigned& height, real dpi = 96, bool bgra = false){
 	TRACE_ALWAYS(<< "svgren::render(svg, width, height, dpi, bgra): !!!DEPRECATED!!! Use svgren::render(svg, p)" << std::endl)
 	Parameters p;
 	p.widthRequest = width;
