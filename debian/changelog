@@ -1,3 +1,9 @@
+libsvgren (0.4.48) unstable; urgency=medium
+
+  * use 'visibility' style property
+
+ -- Ivan Gagis <igagis@gmail.com>  Sat, 03 Mar 2018 18:29:13 +0200
+
 libsvgren (0.4.47) unstable; urgency=medium
 
   * bugfix: prevent passing zero arguments to cairo_scale()

@@ -3,7 +3,7 @@ project 'tests.xcodeproj'
 source 'https://github.com/igagis/cocoapods-repo.git'
 
 target "tests" do
-  pod 'libsvgdom', '>= 0.3.8'
+  pod 'libsvgdom', '>= 0.3.15'
   pod 'libcairo', '>= 1.12.8'
   pod 'libpng_igagis', '>= 1.4.1'
 end
