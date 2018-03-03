@@ -552,7 +552,7 @@ void Renderer::renderSvgElement(
 {
 	svgdom::StyleStack::Push pushStyles(this->styleStack, s);
 
-	if(this->isInvisible()){
+	if(this->isGroupInvisible()){
 		return;
 	}
 		
@@ -614,7 +614,7 @@ void Renderer::visit(const svgdom::GElement& e) {
 //	TRACE(<< "rendering GElement: id = " << e.id << std::endl)
 	svgdom::StyleStack::Push pushStyles(this->styleStack, e);
 
-	if(this->isInvisible()){
+	if(this->isGroupInvisible()){
 		return;
 	}
 	
@@ -762,6 +762,15 @@ void Renderer::visit(const svgdom::SvgElement& e) {
 }
 
 bool Renderer::isInvisible() {
+	if(auto p = this->styleStack.getStyleProperty(svgdom::StyleProperty_e::VISIBILITY)){
+		if(p->visibility != svgdom::Visibility_e::VISIBLE){
+			return true;
+		}
+	}
+	return this->isGroupInvisible();
+}
+
+bool Renderer::isGroupInvisible() {
 	if(auto p = this->styleStack.getStyleProperty(svgdom::StyleProperty_e::DISPLAY)){
 		if(p->display == svgdom::Display_e::NONE){
 			return true;
@@ -769,6 +778,7 @@ bool Renderer::isInvisible() {
 	}
 	return false;
 }
+
 
 
 void Renderer::visit(const svgdom::PathElement& e) {

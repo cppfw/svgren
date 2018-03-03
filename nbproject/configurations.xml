@@ -4,12 +4,9 @@
     <df root="src" name="0">
       <df name="svgren">
         <in>CanvasRegion.cpp</in>
-        <in>CanvasRegion.hxx</in>
         <in>FilterApplyer.cpp</in>
-        <in>FilterApplyer.hxx</in>
         <in>Renderer.cpp</in>
         <in>Surface.cpp</in>
-        <in>Surface.hxx</in>
         <in>render.cpp</in>
         <in>util.cpp</in>
       </df>
@@ -22,10 +19,6 @@
         <in>main.cpp</in>
       </df>
       <df name="samples">
-        <df name="testdata">
-          <in>composite.svg</in>
-          <in>masking.svg</in>
-        </df>
         <in>checksvg.cpp</in>
       </df>
     </df>
@@ -90,21 +83,21 @@
           <preBuildCommand></preBuildCommand>
         </preBuild>
       </makefileType>
-      <item path="src/svgren/CanvasRegion.cpp" ex="false" tool="1" flavor2="0">
+      <item path="src/svgren/CanvasRegion.cpp" ex="false" tool="1" flavor2="8">
+        <ccTool flags="0">
+        </ccTool>
       </item>
-      <item path="src/svgren/CanvasRegion.hxx" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/svgren/FilterApplyer.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="src/svgren/FilterApplyer.hxx" ex="false" tool="3" flavor2="0">
+      <item path="src/svgren/FilterApplyer.cpp" ex="false" tool="1" flavor2="8">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="src/svgren/Renderer.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="src/svgren/Surface.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="src/svgren/Surface.hxx" ex="false" tool="3" flavor2="0">
+      <item path="src/svgren/Surface.cpp" ex="false" tool="1" flavor2="8">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="src/svgren/render.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
@@ -118,16 +111,13 @@
         <ccTool flags="1">
         </ccTool>
       </item>
-      <item path="tests/samples/checksvg.cpp" ex="false" tool="1" flavor2="8">
+      <item path="tests/renderDim/main.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="1">
         </ccTool>
       </item>
-      <item path="tests/samples/testdata/composite.svg"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="tests/samples/testdata/masking.svg" ex="false" tool="3" flavor2="0">
+      <item path="tests/samples/checksvg.cpp" ex="false" tool="1" flavor2="8">
+        <ccTool flags="1">
+        </ccTool>
       </item>
     </conf>
     <conf name="Release" type="0">

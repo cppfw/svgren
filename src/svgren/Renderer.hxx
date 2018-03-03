@@ -93,6 +93,7 @@ public:
 	svgdom::Gradient::SpreadMethod_e gradientGetSpreadMethod(const svgdom::Gradient& g);
 	
 	bool isInvisible();
+	bool isGroupInvisible();
 	
 public:
 	Renderer(
