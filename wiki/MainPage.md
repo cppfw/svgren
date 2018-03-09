@@ -1,5 +1,9 @@
 # WiKi main page
 
+Supported/unsupported SVG features:
+
+See [Fetures](Features.adoc) page.
+
 Istallation:
 - [Windows (Visual Studio 2015+)](InstallMSVS.md)
 - [Windows (Cygwin)](InstallCygwin.adoc)
