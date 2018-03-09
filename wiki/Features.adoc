@@ -1,0 +1,17 @@
+= SVG features
+
+**svgren** is supposed to conform to https://www.w3.org/TR/SVG11/[SVG 1.1] specification except some features.
+
+== Features not planned to support
+
+- Text
+- Animation
+
+== List of some supported features
+
+- all gradient kinds (linear, radial)
+- group opacity
+- all shape kinds
+- all path elements
+- gaussian blur effect
+- masking
