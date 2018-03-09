@@ -1,19 +1,19 @@
 = WiKi main page
 
 Supported/unsupported SVG features::
-  See link:wiki/Features.adoc[Fetures] page.
+  See link:Features.adoc[Fetures] page.
 
 Istallation::
-- link:wiki/InstallMSVS.md[Windows (Visual Studio 2015+)]
-- link:wiki/InstallCygwin.adoc[Windows (Cygwin)]
-- link:wiki/InstallLinux.md[Linux]
-- link:wiki/InstallMacOSX.md[MacOS X]
-- link:wiki/InstallIOS.md[iOS]
-- link:wiki/InstallAndroid.adoc[Android (Android Studio 2.3)]
-- link:wiki/InstallMSYS.md[MSYS]
+- link:InstallMSVS.md[Windows (Visual Studio 2015+)]
+- link:InstallCygwin.adoc[Windows (Cygwin)]
+- link:InstallLinux.md[Linux]
+- link:nstallMacOSX.md[MacOS X]
+- link:InstallIOS.md[iOS]
+- link:InstallAndroid.adoc[Android (Android Studio 2.3)]
+- link:InstallMSYS.md[MSYS]
 
 Tutorials::
-- link:wiki/UsageTutorial.md[Basic usage]
+- link:UsageTutorial.md[Basic usage]
 
 Building::
-- link:wiki/BuildingLinux.adoc[Linux]
+- link:BuildingLinux.adoc[Linux]
