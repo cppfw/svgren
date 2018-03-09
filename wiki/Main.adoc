@@ -7,7 +7,7 @@ Istallation::
 - link:InstallMSVS.md[Windows (Visual Studio 2015+)]
 - link:InstallCygwin.adoc[Windows (Cygwin)]
 - link:InstallLinux.md[Linux]
-- link:nstallMacOSX.md[MacOS X]
+- link:InstallMacOSX.md[MacOS X]
 - link:InstallIOS.md[iOS]
 - link:InstallAndroid.adoc[Android (Android Studio 2.3)]
 - link:InstallMSYS.md[MSYS]
