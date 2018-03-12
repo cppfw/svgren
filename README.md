@@ -20,3 +20,6 @@ Read [WiKi](wiki/Main.adoc) for installation instructions and tutorials.
 
 # Questions
 In case of questions, please submit those as [Issue](https://github.com/igagis/svgren/issues).
+
+# Support my work
+[![Patreon](https://c5.patreon.com/external/logo/become_a_patron_button@2x.png)](https://www.patreon.com/bePatron?u=2662824)
