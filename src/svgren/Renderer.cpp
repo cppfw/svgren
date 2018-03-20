@@ -455,7 +455,7 @@ void Renderer::renderCurrentShape() {
 		}
 
 		cairo_fill_preserve(this->cr);
-		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+		ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
 	}
 
 	if (stroke && !stroke->isNone()) {
