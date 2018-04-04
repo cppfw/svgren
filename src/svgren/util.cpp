@@ -52,18 +52,6 @@ void svgren::cairoQuadraticCurveTo(cairo_t *cr, double x1, double y1, double x, 
 	ASSERT(cairo_status(cr) == CAIRO_STATUS_SUCCESS)
 }
 
-real svgren::degToRad(real deg){
-	return deg * utki::pi<real>() / real(180);
-}
-
-std::array<real, 2> svgren::rotate(real x, real y, real angle){
-    return {{x * std::cos(angle) - y * std::sin(angle), y * std::cos(angle) + x * std::sin(angle)}};
-}
-
-real svgren::pointAngle(real cx, real cy, real px, real py){
-    return std::atan2(py - cy, px - cx);
-}
-
 CairoContextSaveRestore::CairoContextSaveRestore(cairo_t* cr) :
 		cr(cr)
 {

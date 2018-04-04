@@ -1,8 +1,10 @@
 #pragma once
 
 #include <array>
+#include <cmath>
 
 #include <utki/config.hpp>
+#include <utki/math.hpp>
 
 #include <svgdom/Length.hpp>
 #include <svgdom/elements/Element.hpp>
@@ -24,13 +26,22 @@ void cairoRelQuadraticCurveTo(cairo_t *cr, double x1, double y1, double x, doubl
 void cairoQuadraticCurveTo(cairo_t *cr, double x1, double y1, double x, double y);
 
 //convert degrees to radians
-real degToRad(real deg);
+template <class T> T degToRad(T deg){
+	return deg * utki::pi<T>() / T(180);
+}
 
 //Rotate a point by an angle around the origin point.
-std::array<real, 2> rotate(real x, real y, real angle);
+template <class T> std::array<T, 2> rotate(T x, T y, T angle){
+	using std::cos;
+	using std::sin;
+    return {{x * cos(angle) - y * sin(angle), y * cos(angle) + x * sin(angle)}};
+}
 
 //Return angle between x axis and point knowing given center.
-real pointAngle(real cx, real cy, real px, real py);
+template <class T> T pointAngle(T cx, T cy, T px, T py){
+	using std::atan2;
+    return atan2(py - cy, px - cx);
+}
 
 class CairoMatrixSaveRestore{
 	cairo_matrix_t m;
