@@ -1461,9 +1461,9 @@ void Renderer::visit(const svgdom::RectElement& e) {
 
 namespace{
 struct GradientCaster : public svgdom::ConstVisitor{
-	const svgdom::LinearGradientElement* linear;
-	const svgdom::RadialGradientElement* radial;
-	const svgdom::Gradient* gradient;
+	const svgdom::LinearGradientElement* linear = nullptr;
+	const svgdom::RadialGradientElement* radial = nullptr;
+	const svgdom::Gradient* gradient = nullptr;
 	
 	void visit(const svgdom::LinearGradientElement& e) override{
 		this->gradient = &e;
