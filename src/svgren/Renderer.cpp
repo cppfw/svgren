@@ -273,14 +273,14 @@ void Renderer::setGradient(const std::string& id) {
 	}
 	
 	struct CommonGradientPush{
-		CairoMatrixSaveRestore cairoMatrixPush; //here we need to save/restore only matrix
+		CairoMatrixSaveRestore cairoMatrixPush; //here we need to save/restore only matrix!
 		
 		std::unique_ptr<ViewportPush> viewportPush;
 		
 		CommonGradientPush(Renderer& r, const svgdom::Gradient& gradient) :
 				cairoMatrixPush(r.cr)
 		{
-			if (gradient.isBoundingBoxUnits()) {
+			if (r.gradientGetUnits(gradient) == svgdom::CoordinateUnits_e::OBJECT_BOUNDING_BOX) {
 				cairo_translate(r.cr, r.userSpaceShapeBoundingBoxPos[0], r.userSpaceShapeBoundingBoxPos[1]);
 				ASSERT(cairo_status(r.cr) == CAIRO_STATUS_SUCCESS)
 				if(r.userSpaceShapeBoundingBoxDim[0] * r.userSpaceShapeBoundingBoxDim[1] != 0){ //cairo does not allow non-invertible scaling
@@ -1505,6 +1505,26 @@ const decltype(svgdom::Transformable::transformations)& Renderer::gradientGetTra
 		}
 	}
 	return g.transformations;
+}
+
+svgdom::CoordinateUnits_e Renderer::gradientGetUnits(const svgdom::Gradient& g) {
+	if(g.units != svgdom::CoordinateUnits_e::UNKNOWN){
+		return g.units;
+	}
+	
+	auto refId = g.getLocalIdFromIri();
+	if(refId.length() != 0){
+		auto ref = this->finder.findById(refId);
+		
+		if(ref){
+			GradientCaster caster;
+			ref->e.accept(caster);
+			if(caster.gradient){
+				return this->gradientGetUnits(*caster.gradient);
+			}
+		}
+	}
+	return svgdom::CoordinateUnits_e::OBJECT_BOUNDING_BOX;//bounding box is default
 }
 
 

@@ -78,6 +78,7 @@ public:
 		);
 	
 	const decltype(svgdom::Transformable::transformations)& gradientGetTransformations(const svgdom::Gradient& g);
+	svgdom::CoordinateUnits_e gradientGetUnits(const svgdom::Gradient& g);
 	
 	svgdom::Length gradientGetX1(const svgdom::LinearGradientElement& g);
 	svgdom::Length gradientGetY1(const svgdom::LinearGradientElement& g);
