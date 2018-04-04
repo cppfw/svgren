@@ -292,7 +292,7 @@ void Renderer::setGradient(const std::string& id) {
 				this->viewportPush = std::unique_ptr<ViewportPush>(new ViewportPush(r, {{1, 1}}));
 			}
 
-			r.applyTransformations(gradient.transformations);
+			r.applyTransformations(r.gradientGetTransformations(gradient));
 		}
 		
 		~CommonGradientPush()noexcept{}
@@ -1486,6 +1486,27 @@ struct GradientCaster : public svgdom::ConstVisitor{
 	}
 };
 }
+
+const decltype(svgdom::Transformable::transformations)& Renderer::gradientGetTransformations(const svgdom::Gradient& g) {
+	if(g.transformations.size() != 0){
+		return g.transformations;
+	}
+	
+	auto refId = g.getLocalIdFromIri();
+	if(refId.length() != 0){
+		auto ref = this->finder.findById(refId);
+		
+		if(ref){
+			GradientCaster caster;
+			ref->e.accept(caster);
+			if(caster.gradient){
+				return this->gradientGetTransformations(*caster.gradient);
+			}
+		}
+	}
+	return g.transformations;
+}
+
 
 svgdom::Length Renderer::gradientGetX1(const svgdom::LinearGradientElement& g){
 	if(g.x1.isValid()){
