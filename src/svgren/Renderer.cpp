@@ -1339,10 +1339,19 @@ void Renderer::visit(const svgdom::RectElement& e) {
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
 	this->applyTransformations(e.transformations);
+	
+	auto width = this->lengthToPx(e.width, 0);
+	auto height = this->lengthToPx(e.height, 1);
+	
+	//NOTE: see SVG sect: https://www.w3.org/TR/SVG/shapes.html#RectElementWidthAttribute
+	//      Zero values disable rendering of the element.
+	if(width == real(0) || height == real(0)){
+		return;
+	}
 
 	if ((e.rx.value == 0 || !e.rx.isValid())
 			&& (e.ry.value == 0 || !e.ry.isValid())) {
-		cairo_rectangle(this->cr, this->lengthToPx(e.x, 0), this->lengthToPx(e.y, 1), this->lengthToPx(e.width, 0), this->lengthToPx(e.height, 1));
+		cairo_rectangle(this->cr, this->lengthToPx(e.x, 0), this->lengthToPx(e.y, 1), width, height);
 		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	} else {
 		//compute real rx and ry
@@ -1356,23 +1365,23 @@ void Renderer::visit(const svgdom::RectElement& e) {
 		}
 		ASSERT(rx.isValid() && ry.isValid())
 
-		if (this->lengthToPx(rx, 0) > this->lengthToPx(e.width, 0) / 2) {
+		if (this->lengthToPx(rx, 0) > width / 2) {
 			rx = e.width;
 			rx.value /= 2;
 		}
-		if (this->lengthToPx(ry, 1) > this->lengthToPx(e.height, 1) / 2) {
+		if (this->lengthToPx(ry, 1) > height / 2) {
 			ry = e.height;
 			ry.value /= 2;
 		}
 
 		cairo_move_to(this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1));
 		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-		cairo_line_to(this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(e.width, 0) - this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1));
+		cairo_line_to(this->cr, this->lengthToPx(e.x, 0) + width - this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1));
 		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 
 		{
 			CairoContextSaveRestore saveRestore(this->cr);
-			cairo_translate(this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(e.width, 0) - this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(ry, 1));
+			cairo_translate(this->cr, this->lengthToPx(e.x, 0) + width - this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(ry, 1));
 			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 			{
 				auto dx = this->lengthToPx(rx, 0);
@@ -1388,12 +1397,12 @@ void Renderer::visit(const svgdom::RectElement& e) {
 			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 		}
 
-		cairo_line_to(this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(e.width, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(e.height, 1) - this->lengthToPx(ry, 1));
+		cairo_line_to(this->cr, this->lengthToPx(e.x, 0) + width, this->lengthToPx(e.y, 1) + height - this->lengthToPx(ry, 1));
 		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 
 		{
 			CairoContextSaveRestore saveRestore(this->cr);
-			cairo_translate(this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(e.width, 0) - this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(e.height, 1) - this->lengthToPx(ry, 1));
+			cairo_translate(this->cr, this->lengthToPx(e.x, 0) + width - this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1) + height - this->lengthToPx(ry, 1));
 			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 			{
 				auto dx = this->lengthToPx(rx, 0);
@@ -1409,12 +1418,12 @@ void Renderer::visit(const svgdom::RectElement& e) {
 			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 		}
 
-		cairo_line_to(this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(e.height, 1));
+		cairo_line_to(this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1) + height);
 		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 
 		{
 			CairoContextSaveRestore saveRestore(this->cr);
-			cairo_translate(this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(e.height, 1) - this->lengthToPx(ry, 1));
+			cairo_translate(this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1) + height - this->lengthToPx(ry, 1));
 			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 			{
 				auto dx = this->lengthToPx(rx, 0);
