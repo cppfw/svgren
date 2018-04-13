@@ -405,7 +405,7 @@ void Renderer::updateCurBoundingBox() {
 	}
 }
 
-void Renderer::renderCurrentShape() {
+void Renderer::renderCurrentShape(bool isCairoGroupPushed) {
 	this->updateCurBoundingBox();
 	
 	if (auto p = this->styleStack.getStyleProperty(svgdom::StyleProperty_e::FILL_RULE)) {
@@ -437,20 +437,25 @@ void Renderer::renderCurrentShape() {
 
 	auto stroke = this->styleStack.getStyleProperty(svgdom::StyleProperty_e::STROKE);
 
+	auto opacity = svgdom::real(1);
+	if(!isCairoGroupPushed){
+		if(auto p = this->styleStack.getStyleProperty(svgdom::StyleProperty_e::OPACITY)){
+			opacity = p->opacity;
+		}
+	}
+	
 	ASSERT(fill)
 	if (!fill->isNone()) {
 		if (fill->isUrl()) {
 			this->setGradient(fill->getLocalIdFromIri());
 		} else {
-			svgdom::real opacity;
+			svgdom::real fillOpacity = 1;
 			if (auto p = this->styleStack.getStyleProperty(svgdom::StyleProperty_e::FILL_OPACITY)) {
-				opacity = p->opacity;
-			} else {
-				opacity = 1;
+				fillOpacity = p->opacity;
 			}
 
 			auto fillRgb = fill->getRgb();
-			cairo_set_source_rgba(this->cr, fillRgb.r, fillRgb.g, fillRgb.b, opacity);
+			cairo_set_source_rgba(this->cr, fillRgb.r, fillRgb.g, fillRgb.b, fillOpacity * opacity);
 			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 		}
 
@@ -516,15 +521,13 @@ void Renderer::renderCurrentShape() {
 		if (stroke->isUrl()) {
 			this->setGradient(stroke->getLocalIdFromIri());
 		} else {
-			svgdom::real opacity;
+			svgdom::real strokeOpacity = 1;
 			if (auto p = this->styleStack.getStyleProperty(svgdom::StyleProperty_e::STROKE_OPACITY)) {
-				opacity = p->opacity;
-			} else {
-				opacity = 1;
+				strokeOpacity = p->opacity;
 			}
 
 			auto rgb = stroke->getRgb();
-			cairo_set_source_rgba(this->cr, rgb.r, rgb.g, rgb.b, opacity);
+			cairo_set_source_rgba(this->cr, rgb.r, rgb.g, rgb.b, strokeOpacity * opacity);
 			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 		}
 
@@ -556,7 +559,7 @@ void Renderer::renderSvgElement(
 		return;
 	}
 		
-	PushCairoGroupIfNeeded cairoTempContext(*this);
+	PushCairoGroupIfNeeded cairoTempContext(*this, true);
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 	
@@ -618,7 +621,7 @@ void Renderer::visit(const svgdom::GElement& e) {
 		return;
 	}
 	
-	PushCairoGroupIfNeeded cairoTempContext(*this);
+	PushCairoGroupIfNeeded cairoTempContext(*this, true);
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 	
@@ -789,7 +792,7 @@ void Renderer::visit(const svgdom::PathElement& e) {
 		return;
 	}
 	
-	PushCairoGroupIfNeeded cairoTempContext(*this);
+	PushCairoGroupIfNeeded cairoGroupPush(*this, false);
 	
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
@@ -1158,7 +1161,7 @@ void Renderer::visit(const svgdom::PathElement& e) {
 		prevStep = &s;
 	}
 	
-	this->renderCurrentShape();
+	this->renderCurrentShape(cairoGroupPush.isPushed());
 }
 
 void Renderer::visit(const svgdom::CircleElement& e) {
@@ -1169,7 +1172,7 @@ void Renderer::visit(const svgdom::CircleElement& e) {
 		return;
 	}
 	
-	PushCairoGroupIfNeeded cairoTempContext(*this);
+	PushCairoGroupIfNeeded cairoGroupPush(*this, false);
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 	
@@ -1187,7 +1190,7 @@ void Renderer::visit(const svgdom::CircleElement& e) {
 		);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 
-	this->renderCurrentShape();
+	this->renderCurrentShape(cairoGroupPush.isPushed());
 }
 
 void Renderer::visit(const svgdom::PolylineElement& e) {
@@ -1200,7 +1203,7 @@ void Renderer::visit(const svgdom::PolylineElement& e) {
 	
 	//TODO: make a common push class for shapes
 	
-	PushCairoGroupIfNeeded cairoTempContext(*this);
+	PushCairoGroupIfNeeded cairoGroupPush(*this, false);
 	
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
@@ -1222,7 +1225,7 @@ void Renderer::visit(const svgdom::PolylineElement& e) {
 		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	}
 	
-	this->renderCurrentShape();
+	this->renderCurrentShape(cairoGroupPush.isPushed());
 }
 
 void Renderer::visit(const svgdom::PolygonElement& e) {
@@ -1233,7 +1236,7 @@ void Renderer::visit(const svgdom::PolygonElement& e) {
 		return;
 	}
 	
-	PushCairoGroupIfNeeded cairoTempContext(*this);
+	PushCairoGroupIfNeeded cairoGroupPush(*this, false);
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 	
@@ -1258,7 +1261,7 @@ void Renderer::visit(const svgdom::PolygonElement& e) {
 	cairo_close_path(this->cr);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	
-	this->renderCurrentShape();
+	this->renderCurrentShape(cairoGroupPush.isPushed());
 }
 
 void Renderer::visit(const svgdom::LineElement& e) {
@@ -1269,7 +1272,7 @@ void Renderer::visit(const svgdom::LineElement& e) {
 		return;
 	}
 	
-	PushCairoGroupIfNeeded cairoTempContext(*this);
+	PushCairoGroupIfNeeded cairoGroupPush(*this, false);
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 	
@@ -1282,7 +1285,7 @@ void Renderer::visit(const svgdom::LineElement& e) {
 	cairo_line_to(this->cr, this->lengthToPx(e.x2, 0), this->lengthToPx(e.y2, 1));
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 
-	this->renderCurrentShape();
+	this->renderCurrentShape(cairoGroupPush.isPushed());
 }
 
 void Renderer::visit(const svgdom::EllipseElement& e) {
@@ -1293,7 +1296,7 @@ void Renderer::visit(const svgdom::EllipseElement& e) {
 		return;
 	}
 	
-	PushCairoGroupIfNeeded cairoTempContext(*this);
+	PushCairoGroupIfNeeded cairoGroupPush(*this, false);
 	
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 	
@@ -1322,7 +1325,7 @@ void Renderer::visit(const svgdom::EllipseElement& e) {
 		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	}
 
-	this->renderCurrentShape();
+	this->renderCurrentShape(cairoGroupPush.isPushed());
 }
 
 void Renderer::visit(const svgdom::RectElement& e) {
@@ -1333,7 +1336,7 @@ void Renderer::visit(const svgdom::RectElement& e) {
 		return;
 	}
 	
-	PushCairoGroupIfNeeded cairoTempContext(*this);
+	PushCairoGroupIfNeeded cairoGroupPush(*this, false);
 	
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
@@ -1465,7 +1468,7 @@ void Renderer::visit(const svgdom::RectElement& e) {
 		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	}
 	
-	this->renderCurrentShape();
+	this->renderCurrentShape(cairoGroupPush.isPushed());
 }
 
 

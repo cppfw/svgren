@@ -62,7 +62,7 @@ public:
 	
 	void updateCurBoundingBox();
 	
-	void renderCurrentShape();
+	void renderCurrentShape(bool isCairoGroupPushed);
 	
 	void applyViewBox(const svgdom::ViewBoxed& e, const svgdom::AspectRatioed& ar);
 	

@@ -102,8 +102,12 @@ class PushCairoGroupIfNeeded{
 	
 	const svgdom::Element* maskElement = nullptr;
 public:
-	PushCairoGroupIfNeeded(Renderer& renderer);
+	PushCairoGroupIfNeeded(Renderer& renderer, bool isContainer);
 	~PushCairoGroupIfNeeded()noexcept;
+	
+	bool isPushed()const noexcept{
+		return this->groupPushed;
+	}
 };
 
 }
