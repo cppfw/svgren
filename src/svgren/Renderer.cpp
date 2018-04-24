@@ -437,6 +437,10 @@ void Renderer::renderCurrentShape(bool isCairoGroupPushed) {
 
 	auto stroke = this->styleStack.getStyleProperty(svgdom::StyleProperty_e::STROKE);
 
+	//OPTIMIZATION: in case there is 'opacity' style property and only one of
+	//              'stroke' or 'fill' is not none and is a solid color (not pattern/gradient),
+	//              then there is no need to push cairo group, but just multiply
+	//              the 'stroke-opacity' or 'fill-opacity' by 'opacity' value.
 	auto opacity = svgdom::real(1);
 	if(!isCairoGroupPushed){
 		if(auto p = this->styleStack.getStyleProperty(svgdom::StyleProperty_e::OPACITY)){
