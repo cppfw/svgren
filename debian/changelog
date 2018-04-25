@@ -1,3 +1,10 @@
+libsvgren (0.4.52) unstable; urgency=medium
+
+  * removed call to cairo_debug_reset_static_data() which was causing
+    crash in multithreaded apps
+
+ -- Ivan Gagis <igagis@gmail.com>  Wed, 25 Apr 2018 18:42:35 +0300
+
 libsvgren (0.4.51) unstable; urgency=medium
 
   * optimization of rendering simple shapes with opacity
