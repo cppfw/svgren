@@ -153,6 +153,8 @@
           </incDir>
         </ccTool>
       </item>
+      <item path="tests/async/main.cpp" ex="false" tool="1" flavor2="0">
+      </item>
       <item path="tests/render/main.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="1">
         </ccTool>
@@ -267,6 +269,8 @@
             <pElem>.</pElem>
           </incDir>
         </ccTool>
+      </item>
+      <item path="tests/async/main.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="tests/render/main.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="1">
@@ -386,6 +390,8 @@
           </preprocessorList>
         </ccTool>
       </item>
+      <item path="tests/async/main.cpp" ex="false" tool="1" flavor2="0">
+      </item>
       <item path="tests/render/main.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="2">
         </ccTool>
@@ -500,6 +506,8 @@
             <pElem>.</pElem>
           </incDir>
         </ccTool>
+      </item>
+      <item path="tests/async/main.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="tests/render/main.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="1">
