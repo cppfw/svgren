@@ -26,11 +26,13 @@ $(eval $(prorab-build-app))
 this_dirs := $(subst /, ,$(d))
 this_test := $(word $(words $(this_dirs)),$(this_dirs))
 
+this_svgs := $(shell ls $(d)../samples/testdata/*.svg)
+
 define this_rules
 test:: $(prorab_this_name)
 	@myci-running-test.sh $(this_test)
 	$(prorab_echo)cp $(d)../../src/*.dll . || true
-	$(prorab_echo)LD_LIBRARY_PATH=$(d)../../src DYLD_LIBRARY_PATH=$$$$LD_LIBRARY_PATH $(d)./tests $(d)../samples/testdata/back.svg; \
+	$(prorab_echo)LD_LIBRARY_PATH=$(d)../../src DYLD_LIBRARY_PATH=$$$$LD_LIBRARY_PATH $(d)./tests $(this_svgs); \
 		if [ $$$$? -ne 0 ]; then myci-error.sh "test failed"; exit 1; fi
 	@myci-passed.sh
 endef

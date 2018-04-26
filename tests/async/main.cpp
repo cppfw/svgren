@@ -8,25 +8,31 @@
 
 int main(int argc, char** argv) {
 	if(argc < 2){
-		std::cerr << "1 argument expected (SVG filename)" << std::endl;
+		std::cerr << "at least 1 argument expected (SVG filename)" << std::endl;
 		return 1;
 	}
 	
-	auto dom = svgdom::load(papki::FSFile(argv[1]));
+	std::vector<std::unique_ptr<svgdom::SvgElement>> svgs;
 	
-	std::thread t1([&dom](){
-		auto res = svgren::render(*dom);
-		TRACE_ALWAYS(<< "t1 rendered, width = " << res.width << std::endl)
-	});
+	for(int i = 1; i != argc; ++i){
+		svgs.push_back(svgdom::load(papki::FSFile(argv[i])));
+	}
 	
-	std::thread t2([&dom](){
-		auto res = svgren::render(*dom);
-		TRACE_ALWAYS(<< "t2 rendered, width = " << res.width << std::endl)
-	});
+	std::vector<std::thread> threads;
 	
+	for(auto& svg : svgs){
+		decltype(svg.get()) s = svg.get();
+		threads.emplace_back(
+				[s](){
+					auto res = svgren::render(*s);
+					TRACE_ALWAYS(<< "rendered, width = " << res.width << std::endl)
+				}
+			);
+	}
 	
-	t1.join();
-	t2.join();
+	for(auto& t : threads){
+		t.join();
+	}
 	
 	return 0;
 }
