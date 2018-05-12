@@ -153,8 +153,6 @@
           </incDir>
         </ccTool>
       </item>
-      <item path="tests/async/main.cpp" ex="false" tool="1" flavor2="0">
-      </item>
       <item path="tests/render/main.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="1">
         </ccTool>
@@ -270,8 +268,6 @@
           </incDir>
         </ccTool>
       </item>
-      <item path="tests/async/main.cpp" ex="false" tool="1" flavor2="0">
-      </item>
       <item path="tests/render/main.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="1">
         </ccTool>
@@ -303,12 +299,15 @@
           <buildCommand>${MAKE} -f makefile profiling=true debug=true CXXFLAGS=-DM_SVGREN_BACKGROUND=0xffffffff</buildCommand>
           <cleanCommand>${MAKE} -f makefile clean</cleanCommand>
           <executablePath>tests/render/tests</executablePath>
-          <ccTool flags="-mtune=generic -march=x86-64 -std=c++11 -funsigned-char -fPIC">
+          <ccTool flags="1">
             <incDir>
+              <pElem>.</pElem>
               <pElem>.</pElem>
             </incDir>
             <preprocessorList>
               <Elem>DEBUG</Elem>
+              <Elem>DEBUG</Elem>
+              <Elem>M_SVGREN_BACKGROUND=0xffffffff</Elem>
               <Elem>M_SVGREN_BACKGROUND=0xffffffff</Elem>
             </preprocessorList>
           </ccTool>
@@ -340,17 +339,6 @@
       </item>
       <item path="src/svgren/util.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
-        </ccTool>
-      </item>
-      <item path="tests/async/main.cpp" ex="false" tool="1" flavor2="8">
-        <ccTool flags="1">
-          <incDir>
-            <pElem>.</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>DEBUG</Elem>
-            <Elem>M_SVGREN_BACKGROUND=0xffffffff</Elem>
-          </preprocessorList>
         </ccTool>
       </item>
       <item path="tests/render/main.cpp" ex="false" tool="1" flavor2="8">
@@ -467,8 +455,6 @@
             <pElem>.</pElem>
           </incDir>
         </ccTool>
-      </item>
-      <item path="tests/async/main.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="tests/render/main.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="1">
