@@ -350,12 +350,12 @@ FilterResult colorMatrix(const Surface& s, const std::array<std::array<real, 5>,
 		ASSERT_INFO(sp < s.end, "sp = " << std::hex << static_cast<void*>(sp) << " s.end = " << static_cast<void*>(s.end))
 		auto dp = &ret.surface.data[(y * ret.surface.stride) * sizeof(std::uint32_t)];
 		for(unsigned x = 0; x != s.width; ++x){
-			auto r = real(*sp) / real(0xff);
+			auto b = real(*sp) / real(0xff);
 //			TRACE(<< "r0 = " << r0 << std::endl)
 			++sp;
 			auto g = real(*sp) / real(0xff);
 			++sp;
-			auto b = real(*sp) / real(0xff);
+			auto r = real(*sp) / real(0xff);
 			++sp;
 			auto isOpaque = (*sp == 0xff);
 			auto a = real(*sp) / real(0xff);
@@ -394,11 +394,11 @@ FilterResult colorMatrix(const Surface& s, const std::array<std::array<real, 5>,
 			g1 *= a1;
 			b1 *= a1;
 			
-			*dp = std::uint8_t(r1 * real(0xff));
+			*dp = std::uint8_t(b1 * real(0xff));
 			++dp;
 			*dp = std::uint8_t(g1 * real(0xff));
 			++dp;
-			*dp = std::uint8_t(b1 * real(0xff));
+			*dp = std::uint8_t(r1 * real(0xff));
 			++dp;
 			*dp = std::uint8_t(a1 * real(0xff));
 			++dp;
@@ -518,16 +518,16 @@ FilterResult blend(const Surface& in, const Surface& in2, svgdom::FeBlendElement
 		auto dp = &ret.surface.data[(y * ret.surface.stride) * sizeof(std::uint32_t)];
 		for(unsigned x = 0; x != ret.surface.width; ++x){
 			//TODO: optimize by using integer arithmetics instead of floating point
-			auto r01 = real(*sp1) / real(0xff);
-			auto r02 = real(*sp2) / real(0xff);
+			auto b01 = real(*sp1) / real(0xff);
+			auto b02 = real(*sp2) / real(0xff);
 			++sp1;
 			++sp2;
 			auto g01 = real(*sp1) / real(0xff);
 			auto g02 = real(*sp2) / real(0xff);
 			++sp1;
 			++sp2;
-			auto b01 = real(*sp1) / real(0xff);
-			auto b02 = real(*sp2) / real(0xff);
+			auto r01 = real(*sp1) / real(0xff);
+			auto r02 = real(*sp2) / real(0xff);
 			++sp1;
 			++sp2;
 			auto a01 = real(*sp1) / real(0xff);
@@ -545,47 +545,47 @@ FilterResult blend(const Surface& in, const Surface& in2, svgdom::FeBlendElement
 			switch(mode){
 				case svgdom::FeBlendElement::Mode_e::NORMAL:
 					//cr = (1 - qa) * cb + ca
-					*dp = std::uint8_t( ((1 - a01) * r02 + r01) * real(0xff));
+					*dp = std::uint8_t( ((1 - a01) * b02 + b01) * real(0xff));
 					++dp;
 					*dp = std::uint8_t( ((1 - a01) * g02 + g01) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( ((1 - a01) * b02 + b01) * real(0xff));
+					*dp = std::uint8_t( ((1 - a01) * r02 + r01) * real(0xff));
 					++dp;
 					break;
 				case svgdom::FeBlendElement::Mode_e::MULTIPLY:
 					//cr = (1-qa)*cb + (1-qb)*ca + ca*cb
-					*dp = std::uint8_t( ((1 - a01) * r02 + (1 - a02) * r01 + r01 * r02) * real(0xff));
+					*dp = std::uint8_t( ((1 - a01) * b02 + (1 - a02) * b01 + b01 * b02) * real(0xff));
 					++dp;
 					*dp = std::uint8_t( ((1 - a01) * g02 + (1 - a02) * g01 + g01 * g02) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( ((1 - a01) * b02 + (1 - a02) * b01 + b01 * b02) * real(0xff));
+					*dp = std::uint8_t( ((1 - a01) * r02 + (1 - a02) * r01 + r01 * r02) * real(0xff));
 					++dp;
 					break;
 				case svgdom::FeBlendElement::Mode_e::SCREEN:
 					//cr = cb + ca - ca * cb
-					*dp = std::uint8_t( (r02 + r01 - r01 * r02) * real(0xff));
+					*dp = std::uint8_t( (b02 + b01 - b01 * b02) * real(0xff));
 					++dp;
 					*dp = std::uint8_t( (g02 + g01 - g01 * g02) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( (b02 + b01 - b01 * b02) * real(0xff));
+					*dp = std::uint8_t( (r02 + r01 - r01 * r02) * real(0xff));
 					++dp;
 					break;
 				case svgdom::FeBlendElement::Mode_e::DARKEN:
 					//cr = Min ((1 - qa) * cb + ca, (1 - qb) * ca + cb)
-					*dp = std::uint8_t( std::min((1 - a01) * r02 + r01, (1 - a02) * r01 + r02) * real(0xff));
+					*dp = std::uint8_t( std::min((1 - a01) * b02 + b01, (1 - a02) * b01 + b02) * real(0xff));
 					++dp;
 					*dp = std::uint8_t( std::min((1 - a01) * g02 + g01, (1 - a02) * g01 + g02) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( std::min((1 - a01) * b02 + b01, (1 - a02) * b01 + b02) * real(0xff));
+					*dp = std::uint8_t( std::min((1 - a01) * r02 + r01, (1 - a02) * r01 + r02) * real(0xff));
 					++dp;
 					break;
 				case svgdom::FeBlendElement::Mode_e::LIGHTEN:
 					//cr = Max ((1 - qa) * cb + ca, (1 - qb) * ca + cb)
-					*dp = std::uint8_t( std::max((1 - a01) * r02 + r01, (1 - a02) * r01 + r02) * real(0xff));
+					*dp = std::uint8_t( std::max((1 - a01) * b02 + b01, (1 - a02) * b01 + b02) * real(0xff));
 					++dp;
 					*dp = std::uint8_t( std::max((1 - a01) * g02 + g01, (1 - a02) * g01 + g02) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( std::max((1 - a01) * b02 + b01, (1 - a02) * b01 + b02) * real(0xff));
+					*dp = std::uint8_t( std::max((1 - a01) * r02 + r01, (1 - a02) * r01 + r02) * real(0xff));
 					++dp;
 					break;
 				default:

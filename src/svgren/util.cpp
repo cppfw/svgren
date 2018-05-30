@@ -95,7 +95,7 @@ Surface svgren::getSubSurface(cairo_t* cr, const CanvasRegion& region){
 	ret.y = region.y;
 	
 	ASSERT(ret.height <= sh)
-	ASSERT(&ret.data[ret.stride * ret.height * sizeof(std::uint32_t)] <= ret.end)
+	ASSERT(&ret.data[ret.stride * (ret.height - 1) * sizeof(std::uint32_t)] < ret.end || ret.height == 0)
 
 	return ret;
 }
