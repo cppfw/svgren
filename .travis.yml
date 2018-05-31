@@ -221,7 +221,7 @@ deploy:
     condition: $BUILD_NAME = macosx
 - provider: script
   skip_cleanup: true
-  script: myci-deploy-cocoapods.sh -r igagis
+  script: rvm 2.3.3 do myci-deploy-cocoapods.sh -r igagis
   on:
     tags: true
     condition: $BUILD_NAME = ios
