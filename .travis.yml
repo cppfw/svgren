@@ -150,7 +150,6 @@ script:
     myci-deb-prepare.sh &&
     sg sbuild -c "sbuild -n -A -d xenial-amd64-sbuild --debbuildopts '-us -uc'";
   fi
-#NOTE: tests on mac os do not pass curretnly, probably libcairo is build with some different optimizations and produce slightly different result.
 - if [ "$BUILD_NAME" == "macosx" ]; then
     make && make test;
   fi
