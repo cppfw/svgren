@@ -1,3 +1,9 @@
+libsvgren (0.4.54) unstable; urgency=medium
+
+  * workaround for 'out of memory' cairo bug
+
+ -- Ivan Gagis <igagis@gmail.com>  Tue, 26 Jun 2018 18:08:51 +0300
+
 libsvgren (0.4.53) unstable; urgency=medium
 
   * BUGFIX: RGB => BGR because cairo uses BGR
