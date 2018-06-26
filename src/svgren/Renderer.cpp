@@ -84,6 +84,22 @@ void Renderer::applyCairoTransformation(const svgdom::Transformable::Transformat
 			ASSERT(false)
 			break;
 	}
+	
+	//WORKAROUND: Due to cairo/pixman bug https://bugs.freedesktop.org/show_bug.cgi?id=102966
+	//            we have to limit the maximum value of matrix element by 16 bit integer (+-0x7fff).
+	using std::min;
+	using std::max;
+	const double maxValue = double(0x7fff);
+
+	cairo_matrix_t matrix;
+	cairo_get_matrix(this->cr, &matrix);
+	matrix.xx = max(-maxValue, min(matrix.xx, maxValue));
+	matrix.yx = max(-maxValue, min(matrix.yx, maxValue));
+	matrix.xy = max(-maxValue, min(matrix.xy, maxValue));
+	matrix.yy = max(-maxValue, min(matrix.yy, maxValue));
+	matrix.x0 = max(-maxValue, min(matrix.x0, maxValue));
+	matrix.y0 = max(-maxValue, min(matrix.y0, maxValue));
+	cairo_set_matrix(this->cr, &matrix);
 }
 
 void Renderer::applyTransformations(const decltype(svgdom::Transformable::transformations)& transformations) {
