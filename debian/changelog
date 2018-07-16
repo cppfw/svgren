@@ -1,3 +1,9 @@
+libsvgren (0.4.55) unstable; urgency=medium
+
+  * bugfix: use nullptr in case of empty array
+
+ -- Ivan Gagis <igagis@gmail.com>  Mon, 16 Jul 2018 16:33:22 +0300
+
 libsvgren (0.4.54) unstable; urgency=medium
 
   * workaround for 'out of memory' cairo bug
