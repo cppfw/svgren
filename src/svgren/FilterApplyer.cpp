@@ -90,11 +90,20 @@ void boxBlurVertical(
 namespace{
 FilterResult allocateResult(const Surface& src){
 	FilterResult ret;
-	ret.data.resize(src.width * src.height * sizeof(std::uint32_t));
 	ret.surface = src;
-	ret.surface.data = &*ret.data.begin();
-	ret.surface.stride = ret.surface.width;
-	ret.surface.end = &*ret.data.begin() + ret.data.size();
+	auto dataSize = src.width * src.height * sizeof(std::uint32_t);
+	if (dataSize != 0) {
+		ret.data.resize(dataSize);
+		ASSERT_INFO(ret.data.size() != 0, "src.width = " << src.width << " src.height = " << src.height)
+		ret.surface.data = &*ret.data.begin();
+		ret.surface.stride = ret.surface.width;
+		ret.surface.end = &*ret.data.begin() + ret.data.size();
+	}else{
+		ret.data.clear();
+		ret.surface.data = nullptr;
+		ret.surface.stride = 0;
+		ret.surface.end = nullptr;
+	}
 	
 	return ret;
 }
@@ -186,7 +195,7 @@ Surface FilterApplyer::getSourceGraphic() {
 void FilterApplyer::setResult(const std::string& name, FilterResult&& result) {
 	this->results[name] = std::move(result);
 	this->lastResult = &this->results[name];
-	ASSERT(this->lastResult->surface.data == &*this->lastResult->data.begin())
+	ASSERT(this->lastResult->data.size() == 0 || this->lastResult->surface.data == &*this->lastResult->data.begin())
 }
 
 Surface FilterApplyer::getSource(const std::string& in) {
