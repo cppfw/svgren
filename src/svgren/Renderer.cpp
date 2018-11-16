@@ -20,8 +20,10 @@ real Renderer::lengthToPx(const svgdom::Length& l, unsigned coordIndex) const no
 }
 
 void Renderer::applyCairoTransformation(const svgdom::Transformable::Transformation& t) {
+//	TRACE(<< "Renderer::applyCairoTransformation(): applying transformation " << unsigned(t.type) << std::endl)
 	switch (t.type) {
 		case svgdom::Transformable::Transformation::Type_e::TRANSLATE:
+//			TRACE(<< "translate x,y = (" << t.x << ", " << t.y << ")" << std::endl)
 			cairo_translate(this->cr, t.x, t.y);
 			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 			break;
@@ -39,6 +41,7 @@ void Renderer::applyCairoTransformation(const svgdom::Transformable::Transformat
 			}
 			break;
 		case svgdom::Transformable::Transformation::Type_e::SCALE:
+//			TRACE(<< "scale transformation factors = (" << t.x << ", " << t.y << ")" << std::endl)
 			if(t.x * t.y != 0){ //cairo does not allow non-invertible scaling
 				cairo_scale(this->cr, t.x, t.y);
 				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
@@ -84,7 +87,7 @@ void Renderer::applyCairoTransformation(const svgdom::Transformable::Transformat
 			ASSERT(false)
 			break;
 	}
-	
+
 	//WORKAROUND: Due to cairo/pixman bug https://bugs.freedesktop.org/show_bug.cgi?id=102966
 	//            we have to limit the maximum value of matrix element by 16 bit integer (+-0x7fff).
 	using std::min;
@@ -203,16 +206,16 @@ void Renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradien
 		//gradient does not have styles attribute declared, need to inherit it from referenced
 		gradientSs.stack.push_back(&this->gradientGetStyle(g));
 	}
-	
+
 	struct ColorStopAdder : public svgdom::ConstVisitor{
 		cairo_pattern_t& pat;
 		svgdom::StyleStack& ss;
-		
+
 		ColorStopAdder(cairo_pattern_t& pat, svgdom::StyleStack& ss) : pat(pat), ss(ss) {}
-		
+
 		void visit(const svgdom::Gradient::StopElement& s)override{
 			svgdom::StyleStack::Push stylePush(this->ss, s);
-			
+
 			svgdom::Rgb rgb;
 			if (auto p = this->ss.getStyleProperty(svgdom::StyleProperty_e::STOP_COLOR)) {
 				rgb = p->getRgb();
@@ -232,7 +235,7 @@ void Renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradien
 			ASSERT(cairo_pattern_status(&this->pat) == CAIRO_STATUS_SUCCESS)
 		}
 	} visitor(pat, gradientSs);
-	
+
 	for (auto& stop : this->gradientGetStops(g)) {
 		stop->accept(visitor);
 	}
@@ -271,12 +274,12 @@ void Renderer::applyFilter(const std::string& id) {
 	if(!f){
 		return;
 	}
-	
+
 	FilterApplyer visitor(*this);
-	
+
 	ASSERT(f)
 	f->e.accept(visitor);
-	
+
 	this->blit(visitor.getLastResult());
 }
 
@@ -287,12 +290,12 @@ void Renderer::setGradient(const std::string& id) {
 		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 		return;
 	}
-	
+
 	struct CommonGradientPush{
 		CairoMatrixSaveRestore cairoMatrixPush; //here we need to save/restore only matrix!
-		
+
 		std::unique_ptr<ViewportPush> viewportPush;
-		
+
 		CommonGradientPush(Renderer& r, const svgdom::Gradient& gradient) :
 				cairoMatrixPush(r.cr)
 		{
@@ -310,20 +313,20 @@ void Renderer::setGradient(const std::string& id) {
 
 			r.applyTransformations(r.gradientGetTransformations(gradient));
 		}
-		
+
 		~CommonGradientPush()noexcept{}
 	};
-	
+
 	struct GradientSetter : public svgdom::ConstVisitor{
 		Renderer& r;
-		
+
 		const svgdom::StyleStack& ss;
-		
+
 		GradientSetter(Renderer& r, const svgdom::StyleStack& ss) : r(r), ss(ss) {}
-		
+
 		void visit(const svgdom::LinearGradientElement& gradient)override{
 			CommonGradientPush commonPush(this->r, gradient);
-			
+
 			if(auto pat = cairo_pattern_create_linear(
 					this->r.lengthToPx(this->r.gradientGetX1(gradient), 0),
 					this->r.lengthToPx(this->r.gradientGetY1(gradient), 1),
@@ -335,10 +338,10 @@ void Renderer::setGradient(const std::string& id) {
 				this->r.setCairoPatternSource(*pat, gradient, this->ss);
 			}
 		}
-		
+
 		void visit(const svgdom::RadialGradientElement& gradient)override{
 			CommonGradientPush commonPush(this->r, gradient);
-			
+
 			auto cx = this->r.gradientGetCx(gradient);
 			auto cy = this->r.gradientGetCy(gradient);
 			auto radius = this->r.gradientGetR(gradient);
@@ -365,13 +368,13 @@ void Renderer::setGradient(const std::string& id) {
 				this->r.setCairoPatternSource(*pat, gradient, this->ss);
 			}
 		}
-		
+
 		void defaultVisit(const svgdom::Element&)override{
 			cairo_set_source_rgba(this->r.cr, 0, 0, 0, 0);
 			ASSERT(cairo_status(this->r.cr) == CAIRO_STATUS_SUCCESS)
 		}
 	} visitor(*this, g->ss);
-	
+
 	g->e.accept(visitor);
 }
 
@@ -393,12 +396,12 @@ void Renderer::updateCurBoundingBox() {
 	this->userSpaceShapeBoundingBoxPos[1] = svgren::real(y1);
 	this->userSpaceShapeBoundingBoxDim[0] = svgren::real(x2 - x1);
 	this->userSpaceShapeBoundingBoxDim[1] = svgren::real(y2 - y1);
-	
+
 	if(this->userSpaceShapeBoundingBoxDim[0] == 0){
 		//empty path
 		return;
 	}
-	
+
 	//set device space bounding box
 	std::array<std::array<double, 2>, 4> rectVertices = {{
 		{{x1 ,y1}},
@@ -406,24 +409,24 @@ void Renderer::updateCurBoundingBox() {
 		{{x1, y2}},
 		{{x2, y1}}
 	}};
-	
+
 	for(auto& vertex : rectVertices){
 		cairo_user_to_device(this->cr, &vertex[0], &vertex[1]);
 		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-		
+
 		DeviceSpaceBoundingBox bb;
 		bb.left = decltype(bb.left)(vertex[0]);
 		bb.right = decltype(bb.right)(vertex[0]);
 		bb.top = decltype(bb.top)(vertex[1]);
 		bb.bottom = decltype(bb.bottom)(vertex[1]);
-		
+
 		this->deviceSpaceBoundingBox.merge(bb);
 	}
 }
 
 void Renderer::renderCurrentShape(bool isCairoGroupPushed) {
 	this->updateCurBoundingBox();
-	
+
 	if (auto p = this->styleStack.getStyleProperty(svgdom::StyleProperty_e::FILL_RULE)) {
 		switch (p->fillRule) {
 			default:
@@ -463,7 +466,7 @@ void Renderer::renderCurrentShape(bool isCairoGroupPushed) {
 			opacity = p->opacity;
 		}
 	}
-	
+
 	ASSERT(fill)
 	if (!fill->isNone()) {
 		if (fill->isUrl()) {
@@ -558,7 +561,7 @@ void Renderer::renderCurrentShape(bool isCairoGroupPushed) {
 	//clear path if any left
 	cairo_new_path(this->cr);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-	
+
 	this->applyFilter();
 }
 
@@ -578,13 +581,13 @@ void Renderer::renderSvgElement(
 	if(this->isGroupInvisible()){
 		return;
 	}
-		
+
 	PushCairoGroupIfNeeded cairoTempContext(*this, true);
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
-	
+
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
-	
+
 	if (this->isOutermostElement) {
 		cairo_translate(
 				this->cr,
@@ -603,17 +606,17 @@ void Renderer::renderSvgElement(
 		);
 
 	this->applyViewBox(v, a);
-	
+
 	{
 		bool oldOutermostElementFlag = this->isOutermostElement;
 		this->isOutermostElement = false;
 		utki::ScopeExit scopeExit([oldOutermostElementFlag, this](){
 			this->isOutermostElement = oldOutermostElementFlag;
 		});
-		
+
 		this->relayAccept(e);
 	}
-	
+
 	this->applyFilter();
 }
 
@@ -640,17 +643,17 @@ void Renderer::visit(const svgdom::GElement& e) {
 	if(this->isGroupInvisible()){
 		return;
 	}
-	
+
 	PushCairoGroupIfNeeded cairoTempContext(*this, true);
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
-	
+
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
-	
+
 	this->applyTransformations(e.transformations);
 
 	this->relayAccept(e);
-	
+
 	this->applyFilter();
 }
 
@@ -665,10 +668,10 @@ void Renderer::visit(const svgdom::UseElement& e) {
 		Renderer& r;
 		const svgdom::UseElement& ue;
 		svgdom::GElement fakeGElement;
-		
+
 		RefRenderer(Renderer& r, const svgdom::UseElement& e) :
 				r(r), ue(e)
-		{	
+		{
 			this->fakeGElement.styles = e.styles;
 			this->fakeGElement.transformations = e.transformations;
 
@@ -682,7 +685,7 @@ void Renderer::visit(const svgdom::UseElement& e) {
 				this->fakeGElement.transformations.push_back(t);
 			}
 		}
-		
+
 		void visit(const svgdom::SymbolElement& symbol)override{
 			struct FakeSvgElement : public svgdom::Element{
 				Renderer& r;
@@ -698,7 +701,7 @@ void Renderer::visit(const svgdom::UseElement& e) {
 				}
 				void accept(svgdom::ConstVisitor& visitor) const override{
 					const auto hundredPercent = svgdom::Length::make(100, svgdom::Length::Unit_e::PERCENT);
-					
+
 					this->r.renderSvgElement(
 							this->se,
 							this->se,
@@ -711,11 +714,11 @@ void Renderer::visit(const svgdom::UseElement& e) {
 						);
 				}
 			};
-			
+
 			this->fakeGElement.children.push_back(utki::makeUnique<FakeSvgElement>(this->r, this->ue, symbol));
 			this->fakeGElement.accept(this->r);
 		}
-		
+
 		void visit(const svgdom::SvgElement& svg)override{
 			struct FakeSvgElement : public svgdom::Element{
 				Renderer& r;
@@ -743,11 +746,11 @@ void Renderer::visit(const svgdom::UseElement& e) {
 						);
 				}
 			};
-			
+
 			this->fakeGElement.children.push_back(utki::makeUnique<FakeSvgElement>(this->r, this->ue, svg));
 			this->fakeGElement.accept(this->r);
 		}
-		
+
 		void defaultVisit(const svgdom::Element& element)override{
 			struct FakeSvgElement : public svgdom::Element{
 				Renderer& r;
@@ -764,18 +767,18 @@ void Renderer::visit(const svgdom::UseElement& e) {
 					this->e.accept(this->r);
 				}
 			};
-			
+
 			this->fakeGElement.children.push_back(utki::makeUnique<FakeSvgElement>(this->r, element));
 			this->fakeGElement.accept(this->r);
 		}
-		
+
 		void defaultVisit(const svgdom::Element& element, const svgdom::Container& c)override{
 			this->defaultVisit(element);
 		}
 	} visitor(*this, e);
-	
+
 	ASSERT(ref)
-	
+
 	ref->e.accept(visitor);
 }
 
@@ -811,13 +814,13 @@ void Renderer::visit(const svgdom::PathElement& e) {
 	if(this->isInvisible()){
 		return;
 	}
-	
+
 	PushCairoGroupIfNeeded cairoGroupPush(*this, false);
-	
+
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
-	
+
 	this->applyTransformations(e.transformations);
 
 	double prevQuadraticX1 = 0;
@@ -1119,13 +1122,13 @@ void Renderer::visit(const svgdom::PathElement& e) {
 					auto angle = pointAngle(double(0), double(0), xe, ye);
 
 					using std::sqrt;
-					
+
 					//Put the end point onto the x axis
 					xe = sqrt(xe * xe + ye * ye);
 					ye = 0;
 
 					using std::max;
-					
+
 					//Update the x radius if it is too small
 					auto rx = max(double(s.rx), xe / 2);
 
@@ -1180,7 +1183,7 @@ void Renderer::visit(const svgdom::PathElement& e) {
 		}
 		prevStep = &s;
 	}
-	
+
 	this->renderCurrentShape(cairoGroupPush.isPushed());
 }
 
@@ -1191,13 +1194,13 @@ void Renderer::visit(const svgdom::CircleElement& e) {
 	if(this->isInvisible()){
 		return;
 	}
-	
+
 	PushCairoGroupIfNeeded cairoGroupPush(*this, false);
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
-	
+
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
-	
+
 	this->applyTransformations(e.transformations);
 
 	cairo_arc(
@@ -1220,15 +1223,15 @@ void Renderer::visit(const svgdom::PolylineElement& e) {
 	if(this->isInvisible()){
 		return;
 	}
-	
+
 	//TODO: make a common push class for shapes
-	
+
 	PushCairoGroupIfNeeded cairoGroupPush(*this, false);
-	
+
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
-	
+
 	this->applyTransformations(e.transformations);
 
 	if (e.points.size() == 0) {
@@ -1244,7 +1247,7 @@ void Renderer::visit(const svgdom::PolylineElement& e) {
 		cairo_line_to(this->cr, (*i)[0], (*i)[1]);
 		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	}
-	
+
 	this->renderCurrentShape(cairoGroupPush.isPushed());
 }
 
@@ -1255,13 +1258,13 @@ void Renderer::visit(const svgdom::PolygonElement& e) {
 	if(this->isInvisible()){
 		return;
 	}
-	
+
 	PushCairoGroupIfNeeded cairoGroupPush(*this, false);
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
-	
+
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
-	
+
 	this->applyTransformations(e.transformations);
 
 	if (e.points.size() == 0) {
@@ -1280,7 +1283,7 @@ void Renderer::visit(const svgdom::PolygonElement& e) {
 
 	cairo_close_path(this->cr);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-	
+
 	this->renderCurrentShape(cairoGroupPush.isPushed());
 }
 
@@ -1291,13 +1294,13 @@ void Renderer::visit(const svgdom::LineElement& e) {
 	if(this->isInvisible()){
 		return;
 	}
-	
+
 	PushCairoGroupIfNeeded cairoGroupPush(*this, false);
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
-	
+
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
-	
+
 	this->applyTransformations(e.transformations);
 
 	cairo_move_to(this->cr, this->lengthToPx(e.x1, 0), this->lengthToPx(e.y1, 1));
@@ -1315,13 +1318,13 @@ void Renderer::visit(const svgdom::EllipseElement& e) {
 	if(this->isInvisible()){
 		return;
 	}
-	
+
 	PushCairoGroupIfNeeded cairoGroupPush(*this, false);
-	
+
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
-	
+
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
-	
+
 	this->applyTransformations(e.transformations);
 
 	{
@@ -1355,18 +1358,18 @@ void Renderer::visit(const svgdom::RectElement& e) {
 	if(this->isInvisible()){
 		return;
 	}
-	
+
 	PushCairoGroupIfNeeded cairoGroupPush(*this, false);
-	
+
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
 	this->applyTransformations(e.transformations);
-	
+
 	auto width = this->lengthToPx(e.width, 0);
 	auto height = this->lengthToPx(e.height, 1);
-	
+
 	//NOTE: see SVG sect: https://www.w3.org/TR/SVG/shapes.html#RectElementWidthAttribute
 	//      Zero values disable rendering of the element.
 	if(width == real(0) || height == real(0)){
@@ -1431,7 +1434,7 @@ void Renderer::visit(const svgdom::RectElement& e) {
 			{
 				auto dx = this->lengthToPx(rx, 0);
 				auto dy = this->lengthToPx(ry, 1);
-				if(dx * dy != 0){ //cairo doesn't allow non-invertible scaling 
+				if(dx * dy != 0){ //cairo doesn't allow non-invertible scaling
 					cairo_scale(this->cr, dx, dy);
 					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				}else{
@@ -1452,7 +1455,7 @@ void Renderer::visit(const svgdom::RectElement& e) {
 			{
 				auto dx = this->lengthToPx(rx, 0);
 				auto dy = this->lengthToPx(ry, 1);
-				if(dx * dy != 0){ //cairo doesn't allow non-invertible scaling 
+				if(dx * dy != 0){ //cairo doesn't allow non-invertible scaling
 					cairo_scale(this->cr, dx, dy);
 					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				}else{
@@ -1465,7 +1468,7 @@ void Renderer::visit(const svgdom::RectElement& e) {
 
 		cairo_line_to(this->cr, this->lengthToPx(e.x, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(ry, 1));
 		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-		
+
 		{
 			CairoContextSaveRestore saveRestore(this->cr);
 			cairo_translate(this->cr, this->lengthToPx(e.x, 0) + this->lengthToPx(rx, 0), this->lengthToPx(e.y, 1) + this->lengthToPx(ry, 1));
@@ -1487,7 +1490,7 @@ void Renderer::visit(const svgdom::RectElement& e) {
 		cairo_close_path(this->cr);
 		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	}
-	
+
 	this->renderCurrentShape(cairoGroupPush.isPushed());
 }
 
@@ -1497,7 +1500,7 @@ struct GradientCaster : public svgdom::ConstVisitor{
 	const svgdom::LinearGradientElement* linear = nullptr;
 	const svgdom::RadialGradientElement* radial = nullptr;
 	const svgdom::Gradient* gradient = nullptr;
-	
+
 	void visit(const svgdom::LinearGradientElement& e) override{
 		this->gradient = &e;
 		this->linear = &e;
@@ -1514,11 +1517,11 @@ const decltype(svgdom::Transformable::transformations)& Renderer::gradientGetTra
 	if(g.transformations.size() != 0){
 		return g.transformations;
 	}
-	
+
 	auto refId = g.getLocalIdFromIri();
 	if(refId.length() != 0){
 		auto ref = this->finder.findById(refId);
-		
+
 		if(ref){
 			GradientCaster caster;
 			ref->e.accept(caster);
@@ -1534,11 +1537,11 @@ svgdom::CoordinateUnits_e Renderer::gradientGetUnits(const svgdom::Gradient& g) 
 	if(g.units != svgdom::CoordinateUnits_e::UNKNOWN){
 		return g.units;
 	}
-	
+
 	auto refId = g.getLocalIdFromIri();
 	if(refId.length() != 0){
 		auto ref = this->finder.findById(refId);
-		
+
 		if(ref){
 			GradientCaster caster;
 			ref->e.accept(caster);
@@ -1555,11 +1558,11 @@ svgdom::Length Renderer::gradientGetX1(const svgdom::LinearGradientElement& g){
 	if(g.x1.isValid()){
 		return g.x1;
 	}
-	
+
 	auto refId = g.getLocalIdFromIri();
 	if(refId.length() != 0){
 		auto ref = this->finder.findById(refId);
-		
+
 		if(ref){
 			GradientCaster caster;
 			ref->e.accept(caster);
@@ -1575,11 +1578,11 @@ svgdom::Length Renderer::gradientGetY1(const svgdom::LinearGradientElement& g) {
 	if(g.y1.isValid()){
 		return g.y1;
 	}
-	
+
 	auto refId = g.getLocalIdFromIri();
 	if(refId.length() != 0){
 		auto ref = this->finder.findById(refId);
-		
+
 		if(ref){
 			GradientCaster caster;
 			ref->e.accept(caster);
@@ -1595,11 +1598,11 @@ svgdom::Length Renderer::gradientGetX2(const svgdom::LinearGradientElement& g) {
 	if(g.x2.isValid()){
 		return g.x2;
 	}
-	
+
 	auto refId = g.getLocalIdFromIri();
 	if(refId.length() != 0){
 		auto ref = this->finder.findById(refId);
-		
+
 		if(ref){
 			GradientCaster caster;
 			ref->e.accept(caster);
@@ -1615,11 +1618,11 @@ svgdom::Length Renderer::gradientGetY2(const svgdom::LinearGradientElement& g) {
 	if(g.y2.isValid()){
 		return g.y2;
 	}
-	
+
 	auto refId = g.getLocalIdFromIri();
 	if(refId.length() != 0){
 		auto ref = this->finder.findById(refId);
-		
+
 		if(ref){
 			GradientCaster caster;
 			ref->e.accept(caster);
@@ -1635,11 +1638,11 @@ svgdom::Length Renderer::gradientGetCx(const svgdom::RadialGradientElement& g) {
 	if(g.cx.isValid()){
 		return g.cx;
 	}
-	
+
 	auto refId = g.getLocalIdFromIri();
 	if(refId.length() != 0){
 		auto ref = this->finder.findById(refId);
-		
+
 		if(ref){
 			GradientCaster caster;
 			ref->e.accept(caster);
@@ -1655,11 +1658,11 @@ svgdom::Length Renderer::gradientGetCy(const svgdom::RadialGradientElement& g) {
 	if(g.cy.isValid()){
 		return g.cy;
 	}
-	
+
 	auto refId = g.getLocalIdFromIri();
 	if(refId.length() != 0){
 		auto ref = this->finder.findById(refId);
-		
+
 		if(ref){
 			GradientCaster caster;
 			ref->e.accept(caster);
@@ -1675,11 +1678,11 @@ svgdom::Length Renderer::gradientGetR(const svgdom::RadialGradientElement& g) {
 	if(g.r.isValid()){
 		return g.r;
 	}
-	
+
 	auto refId = g.getLocalIdFromIri();
 	if(refId.length() != 0){
 		auto ref = this->finder.findById(refId);
-		
+
 		if(ref){
 			GradientCaster caster;
 			ref->e.accept(caster);
@@ -1695,11 +1698,11 @@ svgdom::Length Renderer::gradientGetFx(const svgdom::RadialGradientElement& g) {
 	if(g.fx.isValid()){
 		return g.fx;
 	}
-	
+
 	auto refId = g.getLocalIdFromIri();
 	if(refId.length() != 0){
 		auto ref = this->finder.findById(refId);
-		
+
 		if(ref){
 			GradientCaster caster;
 			ref->e.accept(caster);
@@ -1715,11 +1718,11 @@ svgdom::Length Renderer::gradientGetFy(const svgdom::RadialGradientElement& g) {
 	if(g.fy.isValid()){
 		return g.fy;
 	}
-	
+
 	auto refId = g.getLocalIdFromIri();
 	if(refId.length() != 0){
 		auto ref = this->finder.findById(refId);
-		
+
 		if(ref){
 			GradientCaster caster;
 			ref->e.accept(caster);
@@ -1735,11 +1738,11 @@ const decltype(svgdom::Container::children)&  Renderer::gradientGetStops(const s
 	if(g.children.size() != 0){
 		return g.children;
 	}
-	
+
 	auto refId = g.getLocalIdFromIri();
 	if(refId.length() != 0){
 		auto ref = this->finder.findById(refId);
-		
+
 		if(ref){
 			GradientCaster caster;
 			ref->e.accept(caster);
@@ -1748,7 +1751,7 @@ const decltype(svgdom::Container::children)&  Renderer::gradientGetStops(const s
 			}
 		}
 	}
-	
+
 	return g.children;
 }
 
@@ -1756,11 +1759,11 @@ const svgdom::Styleable& Renderer::gradientGetStyle(const svgdom::Gradient& g) {
 	if(g.styles.size() != 0){
 		return g;
 	}
-	
+
 	auto refId = g.getLocalIdFromIri();
 	if(refId.length() != 0){
 		auto ref = this->finder.findById(refId);
-		
+
 		if(ref){
 			GradientCaster caster;
 			ref->e.accept(caster);
@@ -1769,7 +1772,7 @@ const svgdom::Styleable& Renderer::gradientGetStyle(const svgdom::Gradient& g) {
 			}
 		}
 	}
-	
+
 	return g;
 }
 
@@ -1777,13 +1780,13 @@ svgdom::Gradient::SpreadMethod_e Renderer::gradientGetSpreadMethod(const svgdom:
 	if(g.spreadMethod != svgdom::Gradient::SpreadMethod_e::DEFAULT){
 		return g.spreadMethod;
 	}
-	
+
 	ASSERT(g.spreadMethod == svgdom::Gradient::SpreadMethod_e::DEFAULT)
-	
+
 	auto refId = g.getLocalIdFromIri();
 	if(refId.length() != 0){
 		auto ref = this->finder.findById(refId);
-		
+
 		if(ref){
 			GradientCaster caster;
 			ref->e.accept(caster);
@@ -1792,7 +1795,7 @@ svgdom::Gradient::SpreadMethod_e Renderer::gradientGetSpreadMethod(const svgdom:
 			}
 		}
 	}
-	
+
 	return svgdom::Gradient::SpreadMethod_e::PAD;
 }
 
@@ -1802,19 +1805,19 @@ void Renderer::blit(const Surface& s) {
 		return;
 	}
 	ASSERT(s.data && s.width != 0 && s.height != 0)
-	
+
 	auto dst = getSubSurface(this->cr);
-	
+
 	if(s.x >= dst.width || s.y >= dst.height){
 		TRACE(<< "Renderer::blit(): source image is out of canvas" << std::endl)
 		return;
 	}
-	
+
 	auto dstp = reinterpret_cast<std::uint32_t*>(dst.data) + s.y * dst.stride + s.x;
 	auto srcp = reinterpret_cast<std::uint32_t*>(s.data);
 	unsigned dx = std::min(s.width, dst.width - s.x);
 	unsigned dy = std::min(s.height, dst.height - s.y);
-	
+
 	for(unsigned y = 0; y != dy; ++y){
 		auto p = dstp + y * dst.stride;
 		auto sp = srcp + y * s.stride;

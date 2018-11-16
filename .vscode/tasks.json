@@ -6,7 +6,19 @@
         {
             "label": "build",
             "type": "shell",
-            "command": "make",
+            "command": "make autojobs=true",
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "build_debug",
+            "type": "shell",
+            "command": "make autojobs=true debug=true",
             "problemMatcher": [
                 "$gcc"
             ],

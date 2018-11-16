@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/tests/render/tests",
-            "args": [],
+            "args": ["${workspaceFolder}/tests/samples/testdata/mouse.svg"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/tests/render",
             "environment": [],
