@@ -6,7 +6,7 @@
 
 #include "util.hxx"
 
-#include "FilterApplyer.hxx"
+#include "FilterApplier.hxx"
 
 using namespace svgren;
 
@@ -275,7 +275,7 @@ void Renderer::applyFilter(const std::string& id) {
 		return;
 	}
 
-	FilterApplyer visitor(*this);
+	FilterApplier visitor(*this);
 
 	ASSERT(f)
 	f->e.accept(visitor);

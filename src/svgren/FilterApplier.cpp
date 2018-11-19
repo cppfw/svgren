@@ -1,4 +1,4 @@
-#include "FilterApplyer.hxx"
+#include "FilterApplier.hxx"
 
 #include <cmath>
 
@@ -187,18 +187,18 @@ FilterResult cairoImageSurfaceBlur(const Surface& src, std::array<real, 2> stdDe
 }
 
 
-Surface FilterApplyer::getSourceGraphic() {
+Surface FilterApplier::getSourceGraphic() {
 	return getSubSurface(this->r.cr, this->filterRegion);
 }
 
 
-void FilterApplyer::setResult(const std::string& name, FilterResult&& result) {
+void FilterApplier::setResult(const std::string& name, FilterResult&& result) {
 	this->results[name] = std::move(result);
 	this->lastResult = &this->results[name];
 	ASSERT(this->lastResult->data.size() == 0 || this->lastResult->surface.data == &*this->lastResult->data.begin())
 }
 
-Surface FilterApplyer::getSource(const std::string& in) {
+Surface FilterApplier::getSource(const std::string& in) {
 	if(in == "SourceGraphic"){
 		return this->getSourceGraphic();
 	}
@@ -235,7 +235,7 @@ Surface FilterApplyer::getSource(const std::string& in) {
 	return Surface();
 }
 
-Surface FilterApplyer::getLastResult() {
+Surface FilterApplier::getLastResult() {
 	if (!this->lastResult) {
 		return Surface();
 	}
@@ -243,7 +243,7 @@ Surface FilterApplyer::getLastResult() {
 }
 
 
-void FilterApplyer::visit(const svgdom::FilterElement& e) {
+void FilterApplier::visit(const svgdom::FilterElement& e) {
 	this->primitiveUnits = e.primitiveUnits;
 	
 	//set filter region
@@ -314,7 +314,7 @@ void FilterApplyer::visit(const svgdom::FilterElement& e) {
 	this->relayAccept(e);
 }
 
-void FilterApplyer::visit(const svgdom::FeGaussianBlurElement& e) {
+void FilterApplier::visit(const svgdom::FeGaussianBlurElement& e) {
 	if (!e.isStdDeviationSpecified()) {
 		return;
 	}
@@ -410,7 +410,7 @@ FilterResult colorMatrix(const Surface& s, const std::array<std::array<real, 5>,
 }
 }
 
-void FilterApplyer::visit(const svgdom::FeColorMatrixElement& e){
+void FilterApplier::visit(const svgdom::FeColorMatrixElement& e){
 	std::array<std::array<real, 5>, 4> m; //first index = row, second index = column
 	
 	switch(e.type){
@@ -605,7 +605,7 @@ FilterResult blend(const Surface& in, const Surface& in2, svgdom::FeBlendElement
 }
 }
 
-void FilterApplyer::visit(const svgdom::FeBlendElement& e){
+void FilterApplier::visit(const svgdom::FeBlendElement& e){
 	auto s1 = this->getSource(e.in).intersectionSurface(this->filterRegion);
 	if(!s1.data){
 		return;
@@ -741,7 +741,7 @@ FilterResult composite(const Surface& in, const Surface& in2, const svgdom::FeCo
 }
 }
 
-void FilterApplyer::visit(const svgdom::FeCompositeElement& e){
+void FilterApplier::visit(const svgdom::FeCompositeElement& e){
 	auto s1 = this->getSource(e.in).intersectionSurface(this->filterRegion);
 	if(!s1.data){
 		return;
