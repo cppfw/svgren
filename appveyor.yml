@@ -15,41 +15,41 @@ environment:
 
 
 install:
-  - cmd: C:\cygwin64\setup-x86_64.exe -g -q -X -s http://igagis.crabdance.com -s http://cygwin.mirror.constant.com -P cygport,calm,%DEPS%
-  - cmd: C:\cygwin\setup-x86.exe -g -q -X -s http://igagis.crabdance.com -s http://cygwin.mirror.constant.com -P cygport,calm,%DEPS%
+#  - cmd: C:\cygwin64\setup-x86_64.exe -g -q -X -s http://igagis.crabdance.com -s http://cygwin.mirror.constant.com -P cygport,calm,%DEPS%
+#  - cmd: C:\cygwin\setup-x86.exe -g -q -X -s http://igagis.crabdance.com -s http://cygwin.mirror.constant.com -P cygport,calm,%DEPS%
   - ps: (new-object net.webclient).DownloadFile('http://coapp.org/files/CoApp.Tools.Powershell.msi', 'C:\CoApp.Tools.Powershell.msi')
   - ps: Start-Process -FilePath msiexec -ArgumentList /i, 'C:\CoApp.Tools.Powershell.msi', /quiet -Wait
   - ps: $env:PSModulePath = $env:PSModulePath + ';C:\Program Files (x86)\Outercurve Foundation\Modules'
   - ps: Import-Module CoApp
 
 before_build:
-  - cmd: xcopy /S C:\projects\build C:\cygwin64\home\appveyor\
-  - cmd: xcopy /S C:\projects\build C:\cygwin\home\appveyor\
+#  - cmd: xcopy /S C:\projects\build C:\cygwin64\home\appveyor\
+#  - cmd: xcopy /S C:\projects\build C:\cygwin\home\appveyor\
   - nuget restore msvs_solution/msvs_solution.sln
   - nuget update msvs_solution/msvs_solution.sln
 
 build_script:
 # cyggport downloads tagged sources from github, so use cygport only for tagged commits, otherwise build with just make.
-  - cmd: if "%APPVEYOR_REPO_TAG%"=="true" (
-            C:\cygwin64\bin\bash -e -l -c "myci-apply-version.sh -v `myci-deb-version.sh debian/changelog` cygwin/*.in" &&
-            C:\cygwin64\bin\bash -e -l -c "cygport cygwin/*.cygport download" &&
-            C:\cygwin64\bin\bash -e -l -c "cygport cygwin/*.cygport all" &&
-            C:\cygwin\bin\bash -e -l -c "myci-apply-version.sh -v `myci-deb-version.sh debian/changelog` cygwin/*.in" &&
-            C:\cygwin\bin\bash -e -l -c "cygport cygwin/*.cygport download" &&
-            C:\cygwin\bin\bash -e -l -c "cygport cygwin/*.cygport all"
-        ) else (
-            C:\cygwin64\bin\bash -e -l -c "make" &&
-            C:\cygwin\bin\bash -e -l -c "make"
-        )
+#  - cmd: if "%APPVEYOR_REPO_TAG%"=="true" (
+#            C:\cygwin64\bin\bash -e -l -c "myci-apply-version.sh -v `myci-deb-version.sh debian/changelog` cygwin/*.in" &&
+#            C:\cygwin64\bin\bash -e -l -c "cygport cygwin/*.cygport download" &&
+#            C:\cygwin64\bin\bash -e -l -c "cygport cygwin/*.cygport all" &&
+#            C:\cygwin\bin\bash -e -l -c "myci-apply-version.sh -v `myci-deb-version.sh debian/changelog` cygwin/*.in" &&
+#            C:\cygwin\bin\bash -e -l -c "cygport cygwin/*.cygport download" &&
+#            C:\cygwin\bin\bash -e -l -c "cygport cygwin/*.cygport all"
+#        ) else (
+#            C:\cygwin64\bin\bash -e -l -c "make" &&
+#            C:\cygwin\bin\bash -e -l -c "make"
+#        )
   - ps: .\nuget\build_nuget.ps1
 
 test_script:
-  - cmd: C:\cygwin64\bin\bash -e -l -c "make test"
+#  - cmd: C:\cygwin64\bin\bash -e -l -c "make test"
 #  - cmd: C:\cygwin\bin\bash -e -l -c "make test"
-#  - ps: .\tests\autotest-appveyor.ps1
+
 
 before_deploy:
-  - cmd: if "%APPVEYOR_REPO_TAG%"=="true" (C:\cygwin64\bin\bash -e -l -c "myci-deploy-cygwin.sh -r igagis/cygwin-repo" && C:\cygwin\bin\bash -e -l -c "myci-deploy-cygwin.sh -r igagis/cygwin-repo") else (echo Skipping deploy because not a tagged commit.)
+#  - cmd: if "%APPVEYOR_REPO_TAG%"=="true" (C:\cygwin64\bin\bash -e -l -c "myci-deploy-cygwin.sh -r igagis/cygwin-repo" && C:\cygwin\bin\bash -e -l -c "myci-deploy-cygwin.sh -r igagis/cygwin-repo") else (echo Skipping deploy because not a tagged commit.)
 
 
 deploy:
