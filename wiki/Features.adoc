@@ -6,6 +6,7 @@
 
 - Text
 - Animation
+- Interactivity
 
 == List of some supported features
 
