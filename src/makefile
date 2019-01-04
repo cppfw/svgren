@@ -10,10 +10,6 @@ this_soname := $(shell cat $(d)soname.txt)
 this_srcs := $(call prorab-src-dir,.)
 
 
-
-
-this_cxxflags := 
-
 this_cxxflags += -Wall #enable all warnings
 this_cxxflags += -Wno-comment #no warnings on nested comments
 this_cxxflags += -funsigned-char #the 'char' type is unsigned

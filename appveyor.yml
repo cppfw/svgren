@@ -1,56 +1,42 @@
-branches:
-  only:
-    - master
-
 os: Visual Studio 2017
 version: "{branch}-{build}"
 
-clone_folder: c:\projects\build
+clone_folder: c:\build
 
 environment:
-  MYCI_GIT_USERNAME: igagis
-  MYCI_GIT_ACCESS_TOKEN:
-    secure: mpW6B2ols1a2FkshjKjryBuvBt8A1TpU9WGn+/d6PIQiZlzA0Rpo1ETKpmy0bnvX
-  DEPS: make,gcc-g++,prorab,prorab-extra,myci,utki,svgdom,libcairo-devel,libpugixml-devel,kolme
-
+  MYCI_BINTRAY_API_KEY:
+    secure: t04W/09OyK0B8CxJHydCkay+Fm3i6KkBciVXjzk0u09v6F9wtDn/dsuqd5eMIj8s
 
 install:
-#  - cmd: C:\cygwin64\setup-x86_64.exe -g -q -X -s http://igagis.crabdance.com -s http://cygwin.mirror.constant.com -P cygport,calm,%DEPS%
-#  - cmd: C:\cygwin\setup-x86.exe -g -q -X -s http://igagis.crabdance.com -s http://cygwin.mirror.constant.com -P cygport,calm,%DEPS%
+  - C:\msys64\usr\bin\bash -lc "echo -e '[igagis_msys]\\nSigLevel = Optional TrustAll\\nServer = https://dl.bintray.com/igagis/msys2/msys' >> /etc/pacman.conf"
+  - C:\msys64\usr\bin\bash -lc "echo -e '[igagis_mingw64]\\nSigLevel = Optional TrustAll\\nServer = https://dl.bintray.com/igagis/msys2/mingw64' >> /etc/pacman.conf"
+  - C:\msys64\usr\bin\bash -lc "echo -e '[igagis_mingw32]\\nSigLevel = Optional TrustAll\\nServer = https://dl.bintray.com/igagis/msys2/mingw32' >> /etc/pacman.conf"
+  - C:\msys64\usr\bin\pacman --noconfirm --ask 20 --sync --refresh --refresh --sysupgrade --sysupgrade
+  - C:\msys64\usr\bin\pacman --noconfirm --ask 20 --sync --refresh --refresh --sysupgrade --sysupgrade
+  - c:\msys64\usr\bin\pacman -Sy --noconfirm myci
   - ps: (new-object net.webclient).DownloadFile('http://coapp.org/files/CoApp.Tools.Powershell.msi', 'C:\CoApp.Tools.Powershell.msi')
   - ps: Start-Process -FilePath msiexec -ArgumentList /i, 'C:\CoApp.Tools.Powershell.msi', /quiet -Wait
   - ps: $env:PSModulePath = $env:PSModulePath + ';C:\Program Files (x86)\Outercurve Foundation\Modules'
   - ps: Import-Module CoApp
 
 before_build:
-#  - cmd: xcopy /S C:\projects\build C:\cygwin64\home\appveyor\
-#  - cmd: xcopy /S C:\projects\build C:\cygwin\home\appveyor\
   - nuget restore msvs_solution/msvs_solution.sln
   - nuget update msvs_solution/msvs_solution.sln
 
 build_script:
-# cyggport downloads tagged sources from github, so use cygport only for tagged commits, otherwise build with just make.
-#  - cmd: if "%APPVEYOR_REPO_TAG%"=="true" (
-#            C:\cygwin64\bin\bash -e -l -c "myci-apply-version.sh -v `myci-deb-version.sh debian/changelog` cygwin/*.in" &&
-#            C:\cygwin64\bin\bash -e -l -c "cygport cygwin/*.cygport download" &&
-#            C:\cygwin64\bin\bash -e -l -c "cygport cygwin/*.cygport all" &&
-#            C:\cygwin\bin\bash -e -l -c "myci-apply-version.sh -v `myci-deb-version.sh debian/changelog` cygwin/*.in" &&
-#            C:\cygwin\bin\bash -e -l -c "cygport cygwin/*.cygport download" &&
-#            C:\cygwin\bin\bash -e -l -c "cygport cygwin/*.cygport all"
-#        ) else (
-#            C:\cygwin64\bin\bash -e -l -c "make" &&
-#            C:\cygwin\bin\bash -e -l -c "make"
-#        )
+  - C:\msys64\usr\bin\bash -lc "cd /c/build/ && myci-apply-version.sh -v `myci-deb-version.sh debian/changelog` msys2/PKGBUILD.in"
+  - C:\msys64\usr\bin\bash -lc "cd /c/build/msys2 && makepkg-mingw --syncdeps --noconfirm --skipinteg"
   - ps: .\nuget\build_nuget.ps1
 
 test_script:
-#  - cmd: C:\cygwin64\bin\bash -e -l -c "make test"
-#  - cmd: C:\cygwin\bin\bash -e -l -c "make test"
-
 
 before_deploy:
-#  - cmd: if "%APPVEYOR_REPO_TAG%"=="true" (C:\cygwin64\bin\bash -e -l -c "myci-deploy-cygwin.sh -r igagis/cygwin-repo" && C:\cygwin\bin\bash -e -l -c "myci-deploy-cygwin.sh -r igagis/cygwin-repo") else (echo Skipping deploy because not a tagged commit.)
-
+- cmd: if "%APPVEYOR_REPO_TAG%"=="true" (
+          C:\msys64\usr\bin\bash -lc "cd /c/build && myci-deploy-pacman-bintray.sh -u igagis -r msys2 -p mingw64 -d igagis_mingw64 msys2/mingw-w64-x86_64-*-any.pkg.tar.xz" &&
+          C:\msys64\usr\bin\bash -lc "cd /c/build && myci-deploy-pacman-bintray.sh -u igagis -r msys2 -p mingw32 -d igagis_mingw32 msys2/mingw-w64-i686-*-any.pkg.tar.xz"
+      ) else (
+          echo Skipping deploy because not a tagged commit.
+      )
 
 deploy:
   provider: NuGet
@@ -63,4 +49,4 @@ deploy:
 
 artifacts:
   - path: .\nuget\*.nupkg
-  
+  - path: .\msys2\*.pkg.tar.xz

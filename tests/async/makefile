@@ -18,8 +18,9 @@ ifeq ($(os), macosx)
     this_cxxflags += -stdlib=libc++ #this is needed to be able to use c++11 std lib
     this_ldlibs += -lc++
 else ifeq ($(os),windows)
-    this_ldlibs += -lpugixml
 endif
+
+this_no_install := true
 
 $(eval $(prorab-build-app))
 
