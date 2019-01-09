@@ -5,12 +5,11 @@ Supported/unsupported SVG features::
 
 Istallation::
 - link:InstallMSVS.md[Windows (Visual Studio 2015+)]
-- link:InstallCygwin.adoc[Windows (Cygwin)]
+- link:InstallMSYS.md[Windows (Msys2)]
 - link:InstallLinux.md[Linux]
 - link:InstallMacOSX.md[MacOS X]
 - link:InstallIOS.md[iOS]
 - link:InstallAndroid.adoc[Android (Android Studio 2.3)]
-- link:InstallMSYS.md[MSYS]
 
 Tutorials::
 - link:UsageTutorial.md[Basic usage]
