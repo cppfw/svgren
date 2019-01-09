@@ -1,11 +1,21 @@
 # Installation in Windows
 
-## MSYS environment
+## Msys2 environment
+- Download and install **Msys2** from [msys2.org](http://msys2.org)
 
-- Download latest sources from **[here](https://github.com/igagis/svgren/releases)** and unpack it.
+- launch **Msys** shell
 
-- Install it
+- Add **igagis** repositories to `pacman.conf`
 
-  ```
-  make install
-  ```
+```
+echo -e '[igagis_msys]\nSigLevel = Optional TrustAll\nServer = https://dl.bintray.com/igagis/msys2/msys' >> /etc/pacman.conf
+echo -e '[igagis_mingw64]\nSigLevel = Optional TrustAll\nServer = https://dl.bintray.com/igagis/msys2/mingw64' >> /etc/pacman.conf
+echo -e '[igagis_mingw32]\nSigLevel = Optional TrustAll\nServer = https://dl.bintray.com/igagis/msys2/mingw32' >> /etc/pacman.conf
+```
+
+- Install **svgren** for `mingw32` and/or `mingw64`
+
+```
+pacman -Sy mingw-w64-i686-svgren
+pacman -Sy mingw-w64-x86_64-svgren
+```
