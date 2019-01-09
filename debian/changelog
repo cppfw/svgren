@@ -1,3 +1,9 @@
+libsvgren (0.4.57) unstable; urgency=medium
+
+  * nuget dependencies version update
+
+ -- Ivan Gagis <igagis@gmail.com>  Wed, 09 Jan 2019 15:51:26 +0200
+
 libsvgren (0.4.56) unstable; urgency=medium
 
   * deplying to msys
