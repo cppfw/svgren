@@ -3,7 +3,7 @@
 ## Msys2 environment
 - Download and install **Msys2** from [msys2.org](http://msys2.org)
 
-- launch **Msys** shell
+- launch **Msys** shell (`msys`/`mingw32`/`mingw64`)
 
 - Add **igagis** repositories to `pacman.conf`
 
