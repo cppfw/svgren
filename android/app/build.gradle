@@ -1,75 +1,40 @@
-apply plugin: 'com.android.model.application'
+apply plugin: 'com.android.application'
 
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        applicationId "io.github.igagis.tiktaksy"
+        minSdkVersion 21
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
 
-model {
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
-    repositories {
-        libs(PrebuiltLibraries) {
-        }
-    }
+        externalNativeBuild {
+            cmake {
+                targets "mordavokneapp"
 
-    android {
-        compileSdkVersion = 25
-        buildToolsVersion = '25.0.2'
-
-        defaultConfig{
-            applicationId = "io.github.igagis.svgrentests"
-            minSdkVersion.apiLevel = 9
-            targetSdkVersion.apiLevel = 9
-            versionCode = 1
-            versionName = '1.0'
-        }
-
-        ndk {
-            platformVersion = 21
-            moduleName = 'svgren-tests'
-            toolchain = 'clang'
-            stl = 'c++_shared'
-            cppFlags.add("-std=c++11")
-            cppFlags.add("-fexceptions")
-            cppFlags.add("-frtti")
-            cppFlags.add("-fintegrated-as") //needed to avoid assembler error since NDK r15
-            cppFlags.add("-I" + projectDir.getAbsolutePath() + "/build/ndkLibs/include")
-            ldLibs.addAll(['android', 'log'])
-            // build a default combined apk including all ABIs.
-            // abiFilters.addAll(['x86'])
-        }
-
-        sources {
-            main {
-                jni {
-                    dependencies {
-                        project ":libsvgren" linkage "static"
-                    }
-                    source {
-                        srcDirs '../../tests'
-                        exclude('**/main.cpp')
-                        exclude('**/checksvg.cpp')
-                    }
-                }
-                jniLibs {
-                    // for shared lib, lib need to be pushed to the target too
-                    // Once libs are copied into app/src/main/jniLibs directory,
-                    // Android Studio will pack them into APK's lib/ directory
-                    // Here we like to avoid another duplication by pointing
-                    // to the files that containing our libs' distribution location
-                    // so the same file is used by compiler at host, also packed
-                    // into APk to be used at Target (phone/tablet)
-                    source {
-                    }
-                }
-            }
-        }
-        buildTypes {
-            release {
-                minifyEnabled false
-                proguardFiles.add(file('proguard-rules.pro'))
+                arguments "-DANDROID_STL=c++_shared", "-DANDROID_TOOLCHAIN=clang"
             }
         }
     }
 
-    android.lintOptions {
-        abortOnError false
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    // Encapsulates your external native build configurations.
+    externalNativeBuild {
+
+        // Encapsulates your CMake build configurations.
+        cmake {
+            // Provides a relative path to your CMake build script.
+//            path "CMakeLists.txt"
+        }
     }
 }
 
@@ -79,17 +44,37 @@ repositories {
     }
 }
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-//    compile 'io.github.igagis:libutki:+'
-//    compile 'io.github.igagis:libpapki:+'
-//    compile 'io.github.igagis:libunikod:+'
+    implementation project(path: ':libsvgren', configuration: 'default')
+}
+
+
+task copyResToAssets {
+    doLast {
+        copy{
+            from "../../tests/app/res"
+            into "src/main/assets/res"
+            include "**/*"
+        }
+    }
+}
+tasks.whenTaskAdded { task ->
+    if (task.name.startsWith('package')) {
+        task.dependsOn('copyResToAssets')
+    }
 }
 
 
 
+
+//===================================
+//=== Extract NDK files from AARs ===
+
+// This is needed to be able to write "configurations.implementation.each" below.
+configurations.implementation.setCanBeResolved(true)
+
 task extractNDKLibs {
     doLast {
-        configurations.compile.each {
+        configurations.implementation.each {
             def file = it.absoluteFile
             copy {
                 from zipTree(file)
@@ -99,9 +84,42 @@ task extractNDKLibs {
         }
     }
 }
-build.dependsOn('extractNDKLibs')
+
 tasks.whenTaskAdded { task ->
-    if (task.name.startsWith('compile')) {
-        task.dependsOn('extractNDKLibs')
+    logger.info('task added')
+    if (task.name.startsWith('externalNativeBuild')) {
+        task.dependsOn extractNDKLibs
     }
 }
+
+
+
+//=================================
+//=== pack library files to aar ===
+//This stuff re-packs the release AAR file adding headers and static libs to there, but removing all shared (.so) libs, as we don't need them. The resulting AAR is put to the project root directory and can be uploaded to Maven along with POM file (you need to write one by hand).
+
+def aarName = name
+
+task copyNdkLibsToAAR(type: Zip) {
+    baseName = aarName
+    version = "\$(version)"
+    extension = 'aar.in'
+    destinationDir = file('..') //put resulting AAR file to upper level directory
+
+    from zipTree("build/outputs/aar/" + aarName + "-release.aar")
+    exclude('**/*.so') //do not include shared libraries into final AAR
+    from("../../src") {
+        include('**/*.hpp')
+        include('**/*.h')
+        into('ndkLibs/include')
+    }
+    from("build/intermediates/cmake/debug/obj"){
+        include('**/*.a')
+        into('ndkLibs')
+    }
+}
+
+// This is only needed for libraries
+//afterEvaluate {
+//    bundleReleaseAar.finalizedBy copyNdkLibsToAAR
+//}
