@@ -30,14 +30,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\svgren\render.hpp" />
-    <ClInclude Include="..\..\src\svgren\config.hpp">
+    <ClInclude Include="..\..\src\**\*.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\svgren\render.hpp" />
-    <ClInclude Include="..\..\src\svgren\config.hpp">
+    <ClInclude Include="..\..\src\**\*.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\svgren\render.hpp" />
     <ClInclude Include="..\..\src\**\*.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -79,14 +77,10 @@
     </ClCompile>
     <ClCompile Include="..\..\src\svgren\Renderer.cpp" />
     <ClCompile Include="..\..\src\svgren\util.cpp" />
-    <ClCompile Include="..\..\src\svgren\render.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <ClCompile Include="..\..\src\svgren\render.cpp" />
     <ClCompile Include="..\..\src\svgren\Renderer.cpp" />
     <ClCompile Include="..\..\src\svgren\util.cpp" />
-    <ClCompile Include="..\..\src\svgren\render.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <ClCompile Include="..\..\src\svgren\render.cpp" />
     <ClCompile Include="..\..\src\svgren\Renderer.cpp" />
     <ClCompile Include="..\..\src\svgren\util.cpp" />
     <ClCompile Include="..\..\src\svgren\render.cpp" />
@@ -111,22 +105,36 @@
     <ClCompile Include="..\..\src\svgren\Renderer.cpp" />
     <ClCompile Include="..\..\src\svgren\Surface.cpp" />
     <ClCompile Include="..\..\src\svgren\util.cpp" />
-    <ClCompile Include="..\..\src\svgren\CanvasRegion.cpp">
+    <ClCompile Include="..\..\src\**\*.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\svgren\FilterApplyer.cpp" />
-    <ClCompile Include="..\..\src\svgren\render.cpp" />
-    <ClCompile Include="..\..\src\svgren\Renderer.cpp" />
-    <ClCompile Include="..\..\src\svgren\Surface.cpp" />
-    <ClCompile Include="..\..\src\svgren\util.cpp" />
-    <ClCompile Include="..\..\src\svgren\CanvasRegion.cpp">
+    <ClCompile Include="..\..\src\**\*.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\svgren\FilterApplyer.cpp" />
-    <ClCompile Include="..\..\src\svgren\render.cpp" />
-    <ClCompile Include="..\..\src\svgren\Renderer.cpp" />
-    <ClCompile Include="..\..\src\svgren\Surface.cpp" />
-    <ClCompile Include="..\..\src\svgren\util.cpp" />
+    <ClCompile Include="..\..\src\**\*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\**\*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\**\*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\**\*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\**\*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\**\*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\**\*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\**\*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\**\*.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
