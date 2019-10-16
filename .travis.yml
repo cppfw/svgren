@@ -1,9 +1,3 @@
-# build only master branch and version tags
-branches:
-  only:
-  - master
-  - /^\d*\.\d*\.\d*$/
-
 sudo: required
 
 services:
@@ -29,11 +23,11 @@ matrix:
     - name: macosx
       os: osx
       compiler: clang
-      osx_image: xcode8.3
+      osx_image: xcode11
     - name: ios
       os: osx
       compiler: clang
-      osx_image: xcode8.3
+      osx_image: xcode11
     - name: android
       language: android
       android:
@@ -93,7 +87,7 @@ before_install:
 
     sudo gem install cocoapods &&
     pod repo add --silent igagis https://$MYCI_GIT_USERNAME:$MYCI_GIT_ACCESS_TOKEN@github.com/igagis/cocoapods-repo.git &&
-    pod install --project-directory=ios;
+    pod install --project-directory=xcode;
   fi
 
 install:
@@ -110,7 +104,7 @@ before_script:
 - if [ "$TRAVIS_JOB_NAME" == "ios" ]; then
     curl -L https://github.com/zackslash/Xcode-Proj-Adder/raw/master/bin/XcodeProjAdder -O &&
     chmod +x XcodeProjAdder &&
-    (cd ios && ../XcodeProjAdder -XCP tests.xcodeproj -SCSV `echo $(find ../src -type f -name *.cpp) | sed -n -e 's/ /,/gp'`);
+    (cd xcode/$PACKAGE_NAME && ../../XcodeProjAdder -XCP $PACKAGE_NAME.xcodeproj -SCSV `echo $(find ../../src -type f -name *.cpp) | sed -E -e 's/ /,/g'`)
   fi
 
 script:
@@ -121,7 +115,8 @@ script:
     make && make test;
   fi
 - if [ "$TRAVIS_JOB_NAME" == "ios" ]; then
-    xcodebuild -workspace ios/tests.xcworkspace -scheme tests CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO;
+    xcodebuild -workspace xcode/$PACKAGE_NAME.xcworkspace -scheme $PACKAGE_NAME CONFIGURATION_BUILD_DIR=../build -configuration Release &&
+    myci-create-zip-package.sh -h src -f xcode/build/lib$PACKAGE_NAME.a///lib/ios -f LICENSE $PACKAGE_NAME-`myci-deb-version.sh debian/changelog`.zip;
   fi
 - if [ "$TRAVIS_JOB_NAME" == "android" ]; then
     (cd android && ./gradlew build) &&
@@ -159,7 +154,7 @@ deploy:
     condition: $TRAVIS_JOB_NAME = macosx
 - provider: script
   skip_cleanup: true
-  script: rvm 2.3.3 do myci-deploy-cocoapods.sh -r igagis
+  script: rvm 2.3.3 do myci-deploy-cocoapods.sh -r igagis -v `myci-deb-version.sh debian/changelog` -u igagis -b cocoapods -p $PACKAGE_NAME-`myci-deb-version.sh debian/changelog`.zip cocoapods/$PACKAGE_NAME.podspec.in
   on:
     tags: true
     condition: $TRAVIS_JOB_NAME = ios
