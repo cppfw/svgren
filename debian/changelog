@@ -1,3 +1,9 @@
+libsvgren (0.4.59) unstable; urgency=medium
+
+  * msvs v142 tools
+
+ -- Ivan Gagis <igagis@gmail.com>  Wed, 16 Oct 2019 17:19:30 +0300
+
 libsvgren (0.4.58) unstable; urgency=medium
 
   * deploy to bionic
