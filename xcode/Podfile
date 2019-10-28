@@ -6,6 +6,6 @@ platform :ios, '8.0'
 
 target "svgren" do
   pod 'svgdom', '>= 0.3.17'
-  pod 'libcairo', '>= 1.12.8'
-  pod 'libpng_igagis', '>= 1.4.1'
+  pod 'cairo', '>= 1.15.4.5'
+  pod 'png', '>= 1.4.1.4'
 end
