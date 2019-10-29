@@ -1,3 +1,9 @@
+libsvgren (0.4.60) unstable; urgency=medium
+
+  * cocoapods dependencies corrected
+
+ -- Ivan Gagis <igagis@gmail.com>  Tue, 29 Oct 2019 12:34:39 +0200
+
 libsvgren (0.4.59) unstable; urgency=medium
 
   * msvs v142 tools
