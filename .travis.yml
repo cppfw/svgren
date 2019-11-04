@@ -89,6 +89,7 @@ before_install:
     pod repo add --silent igagis https://$MYCI_GIT_USERNAME:$MYCI_GIT_ACCESS_TOKEN@github.com/igagis/cocoapods-repo.git &&
     pod install --project-directory=xcode;
   fi
+- export PACKAGE_VERSION=$(myci-deb-version.sh debian/changelog)
 
 install:
 - if [ "$TRAVIS_OS_NAME" == "linux" ] && [ -z "$TRAVIS_JOB_NAME" ]; then
@@ -126,7 +127,6 @@ script:
 
 
 before_deploy:
-  - myci-apply-version.sh -v `myci-deb-version.sh debian/changelog` travis_bintray_*.json.in
 
 
 deploy:
@@ -136,16 +136,12 @@ deploy:
     tags: true
     condition: $PACKAGE_TYPE = deb && -z "$TRAVIS_JOB_NAME"
   script: myci-deploy-debian-bintray.sh -u igagis -r $OS -p $PACKAGE_NAME -c main -d $OS_REL $TRAVIS_BUILD_DIR/../*.deb
-- provider: bintray
+- provider: script
   skip_cleanup: true
+  script: myci-deploy-maven-bintray.sh -u igagis -r android -d io/github/igagis -p $PACKAGE_NAME -v $PACKAGE_VERSION android/$PACKAGE_NAME-$PACKAGE_VERSION.aar
   on:
     tags: true
     condition: $TRAVIS_JOB_NAME = android
-  file: travis_bintray_android.json
-  user: igagis
-  key:
-    secure: "dBBwUEdcvzD+pVtUpQPjH8Cgelf3fjumDJl4DV3BJtY86dziDH+5X7N6WVUnrznNmLkOM+UqTVOntsgcKRHEvgxhiE4ArGITPdPWApfm3fYQCzqOHa+SN6jLuF6cRehTj8qEUy5CM3/hb/D4KRDOQkRJ/q8AeS7tgmQkM5qJdzfg6BxPmXKUkdiCIEghVw/6YeIXtx7mlRDfidPf7zufGku4R+TPTgY/eCf/yKgNY8SLaRMe3UFtU8uvn0l449frH+haEpMAKaSautHbt/DAD0uWw4nWxgkkLVpmivjOZNCOmlC0txJcVA5DNaOai296qwD+Hx9KoPjwRC1+PDXQai1VHq/NzfqCDDIdPwvXSAvJfiUF4aHe/AThOHSZAlskGksiNJAlvSPmw/+GlUYkwt5zpp5cp8J1fPqdsGEuB+kdwKWlYarcIYYzvgsw1d2vq4h/v10l9cbri8Ve7iWZxWyJZBYpRGX0G1p92tZ5hu9dROQZgJGv2f1d0iVSW3pbL57jWIrAHfusCJNkC65N/C5/SGJt9aot0ggPh+CEwv5855SAmAdOagv/LM/9v2GEARWnd8FoL0O06k7l4LLNKPp1PrdrQVRnjiiCTOqcBXGypa8w4sqXVLMYdSFBU7FoYalXBiI8gN96nInbTSWOJPQpJ/z+xavzyjTNN+z+RtA="
-  dry-run: false
 - provider: script
   skip_cleanup: true
   script: myci-deploy-homebrew.sh -t igagis/tap

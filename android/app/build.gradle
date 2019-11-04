@@ -44,7 +44,7 @@ repositories {
     }
 }
 dependencies {
-    implementation project(path: ':libsvgren', configuration: 'default')
+    implementation project(path: ':svgren', configuration: 'default')
 }
 
 

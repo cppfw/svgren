@@ -46,8 +46,8 @@ repositories {
     }
 }
 dependencies {
-    implementation 'io.github.igagis:libutki:+'
-    implementation 'io.github.igagis:libsvgdom:+'
+    implementation 'io.github.igagis:utki:+'
+    implementation 'io.github.igagis:svgdom:+'
     implementation 'org.cairographics:cairo:+'
 }
 
