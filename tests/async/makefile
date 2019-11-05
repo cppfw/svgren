@@ -44,4 +44,4 @@ endef
 #add dependency on libsvgren
 $(prorab_this_name): $(abspath $(d)../../src/libsvgren$(soext))
 
-$(eval $(call prorab-include,$(d)../../src/makefile))
+$(eval $(call prorab-try-include,$(d)../../src/makefile))

@@ -5,7 +5,7 @@
 #include <png.h>
 
 #include <utki/Exc.hpp>
-#include <kolme/Vector2.hpp>
+#include <r4/vector2.hpp>
 #include <papki/FSFile.hpp>
 
 #include "../../src/svgren/render.hpp"
@@ -32,17 +32,17 @@ public:
 				utki::Exc(msg.c_str())
 		{}
 	};
-	
+
 	class IllegalArgumentExc : public Exc{
 	public:
 		IllegalArgumentExc(const std::string& msg = std::string()) :
 				Exc(msg)
 		{}
 	};
-	
+
 private:
 	ColorDepth_e colorDepth_v;
-	kolme::Vec2ui dim_v = kolme::Vec2ui(0);
+	r4::vec2ui dim_v = r4::vec2ui(0);
 	std::vector<std::uint8_t> buf_v;//image pixels data
 
 public:
@@ -60,7 +60,7 @@ public:
 	 * @brief Get image dimensions.
 	 * @return Image dimensions.
 	 */
-	const kolme::Vec2ui& dim()const noexcept{
+	const r4::vec2ui& dim()const noexcept{
 		return this->dim_v;
 	}
 
@@ -111,12 +111,12 @@ public:
 	 * @param dimensions - image dimensions.
 	 * @param colorDepth - color depth.
 	 */
-	void init(kolme::Vec2ui dimensions, ColorDepth_e colorDepth){
+	void init(r4::vec2ui dimensions, ColorDepth_e colorDepth){
 		this->dim_v = dimensions;
 		this->colorDepth_v = colorDepth;
 		this->buf_v.resize(this->dim().x * this->dim().y * this->numChannels());
 	}
-	
+
 
 	/**
 	 * @brief Flip image vertically.
@@ -140,7 +140,7 @@ private:
 		}
 	}
 public:
-	
+
 	/**
 	 * @brief Load image from PNG file.
 	 * @param f - PNG file.
@@ -244,7 +244,7 @@ public:
 		//Great! Number of channels and bits per pixel are initialized now!
 
 		//set image dimensions and set buffer size
-		this->init(kolme::Vec2ui(width, height), imageType);//Set buf array size (allocate memory)
+		this->init(r4::vec2ui(width, height), imageType);//Set buf array size (allocate memory)
 		//Great! height and width are initialized and buffer memory allocated
 
 //		TRACE(<< "Image::LoadPNG(): memory for image allocated" << std::endl)
@@ -290,37 +290,37 @@ int main(int argc, char** argv) {
 			std::cout << "Error: 2 arguments expected: <svg-file> <png-file>" << std::endl;
 			return 1;
 		}
-		
+
 		Image png;
 		png.loadPNG(papki::FSFile(argv[2]));
-		
+
 		ASSERT_ALWAYS(png.buf().size() != 0)
-		
+
 		auto dom = svgdom::load(papki::FSFile(argv[1]));
-		
+
 		auto res = svgren::render(*dom);
 		auto& img = res.pixels;
-		
+
 		if(png.colorDepth() != Image::ColorDepth_e::RGBA){
 			std::cout << "Error: PNG color depth is not RGBA: " << unsigned(png.colorDepth()) << std::endl;
 			return 1;
 		}
-		
+
 		if(res.width != png.dim().x){
 			std::cout << "Error: svg width (" << res.width << ") did not match png width (" << png.dim().x << ")" << std::endl;
 			return 1;
 		}
-		
+
 		if(res.height != png.dim().y){
 			std::cout << "Error: svg height (" << res.height << ") did not match png height (" << png.dim().y << ")" << std::endl;
 			return 1;
 		}
-		
+
 		if(img.size() != png.buf().size() / png.numChannels()){
 			std::cout << "Error: svg pixel buffer size (" << img.size() << ") did not match png pixel buffer size(" << png.buf().size() / png.numChannels() << ")" << std::endl;
 			return 1;
 		}
-		
+
 		for(size_t i = 0; i != img.size(); ++i){
 			std::array<std::uint8_t, 4> rgba;
 			rgba[0] = img[i] & 0xff;
@@ -334,7 +334,7 @@ int main(int argc, char** argv) {
 				if(c1 > c2){
 					std::swap(c1, c2);
 				}
-				
+
 				if(c2 - c1 > 2){ //allow difference in 1
 					std::uint32_t pixel =
 						std::uint32_t(png.buf()[i * png.numChannels()]) |
@@ -342,13 +342,13 @@ int main(int argc, char** argv) {
 						(std::uint32_t(png.buf()[i * png.numChannels() + 2]) << 16) |
 						(std::uint32_t(png.buf()[i * png.numChannels() + 3]) << 24)
 					;
-					
+
 					std::cout << "Error: PNG pixel #" << std::dec << i << " [" << (i % res.width) << ", " << (i / res.width) << "] " << " (0x" << std::hex << pixel << ") did not match SVG pixel (0x" << img[i] << ")" << std::endl;
 					return 1;
 				}
 			}
 		}
-		
+
 		return 0;
 	}catch(std::exception &e){
 		ASSERT_INFO_ALWAYS(false, "Uncaught exception: e.what = " << e.what())
