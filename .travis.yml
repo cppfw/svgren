@@ -74,7 +74,7 @@ before_install:
     brew update > /dev/null &&
     brew tap igagis/tap &&
     brew update > /dev/null &&
-    brew install prorab prorab-extra myci libutki libsvgdom cairo libkolme libpng;
+    brew install prorab prorab-extra myci libutki libsvgdom cairo r4 libpng;
   fi
 - if [ "$TRAVIS_JOB_NAME" == "ios" ]; then
     rvm install ruby-2.3.3 &&
