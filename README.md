@@ -1,4 +1,9 @@
-# svgren [![releases](https://img.shields.io/github/tag/igagis/svgren.svg)](https://github.com/igagis/svgren/releases) [![Build Status](https://travis-ci.org/igagis/svgren.svg?branch=master)](https://travis-ci.org/igagis/svgren) [![Build status](https://ci.appveyor.com/api/projects/status/6ilonof8aqcjryoi/branch/master?svg=true)](https://ci.appveyor.com/project/igagis/svgren/branch/master)
+# svgren
+[![releases](https://badge.fury.io/gh/igagis%2Fsvgren.svg)](https://github.com/igagis/svgren/releases)
+[![Build Status](https://travis-ci.org/igagis/svgren.svg?branch=master)](https://travis-ci.org/igagis/svgren)
+[![Build status](https://ci.appveyor.com/api/projects/status/6ilonof8aqcjryoi/branch/master?svg=true)](https://ci.appveyor.com/project/igagis/svgren/branch/master)
+[![Patreon](https://img.shields.io/badge/become-patron-red.svg)](https://www.patreon.com/bePatron?u=2662824)
+
 
 
 
@@ -20,6 +25,3 @@ Read [WiKi](wiki/Main.adoc) for installation instructions and tutorials.
 
 # Questions
 In case of questions, please submit those as [Issue](https://github.com/igagis/svgren/issues).
-
-# Support my work
-[![Patreon](https://c5.patreon.com/external/logo/become_a_patron_button@2x.png)](https://www.patreon.com/bePatron?u=2662824)
