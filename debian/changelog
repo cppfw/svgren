@@ -1,3 +1,9 @@
+libsvgren (0.4.62) unstable; urgency=medium
+
+  * debian buster
+
+ -- Ivan Gagis <igagis@gmail.com>  Fri, 29 Nov 2019 14:34:41 +0200
+
 libsvgren (0.4.61) unstable; urgency=medium
 
   * r4
