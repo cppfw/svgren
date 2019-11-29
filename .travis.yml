@@ -7,6 +7,9 @@ language: cpp
 dist: xenial
 os: linux
 
+git:
+  autocrlf: false
+
 addons:
   apt:
     sources:
@@ -16,6 +19,12 @@ addons:
     packages:
     - binfmt-support
     - qemu-user-static
+    - myci
+  homebrew:
+    update: true
+    taps:
+    - igagis/tap
+    packages:
     - myci
 
 matrix:
@@ -38,6 +47,8 @@ matrix:
           - android-28
 #          - sys-img-armeabi-v7a-android-22
           - extra-android-m2repository
+    - name: msys2
+      os: windows
 
 env:
   global:
@@ -52,6 +63,7 @@ env:
   - OS_REL=xenial OS=ubuntu DOCKER_IMAGE=$OS:$OS_REL PACKAGE_TYPE=deb
   - OS_REL=bionic OS=ubuntu DOCKER_IMAGE=$OS:$OS_REL PACKAGE_TYPE=deb
   - OS_REL=stretch OS=debian DOCKER_IMAGE=$OS:$OS_REL PACKAGE_TYPE=deb
+  - OS_REL=buster OS=debian DOCKER_IMAGE=$OS:$OS_REL PACKAGE_TYPE=deb
   - OS_REL=stretch OS=raspbian DOCKER_IMAGE=igagis/$OS:$OS_REL PACKAGE_TYPE=deb
 
 before_install:
@@ -68,22 +80,26 @@ before_install:
     fi;
   fi
 - if [ "$TRAVIS_JOB_NAME" == "macosx" ]; then
-    brew update > /dev/null &&
-    brew tap igagis/tap &&
-    brew update > /dev/null &&
-    brew install prorab prorab-extra myci libutki libsvgdom cairo r4 libpng;
+    brew install prorab prorab-extra libutki libsvgdom cairo r4 libpng;
   fi
 - if [ "$TRAVIS_JOB_NAME" == "ios" ]; then
-    brew update > /dev/null &&
-    brew tap igagis/tap &&
-    brew update > /dev/null &&
-    brew install myci &&
-
     sudo gem install cocoapods &&
     pod repo add --silent igagis https://$MYCI_GIT_USERNAME:$MYCI_GIT_ACCESS_TOKEN@github.com/igagis/cocoapods-repo.git &&
     pod install --project-directory=xcode;
   fi
-- export PACKAGE_VERSION=$(myci-deb-version.sh debian/changelog)
+- if [ "$TRAVIS_JOB_NAME" == "msys2" ]; then
+    choco upgrade --no-progress -y msys2 &&
+    export msys2="/c/tools/msys64/msys2_shell.cmd -defterm -no-start -msys -here -c" &&
+    $msys2 "echo -e '[igagis_msys]\\nSigLevel = Optional TrustAll\\nServer = https://dl.bintray.com/igagis/msys2/msys' >> /etc/pacman.conf" &&
+    $msys2 "echo -e '[igagis_mingw64]\\nSigLevel = Optional TrustAll\\nServer = https://dl.bintray.com/igagis/msys2/mingw64' >> /etc/pacman.conf" &&
+    $msys2 "echo -e '[igagis_mingw32]\\nSigLevel = Optional TrustAll\\nServer = https://dl.bintray.com/igagis/msys2/mingw32' >> /etc/pacman.conf" &&
+    $msys2 "pacman --noconfirm --ask 20 --sync --refresh --refresh --sysupgrade --sysupgrade" &&
+    $msys2 "pacman --noconfirm --ask 20 --sync --refresh --refresh --sysupgrade --sysupgrade" &&
+    $msys2 "pacman -Sy --noconfirm myci mingw-w64-x86_64-toolchain mingw-w64-i686-toolchain";
+  fi
+- if [ "$TRAVIS_OS_NAME" == "linux" ] || [ "$TRAVIS_OS_NAME" == "osx" ]; then
+    export PACKAGE_VERSION=$(myci-deb-version.sh debian/changelog);
+  fi
 
 install:
 - if [ "$TRAVIS_OS_NAME" == "linux" ] && [ -z "$TRAVIS_JOB_NAME" ]; then
@@ -101,6 +117,9 @@ before_script:
     chmod +x XcodeProjAdder &&
     (cd xcode/$PACKAGE_NAME && ../../XcodeProjAdder -XCP $PACKAGE_NAME.xcodeproj -SCSV `echo $(find ../../src -type f -name *.cpp) | sed -E -e 's/ /,/g'`)
   fi
+- if [ "$TRAVIS_JOB_NAME" == "msys2" ]; then
+    $msys2 "myci-apply-version.sh -v \$(myci-deb-version.sh debian/changelog) msys2/PKGBUILD.in";
+  fi
 
 script:
 - if [ "$TRAVIS_OS_NAME" == "linux" ] && [ -z "$TRAVIS_JOB_NAME" ]; then
@@ -117,6 +136,14 @@ script:
     (cd android && ./gradlew build) &&
     myci-apply-version.sh -v `myci-deb-version.sh debian/changelog` android/*.pom.in &&
     myci-apply-version.sh -v `myci-deb-version.sh debian/changelog` android/*.aar.in --filename-only;
+  fi
+# running MSYS2 script from deployment provider did not work for some reason, so we do it here if the commit is a tagged one.
+- if [ "$TRAVIS_JOB_NAME" == "msys2" ]; then
+    $msys2 "(cd msys2 && makepkg-mingw --syncdeps --noconfirm --skipinteg)" &&
+    if [ ! -z "$TRAVIS_TAG" ]; then
+      $msys2 "myci-deploy-pacman-bintray.sh -u igagis -r msys2 -p mingw64 -d igagis_mingw64 msys2/mingw-w64-x86_64-*-any.pkg.tar.xz" &&
+      $msys2 "myci-deploy-pacman-bintray.sh -u igagis -r msys2 -p mingw32 -d igagis_mingw32 msys2/mingw-w64-i686-*-any.pkg.tar.xz";
+    fi;
   fi
 
 

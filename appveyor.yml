@@ -3,17 +3,7 @@ version: "{branch}-{build}"
 
 clone_folder: c:\build
 
-environment:
-  MYCI_BINTRAY_API_KEY:
-    secure: t04W/09OyK0B8CxJHydCkay+Fm3i6KkBciVXjzk0u09v6F9wtDn/dsuqd5eMIj8s
-
 install:
-  - C:\msys64\usr\bin\bash -lc "echo -e '[igagis_msys]\\nSigLevel = Optional TrustAll\\nServer = https://dl.bintray.com/igagis/msys2/msys' >> /etc/pacman.conf"
-  - C:\msys64\usr\bin\bash -lc "echo -e '[igagis_mingw64]\\nSigLevel = Optional TrustAll\\nServer = https://dl.bintray.com/igagis/msys2/mingw64' >> /etc/pacman.conf"
-  - C:\msys64\usr\bin\bash -lc "echo -e '[igagis_mingw32]\\nSigLevel = Optional TrustAll\\nServer = https://dl.bintray.com/igagis/msys2/mingw32' >> /etc/pacman.conf"
-  - C:\msys64\usr\bin\pacman --noconfirm --ask 20 --sync --refresh --refresh --sysupgrade --sysupgrade
-  - C:\msys64\usr\bin\pacman --noconfirm --ask 20 --sync --refresh --refresh --sysupgrade --sysupgrade
-  - c:\msys64\usr\bin\pacman -Sy --noconfirm ca-certificate-utils myci
   - ps: (new-object net.webclient).DownloadFile('http://coapp.org/files/CoApp.Tools.Powershell.msi', 'C:\CoApp.Tools.Powershell.msi')
   - ps: Start-Process -FilePath msiexec -ArgumentList /i, 'C:\CoApp.Tools.Powershell.msi', /quiet -Wait
   - ps: $env:PSModulePath = $env:PSModulePath + ';C:\Program Files (x86)\Outercurve Foundation\Modules'
@@ -24,19 +14,9 @@ before_build:
   - nuget update msvs_solution/msvs_solution.sln
 
 build_script:
-  - C:\msys64\usr\bin\bash -lc "cd /c/build/ && myci-apply-version.sh -v `myci-deb-version.sh debian/changelog` msys2/PKGBUILD.in"
-  - C:\msys64\usr\bin\bash -lc "cd /c/build/msys2 && makepkg-mingw --syncdeps --noconfirm --skipinteg"
   - ps: .\nuget\build_nuget.ps1
 
 test_script:
-
-before_deploy:
-- cmd: if "%APPVEYOR_REPO_TAG%"=="true" (
-          C:\msys64\usr\bin\bash -lc "cd /c/build && myci-deploy-pacman-bintray.sh -u igagis -r msys2 -p mingw64 -d igagis_mingw64 msys2/mingw-w64-x86_64-*-any.pkg.tar.xz" &&
-          C:\msys64\usr\bin\bash -lc "cd /c/build && myci-deploy-pacman-bintray.sh -u igagis -r msys2 -p mingw32 -d igagis_mingw32 msys2/mingw-w64-i686-*-any.pkg.tar.xz"
-      ) else (
-          echo Skipping deploy because not a tagged commit.
-      )
 
 deploy:
   provider: NuGet
@@ -49,4 +29,3 @@ deploy:
 
 artifacts:
   - path: .\nuget\*.nupkg
-  - path: .\msys2\*.pkg.tar.xz
