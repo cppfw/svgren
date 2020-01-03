@@ -32,7 +32,7 @@ int writePng(const char* filename, int width, int height, std::uint32_t *buffer)
    if (fp == NULL) {
       fprintf(stderr, "Could not open file %s for writing\n", filename);
       code = 1;
-      throw utki::Exc("Could not open file for writing");
+      throw std::runtime_error("Could not open file for writing");
    }
    
    // Initialize write structure
@@ -40,7 +40,7 @@ int writePng(const char* filename, int width, int height, std::uint32_t *buffer)
    if (png_ptr == NULL) {
       fprintf(stderr, "Could not allocate write struct\n");
       code = 1;
-      throw utki::Exc("Could not allocate write struct");
+      throw std::runtime_error("Could not allocate write struct");
    }
 
    // Initialize info structure
@@ -48,7 +48,7 @@ int writePng(const char* filename, int width, int height, std::uint32_t *buffer)
    if (info_ptr == NULL) {
       fprintf(stderr, "Could not allocate info struct\n");
       code = 1;
-      throw utki::Exc("Could not allocate info struct");
+      throw std::runtime_error("Could not allocate info struct");
    }
  
    png_init_io(png_ptr, fp);
