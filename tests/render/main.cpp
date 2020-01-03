@@ -20,9 +20,7 @@
 
 
 
-int writePng(const char* filename, int width, int height, std::uint32_t *buffer)
-{
-   int code = 0;
+void write_png(const char* filename, int width, int height, std::uint32_t *buffer){
    FILE *fp = NULL;
    png_structp png_ptr = NULL;
    png_infop info_ptr = NULL;
@@ -31,15 +29,15 @@ int writePng(const char* filename, int width, int height, std::uint32_t *buffer)
    fp = fopen(filename, "w+b");
    if (fp == NULL) {
       fprintf(stderr, "Could not open file %s for writing\n", filename);
-      code = 1;
-      throw std::runtime_error("Could not open file for writing");
+	  std::stringstream ss;
+	  ss << "could not open file '" << filename << "' for writing";
+      throw std::system_error(errno, std::generic_category(), ss.str());
    }
    
    // Initialize write structure
    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
    if (png_ptr == NULL) {
       fprintf(stderr, "Could not allocate write struct\n");
-      code = 1;
       throw std::runtime_error("Could not allocate write struct");
    }
 
@@ -47,7 +45,6 @@ int writePng(const char* filename, int width, int height, std::uint32_t *buffer)
    info_ptr = png_create_info_struct(png_ptr);
    if (info_ptr == NULL) {
       fprintf(stderr, "Could not allocate info struct\n");
-      code = 1;
       throw std::runtime_error("Could not allocate info struct");
    }
  
@@ -74,8 +71,6 @@ int writePng(const char* filename, int width, int height, std::uint32_t *buffer)
    if (fp != NULL) fclose(fp);
    if (info_ptr != NULL) png_free_data(png_ptr, info_ptr, PNG_FREE_ALL, -1);
    if (png_ptr != NULL) png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
-
-   return code;
 }
 
 namespace{
@@ -130,7 +125,7 @@ int main(int argc, char **argv){
 	
 	TRACE(<< "imWidth = " << img.width << " imHeight = " << img.height << " img.size() = " << img.pixels.size() << std::endl)
 
-	writePng(outFilename.c_str(), img.width, img.height, &*img.pixels.begin());
+	write_png(outFilename.c_str(), img.width, img.height, &*img.pixels.begin());
 
 	
 #if M_OS == M_OS_LINUX
