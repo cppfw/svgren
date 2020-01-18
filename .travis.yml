@@ -130,12 +130,12 @@ script:
   fi
 - if [ "$TRAVIS_JOB_NAME" == "ios" ]; then
     xcodebuild -workspace xcode/$PACKAGE_NAME.xcworkspace -scheme $PACKAGE_NAME CONFIGURATION_BUILD_DIR=../build -configuration Release &&
-    myci-create-zip-package.sh -h src -f xcode/build/lib$PACKAGE_NAME.a///lib/ios -f LICENSE $PACKAGE_NAME-`myci-deb-version.sh debian/changelog`.zip;
+    myci-create-zip-package.sh -h src -f xcode/build/lib$PACKAGE_NAME.a///lib/ios -f LICENSE $PACKAGE_NAME-$PACKAGE_VERSION.zip;
   fi
 - if [ "$TRAVIS_JOB_NAME" == "android" ]; then
     (cd android && ./gradlew build) &&
-    myci-apply-version.sh -v `myci-deb-version.sh debian/changelog` android/*.pom.in &&
-    myci-apply-version.sh -v `myci-deb-version.sh debian/changelog` android/*.aar.in --filename-only;
+    myci-apply-version.sh -v $PACKAGE_VERSION android/*.pom.in &&
+    myci-apply-version.sh -v $PACKAGE_VERSION android/*.aar.in --filename-only;
   fi
 # running MSYS2 script from deployment provider did not work for some reason, so we do it here if the commit is a tagged one.
 - if [ "$TRAVIS_JOB_NAME" == "msys2" ]; then
@@ -171,7 +171,7 @@ deploy:
     condition: $TRAVIS_JOB_NAME = macosx
 - provider: script
   skip_cleanup: true
-  script: myci-deploy-cocoapods.sh -r igagis -v `myci-deb-version.sh debian/changelog` -u igagis -b cocoapods -p $PACKAGE_NAME-`myci-deb-version.sh debian/changelog`.zip cocoapods/$PACKAGE_NAME.podspec.in
+  script: myci-deploy-cocoapods.sh -r igagis -v $PACKAGE_VERSION -u igagis -b cocoapods -p $PACKAGE_NAME-$PACKAGE_VERSION.zip cocoapods/$PACKAGE_NAME.podspec.in
   on:
     tags: true
     condition: $TRAVIS_JOB_NAME = ios
