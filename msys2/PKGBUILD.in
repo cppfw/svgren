@@ -59,7 +59,9 @@ build() {
 
 check() {
 	cd "$rootDir"
-	make test
+	if [ "$MSYSTEM" == "MINGW64" ]; then
+		make test
+	fi
 }
 
 package() {
