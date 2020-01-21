@@ -299,7 +299,7 @@ int main(int argc, char** argv) {
 		std::cout << "SVG to PNG comparator" << std::endl;
 		std::cout << std::endl;
 		std::cout << "Usage:" << std::endl;
-		std::cout << "  " << argv[0] << " [<options>] <input-svg-file> <input-png-file>" << std::endl;
+		std::cout << "  " << papki::not_dir(argv[0]) << " [<options>] <input-svg-file> <input-png-file>" << std::endl;
 		std::cout << std::endl;
 		std::cout << "Options:" << std::endl;
 		std::cout << p.description() << std::endl;

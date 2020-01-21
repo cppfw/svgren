@@ -4,10 +4,10 @@ this_name := checksvg
 
 this_cxxflags += -g
 this_cxxflags += -Wall
-this_cxxflags += -Wno-format #no warnings about format
-this_cxxflags += -Wno-format-security #no warnings about format
+this_cxxflags += -Wno-format # no warnings about format
+this_cxxflags += -Wno-format-security # no warnings about format
 this_cxxflags += -DDEBUG
-this_cxxflags += -fstrict-aliasing #strict aliasing!!!
+this_cxxflags += -fstrict-aliasing # strict aliasing!!!
 this_cxxflags += -std=c++11
 
 this_srcs += $(call prorab-src-dir, .)
@@ -15,7 +15,7 @@ this_srcs += $(call prorab-src-dir, .)
 this_ldlibs += -lsvgdom $(d)../../src/libsvgren$(dot_so) -lpapki -lclargs `pkg-config --libs cairo` -lpng -lstdc++
 
 ifeq ($(os), macosx)
-    this_cxxflags += -stdlib=libc++ #this is needed to be able to use c++11 std lib
+    this_cxxflags += -stdlib=libc++ # this is needed to be able to use c++11 std lib
     this_ldlibs += -lc++
 else ifeq ($(os),windows)
 endif
@@ -43,7 +43,7 @@ endef
 $(eval $(this_rules))
 
 
-#add dependency on libsvgren
-$(prorab_this_name): $(abspath $(d)../../src/libsvgren$(soext))
+# add dependency on libsvgren
+$(prorab_this_name): $(abspath $(d)../../src/libsvgren$(dot_so))
 
-$(eval $(call prorab-try-include,$(d)../../src/makefile))
+$(eval $(call prorab-include, ../../src/makefile))
