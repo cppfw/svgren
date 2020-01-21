@@ -29,6 +29,11 @@ this_svgs := $(patsubst %.svg,%,$(shell ls $(d)testdata/*.svg))
 this_dirs := $(subst /, ,$(d))
 this_test := $(word $(words $(this_dirs)),$(this_dirs))
 
+this_arch_bit_depth := $(shell getconf LONG_BIT)
+
+# on 32 bit systems the actual rendered result differs a bit from PNG images generated on 64 bit system,
+# so do this test only for 64 bit systems
+ifeq ($(this_arch_bit_depth),64)
 define this_rules
 test:: $(prorab_this_name)
 	@myci-running-test.sh $(this_test)
@@ -41,6 +46,7 @@ test:: $(prorab_this_name)
 	@myci-passed.sh
 endef
 $(eval $(this_rules))
+endif
 
 
 # add dependency on libsvgren
