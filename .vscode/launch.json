@@ -23,6 +23,26 @@
                 }
             ],
             "preLaunchTask": "build"
+        },
+        {
+            "name": "debug checksvg",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/tests/samples/checksvg",
+            "args": ["${workspaceFolder}/tests/samples/testdata/mouse.svg", "${workspaceFolder}/tests/samples/testdata/mouse.png"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/tests/render",
+            "environment": [{"name": "LD_LIBRARY_PATH", "value": "../../src"}],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "build"
         }
     ]
 }

@@ -10,9 +10,9 @@ this_cxxflags += -DDEBUG
 this_cxxflags += -fstrict-aliasing #strict aliasing!!!
 this_cxxflags += -std=c++11
 
-this_srcs += checksvg.cpp
+this_srcs += $(call prorab-src-dir, .)
 
-this_ldlibs += -lsvgdom $(d)../../src/libsvgren$(soext) -lpapki `pkg-config --libs cairo` -lpng -lstdc++
+this_ldlibs += -lsvgdom $(d)../../src/libsvgren$(dot_so) -lpapki -lclargs `pkg-config --libs cairo` -lpng -lstdc++
 
 ifeq ($(os), macosx)
     this_cxxflags += -stdlib=libc++ #this is needed to be able to use c++11 std lib
@@ -35,7 +35,7 @@ test:: $(prorab_this_name)
 	$(prorab_echo)cp $(d)../../src/*.dll . || true
 	$(prorab_echo)for f in $(this_svgs); do \
 	    echo "checking file $$$$f.svg" && \
-	    LD_LIBRARY_PATH=$(d)../../src $(d)./checksvg $$$$f.svg $$$$f.png; \
+	    LD_LIBRARY_PATH=$(d)../../src $(d)./checksvg --tolerance=2 $$$$f.svg $$$$f.png; \
 	    if [ $$$$? -ne 0 ]; then myci-error.sh "rendered SVG did not match etalon sample"; exit 1; fi \
 	done
 	@myci-passed.sh
