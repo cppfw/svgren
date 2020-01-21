@@ -1,3 +1,9 @@
+libsvgren (0.4.64) unstable; urgency=medium
+
+  * debian/buster i386 packages
+
+ -- Ivan Gagis <igagis@gmail.com>  Tue, 21 Jan 2020 18:56:32 +0200
+
 libsvgren (0.4.63) unstable; urgency=medium
 
   * relink to latest libs
