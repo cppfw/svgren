@@ -6,20 +6,20 @@ First of all we need to include the **svgren** header file
 
 ``` cpp
 #include <svgren/render.hpp>
-#include <papki/FSFile.hpp> //we will need this to load the SVG file
+#include <papki/fs_file.hpp> //we will need this to load the SVG file
 ```
 
 Then we need to load the SVG file and create the document object model (DOM), let's load the file called *camera.svg*
 
 ``` cpp
-auto dom = svgdom::load(papki::FSFile("camera.svg"));
+auto dom = svgdom::load(papki::fs_file("camera.svg"));
 ```
 
 Then we just render the SVG into a memory buffer
 
 ``` cpp
 auto result = svgren::render(*dom);
-//Returned 'result.pixels' is a std::vector<std::uint32_t> holding array of RGBA values.
+// returned 'result.pixels' is a std::vector<uint32_t> holding array of RGBA values.
 ```
 
 If SVG document specifies any coordiantes or lengthes in physical units, like milimeters or centimeters or inches,
