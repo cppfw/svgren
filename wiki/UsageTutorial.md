@@ -23,14 +23,14 @@ auto result = svgren::render(*dom);
 ```
 
 If SVG document specifies any coordiantes or lengthes in physical units, like milimeters or centimeters or inches,
-we have to supply the dots per inch (DPI) value of our physical display to the svgren::render() function. This is done using the `svgren::Parameters` structure
+we have to supply the dots per inch (DPI) value of our physical display to the svgren::render() function. This is done using the `svgren::parameters` structure
 
 ``` cpp
-svgren::Parameters p;
+svgren::parameters p;
 p.bgra = true; // returned pixels format will be BGRA instead of RGBA
 p.dpi = 240; // pixel density of target physical display is 240 dpi
-p.widthRequest = 0; //0 means use width from SVG document
-p.heightRequest = 0; //0 means use height from SVG document
+p.width_request = 0; // 0 means use width from SVG document
+p.height_request = 0; // 0 means use height from SVG document
 auto result = svgren::render(*dom, p);
 ```
 
