@@ -6,7 +6,7 @@ First of all we need to include the **svgren** header file
 
 ``` cpp
 #include <svgren/render.hpp>
-#include <papki/fs_file.hpp> //we will need this to load the SVG file
+#include <papki/fs_file.hpp> // we will need this to load the SVG file
 ```
 
 Then we need to load the SVG file and create the document object model (DOM), let's load the file called *camera.svg*
