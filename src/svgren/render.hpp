@@ -9,14 +9,17 @@ namespace svgren{
 /**
  * @brief SVG render parameters.
  */
-struct Parameters{
+struct parameters{
 	/**
 	 * @brief Width request for the resulting raster image.
 	 * If width request is set to 0 then the width will be adjusted to preserve
 	 * aspect ratio of the SVG image or determined from the SVG root element if
 	 * height request is also set to zero.
 	 */
-	unsigned widthRequest = 0;
+	unsigned width_request = 0;
+
+	// TODO: deprecated, remove.
+	unsigned& widthRequest = width_request;
 	
 	/**
 	 * @brief Height request for the resulting raster image.
@@ -24,7 +27,10 @@ struct Parameters{
 	 * aspect ratio of the SVG image or determined from the SVG root element if
 	 * width request is also set to zero.
 	 */
-	unsigned heightRequest = 0;
+	unsigned height_request = 0;
+
+	// TODO: deprecated, remove.
+	unsigned& heightRequest = height_request;
 	
 	/**
 	 * @brief Dots per inch to use for unit conversion to pixels.
@@ -38,14 +44,17 @@ struct Parameters{
 	bool bgra = false;
 };
 
+// TODO: deprecated, remove.
+typedef parameters Parameters;
+
 /**
  * @brief SVG image rendering result.
  */
-struct Result{
+struct result{
 	/**
 	 * @brief Array of pixels.
 	 */
-	std::vector<std::uint32_t> pixels;
+	std::vector<uint32_t> pixels;
 	
 	/**
 	 * @brief Resulting width of the raster image.
@@ -58,13 +67,16 @@ struct Result{
 	unsigned height = 0;
 };
 
+// TODO: deprecated, remove.
+typedef result Result;
+
 /**
  * @brief Render SVG image to raster image.
  * @param svg - the SVG document object model to render.
  * @param p - render parameters.
  * @return Rendering result.
  */
-Result render(const svgdom::SvgElement& svg, const Parameters& p = Parameters());
+result render(const svgdom::SvgElement& svg, const parameters& p = parameters());
 
 
 /**
@@ -80,10 +92,10 @@ Result render(const svgdom::SvgElement& svg, const Parameters& p = Parameters())
  * @param bgra - indicates if the output format is BGRA or RGBA. Default is RGBA.
  * @return An array of RGBA values representing the resulting raster image.
  */
-//TODO: remove deprecated function
+// TODO: remove deprecated function
 inline std::vector<std::uint32_t> render(const svgdom::SvgElement& svg, unsigned& width, unsigned& height, real dpi = 96, bool bgra = false){
 	TRACE_ALWAYS(<< "svgren::render(svg, width, height, dpi, bgra): !!!DEPRECATED!!! Use svgren::render(svg, p)" << std::endl)
-	Parameters p;
+	parameters p;
 	p.widthRequest = width;
 	p.heightRequest = height;
 	p.dpi = dpi;

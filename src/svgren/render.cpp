@@ -12,8 +12,8 @@ using namespace svgren;
 
 
 	
-Result svgren::render(const svgdom::SvgElement& svg, const Parameters& p){
-	Result ret;
+result svgren::render(const svgdom::SvgElement& svg, const parameters& p){
+	result ret;
 	
 	auto wh = svg.getDimensions(p.dpi);
 	
@@ -21,7 +21,7 @@ Result svgren::render(const svgdom::SvgElement& svg, const Parameters& p){
 		return ret;
 	}
 	
-	if(p.widthRequest == 0 && p.heightRequest == 0){
+	if(p.width_request == 0 && p.height_request == 0){
 		ret.width = unsigned(std::ceil(wh[0]));
 		ret.height = unsigned(std::ceil(wh[1]));
 	}else{
@@ -30,19 +30,19 @@ Result svgren::render(const svgdom::SvgElement& svg, const Parameters& p){
 			return ret;
 		}
 		ASSERT(aspectRatio > 0)
-		if(p.widthRequest == 0 && p.heightRequest != 0){
-			ret.width = unsigned(std::round(aspectRatio * real(p.heightRequest)));
-			ret.width = std::max(ret.width, unsigned(1));//we don't want zero width
-			ret.height = p.heightRequest;
-		}else if(p.widthRequest != 0 && p.heightRequest == 0){
-			ret.height = unsigned(std::round(real(p.widthRequest) / aspectRatio));
-			ret.height = std::max(ret.height, unsigned(1));//we don't want zero height
-			ret.width = p.widthRequest;
+		if(p.width_request == 0 && p.height_request != 0){
+			ret.width = unsigned(std::round(aspectRatio * real(p.height_request)));
+			ret.width = std::max(ret.width, unsigned(1)); // we don't want zero width
+			ret.height = p.height_request;
+		}else if(p.width_request != 0 && p.height_request == 0){
+			ret.height = unsigned(std::round(real(p.width_request) / aspectRatio));
+			ret.height = std::max(ret.height, unsigned(1)); // we don't want zero height
+			ret.width = p.width_request;
 		}else{
-			ASSERT(p.widthRequest != 0)
-			ASSERT(p.heightRequest != 0)
-			ret.width = p.widthRequest;
-			ret.height = p.heightRequest;
+			ASSERT(p.width_request != 0)
+			ASSERT(p.height_request != 0)
+			ret.width = p.width_request;
+			ret.height = p.height_request;
 		}
 	}
 	
@@ -51,11 +51,11 @@ Result svgren::render(const svgdom::SvgElement& svg, const Parameters& p){
 	ASSERT(wh[0] > 0)
 	ASSERT(wh[1] > 0)
 	
-	int stride = ret.width * sizeof(std::uint32_t);
+	int stride = ret.width * sizeof(uint32_t);
 	
 //	TRACE(<< "width = " << ret.width << " height = " << ret.height << " stride = " << stride / 4 << std::endl)
 	
-	ret.pixels.resize((stride / sizeof(std::uint32_t)) * ret.height);
+	ret.pixels.resize((stride / sizeof(uint32_t)) * ret.height);
 	
 	for(auto& c : ret.pixels){
 #ifdef M_SVGREN_BACKGROUND
@@ -96,26 +96,26 @@ Result svgren::render(const svgdom::SvgElement& svg, const Parameters& p){
 	
 	svg.accept(r);
 	
-	//swap Red and Blue
+	// swap Red and Blue
 	if(!p.bgra){
 		for(auto& c : ret.pixels){
 			c = (c & 0xff00ff00) | ((c << 16) & 0xff0000) | ((c >> 16) & 0xff);
 		}
 	}
 	
-	//unpremultiply alpha
+	// unpremultiply alpha
 	for(auto &c : ret.pixels){
-		std::uint32_t a = (c >> 24);
+		uint32_t a = (c >> 24);
 		if(a == 0xff){
 			continue;
 		}
 		if(a != 0){
-			std::uint32_t r = (c & 0xff) * 0xff / a;
-			utki::clampTop(r, std::uint32_t(0xff));
-			std::uint32_t g = ((c >> 8) & 0xff) * 0xff / a;
-			utki::clampTop(g, std::uint32_t(0xff));
-			std::uint32_t b = ((c >> 16) & 0xff) * 0xff / a;
-			utki::clampTop(b, std::uint32_t(0xff));
+			uint32_t r = (c & 0xff) * 0xff / a;
+			utki::clampTop(r, uint32_t(0xff));
+			uint32_t g = ((c >> 8) & 0xff) * 0xff / a;
+			utki::clampTop(g, uint32_t(0xff));
+			uint32_t b = ((c >> 16) & 0xff) * 0xff / a;
+			utki::clampTop(b, uint32_t(0xff));
 			c = ((a << 24) | (b << 16) | (g << 8) | r);
 		}else{
 			c = 0;

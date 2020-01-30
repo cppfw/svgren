@@ -43,7 +43,8 @@
             "label": "run",
             "type": "shell",
             "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src ./tests tiger.svg)",
-            "problemMatcher": []
+            "problemMatcher": [],
+            "dependsOn": "build"
         },
         {
             "label": "clean",
@@ -54,7 +55,7 @@
         {
             "label": "rebuild",
             "type": "shell",
-            "command": "",
+            "command": "make re",
             "dependsOn": [
                 "clean",
                 "build"
@@ -65,7 +66,8 @@
             "label": "test",
             "type": "shell",
             "command": "make test",
-            "problemMatcher": []
+            "problemMatcher": [],
+            "dependsOn": "build"
         }
     ]
 }
