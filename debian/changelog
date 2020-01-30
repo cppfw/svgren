@@ -1,3 +1,9 @@
+libsvgren (0.4.65) unstable; urgency=medium
+
+  * update to new naming convention
+
+ -- Ivan Gagis <igagis@gmail.com>  Fri, 31 Jan 2020 00:31:04 +0200
+
 libsvgren (0.4.64) unstable; urgency=medium
 
   * debian/buster i386 packages
