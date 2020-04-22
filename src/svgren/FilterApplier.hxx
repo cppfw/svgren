@@ -1,6 +1,6 @@
 #pragma once
 
-#include <svgdom/Visitor.hpp>
+#include <svgdom/visitor.hpp>
 
 #include "Renderer.hxx"
 
@@ -11,10 +11,10 @@ struct FilterResult{
 	Surface surface;
 };
 
-class FilterApplier : public svgdom::ConstVisitor{
+class FilterApplier : public svgdom::const_visitor{
 	Renderer& r;
 
-	decltype(svgdom::FilterElement::primitiveUnits) primitiveUnits;
+	decltype(svgdom::FilterElement::primitive_units) primitiveUnits;
 	
 	CanvasRegion filterRegion;
 	

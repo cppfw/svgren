@@ -411,9 +411,9 @@ FilterResult colorMatrix(const Surface& s, const std::array<std::array<real, 5>,
 }
 
 void FilterApplier::visit(const svgdom::FeColorMatrixElement& e){
-	std::array<std::array<real, 5>, 4> m; //first index = row, second index = column
+	std::array<std::array<real, 5>, 4> m; // first index = row, second index = column
 	
-	switch(e.type){
+	switch(e.type_){
 		case svgdom::FeColorMatrixElement::Type_e::MATRIX:
 			for(unsigned i = 0, p = 0; i != m.size(); ++i){
 				for(unsigned j = 0; j != m[i].size(); ++j, ++p){
@@ -618,7 +618,7 @@ void FilterApplier::visit(const svgdom::FeBlendElement& e){
 	
 	//TODO: set filter sub-region
 	
-	this->setResult(e.result, blend(s1, s2, e.mode));
+	this->setResult(e.result, blend(s1, s2, e.mode_));
 }
 
 namespace{
@@ -657,7 +657,7 @@ FilterResult composite(const Surface& in, const Surface& in2, const svgdom::FeCo
 			++sp1;
 			++sp2;
 			
-			switch(e.operator_v){
+			switch(e.operator__){
 				case svgdom::FeCompositeElement::Operator_e::OVER:
 					//co = as * Cs + ab * Cb * (1 – as)
 					//ao = as + ab * (1 – as)

@@ -7,7 +7,7 @@
 #include <utki/math.hpp>
 #include <utki/Exc.hpp>
 
-#include <svgdom/Length.hpp>
+#include <svgdom/length.hpp>
 
 #include "Renderer.hxx"
 

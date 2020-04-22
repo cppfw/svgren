@@ -10,10 +10,10 @@
 #	include <cairo/cairo.h>
 #endif
 
-#include <svgdom/Visitor.hpp>
-#include <svgdom/Finder.hpp>
-#include <svgdom/StyleStack.hpp>
-#include <svgdom/elements/AspectRatioed.hpp>
+#include <svgdom/visitor.hpp>
+#include <svgdom/finder.hpp>
+#include <svgdom/style_stack.hpp>
+#include <svgdom/elements/aspect_ratioed.hpp>
 
 #include "config.hpp"
 #include "Surface.hxx"
@@ -106,10 +106,10 @@ public:
 			const svgdom::SvgElement& root
 		);
 
-	//WORKAROUND: MSVS compiler complains about cannot access protected member,
-	//            Declare public method which calls protected one.
+	// WORKAROUND: MSVS compiler complains about cannot access protected member,
+	//             Declare public method which calls protected one.
 	void relayAccept(const svgdom::Container& e){
-		this->ConstVisitor::relayAccept(e);
+		this->const_visitor::relay_accept(e);
 	}
 
 	void visit(const svgdom::GElement& e)override;

@@ -6,8 +6,8 @@
 #include <utki/config.hpp>
 #include <utki/math.hpp>
 
-#include <svgdom/Length.hpp>
-#include <svgdom/elements/Element.hpp>
+#include <svgdom/length.hpp>
+#include <svgdom/elements/element.hpp>
 
 #if M_OS == M_OS_WINDOWS || M_OS_NAME == M_OS_NAME_IOS
 #	include <cairo.h>

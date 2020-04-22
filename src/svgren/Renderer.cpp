@@ -2,7 +2,7 @@
 
 #include <utki/math.hpp>
 
-#include <svgdom/elements/CoordinateUnits.hpp>
+#include <svgdom/elements/coordinate_units.hpp>
 
 #include "util.hxx"
 
@@ -21,7 +21,7 @@ real Renderer::lengthToPx(const svgdom::Length& l, unsigned coordIndex) const no
 
 void Renderer::applyCairoTransformation(const svgdom::Transformable::Transformation& t) {
 //	TRACE(<< "Renderer::applyCairoTransformation(): applying transformation " << unsigned(t.type) << std::endl)
-	switch (t.type) {
+	switch (t.type_) {
 		case svgdom::Transformable::Transformation::Type_e::TRANSLATE:
 //			TRACE(<< "translate x,y = (" << t.x << ", " << t.y << ")" << std::endl)
 			cairo_translate(this->cr, t.x, t.y);
@@ -292,7 +292,7 @@ void Renderer::setGradient(const std::string& id) {
 	}
 
 	struct CommonGradientPush{
-		CairoMatrixSaveRestore cairoMatrixPush; //here we need to save/restore only matrix!
+		CairoMatrixSaveRestore cairoMatrixPush; // here we need to save/restore only matrix!
 
 		std::unique_ptr<ViewportPush> viewportPush;
 
@@ -302,7 +302,7 @@ void Renderer::setGradient(const std::string& id) {
 			if (r.gradientGetUnits(gradient) == svgdom::CoordinateUnits_e::OBJECT_BOUNDING_BOX) {
 				cairo_translate(r.cr, r.userSpaceShapeBoundingBoxPos[0], r.userSpaceShapeBoundingBoxPos[1]);
 				ASSERT(cairo_status(r.cr) == CAIRO_STATUS_SUCCESS)
-				if(r.userSpaceShapeBoundingBoxDim[0] * r.userSpaceShapeBoundingBoxDim[1] != 0){ //cairo does not allow non-invertible scaling
+				if(r.userSpaceShapeBoundingBoxDim[0] * r.userSpaceShapeBoundingBoxDim[1] != 0){ // cairo does not allow non-invertible scaling
 					cairo_scale(r.cr, r.userSpaceShapeBoundingBoxDim[0], r.userSpaceShapeBoundingBoxDim[1]);
 				}else{
 					TRACE(<< "WARNING: non-invertible scaling encountered at " << __FILE__ << ":" << __LINE__ << std::endl)
@@ -675,10 +675,10 @@ void Renderer::visit(const svgdom::UseElement& e) {
 			this->fakeGElement.styles = e.styles;
 			this->fakeGElement.transformations = e.transformations;
 
-			//Add x and y transformation
+			// add x and y transformation
 			{
 				svgdom::Transformable::Transformation t;
-				t.type = svgdom::Transformable::Transformation::Type_e::TRANSLATE;
+				t.type_ = svgdom::Transformable::Transformation::Type_e::TRANSLATE;
 				t.x = this->r.lengthToPx(e.x, 0);
 				t.y = this->r.lengthToPx(e.y, 1);
 
@@ -715,7 +715,7 @@ void Renderer::visit(const svgdom::UseElement& e) {
 				}
 			};
 
-			this->fakeGElement.children.push_back(utki::makeUnique<FakeSvgElement>(this->r, this->ue, symbol));
+			this->fakeGElement.children.push_back(std::make_unique<FakeSvgElement>(this->r, this->ue, symbol));
 			this->fakeGElement.accept(this->r);
 		}
 
@@ -747,7 +747,7 @@ void Renderer::visit(const svgdom::UseElement& e) {
 				}
 			};
 
-			this->fakeGElement.children.push_back(utki::makeUnique<FakeSvgElement>(this->r, this->ue, svg));
+			this->fakeGElement.children.push_back(std::make_unique<FakeSvgElement>(this->r, this->ue, svg));
 			this->fakeGElement.accept(this->r);
 		}
 
@@ -768,7 +768,7 @@ void Renderer::visit(const svgdom::UseElement& e) {
 				}
 			};
 
-			this->fakeGElement.children.push_back(utki::makeUnique<FakeSvgElement>(this->r, element));
+			this->fakeGElement.children.push_back(std::make_unique<FakeSvgElement>(this->r, element));
 			this->fakeGElement.accept(this->r);
 		}
 
@@ -829,7 +829,7 @@ void Renderer::visit(const svgdom::PathElement& e) {
 	const svgdom::PathElement::Step* prevStep = nullptr;
 
 	for (auto& s : e.path) {
-		switch (s.type) {
+		switch (s.type_) {
 			case svgdom::PathElement::Step::Type_e::MOVE_ABS:
 				cairo_move_to(this->cr, s.x, s.y);
 				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
@@ -916,7 +916,7 @@ void Renderer::visit(const svgdom::PathElement& e) {
 					}
 
 					double x1, y1; //control point
-					switch (prevStep ? prevStep->type : svgdom::PathElement::Step::Type_e::UNKNOWN) {
+					switch (prevStep ? prevStep->type_ : svgdom::PathElement::Step::Type_e::UNKNOWN) {
 						case svgdom::PathElement::Step::Type_e::QUADRATIC_ABS:
 							x1 = -(prevStep->x1 - x0) + x0;
 							y1 = -(prevStep->y1 - y0) + y0;
@@ -961,7 +961,7 @@ void Renderer::visit(const svgdom::PathElement& e) {
 					}
 
 					double x1, y1; //control point
-					switch (prevStep ? prevStep->type : svgdom::PathElement::Step::Type_e::UNKNOWN) {
+					switch (prevStep ? prevStep->type_ : svgdom::PathElement::Step::Type_e::UNKNOWN) {
 						case svgdom::PathElement::Step::Type_e::QUADRATIC_SMOOTH_ABS:
 							x1 = -(prevQuadraticX1 - x0);
 							y1 = -(prevQuadraticY1 - y0);
@@ -1000,7 +1000,7 @@ void Renderer::visit(const svgdom::PathElement& e) {
 				break;
 			case svgdom::PathElement::Step::Type_e::CUBIC_SMOOTH_ABS:
 				{
-					double x0, y0; //current point, absolute coordinates
+					double x0, y0; // current point, absolute coordinates
 					if (cairo_has_current_point(this->cr)) {
 						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 						cairo_get_current_point(this->cr, &x0, &y0);
@@ -1013,8 +1013,8 @@ void Renderer::visit(const svgdom::PathElement& e) {
 						y0 = 0;
 					}
 
-					double x1, y1; //first control point
-					switch (prevStep ? prevStep->type : svgdom::PathElement::Step::Type_e::UNKNOWN) {
+					double x1, y1; // first control point
+					switch (prevStep ? prevStep->type_ : svgdom::PathElement::Step::Type_e::UNKNOWN) {
 						case svgdom::PathElement::Step::Type_e::CUBIC_SMOOTH_ABS:
 						case svgdom::PathElement::Step::Type_e::CUBIC_ABS:
 							x1 = -(prevStep->x2 - x0) + x0;
@@ -1026,8 +1026,8 @@ void Renderer::visit(const svgdom::PathElement& e) {
 							y1 = -(prevStep->y2 - prevStep->y) + y0;
 							break;
 						default:
-							//No previous step or previous step is not a cubic Bezier curve.
-							//Set first control point equal to current point
+							// No previous step or previous step is not a cubic Bezier curve.
+							// Set first control point equal to current point
 							x1 = x0;
 							y1 = y0;
 							break;
@@ -1052,7 +1052,7 @@ void Renderer::visit(const svgdom::PathElement& e) {
 					}
 
 					double x1, y1; //first control point
-					switch (prevStep ? prevStep->type : svgdom::PathElement::Step::Type_e::UNKNOWN) {
+					switch (prevStep ? prevStep->type_ : svgdom::PathElement::Step::Type_e::UNKNOWN) {
 						case svgdom::PathElement::Step::Type_e::CUBIC_SMOOTH_ABS:
 						case svgdom::PathElement::Step::Type_e::CUBIC_ABS:
 							x1 = -(prevStep->x2 - x0);
@@ -1103,7 +1103,7 @@ void Renderer::visit(const svgdom::PathElement& e) {
 					{
 						double xx;
 						double yy;
-						if (s.type == svgdom::PathElement::Step::Type_e::ARC_ABS) {
+						if (s.type_ == svgdom::PathElement::Step::Type_e::ARC_ABS) {
 							xx = s.x - x;
 							yy = s.y - y;
 						} else {
@@ -1137,7 +1137,7 @@ void Renderer::visit(const svgdom::PathElement& e) {
 					auto yc = sqrt(rx * rx - xc * xc);
 
 					//Choose between the two circles according to flags
-					if (!(s.flags.largeArc ^ s.flags.sweep)) {
+					if (!(s.flags.large_arc ^ s.flags.sweep)) {
 						yc = -yc;
 					}
 
@@ -1178,7 +1178,7 @@ void Renderer::visit(const svgdom::PathElement& e) {
 				}
 				break;
 			default:
-				ASSERT_INFO(false, "unknown path step type: " << unsigned(s.type))
+				ASSERT_INFO(false, "unknown path step type: " << unsigned(s.type_))
 				break;
 		}
 		prevStep = &s;
