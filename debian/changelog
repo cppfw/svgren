@@ -1,3 +1,9 @@
+libsvgren (0.4.66) unstable; urgency=medium
+
+  * adapt to latest svgdom
+
+ -- Ivan Gagis <igagis@gmail.com>  Wed, 22 Apr 2020 21:23:26 +0300
+
 libsvgren (0.4.65) unstable; urgency=medium
 
   * update to new naming convention
