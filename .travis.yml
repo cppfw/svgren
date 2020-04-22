@@ -91,9 +91,9 @@ before_install:
 - if [ "$TRAVIS_JOB_NAME" == "msys2" ]; then
     choco upgrade --no-progress -y msys2 &&
     export msys2="/c/tools/msys64/msys2_shell.cmd -defterm -no-start -msys -here -c" &&
-    $msys2 "echo -e '[igagis_msys]\\nSigLevel ^= Optional TrustAll\\nServer ^= https://dl.bintray.com/igagis/msys2/msys' ^>^> /etc/pacman.conf" &&
-    $msys2 "echo -e '[igagis_mingw64]\\nSigLevel ^= Optional TrustAll\\nServer ^= https://dl.bintray.com/igagis/msys2/mingw64' ^>^> /etc/pacman.conf" &&
-    $msys2 "echo -e '[igagis_mingw32]\\nSigLevel ^= Optional TrustAll\\nServer ^= https://dl.bintray.com/igagis/msys2/mingw32' ^>^> /etc/pacman.conf" &&
+    $msys2 "echo -e '[igagis_msys]\\nSigLevel = Optional TrustAll\\nServer = https://dl.bintray.com/igagis/msys2/msys' >> /etc/pacman.conf" &&
+    $msys2 "echo -e '[igagis_mingw64]\\nSigLevel = Optional TrustAll\\nServer = https://dl.bintray.com/igagis/msys2/mingw64' >> /etc/pacman.conf" &&
+    $msys2 "echo -e '[igagis_mingw32]\\nSigLevel = Optional TrustAll\\nServer = https://dl.bintray.com/igagis/msys2/mingw32' >> /etc/pacman.conf" &&
     $msys2 "pacman -Sy --noconfirm myci mingw-w64-x86_64-toolchain mingw-w64-i686-toolchain";
   fi
 - if [ "$TRAVIS_OS_NAME" == "linux" ] || [ "$TRAVIS_OS_NAME" == "osx" ]; then
@@ -117,7 +117,7 @@ before_script:
     (cd xcode/$PACKAGE_NAME && ../../XcodeProjAdder -XCP $PACKAGE_NAME.xcodeproj -SCSV `echo $(find ../../src -type f -name *.cpp) | sed -E -e 's/ /,/g'`)
   fi
 - if [ "$TRAVIS_JOB_NAME" == "msys2" ]; then
-    $msys2 "myci-apply-version.sh -v \$^(myci-deb-version.sh debian/changelog^) msys2/PKGBUILD.in";
+    $msys2 "myci-apply-version.sh -v \$(myci-deb-version.sh debian/changelog) msys2/PKGBUILD.in";
   fi
 
 script:
@@ -138,7 +138,7 @@ script:
   fi
 # running MSYS2 script from deployment provider did not work for some reason, so we do it here if the commit is a tagged one.
 - if [ "$TRAVIS_JOB_NAME" == "msys2" ]; then
-    $msys2 "^(cd msys2 ^&^& PKGEXT^='.pkg.tar.xz' makepkg-mingw --syncdeps --noconfirm --skipinteg^)" &&
+    $msys2 "(cd msys2 && PKGEXT='.pkg.tar.xz' makepkg-mingw --syncdeps --noconfirm --skipinteg)" &&
     if [ ! -z "$TRAVIS_TAG" ]; then
       for f in $(find msys2 -name "mingw-w64-x86_64-$PACKAGE_NAME-*-any.pkg.*"); do
         $msys2 "myci-deploy-pacman-bintray.sh -u igagis -r msys2 -p mingw64 -d igagis_mingw64 $f";
