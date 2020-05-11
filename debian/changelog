@@ -1,3 +1,9 @@
+libsvgren (0.4.67) unstable; urgency=medium
+
+  * update to latest libs
+
+ -- Ivan Gagis <igagis@gmail.com>  Mon, 11 May 2020 19:37:52 +0300
+
 libsvgren (0.4.66) unstable; urgency=medium
 
   * adapt to latest svgdom
