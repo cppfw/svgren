@@ -1,10 +1,10 @@
 #include <iostream>
 #include <vector>
 #include <cstring>
+#include <stdexcept>
 
 #include <png.h>
 
-#include <utki/Exc.hpp>
 #include <r4/vector2.hpp>
 #include <papki/fs_file.hpp>
 
@@ -28,10 +28,10 @@ public:
 	/**
 	 * @brief Basic image exception.
 	 */
-	class Exc : public utki::Exc{
+	class Exc : public std::runtime_error{
 	public:
 		Exc(const std::string& msg = std::string()) :
-				utki::Exc(msg.c_str())
+				std::runtime_error(msg.c_str())
 		{}
 	};
 
@@ -102,7 +102,7 @@ public:
 	 * @brief Get pixel data.
 	 * @return Pixel data of the image.
 	 */
-	const utki::span<std::uint8_t> buf()const{
+	utki::span<const std::uint8_t> buf()const{
 		return utki::make_span(this->buf_v);
 	}
 

@@ -2,10 +2,10 @@
 
 #include <cstring>
 #include <vector>
+#include <stdexcept>
 
 #include <utki/debug.hpp>
 #include <utki/math.hpp>
-#include <utki/Exc.hpp>
 
 #include <svgdom/length.hpp>
 
@@ -210,7 +210,7 @@ PushCairoGroupIfNeeded::PushCairoGroupIfNeeded(Renderer& renderer, bool isContai
 //		TRACE(<< "setting temp context" << std::endl)
 		cairo_push_group(this->renderer.cr);
 		if(cairo_status(this->renderer.cr) != CAIRO_STATUS_SUCCESS){
-			throw utki::Exc("cairo_push_group() failed");
+			throw std::runtime_error("cairo_push_group() failed");
 		}
 		
 		this->opacity = opacity;
@@ -232,7 +232,7 @@ PushCairoGroupIfNeeded::~PushCairoGroupIfNeeded()noexcept{
 		if(this->maskElement){
 			cairo_push_group(this->renderer.cr);
 			if(cairo_status(this->renderer.cr) != CAIRO_STATUS_SUCCESS){
-				throw utki::Exc("cairo_push_group() failed");
+				throw std::runtime_error("cairo_push_group() failed");
 			}
 			
 			utki::ScopeExit scopeExit([&mask, this](){

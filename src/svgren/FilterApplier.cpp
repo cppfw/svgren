@@ -1,10 +1,10 @@
 #include "FilterApplier.hxx"
 
 #include <cmath>
+#include <stdexcept>
 
 #include <utki/debug.hpp>
 #include <utki/math.hpp>
-#include <utki/Exc.hpp>
 
 #include "util.hxx"
 
@@ -204,22 +204,22 @@ Surface FilterApplier::getSource(const std::string& in) {
 	}
 	if(in == "SourceAlpha"){
 		//TODO: implement
-		throw utki::Exc("SourceAlpha not implemented");
+		throw std::runtime_error("SourceAlpha not implemented");
 	}
 	if(in == "BackgroundImage"){
 		return this->r.background;
 	}
 	if(in == "BackgroundAlpha"){
 		//TODO: implement
-		throw utki::Exc("BackgroundAlpha not implemented");
+		throw std::runtime_error("BackgroundAlpha not implemented");
 	}
 	if(in == "FillPaint"){
 		//TODO: implement
-		throw utki::Exc("FillPaint not implemented");
+		throw std::runtime_error("FillPaint not implemented");
 	}
 	if(in == "StrokePaint"){
 		//TODO: implement
-		throw utki::Exc("StrokePaint not implemented");
+		throw std::runtime_error("StrokePaint not implemented");
 	}
 	
 	auto i = this->results.find(in);
