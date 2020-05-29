@@ -369,7 +369,7 @@ void Renderer::setGradient(const std::string& id) {
 			}
 		}
 
-		void defaultVisit(const svgdom::Element&)override{
+		void default_visit(const svgdom::Element&)override{
 			cairo_set_source_rgba(this->r.cr, 0, 0, 0, 0);
 			ASSERT(cairo_status(this->r.cr) == CAIRO_STATUS_SUCCESS)
 		}
@@ -751,7 +751,7 @@ void Renderer::visit(const svgdom::UseElement& e) {
 			this->fakeGElement.accept(this->r);
 		}
 
-		void defaultVisit(const svgdom::Element& element)override{
+		void default_visit(const svgdom::Element& element)override{
 			struct FakeSvgElement : public svgdom::Element{
 				Renderer& r;
 				const svgdom::Element& e;
@@ -772,8 +772,8 @@ void Renderer::visit(const svgdom::UseElement& e) {
 			this->fakeGElement.accept(this->r);
 		}
 
-		void defaultVisit(const svgdom::Element& element, const svgdom::Container& c)override{
-			this->defaultVisit(element);
+		void default_visit(const svgdom::Element& element, const svgdom::Container& c)override{
+			this->default_visit(element);
 		}
 	} visitor(*this, e);
 

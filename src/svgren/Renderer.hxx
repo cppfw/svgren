@@ -123,7 +123,7 @@ public:
 	void visit(const svgdom::EllipseElement& e) override;
 	void visit(const svgdom::RectElement& e) override;
 
-	void defaultVisit(const svgdom::Element& e, const svgdom::Container& c) override{
+	void default_visit(const svgdom::Element& e, const svgdom::Container& c) override{
 		//do nothing by default
 	}
 };
