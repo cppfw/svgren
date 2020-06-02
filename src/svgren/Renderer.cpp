@@ -228,7 +228,7 @@ void Renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::gradien
 
 	ASSERT(!gradient_ss.stack.empty())
 	gradient_ss.stack.pop_back();
-	gradient_ss.stack.push_back(svgdom::style_stack::node(effective_gradient_styleable));
+	gradient_ss.stack.push_back(effective_gradient_styleable);
 
 	struct ColorStopAdder : public svgdom::const_visitor{
 		cairo_pattern_t& pat;
