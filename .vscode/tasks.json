@@ -47,6 +47,14 @@
             "dependsOn": "build"
         },
         {
+            "label": "run_debug",
+            "type": "shell",
+            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src ./tests ../samples/testdata/back.svg out.png)",
+            "problemMatcher": [],
+            "dependsOn": "build_debug",
+            // "dependsOn": "build_debug_grey_bg"
+        },
+        {
             "label": "clean",
             "type": "shell",
             "command": "make clean",

@@ -21,30 +21,30 @@
 
 namespace svgren{
 
-class Renderer : public svgdom::ConstVisitor{
+class Renderer : public svgdom::const_visitor{
 public:
 	cairo_t* cr;
 	
-	svgdom::Finder finder;
+	svgdom::finder finder;
 	
 	const real dpi;
 	
 	bool isOutermostElement = true;
 	
-	std::array<real, 2> viewport;//width, height
+	std::array<real, 2> viewport; // width, height
 	
-	//this bounding box is used for gradients
+	// this bounding box is used for gradients
 	std::array<real, 2> userSpaceShapeBoundingBoxPos = {{0, 0}};
 	std::array<real, 2> userSpaceShapeBoundingBoxDim = {{0, 0}};
 	
-	//this bounding box is used for filter region calculation.
+	// this bounding box is used for filter region calculation.
 	DeviceSpaceBoundingBox deviceSpaceBoundingBox;
 	
-	svgdom::StyleStack styleStack;
+	svgdom::style_stack styleStack;
 	
-	Surface background; //for accessing background image from filter effects
+	Surface background; // for accessing background image from filter effects
 	
-	//blit surface to current cairo surface
+	// blit surface to current cairo surface
 	void blit(const Surface& s);
 	
 	real lengthToPx(const svgdom::Length& l, unsigned coordIndex = 0)const noexcept;
@@ -53,7 +53,7 @@ public:
 	
 	void applyTransformations(const decltype(svgdom::Transformable::transformations)& transformations);
 	
-	void setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradient& g, const svgdom::StyleStack& ss);
+	void setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradient& g, const svgdom::style_stack& ss);
 	
 	void setGradient(const std::string& id);
 	
@@ -91,9 +91,11 @@ public:
 	svgdom::Length gradientGetFx(const svgdom::RadialGradientElement& g);
 	svgdom::Length gradientGetFy(const svgdom::RadialGradientElement& g);
 	
-	const decltype(svgdom::Container::children)& gradientGetStops(const svgdom::Gradient& g);
-	const svgdom::Styleable& gradientGetStyle(const svgdom::Gradient& g);
-	svgdom::Gradient::SpreadMethod_e gradientGetSpreadMethod(const svgdom::Gradient& g);
+	const decltype(svgdom::Container::children)& gradientGetStops(const svgdom::gradient& g);
+	const decltype(svgdom::styleable::styles)& gradient_get_styles(const svgdom::gradient& g);
+	const decltype(svgdom::styleable::classes)& gradient_get_classes(const svgdom::gradient& g);
+	svgdom::gradient::spread_method gradientGetSpreadMethod(const svgdom::gradient& g);
+	decltype(svgdom::styleable::presentation_attributes) gradient_get_presentation_attributes(const svgdom::gradient& g);
 	
 	bool isInvisible();
 	bool isGroupInvisible();
@@ -124,10 +126,8 @@ public:
 	void visit(const svgdom::RectElement& e) override;
 
 	void default_visit(const svgdom::Element& e, const svgdom::Container& c) override{
-		//do nothing by default
+		// do nothing by default
 	}
 };
-
-
 
 }

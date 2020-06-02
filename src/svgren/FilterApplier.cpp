@@ -311,7 +311,7 @@ void FilterApplier::visit(const svgdom::FilterElement& e) {
 		this->filterRegion.height = unsigned(std::max(std::ceil(frHeight), decltype(frHeight)(0)));
 	}
 	
-	this->relayAccept(e);
+	this->relay_accept(e);
 }
 
 void FilterApplier::visit(const svgdom::FeGaussianBlurElement& e) {

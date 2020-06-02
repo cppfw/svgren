@@ -166,15 +166,15 @@ ViewportPush::~ViewportPush() noexcept{
 PushCairoGroupIfNeeded::PushCairoGroupIfNeeded(Renderer& renderer, bool isContainer) :
 		renderer(renderer)
 {
-	auto backgroundP = this->renderer.styleStack.getStyleProperty(svgdom::StyleProperty_e::ENABLE_BACKGROUND);
+	auto backgroundP = this->renderer.styleStack.get_style_property(svgdom::StyleProperty_e::enable_background);
 	
 	if(backgroundP && backgroundP->enableBackground.value == svgdom::EnableBackground_e::NEW){
 		this->oldBackground = this->renderer.background;
 	}
 	
-	auto filterP = this->renderer.styleStack.getStyleProperty(svgdom::StyleProperty_e::FILTER);
+	auto filterP = this->renderer.styleStack.get_style_property(svgdom::StyleProperty_e::filter);
 	
-	if(auto maskP = this->renderer.styleStack.getStyleProperty(svgdom::StyleProperty_e::MASK)){
+	if(auto maskP = this->renderer.styleStack.get_style_property(svgdom::StyleProperty_e::mask)){
 		if(auto ei = this->renderer.finder.findById(maskP->getLocalIdFromIri())){
 			this->maskElement = &ei->e;
 		}
@@ -184,14 +184,14 @@ PushCairoGroupIfNeeded::PushCairoGroupIfNeeded(Renderer& renderer, bool isContai
 
 	auto opacity = svgdom::real(1);
 	{
-		auto strokeP = this->renderer.styleStack.getStyleProperty(svgdom::StyleProperty_e::STROKE);
-		auto fillP = this->renderer.styleStack.getStyleProperty(svgdom::StyleProperty_e::FILL);
+		auto strokeP = this->renderer.styleStack.get_style_property(svgdom::StyleProperty_e::stroke);
+		auto fillP = this->renderer.styleStack.get_style_property(svgdom::StyleProperty_e::fill);
 
-		//OPTIMIZATION: if opacity is set on an element then push cairo group only in case it is a Container element, like 'g' or 'svg',
-		//              or in case the fill or stroke is a non-solid color, like gradient or pattern,
-		//				or both fill and stroke are non-none.
-		//              If element is non-container and one of stroke or fill is solid color and other one is none,
-		//              then opacity will be applied later without pushing cairo group.
+		// OPTIMIZATION: if opacity is set on an element then push cairo group only in case it is a Container element, like 'g' or 'svg',
+		//               or in case the fill or stroke is a non-solid color, like gradient or pattern,
+		// 				or both fill and stroke are non-none.
+		//               If element is non-container and one of stroke or fill is solid color and other one is none,
+		//               then opacity will be applied later without pushing cairo group.
 		if(this->groupPushed
 				|| isContainer
 				|| (strokeP && strokeP->isUrl())
@@ -199,7 +199,7 @@ PushCairoGroupIfNeeded::PushCairoGroupIfNeeded(Renderer& renderer, bool isContai
 				|| (fillP && strokeP && !fillP->isNone() && !strokeP->isNone())
 			)
 		{
-			if(auto p = this->renderer.styleStack.getStyleProperty(svgdom::StyleProperty_e::OPACITY)){
+			if(auto p = this->renderer.styleStack.get_style_property(svgdom::StyleProperty_e::opacity)){
 				opacity = p->opacity;
 				this->groupPushed = this->groupPushed || opacity < 1;
 			}
@@ -248,7 +248,7 @@ PushCairoGroupIfNeeded::~PushCairoGroupIfNeeded()noexcept{
 				MaskRenderer(Renderer& r) : r(r){}
 				
 				void visit(const svgdom::MaskElement& e)override{
-					svgdom::StyleStack::Push pushStyles(this->r.styleStack, e);
+					svgdom::style_stack::push pushStyles(this->r.styleStack, e);
 	
 					this->r.relayAccept(e);
 				}
