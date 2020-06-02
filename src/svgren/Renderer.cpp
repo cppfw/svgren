@@ -679,22 +679,23 @@ void Renderer::visit(const svgdom::GElement& e) {
 	this->applyFilter();
 }
 
-void Renderer::visit(const svgdom::UseElement& e) {
+void Renderer::visit(const svgdom::use_element& e){
 //	TRACE(<< "rendering UseElement" << std::endl)
-	auto ref = this->finder.findById(e.getLocalIdFromIri());
+	auto ref = this->finder.findById(e.get_local_id_from_iri());
 	if(!ref){
 		return;
 	}
 
 	struct RefRenderer : public svgdom::ConstVisitor{
 		Renderer& r;
-		const svgdom::UseElement& ue;
-		svgdom::GElement fakeGElement;
+		const svgdom::use_element& ue;
+		svgdom::g_element fakeGElement;
 
 		RefRenderer(Renderer& r, const svgdom::UseElement& e) :
 				r(r), ue(e)
 		{
 			this->fakeGElement.styles = e.styles;
+			this->fakeGElement.presentation_attributes = e.presentation_attributes;
 			this->fakeGElement.transformations = e.transformations;
 
 			// add x and y transformation
