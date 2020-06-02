@@ -118,12 +118,13 @@ public:
 	void visit(const svgdom::UseElement& e)override;
 	void visit(const svgdom::SvgElement& e)override;
 	void visit(const svgdom::PathElement& e)override;
-	void visit(const svgdom::CircleElement& e) override;
-	void visit(const svgdom::PolylineElement& e) override;
-	void visit(const svgdom::PolygonElement& e) override;
-	void visit(const svgdom::LineElement& e) override;
-	void visit(const svgdom::EllipseElement& e) override;
-	void visit(const svgdom::RectElement& e) override;
+	void visit(const svgdom::CircleElement& e)override;
+	void visit(const svgdom::PolylineElement& e)override;
+	void visit(const svgdom::PolygonElement& e)override;
+	void visit(const svgdom::LineElement& e)override;
+	void visit(const svgdom::EllipseElement& e)override;
+	void visit(const svgdom::RectElement& e)override;
+	void visit(const svgdom::style_element& e)override;
 
 	void default_visit(const svgdom::Element& e, const svgdom::Container& c) override{
 		// do nothing by default

@@ -1372,7 +1372,11 @@ void Renderer::visit(const svgdom::EllipseElement& e) {
 	this->renderCurrentShape(cairoGroupPush.isPushed());
 }
 
-void Renderer::visit(const svgdom::RectElement& e) {
+void Renderer::visit(const svgdom::style_element& e){
+	this->styleStack.add_css(e.css);
+}
+
+void Renderer::visit(const svgdom::rect_element& e){
 //	TRACE(<< "rendering RectElement" << std::endl)
 	svgdom::style_stack::push pushStyles(this->styleStack, e);
 
