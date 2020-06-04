@@ -16,3 +16,4 @@
 - all path elements
 - gaussian blur effect
 - masking
+- built-in CSS
