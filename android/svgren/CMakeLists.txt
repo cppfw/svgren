@@ -29,5 +29,5 @@ include_directories( build/ndkLibs/include/ )
 
 target_link_libraries(
         svgren
-        android log svgdom papki cairo pixman mikroxml unikod
+        android log svgdom papki cairo pixman mikroxml 
     )
