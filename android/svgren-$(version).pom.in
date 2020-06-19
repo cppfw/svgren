@@ -22,9 +22,9 @@
 		  <scope>compile</scope>
 	  </dependency>
 	  <dependency>
-		  <groupId>org.cairographics</groupId>
+		  <groupId>io.github.igagis</groupId>
 		  <artifactId>cairo</artifactId>
-		  <version>[1.15.4,)</version>
+		  <version>[1.15.7,)</version>
 		  <type>aar</type>
 		  <scope>compile</scope>
 	  </dependency>
