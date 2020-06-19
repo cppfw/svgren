@@ -1,3 +1,9 @@
+libsvgren (0.4.71) unstable; urgency=medium
+
+  * POM file cairo dependency corrected
+
+ -- Ivan Gagis <igagis@gmail.com>  Fri, 19 Jun 2020 21:50:40 +0300
+
 libsvgren (0.4.70) unstable; urgency=medium
 
   * use android native bundle plugin
