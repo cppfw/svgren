@@ -1,18 +1,22 @@
 = WiKi main page
 
-Supported/unsupported SVG features::
-  See link:Features.adoc[Fetures] page.
+== Supported/unsupported SVG features
+See link:Features.adoc[Features] page.
 
-Istallation::
-- link:InstallMSVS.md[Windows (Visual Studio 2015+)]
-- link:InstallMSYS.md[Windows (Msys2)]
-- link:InstallLinux.md[Linux]
-- link:InstallMacOSX.md[MacOS X]
-- link:InstallIOS.md[iOS]
-- link:InstallAndroid.adoc[Android (Android Studio 2.3)]
+== Istallation
 
-Tutorials::
+. Setup your OS-preferred package system repo following link:https://github.com/igagis/pravila/blob/master/EnableRepo.adoc[this manual]
+. Install package
++
+- **deb** (Linux): **libsvgren-dev**
+- **homebrew** (MacOS X): **libsvgren**
+- **Android**: **io.github.igagis:svgren**
+- **cocoapods** (iOS): **svgren**
+- **Msys2** (Windows): **mingw-w64-i686-svgren**, **mingw-w64-x86_64-svgren**
+- **Nuget** (Windows, Visual Studio): **libsvgren**
+
+== Tutorials
 - link:UsageTutorial.md[Basic usage]
 
-Building::
+== Building
 - link:BuildingLinux.adoc[Linux]
