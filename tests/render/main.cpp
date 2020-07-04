@@ -5,7 +5,7 @@
 #include <utki/debug.hpp>
 #include <utki/config.hpp>
 
-#include <papki/FSFile.hpp>
+#include <papki/fs_file.hpp>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,8 +17,6 @@
 #	include <X11/Xlib.h>
 #	include <X11/Xutil.h>
 #endif
-
-
 
 void write_png(const char* filename, int width, int height, std::uint32_t *buffer){
    FILE *fp = NULL;
@@ -111,7 +109,7 @@ int main(int argc, char **argv){
 	
 	auto loadStart = getTicks();
 	
-	auto dom = svgdom::load(papki::FSFile(filename));
+	auto dom = svgdom::load(papki::fs_file(filename));
 	ASSERT_ALWAYS(dom)
 	
 	TRACE(<< "SVG loaded in " << float(getTicks() - loadStart) / 1000.0f << " sec." << std::endl)
@@ -126,7 +124,6 @@ int main(int argc, char **argv){
 	TRACE(<< "imWidth = " << img.width << " imHeight = " << img.height << " img.size() = " << img.pixels.size() << std::endl)
 
 	write_png(outFilename.c_str(), img.width, img.height, &*img.pixels.begin());
-
 	
 #if M_OS == M_OS_LINUX
 	int width = img.width + 2;
@@ -176,8 +173,8 @@ int main(int argc, char **argv){
 //				TRACE(<< "imWidth = " << imWidth << " imHeight = " << imHeight << " img.size() = " << img.size() << std::endl)
 				
 				auto ximage = XCreateImage(display, visual, 24, ZPixmap, 0, reinterpret_cast<char*>(&*img.pixels.begin()), img.width, img.height, 8, 0);
-				utki::ScopeExit scopeexit([ximage](){
-					ximage->data = nullptr;//Xlib will try to deallocate data which is owned by 'img' variable.
+				utki::scope_exit scope_exit([ximage](){
+					ximage->data = nullptr; // Xlib will try to deallocate data which is owned by 'img' variable.
 					XDestroyImage(ximage);
 				});
 				

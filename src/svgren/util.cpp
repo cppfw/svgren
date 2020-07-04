@@ -226,7 +226,7 @@ PushCairoGroupIfNeeded::~PushCairoGroupIfNeeded()noexcept{
 		return;
 	}
 	
-	//render mask
+	// render mask
 	cairo_pattern_t* mask = nullptr;
 	try{
 		if(this->maskElement){
@@ -235,12 +235,12 @@ PushCairoGroupIfNeeded::~PushCairoGroupIfNeeded()noexcept{
 				throw std::runtime_error("cairo_push_group() failed");
 			}
 			
-			utki::ScopeExit scopeExit([&mask, this](){
+			utki::scope_exit scope_exit([&mask, this](){
 				mask = cairo_pop_group(this->renderer.cr);
 			});
 			
-			//TODO: setup the correct coordinate system based on maskContentUnits value (userSpaceOnUse/objectBoundingBox)
-			//      Currently nothing on that is done which is equivalent to userSpaceOnUse
+			// TODO: setup the correct coordinate system based on maskContentUnits value (userSpaceOnUse/objectBoundingBox)
+			//       Currently nothing on that is done which is equivalent to userSpaceOnUse
 			
 			class MaskRenderer : public svgdom::ConstVisitor{
 				Renderer& r;
@@ -262,7 +262,7 @@ PushCairoGroupIfNeeded::~PushCairoGroupIfNeeded()noexcept{
 		//rendering mask failed, just ignore it
 	}
 	
-	utki::ScopeExit scopeExit([mask](){
+	utki::scope_exit scope_exit([mask](){
 		if(mask){
 			cairo_pattern_destroy(mask);
 		}

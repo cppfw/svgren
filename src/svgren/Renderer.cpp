@@ -356,7 +356,7 @@ void Renderer::setGradient(const std::string& id) {
 					this->r.lengthToPx(this->r.gradientGetY2(gradient), 1)
 				))
 			{
-				utki::ScopeExit patScopeExit([&pat]() {cairo_pattern_destroy(pat);});
+				utki::scope_exit pat_scope_exit([&pat]() {cairo_pattern_destroy(pat);});
 				this->r.setCairoPatternSource(*pat, gradient, this->ss);
 			}
 		}
@@ -386,7 +386,7 @@ void Renderer::setGradient(const std::string& id) {
 					this->r.lengthToPx(radius)
 				))
 			{
-				utki::ScopeExit patScopeExit([&pat]() {cairo_pattern_destroy(pat);});
+				utki::scope_exit pat_scope_exit([&pat]() {cairo_pattern_destroy(pat);});
 				this->r.setCairoPatternSource(*pat, gradient, this->ss);
 			}
 		}
@@ -632,11 +632,11 @@ void Renderer::renderSvgElement(
 	{
 		bool oldOutermostElementFlag = this->isOutermostElement;
 		this->isOutermostElement = false;
-		utki::ScopeExit scopeExit([oldOutermostElementFlag, this](){
+		utki::scope_exit scope_exit([oldOutermostElementFlag, this](){
 			this->isOutermostElement = oldOutermostElementFlag;
 		});
 
-		this->relayAccept(e);
+		this->relay_accept(e);
 	}
 
 	this->applyFilter();

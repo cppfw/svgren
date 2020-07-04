@@ -3,17 +3,15 @@
 #include <utki/debug.hpp>
 #include <utki/config.hpp>
 
-#include <papki/FSFile.hpp>
+#include <papki/fs_file.hpp>
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-
-
 int main(int argc, char **argv){
 	{
-		auto dom = svgdom::load(papki::FSFile("camera.svg"));
+		auto dom = svgdom::load(papki::fs_file("camera.svg"));
 
 		ASSERT_ALWAYS(dom)
 

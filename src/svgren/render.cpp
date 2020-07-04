@@ -9,8 +9,6 @@
 #include "config.hpp"
 
 using namespace svgren;
-
-
 	
 result svgren::render(const svgdom::SvgElement& svg, const parameters& p){
 	result ret;
@@ -76,7 +74,7 @@ result svgren::render(const svgdom::SvgElement& svg, const parameters& p){
 		ret.pixels.clear();
 		return ret;
 	}
-	utki::ScopeExit scopeExitSurface([&surface](){
+	utki::scope_exit scope_exit_surface([&surface](){
 		cairo_surface_destroy(surface);
 	});
 	
@@ -85,7 +83,7 @@ result svgren::render(const svgdom::SvgElement& svg, const parameters& p){
 		ret.pixels.clear();
 		return ret;
 	}
-	utki::ScopeExit scopeExitContext([&cr](){
+	utki::scope_exit scope_exit_context([&cr](){
 		cairo_destroy(cr);
 	});
 	
@@ -111,11 +109,11 @@ result svgren::render(const svgdom::SvgElement& svg, const parameters& p){
 		}
 		if(a != 0){
 			uint32_t r = (c & 0xff) * 0xff / a;
-			utki::clampTop(r, uint32_t(0xff));
+			r = std::min(r, uint32_t(0xff)); // clamp top
 			uint32_t g = ((c >> 8) & 0xff) * 0xff / a;
-			utki::clampTop(g, uint32_t(0xff));
+			g = std::min(g, uint32_t(0xff)); // clamp top
 			uint32_t b = ((c >> 16) & 0xff) * 0xff / a;
-			utki::clampTop(b, uint32_t(0xff));
+			b = std::min(b, uint32_t(0xff)); // clamp top
 			c = ((a << 24) | (b << 16) | (g << 8) | r);
 		}else{
 			c = 0;

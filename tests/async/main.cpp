@@ -1,10 +1,9 @@
 #include <utki/debug.hpp>
-#include <papki/FSFile.hpp>
+#include <papki/fs_file.hpp>
 
 #include "../../src/svgren/render.hpp"
 
 #include <thread>
-
 
 int main(int argc, char** argv) {
 	if(argc < 2){
@@ -15,7 +14,7 @@ int main(int argc, char** argv) {
 	std::vector<std::unique_ptr<svgdom::SvgElement>> svgs;
 	
 	for(int i = 1; i != argc; ++i){
-		svgs.push_back(svgdom::load(papki::FSFile(argv[i])));
+		svgs.push_back(svgdom::load(papki::fs_file(argv[i])));
 	}
 	
 	std::vector<std::thread> threads;
