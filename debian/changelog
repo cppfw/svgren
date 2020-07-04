@@ -1,3 +1,9 @@
+libsvgren (0.4.72) unstable; urgency=medium
+
+  * update to altest libs
+
+ -- Ivan Gagis <igagis@gmail.com>  Sat, 04 Jul 2020 18:23:17 +0300
+
 libsvgren (0.4.71) unstable; urgency=medium
 
   * POM file cairo dependency corrected
