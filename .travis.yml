@@ -58,13 +58,17 @@ env:
   - MYCI_GIT_ACCESS_TOKEN=$HOMEBREW_GITHUB_ACCESS_TOKEN
   - PACKAGE_NAME=svgren
   jobs:
+# Ubuntu
   # - OS_REL=xenial OS=ubuntu DOCKER_IMAGE=$OS:$OS_REL PACKAGE_TYPE=deb
   - OS_REL=bionic OS=ubuntu DOCKER_IMAGE=$OS:$OS_REL PACKAGE_TYPE=deb
   - OS_REL=eoan OS=ubuntu DOCKER_IMAGE=$OS:$OS_REL PACKAGE_TYPE=deb
-  - OS_REL=stretch OS=debian DOCKER_IMAGE=$OS:$OS_REL PACKAGE_TYPE=deb
+# Debian
+  # - OS_REL=stretch OS=debian DOCKER_IMAGE=$OS:$OS_REL PACKAGE_TYPE=deb
   - OS_REL=buster OS=debian DOCKER_IMAGE=$OS:$OS_REL PACKAGE_TYPE=deb
   - OS_REL=buster OS=debian DOCKER_IMAGE=i386/$OS:$OS_REL PACKAGE_TYPE=deb
+# Raspbian
   - OS_REL=stretch OS=raspbian DOCKER_IMAGE=igagis/$OS:$OS_REL PACKAGE_TYPE=deb
+  # - OS_REL=buster OS=raspbian DOCKER_IMAGE=igagis/$OS:$OS_REL PACKAGE_TYPE=deb
 
 before_install:
 - if [ "$TRAVIS_OS_NAME" == "linux" ] && [ -z "$TRAVIS_JOB_NAME" ]; then
