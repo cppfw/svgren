@@ -7,8 +7,7 @@
 #include <svgdom/dom.hpp>
 #include "../../src/svgren/render.hpp"
 
-#include <papki/FSFile.hpp>
-
+#include <papki/fs_file.hpp>
 
 #define MAX_LOADSTRING 100
 
@@ -33,7 +32,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
-	auto dom = svgdom::load(papki::FSFile("../samples/testdata/0.451.svg"));
+	auto dom = svgdom::load(papki::fs_file("../samples/testdata/0.451.svg"));
 	ASSERT_ALWAYS(dom)
 
 	unsigned imWidth = 0;
@@ -70,8 +69,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     return (int) msg.wParam;
 }
-
-
 
 //
 //  FUNCTION: MyRegisterClass()
