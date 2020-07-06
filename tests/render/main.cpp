@@ -163,11 +163,11 @@ int main(int argc, char **argv){
 				
 				using std::max;
 				
-				svgren::Parameters p;
+				svgren::parameters p;
 				p.bgra = true;
 				p.dpi = 96;
-				p.widthRequest = max(int(winWidth) - 2, 0);
-				p.heightRequest = max(int(winHeight) - 2, 0);
+				p.width_request = max(int(winWidth) - 2, 0);
+				p.height_request = max(int(winHeight) - 2, 0);
 				auto img = svgren::render(*dom, p);
 
 //				TRACE(<< "imWidth = " << imWidth << " imHeight = " << imHeight << " img.size() = " << img.size() << std::endl)

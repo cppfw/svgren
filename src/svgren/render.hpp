@@ -17,9 +17,6 @@ struct parameters{
 	 * height request is also set to zero.
 	 */
 	unsigned width_request = 0;
-
-	// TODO: deprecated, remove.
-	unsigned& widthRequest = width_request;
 	
 	/**
 	 * @brief Height request for the resulting raster image.
@@ -28,9 +25,6 @@ struct parameters{
 	 * width request is also set to zero.
 	 */
 	unsigned height_request = 0;
-
-	// TODO: deprecated, remove.
-	unsigned& heightRequest = height_request;
 	
 	/**
 	 * @brief Dots per inch to use for unit conversion to pixels.
@@ -43,9 +37,6 @@ struct parameters{
 	 */
 	bool bgra = false;
 };
-
-// TODO: deprecated, remove.
-typedef parameters Parameters;
 
 /**
  * @brief SVG image rendering result.
@@ -67,43 +58,12 @@ struct result{
 	unsigned height = 0;
 };
 
-// TODO: deprecated, remove.
-typedef result Result;
-
 /**
  * @brief Render SVG image to raster image.
  * @param svg - the SVG document object model to render.
  * @param p - render parameters.
  * @return Rendering result.
  */
-result render(const svgdom::SvgElement& svg, const parameters& p = parameters());
-
-
-/**
- * @brief Render SVG to memory surface.
- * @param svg - SVG document root.
- * @param width - width request of the resulting raster image.
- *                If 0 then width is taken from SVG document trying to preserve aspect ratio.
- *                Resulting image width is returned via this reference argument.
- * @param height - height request of the resulting raster image.
- *                 If 0 then height is taken from SVG document trying to preserve aspect ratio.
- *                 Resulting image height is returned via this reference argument.
- * @param dpi - dots per inch to use for units conversion to pixels.
- * @param bgra - indicates if the output format is BGRA or RGBA. Default is RGBA.
- * @return An array of RGBA values representing the resulting raster image.
- */
-// TODO: remove deprecated function
-inline std::vector<std::uint32_t> render(const svgdom::SvgElement& svg, unsigned& width, unsigned& height, real dpi = 96, bool bgra = false){
-	TRACE_ALWAYS(<< "svgren::render(svg, width, height, dpi, bgra): !!!DEPRECATED!!! Use svgren::render(svg, p)" << std::endl)
-	parameters p;
-	p.widthRequest = width;
-	p.heightRequest = height;
-	p.dpi = dpi;
-	p.bgra = bgra;
-	auto r = render(svg, p);
-	width = r.width;
-	height = r.height;
-	return std::move(r.pixels);
-}
+result render(const svgdom::svg_element& svg, const parameters& p = parameters());
 
 }

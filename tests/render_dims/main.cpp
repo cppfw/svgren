@@ -15,9 +15,9 @@ int main(int argc, char **argv){
 
 		ASSERT_ALWAYS(dom)
 
-		svgren::Parameters p;
-		p.heightRequest = 10;
-		p.widthRequest = 10;
+		svgren::parameters p;
+		p.height_request = 10;
+		p.width_request = 10;
 		auto res = svgren::render(*dom, p);
 
 		ASSERT_ALWAYS(res.width == 10)
