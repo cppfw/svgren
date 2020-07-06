@@ -35,11 +35,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	auto dom = svgdom::load(papki::fs_file("../samples/testdata/0.451.svg"));
 	ASSERT_ALWAYS(dom)
 
-	unsigned imWidth = 0;
-	unsigned imHeight = 0;
-	auto img = svgren::render(*dom, imWidth, imHeight, 96, true);
+	svgren::parameters params;
+	params.bgra = true;
+	auto res = svgren::render(*dom, params);
 
-	bmp = CreateBitmap(imWidth, imHeight, 1, 32, &*img.begin());
+	bmp = CreateBitmap(res.width, res.height, 1, 32, res.pixels.data());
 	ASSERT_ALWAYS(bmp != NULL)
 
     // Initialize global strings
