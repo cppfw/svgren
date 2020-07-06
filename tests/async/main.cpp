@@ -11,7 +11,7 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 	
-	std::vector<std::unique_ptr<svgdom::SvgElement>> svgs;
+	std::vector<std::unique_ptr<svgdom::svg_element>> svgs;
 	
 	for(int i = 1; i != argc; ++i){
 		svgs.push_back(svgdom::load(papki::fs_file(argv[i])));

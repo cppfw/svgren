@@ -100,12 +100,11 @@ Surface svgren::getSubSurface(cairo_t* cr, const CanvasRegion& region){
 	return ret;
 }
 
-
-real svgren::percentLengthToFraction(const svgdom::Length& l){
-	if(l.isPercent()){
+real svgren::percentLengthToFraction(const svgdom::length& l){
+	if(l.is_percent()){
 		return l.value / real(100);
 	}
-	if(l.unit == svgdom::Length::Unit_e::NUMBER){
+	if(l.unit == svgdom::length_unit::number){
 		return l.value;
 	}
 	return 0;
@@ -166,16 +165,16 @@ ViewportPush::~ViewportPush() noexcept{
 PushCairoGroupIfNeeded::PushCairoGroupIfNeeded(Renderer& renderer, bool isContainer) :
 		renderer(renderer)
 {
-	auto backgroundP = this->renderer.styleStack.get_style_property(svgdom::StyleProperty_e::enable_background);
+	auto backgroundP = this->renderer.styleStack.get_style_property(svgdom::style_property::enable_background);
 	
-	if(backgroundP && backgroundP->enableBackground.value == svgdom::EnableBackground_e::NEW){
+	if(backgroundP && backgroundP->enable_background.value == svgdom::enable_background::new_){
 		this->oldBackground = this->renderer.background;
 	}
 	
-	auto filterP = this->renderer.styleStack.get_style_property(svgdom::StyleProperty_e::filter);
+	auto filterP = this->renderer.styleStack.get_style_property(svgdom::style_property::filter);
 	
-	if(auto maskP = this->renderer.styleStack.get_style_property(svgdom::StyleProperty_e::mask)){
-		if(auto ei = this->renderer.finder.findById(maskP->getLocalIdFromIri())){
+	if(auto maskP = this->renderer.styleStack.get_style_property(svgdom::style_property::mask)){
+		if(auto ei = this->renderer.finder.find_by_id(maskP->get_local_id_from_iri())){
 			this->maskElement = &ei->e;
 		}
 	}
@@ -184,22 +183,22 @@ PushCairoGroupIfNeeded::PushCairoGroupIfNeeded(Renderer& renderer, bool isContai
 
 	auto opacity = svgdom::real(1);
 	{
-		auto strokeP = this->renderer.styleStack.get_style_property(svgdom::StyleProperty_e::stroke);
-		auto fillP = this->renderer.styleStack.get_style_property(svgdom::StyleProperty_e::fill);
+		auto strokeP = this->renderer.styleStack.get_style_property(svgdom::style_property::stroke);
+		auto fillP = this->renderer.styleStack.get_style_property(svgdom::style_property::fill);
 
 		// OPTIMIZATION: if opacity is set on an element then push cairo group only in case it is a Container element, like 'g' or 'svg',
 		//               or in case the fill or stroke is a non-solid color, like gradient or pattern,
-		// 				or both fill and stroke are non-none.
+		//               or both fill and stroke are non-none.
 		//               If element is non-container and one of stroke or fill is solid color and other one is none,
 		//               then opacity will be applied later without pushing cairo group.
 		if(this->groupPushed
 				|| isContainer
-				|| (strokeP && strokeP->isUrl())
-				|| (fillP && fillP->isUrl())
-				|| (fillP && strokeP && !fillP->isNone() && !strokeP->isNone())
+				|| (strokeP && strokeP->is_url())
+				|| (fillP && fillP->is_url())
+				|| (fillP && strokeP && !fillP->is_none() && !strokeP->is_none())
 			)
 		{
-			if(auto p = this->renderer.styleStack.get_style_property(svgdom::StyleProperty_e::opacity)){
+			if(auto p = this->renderer.styleStack.get_style_property(svgdom::style_property::opacity)){
 				opacity = p->opacity;
 				this->groupPushed = this->groupPushed || opacity < 1;
 			}
@@ -242,12 +241,12 @@ PushCairoGroupIfNeeded::~PushCairoGroupIfNeeded()noexcept{
 			// TODO: setup the correct coordinate system based on maskContentUnits value (userSpaceOnUse/objectBoundingBox)
 			//       Currently nothing on that is done which is equivalent to userSpaceOnUse
 			
-			class MaskRenderer : public svgdom::ConstVisitor{
+			class MaskRenderer : public svgdom::const_visitor{
 				Renderer& r;
 			public:
 				MaskRenderer(Renderer& r) : r(r){}
 				
-				void visit(const svgdom::MaskElement& e)override{
+				void visit(const svgdom::mask_element& e)override{
 					svgdom::style_stack::push pushStyles(this->r.styleStack, e);
 	
 					this->r.relayAccept(e);
@@ -259,7 +258,7 @@ PushCairoGroupIfNeeded::~PushCairoGroupIfNeeded()noexcept{
 			appendLuminanceToAlpha(getSubSurface(this->renderer.cr));
 		}
 	}catch(...){
-		//rendering mask failed, just ignore it
+		// rendering mask failed, just ignore it
 	}
 	
 	utki::scope_exit scope_exit([mask](){

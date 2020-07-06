@@ -14,7 +14,7 @@ struct FilterResult{
 class FilterApplier : public svgdom::const_visitor{
 	Renderer& r;
 
-	decltype(svgdom::FilterElement::primitive_units) primitiveUnits;
+	decltype(svgdom::filter_element::primitive_units) primitiveUnits;
 	
 	CanvasRegion filterRegion;
 	
@@ -33,12 +33,12 @@ public:
 	
 	FilterApplier(Renderer& r) : r(r) {}
 	
-	void visit(const svgdom::FilterElement& e)override;
+	void visit(const svgdom::filter_element& e)override;
 	
-	void visit(const svgdom::FeGaussianBlurElement& e)override;
-	void visit(const svgdom::FeColorMatrixElement& e) override;
-	void visit(const svgdom::FeBlendElement& e) override;
-	void visit(const svgdom::FeCompositeElement& e) override;
+	void visit(const svgdom::fe_gaussian_blur_element& e)override;
+	void visit(const svgdom::fe_color_matrix_element& e) override;
+	void visit(const svgdom::fe_blend_element& e) override;
+	void visit(const svgdom::fe_composite_element& e) override;
 
 };
 

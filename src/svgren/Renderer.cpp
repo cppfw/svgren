@@ -11,23 +11,23 @@
 using namespace svgren;
 
 
-real Renderer::lengthToPx(const svgdom::Length& l, unsigned coordIndex) const noexcept{
-	if (l.isPercent()) {
+real Renderer::lengthToPx(const svgdom::length& l, unsigned coordIndex) const noexcept{
+	if (l.is_percent()) {
 		ASSERT(coordIndex < this->viewport.size())
 		return this->viewport[coordIndex] * (l.value / 100);
 	}
-	return l.toPx(this->dpi);
+	return l.to_px(this->dpi);
 }
 
-void Renderer::applyCairoTransformation(const svgdom::Transformable::Transformation& t) {
+void Renderer::applyCairoTransformation(const svgdom::transformable::transformation& t) {
 //	TRACE(<< "Renderer::applyCairoTransformation(): applying transformation " << unsigned(t.type) << std::endl)
 	switch (t.type_) {
-		case svgdom::Transformable::Transformation::Type_e::TRANSLATE:
+		case svgdom::transformable::transformation::type::translate:
 //			TRACE(<< "translate x,y = (" << t.x << ", " << t.y << ")" << std::endl)
 			cairo_translate(this->cr, t.x, t.y);
 			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 			break;
-		case svgdom::Transformable::Transformation::Type_e::MATRIX:
+		case svgdom::transformable::transformation::type::matrix:
 			{
 				cairo_matrix_t matrix;
 				matrix.xx = t.a;
@@ -40,7 +40,7 @@ void Renderer::applyCairoTransformation(const svgdom::Transformable::Transformat
 				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 			}
 			break;
-		case svgdom::Transformable::Transformation::Type_e::SCALE:
+		case svgdom::transformable::transformation::type::scale:
 //			TRACE(<< "scale transformation factors = (" << t.x << ", " << t.y << ")" << std::endl)
 			if(t.x * t.y != 0){ //cairo does not allow non-invertible scaling
 				cairo_scale(this->cr, t.x, t.y);
@@ -49,7 +49,7 @@ void Renderer::applyCairoTransformation(const svgdom::Transformable::Transformat
 				TRACE(<< "WARNING: non-invertible scaling encountered at " << __FILE__ << ":" << __LINE__ << std::endl)
 			}
 			break;
-		case svgdom::Transformable::Transformation::Type_e::ROTATE:
+		case svgdom::transformable::transformation::type::rotate:
 			cairo_translate(this->cr, t.x, t.y);
 			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 			cairo_rotate(this->cr, degToRad(t.angle));
@@ -57,7 +57,7 @@ void Renderer::applyCairoTransformation(const svgdom::Transformable::Transformat
 			cairo_translate(this->cr, -t.x, -t.y);
 			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 			break;
-		case svgdom::Transformable::Transformation::Type_e::SKEWX:
+		case svgdom::transformable::transformation::type::skewx:
 			{
 				cairo_matrix_t matrix;
 				matrix.xx = 1;
@@ -70,7 +70,7 @@ void Renderer::applyCairoTransformation(const svgdom::Transformable::Transformat
 				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 			}
 			break;
-		case svgdom::Transformable::Transformation::Type_e::SKEWY:
+		case svgdom::transformable::transformation::type::skewy:
 			{
 				cairo_matrix_t matrix;
 				matrix.xx = 1;
@@ -105,71 +105,71 @@ void Renderer::applyCairoTransformation(const svgdom::Transformable::Transformat
 	cairo_set_matrix(this->cr, &matrix);
 }
 
-void Renderer::applyTransformations(const decltype(svgdom::Transformable::transformations)& transformations) {
+void Renderer::applyTransformations(const decltype(svgdom::transformable::transformations)& transformations) {
 	for (auto& t : transformations) {
 		this->applyCairoTransformation(t);
 	}
 }
 
-void Renderer::applyViewBox(const svgdom::ViewBoxed& e, const svgdom::AspectRatioed& ar) {
-	if (!e.isViewBoxSpecified()) {
+void Renderer::applyViewBox(const svgdom::view_boxed& e, const svgdom::aspect_ratioed& ar) {
+	if (!e.is_view_box_specified()) {
 		return;
 	}
 
-	if (ar.preserveAspectRatio.preserve != svgdom::AspectRatioed::PreserveAspectRatio_e::NONE) {
-		if (e.viewBox[3] >= 0 && this->viewport[1] >= 0) { // if viewBox width and viewport width are not 0
+	if (ar.preserve_aspect_ratio.preserve != svgdom::aspect_ratioed::aspect_ratio_preservation::none) {
+		if (e.view_box[3] >= 0 && this->viewport[1] >= 0) { // if viewBox width and viewport width are not 0
 			real scaleFactor, dx, dy;
 
-			real viewBoxAspect = e.viewBox[2] / e.viewBox[3];
+			real viewBoxAspect = e.view_box[2] / e.view_box[3];
 			real viewportAspect = this->viewport[0] / this->viewport[1];
 
-			if ((viewBoxAspect >= viewportAspect && ar.preserveAspectRatio.slice) || (viewBoxAspect < viewportAspect && !ar.preserveAspectRatio.slice)) {
+			if ((viewBoxAspect >= viewportAspect && ar.preserve_aspect_ratio.slice) || (viewBoxAspect < viewportAspect && !ar.preserve_aspect_ratio.slice)) {
 				// fit by Y
-				scaleFactor = this->viewport[1] / e.viewBox[3];
-				dx = e.viewBox[2] - this->viewport[0];
+				scaleFactor = this->viewport[1] / e.view_box[3];
+				dx = e.view_box[2] - this->viewport[0];
 				dy = 0;
-			} else {// viewBoxAspect < viewportAspect
+			} else { // viewBoxAspect < viewportAspect
 				// fit by X
-				scaleFactor = this->viewport[0] / e.viewBox[2];
+				scaleFactor = this->viewport[0] / e.view_box[2];
 				dx = 0;
-				dy = e.viewBox[3] - this->viewport[1];
+				dy = e.view_box[3] - this->viewport[1];
 			}
-			switch (ar.preserveAspectRatio.preserve) {
-				case svgdom::AspectRatioed::PreserveAspectRatio_e::NONE:
+			switch (ar.preserve_aspect_ratio.preserve) {
+				case svgdom::aspect_ratioed::aspect_ratio_preservation::none:
 					ASSERT(false)
 				default:
 					break;
-				case svgdom::AspectRatioed::PreserveAspectRatio_e::X_MIN_Y_MAX:
+				case svgdom::aspect_ratioed::aspect_ratio_preservation::x_min_y_max:
 					cairo_translate(this->cr, 0, dy);
 					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					break;
-				case svgdom::AspectRatioed::PreserveAspectRatio_e::X_MIN_Y_MID:
+				case svgdom::aspect_ratioed::aspect_ratio_preservation::x_min_y_mid:
 					cairo_translate(this->cr, 0, dy / 2);
 					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					break;
-				case svgdom::AspectRatioed::PreserveAspectRatio_e::X_MIN_Y_MIN:
+				case svgdom::aspect_ratioed::aspect_ratio_preservation::x_min_y_min:
 					break;
-				case svgdom::AspectRatioed::PreserveAspectRatio_e::X_MID_Y_MAX:
+				case svgdom::aspect_ratioed::aspect_ratio_preservation::x_mid_y_max:
 					cairo_translate(this->cr, dx / 2, dy);
 					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					break;
-				case svgdom::AspectRatioed::PreserveAspectRatio_e::X_MID_Y_MID:
+				case svgdom::aspect_ratioed::aspect_ratio_preservation::x_mid_y_mid:
 					cairo_translate(this->cr, dx / 2, dy / 2);
 					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					break;
-				case svgdom::AspectRatioed::PreserveAspectRatio_e::X_MID_Y_MIN:
+				case svgdom::aspect_ratioed::aspect_ratio_preservation::x_mid_y_min:
 					cairo_translate(this->cr, dx / 2, 0);
 					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					break;
-				case svgdom::AspectRatioed::PreserveAspectRatio_e::X_MAX_Y_MAX:
+				case svgdom::aspect_ratioed::aspect_ratio_preservation::x_max_y_max:
 					cairo_translate(this->cr, dx, dy);
 					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					break;
-				case svgdom::AspectRatioed::PreserveAspectRatio_e::X_MAX_Y_MID:
+				case svgdom::aspect_ratioed::aspect_ratio_preservation::x_max_y_mid:
 					cairo_translate(this->cr, dx, dy / 2);
 					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					break;
-				case svgdom::AspectRatioed::PreserveAspectRatio_e::X_MAX_Y_MIN:
+				case svgdom::aspect_ratioed::aspect_ratio_preservation::x_max_y_min:
 					cairo_translate(this->cr, dx, 0);
 					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					break;
@@ -183,12 +183,12 @@ void Renderer::applyViewBox(const svgdom::ViewBoxed& e, const svgdom::AspectRati
 			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 		}
 	} else { // if no preserveAspectRatio enforced
-		if (e.viewBox[2] != 0 && e.viewBox[3] != 0) { // if viewBox width and height are not 0
+		if (e.view_box[2] != 0 && e.view_box[3] != 0) { // if viewBox width and height are not 0
 			if(this->viewport[0] * this->viewport[1] != 0){ // cairo does not allow non-invertible scaling
 				cairo_scale(
 						this->cr,
-						this->viewport[0] / e.viewBox[2],
-						this->viewport[1] / e.viewBox[3]
+						this->viewport[0] / e.view_box[2],
+						this->viewport[1] / e.view_box[3]
 					);
 			}else{
 				TRACE(<< "WARNING: non-invertible scaling encountered at " << __FILE__ << ":" << __LINE__ << std::endl)
@@ -196,7 +196,7 @@ void Renderer::applyViewBox(const svgdom::ViewBoxed& e, const svgdom::AspectRati
 			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 		}
 	}
-	cairo_translate(this->cr, -e.viewBox[0], -e.viewBox[1]);
+	cairo_translate(this->cr, -e.view_box[0], -e.view_box[1]);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 }
 
@@ -236,11 +236,11 @@ void Renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::gradien
 
 		ColorStopAdder(cairo_pattern_t& pat, svgdom::style_stack& ss) : pat(pat), ss(ss) {}
 
-		void visit(const svgdom::Gradient::StopElement& s)override{
+		void visit(const svgdom::gradient::stop_element& s)override{
 			svgdom::style_stack::push stylePush(this->ss, s);
 
 			svgdom::rgb rgb;
-			if(auto p = this->ss.get_style_property(svgdom::StyleProperty_e::stop_color)){
+			if(auto p = this->ss.get_style_property(svgdom::style_property::stop_color)){
 				rgb = p->get_rgb();
 			}else{
 				rgb.r = 0;
@@ -249,7 +249,7 @@ void Renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::gradien
 			}
 
 			svgdom::real opacity;
-			if(auto p = this->ss.get_style_property(svgdom::StyleProperty_e::stop_opacity)){
+			if(auto p = this->ss.get_style_property(svgdom::style_property::stop_opacity)){
 				opacity = p->opacity;
 			}else{
 				opacity = 1;
@@ -265,18 +265,18 @@ void Renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::gradien
 
 	switch(this->gradientGetSpreadMethod(g)){
 		default:
-		case svgdom::Gradient::SpreadMethod_e::DEFAULT:
+		case svgdom::gradient::spread_method::default_:
 			ASSERT(false)
 			break;
-		case svgdom::Gradient::SpreadMethod_e::PAD:
+		case svgdom::gradient::spread_method::pad:
 			cairo_pattern_set_extend(&pat, CAIRO_EXTEND_PAD);
 			ASSERT(cairo_pattern_status(&pat) == CAIRO_STATUS_SUCCESS)
 			break;
-		case svgdom::Gradient::SpreadMethod_e::REFLECT:
+		case svgdom::gradient::spread_method::reflect:
 			cairo_pattern_set_extend(&pat, CAIRO_EXTEND_REFLECT);
 			ASSERT(cairo_pattern_status(&pat) == CAIRO_STATUS_SUCCESS)
 			break;
-		case svgdom::Gradient::SpreadMethod_e::REPEAT:
+		case svgdom::gradient::spread_method::repeat:
 			cairo_pattern_set_extend(&pat, CAIRO_EXTEND_REPEAT);
 			ASSERT(cairo_pattern_status(&pat) == CAIRO_STATUS_SUCCESS)
 			break;
@@ -286,13 +286,13 @@ void Renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::gradien
 }
 
 void Renderer::applyFilter() {
-	if(auto filter = this->styleStack.get_style_property(svgdom::StyleProperty_e::filter)){
-		this->applyFilter(filter->getLocalIdFromIri());
+	if(auto filter = this->styleStack.get_style_property(svgdom::style_property::filter)){
+		this->applyFilter(filter->get_local_id_from_iri());
 	}
 }
 
 void Renderer::applyFilter(const std::string& id) {
-	auto f = this->finder.findById(id);
+	auto f = this->finder.find_by_id(id);
 	if(!f){
 		return;
 	}
@@ -306,7 +306,7 @@ void Renderer::applyFilter(const std::string& id) {
 }
 
 void Renderer::setGradient(const std::string& id) {
-	auto g = this->finder.findById(id);
+	auto g = this->finder.find_by_id(id);
 	if(!g){
 		cairo_set_source_rgba(this->cr, 0, 0, 0, 0);
 		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
@@ -321,7 +321,7 @@ void Renderer::setGradient(const std::string& id) {
 		CommonGradientPush(Renderer& r, const svgdom::gradient& gradient) :
 				cairoMatrixPush(r.cr)
 		{
-			if (r.gradientGetUnits(gradient) == svgdom::CoordinateUnits_e::OBJECT_BOUNDING_BOX) {
+			if (r.gradientGetUnits(gradient) == svgdom::coordinate_units::object_bounding_box) {
 				cairo_translate(r.cr, r.userSpaceShapeBoundingBoxPos[0], r.userSpaceShapeBoundingBoxPos[1]);
 				ASSERT(cairo_status(r.cr) == CAIRO_STATUS_SUCCESS)
 				if(r.userSpaceShapeBoundingBoxDim[0] * r.userSpaceShapeBoundingBoxDim[1] != 0){ // cairo does not allow non-invertible scaling
@@ -339,14 +339,14 @@ void Renderer::setGradient(const std::string& id) {
 		~CommonGradientPush()noexcept{}
 	};
 
-	struct GradientSetter : public svgdom::ConstVisitor{
+	struct GradientSetter : public svgdom::const_visitor{
 		Renderer& r;
 
 		const svgdom::style_stack& ss;
 
 		GradientSetter(Renderer& r, const svgdom::style_stack& ss) : r(r), ss(ss) {}
 
-		void visit(const svgdom::LinearGradientElement& gradient)override{
+		void visit(const svgdom::linear_gradient_element& gradient)override{
 			CommonGradientPush commonPush(this->r, gradient); // TODO: move out of visitor?
 
 			if(auto pat = cairo_pattern_create_linear(
@@ -361,7 +361,7 @@ void Renderer::setGradient(const std::string& id) {
 			}
 		}
 
-		void visit(const svgdom::RadialGradientElement& gradient)override{
+		void visit(const svgdom::radial_gradient_element& gradient)override{
 			CommonGradientPush commonPush(this->r, gradient); // TODO: move out of visitor?
 
 			auto cx = this->r.gradientGetCx(gradient);
@@ -370,10 +370,10 @@ void Renderer::setGradient(const std::string& id) {
 			auto fx = this->r.gradientGetFx(gradient);
 			auto fy = this->r.gradientGetFy(gradient);
 
-			if (!fx.isValid()) {
+			if(!fx.is_valid()){
 				fx = cx;
 			}
-			if (!fy.isValid()) {
+			if(!fy.is_valid()){
 				fy = cy;
 			}
 
@@ -391,7 +391,7 @@ void Renderer::setGradient(const std::string& id) {
 			}
 		}
 
-		void default_visit(const svgdom::Element&)override{
+		void default_visit(const svgdom::element&)override{
 			cairo_set_source_rgba(this->r.cr, 0, 0, 0, 0);
 			ASSERT(cairo_status(this->r.cr) == CAIRO_STATUS_SUCCESS)
 		}
@@ -449,16 +449,16 @@ void Renderer::updateCurBoundingBox() {
 void Renderer::renderCurrentShape(bool isCairoGroupPushed) {
 	this->updateCurBoundingBox();
 
-	if (auto p = this->styleStack.get_style_property(svgdom::StyleProperty_e::FILL_RULE)) {
-		switch (p->fillRule) {
+	if (auto p = this->styleStack.get_style_property(svgdom::style_property::fill_rule)) {
+		switch (p->fill_rule) {
 			default:
 				ASSERT(false)
 				break;
-			case svgdom::FillRule_e::EVENODD:
+			case svgdom::fill_rule::evenodd:
 				cairo_set_fill_rule(this->cr, CAIRO_FILL_RULE_EVEN_ODD);
 				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				break;
-			case svgdom::FillRule_e::NONZERO:
+			case svgdom::fill_rule::nonzero:
 				cairo_set_fill_rule(this->cr, CAIRO_FILL_RULE_WINDING);
 				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				break;
@@ -468,15 +468,15 @@ void Renderer::renderCurrentShape(bool isCairoGroupPushed) {
 		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	}
 
-	svgdom::StyleValue blackFill;
+	svgdom::style_value blackFill;
 
-	auto fill = this->styleStack.get_style_property(svgdom::StyleProperty_e::FILL);
+	auto fill = this->styleStack.get_style_property(svgdom::style_property::fill);
 	if (!fill) {
-		blackFill = svgdom::StyleValue::parsePaint("black");
+		blackFill = svgdom::style_value::parse_paint("black");
 		fill = &blackFill;
 	}
 
-	auto stroke = this->styleStack.get_style_property(svgdom::StyleProperty_e::STROKE);
+	auto stroke = this->styleStack.get_style_property(svgdom::style_property::stroke);
 
 	// OPTIMIZATION: in case there is 'opacity' style property and only one of
 	//               'stroke' or 'fill' is not none and is a solid color (not pattern/gradient),
@@ -484,22 +484,22 @@ void Renderer::renderCurrentShape(bool isCairoGroupPushed) {
 	//               the 'stroke-opacity' or 'fill-opacity' by 'opacity' value.
 	auto opacity = svgdom::real(1);
 	if(!isCairoGroupPushed){
-		if(auto p = this->styleStack.get_style_property(svgdom::StyleProperty_e::OPACITY)){
+		if(auto p = this->styleStack.get_style_property(svgdom::style_property::opacity)){
 			opacity = p->opacity;
 		}
 	}
 
 	ASSERT(fill)
-	if (!fill->isNone()) {
-		if (fill->isUrl()) {
-			this->setGradient(fill->getLocalIdFromIri());
+	if (!fill->is_none()) {
+		if (fill->is_url()) {
+			this->setGradient(fill->get_local_id_from_iri());
 		} else {
 			svgdom::real fillOpacity = 1;
-			if (auto p = this->styleStack.get_style_property(svgdom::StyleProperty_e::FILL_OPACITY)) {
+			if (auto p = this->styleStack.get_style_property(svgdom::style_property::fill_opacity)){
 				fillOpacity = p->opacity;
 			}
 
-			auto fillRgb = fill->getRgb();
+			auto fillRgb = fill->get_rgb();
 			cairo_set_source_rgba(this->cr, fillRgb.r, fillRgb.g, fillRgb.b, fillOpacity * opacity);
 			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 		}
@@ -508,70 +508,70 @@ void Renderer::renderCurrentShape(bool isCairoGroupPushed) {
 		ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
 	}
 
-	if (stroke && !stroke->isNone()) {
-		if (auto p = this->styleStack.get_style_property(svgdom::StyleProperty_e::STROKE_WIDTH)) {
-			cairo_set_line_width(this->cr, this->lengthToPx(p->strokeWidth));
+	if (stroke && !stroke->is_none()) {
+		if (auto p = this->styleStack.get_style_property(svgdom::style_property::stroke_width)){
+			cairo_set_line_width(this->cr, this->lengthToPx(p->stroke_width));
 			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 		} else {
 			cairo_set_line_width(this->cr, 1);
 			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 		}
 
-		if (auto p = this->styleStack.get_style_property(svgdom::StyleProperty_e::STROKE_LINECAP)) {
-			switch (p->strokeLineCap) {
+		if (auto p = this->styleStack.get_style_property(svgdom::style_property::stroke_linecap)) {
+			switch(p->stroke_line_cap){
 				default:
 					ASSERT(false)
 					break;
-				case svgdom::StrokeLineCap_e::BUTT:
+				case svgdom::stroke_line_cap::butt:
 					cairo_set_line_cap(this->cr, CAIRO_LINE_CAP_BUTT);
 					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					break;
-				case svgdom::StrokeLineCap_e::ROUND:
+				case svgdom::stroke_line_cap::round:
 					cairo_set_line_cap(this->cr, CAIRO_LINE_CAP_ROUND);
 					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					break;
-				case svgdom::StrokeLineCap_e::SQUARE:
+				case svgdom::stroke_line_cap::square:
 					cairo_set_line_cap(this->cr, CAIRO_LINE_CAP_SQUARE);
 					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					break;
 			}
-		} else {
+		}else{
 			cairo_set_line_cap(this->cr, CAIRO_LINE_CAP_BUTT);
 			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 		}
 
-		if (auto p = this->styleStack.get_style_property(svgdom::StyleProperty_e::STROKE_LINEJOIN)) {
-			switch (p->strokeLineJoin) {
+		if(auto p = this->styleStack.get_style_property(svgdom::style_property::stroke_linejoin)){
+			switch(p->stroke_line_join){
 				default:
 					ASSERT(false)
 					break;
-				case svgdom::StrokeLineJoin_e::MITER:
+				case svgdom::stroke_line_join::miter:
 					cairo_set_line_join(this->cr, CAIRO_LINE_JOIN_MITER);
 					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					break;
-				case svgdom::StrokeLineJoin_e::ROUND:
+				case svgdom::stroke_line_join::round:
 					cairo_set_line_join(this->cr, CAIRO_LINE_JOIN_ROUND);
 					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					break;
-				case svgdom::StrokeLineJoin_e::BEVEL:
+				case svgdom::stroke_line_join::bevel:
 					cairo_set_line_join(this->cr, CAIRO_LINE_JOIN_BEVEL);
 					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					break;
 			}
-		} else {
+		}else{
 			cairo_set_line_join(this->cr, CAIRO_LINE_JOIN_MITER);
 			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 		}
 
-		if (stroke->isUrl()) {
-			this->setGradient(stroke->getLocalIdFromIri());
-		} else {
+		if(stroke->is_url()){
+			this->setGradient(stroke->get_local_id_from_iri());
+		}else{
 			svgdom::real strokeOpacity = 1;
-			if (auto p = this->styleStack.get_style_property(svgdom::StyleProperty_e::STROKE_OPACITY)) {
+			if(auto p = this->styleStack.get_style_property(svgdom::style_property::stroke_opacity)){
 				strokeOpacity = p->opacity;
 			}
 
-			auto rgb = stroke->getRgb();
+			auto rgb = stroke->get_rgb();
 			cairo_set_source_rgba(this->cr, rgb.r, rgb.g, rgb.b, strokeOpacity * opacity);
 			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 		}
@@ -588,14 +588,14 @@ void Renderer::renderCurrentShape(bool isCairoGroupPushed) {
 }
 
 void Renderer::renderSvgElement(
-		const svgdom::Container& e,
-		const svgdom::Styleable& s,
-		const svgdom::ViewBoxed& v,
-		const svgdom::AspectRatioed& a,
-		const svgdom::Length& x,
-		const svgdom::Length& y,
-		const svgdom::Length& width,
-		const svgdom::Length& height
+		const svgdom::container& e,
+		const svgdom::styleable& s,
+		const svgdom::view_boxed& v,
+		const svgdom::aspect_ratioed& a,
+		const svgdom::length& x,
+		const svgdom::length& y,
+		const svgdom::length& width,
+		const svgdom::length& height
 	)
 {
 	svgdom::style_stack::push pushStyles(this->styleStack, s);
@@ -646,7 +646,7 @@ Renderer::Renderer(
 		cairo_t* cr,
 		real dpi,
 		std::array<real, 2> canvasSize,
-		const svgdom::SvgElement& root
+		const svgdom::svg_element& root
 	) :
 		cr(cr),
 		finder(root),
@@ -658,7 +658,7 @@ Renderer::Renderer(
 }
 
 
-void Renderer::visit(const svgdom::GElement& e) {
+void Renderer::visit(const svgdom::g_element& e){
 //	TRACE(<< "rendering GElement: id = " << e.id << std::endl)
 	svgdom::style_stack::push pushStyles(this->styleStack, e);
 
@@ -681,17 +681,17 @@ void Renderer::visit(const svgdom::GElement& e) {
 
 void Renderer::visit(const svgdom::use_element& e){
 //	TRACE(<< "rendering UseElement" << std::endl)
-	auto ref = this->finder.findById(e.get_local_id_from_iri());
+	auto ref = this->finder.find_by_id(e.get_local_id_from_iri());
 	if(!ref){
 		return;
 	}
 
-	struct RefRenderer : public svgdom::ConstVisitor{
+	struct RefRenderer : public svgdom::const_visitor{
 		Renderer& r;
 		const svgdom::use_element& ue;
 		svgdom::g_element fakeGElement;
 
-		RefRenderer(Renderer& r, const svgdom::UseElement& e) :
+		RefRenderer(Renderer& r, const svgdom::use_element& e) :
 				r(r), ue(e)
 		{
 			this->fakeGElement.styles = e.styles;
@@ -700,8 +700,8 @@ void Renderer::visit(const svgdom::use_element& e){
 
 			// add x and y transformation
 			{
-				svgdom::Transformable::Transformation t;
-				t.type_ = svgdom::Transformable::Transformation::Type_e::TRANSLATE;
+				svgdom::transformable::transformation t;
+				t.type_ = svgdom::transformable::transformation::type::translate;
 				t.x = this->r.lengthToPx(e.x, 0);
 				t.y = this->r.lengthToPx(e.y, 1);
 
@@ -709,31 +709,31 @@ void Renderer::visit(const svgdom::use_element& e){
 			}
 		}
 
-		void visit(const svgdom::SymbolElement& symbol)override{
-			struct FakeSvgElement : public svgdom::Element{
+		void visit(const svgdom::symbol_element& symbol)override{
+			struct FakeSvgElement : public svgdom::element{
 				Renderer& r;
-				const svgdom::UseElement& ue;
-				const svgdom::SymbolElement& se;
+				const svgdom::use_element& ue;
+				const svgdom::symbol_element& se;
 
-				FakeSvgElement(Renderer& r, const svgdom::UseElement& ue, const svgdom::SymbolElement& se) :
+				FakeSvgElement(Renderer& r, const svgdom::use_element& ue, const svgdom::symbol_element& se) :
 						r(r), ue(ue), se(se)
 				{}
 
-				void accept(svgdom::Visitor& visitor)override{
+				void accept(svgdom::visitor& visitor)override{
 					ASSERT(false)
 				}
-				void accept(svgdom::ConstVisitor& visitor) const override{
-					const auto hundredPercent = svgdom::Length::make(100, svgdom::Length::Unit_e::PERCENT);
+				void accept(svgdom::const_visitor& visitor) const override{
+					const auto hundredPercent = svgdom::length(100, svgdom::length_unit::percent);
 
 					this->r.renderSvgElement(
 							this->se,
 							this->se,
 							this->se,
 							this->se,
-							svgdom::Length::make(0),
-							svgdom::Length::make(0),
-							this->ue.width.isValid() ? this->ue.width : hundredPercent,
-							this->ue.height.isValid() ? this->ue.height : hundredPercent
+							svgdom::length(0),
+							svgdom::length(0),
+							this->ue.width.is_valid() ? this->ue.width : hundredPercent,
+							this->ue.height.is_valid() ? this->ue.height : hundredPercent
 						);
 				}
 			};
@@ -742,20 +742,20 @@ void Renderer::visit(const svgdom::use_element& e){
 			this->fakeGElement.accept(this->r);
 		}
 
-		void visit(const svgdom::SvgElement& svg)override{
-			struct FakeSvgElement : public svgdom::Element{
+		void visit(const svgdom::svg_element& svg)override{
+			struct FakeSvgElement : public svgdom::element{
 				Renderer& r;
-				const svgdom::UseElement& ue;
-				const svgdom::SvgElement& se;
+				const svgdom::use_element& ue;
+				const svgdom::svg_element& se;
 
-				FakeSvgElement(Renderer& r, const svgdom::UseElement& ue, const svgdom::SvgElement& se) :
+				FakeSvgElement(Renderer& r, const svgdom::use_element& ue, const svgdom::svg_element& se) :
 						r(r), ue(ue), se(se)
 				{}
 
-				void accept(svgdom::Visitor& visitor)override{
+				void accept(svgdom::visitor& visitor)override{
 					ASSERT(false)
 				}
-				void accept(svgdom::ConstVisitor& visitor) const override{
+				void accept(svgdom::const_visitor& visitor) const override{
 					// width and height of <use> element override those of <svg> element.
 					this->r.renderSvgElement(
 							this->se,
@@ -764,8 +764,8 @@ void Renderer::visit(const svgdom::use_element& e){
 							this->se,
 							this->se.x,
 							this->se.y,
-							this->ue.width.isValid() ? this->ue.width : this->se.width,
-							this->ue.height.isValid() ? this->ue.height : this->se.height
+							this->ue.width.is_valid() ? this->ue.width : this->se.width,
+							this->ue.height.is_valid() ? this->ue.height : this->se.height
 						);
 				}
 			};
@@ -774,19 +774,19 @@ void Renderer::visit(const svgdom::use_element& e){
 			this->fakeGElement.accept(this->r);
 		}
 
-		void default_visit(const svgdom::Element& element)override{
-			struct FakeSvgElement : public svgdom::Element{
+		void default_visit(const svgdom::element& element)override{
+			struct FakeSvgElement : public svgdom::element{
 				Renderer& r;
-				const svgdom::Element& e;
+				const svgdom::element& e;
 
-				FakeSvgElement(Renderer& r, const svgdom::Element& e) :
+				FakeSvgElement(Renderer& r, const svgdom::element& e) :
 						r(r), e(e)
 				{}
 
-				void accept(svgdom::Visitor& visitor)override{
+				void accept(svgdom::visitor& visitor)override{
 					ASSERT(false)
 				}
-				void accept(svgdom::ConstVisitor& visitor) const override{
+				void accept(svgdom::const_visitor& visitor) const override{
 					this->e.accept(this->r);
 				}
 			};
@@ -795,7 +795,7 @@ void Renderer::visit(const svgdom::use_element& e){
 			this->fakeGElement.accept(this->r);
 		}
 
-		void default_visit(const svgdom::Element& element, const svgdom::Container& c)override{
+		void default_visit(const svgdom::element& element, const svgdom::container& c)override{
 			this->default_visit(element);
 		}
 	} visitor(*this, e);
@@ -805,14 +805,14 @@ void Renderer::visit(const svgdom::use_element& e){
 	ref->e.accept(visitor);
 }
 
-void Renderer::visit(const svgdom::SvgElement& e) {
+void Renderer::visit(const svgdom::svg_element& e) {
 //	TRACE(<< "rendering SvgElement" << std::endl)
 	renderSvgElement(e, e, e, e, e.x, e.y, e.width, e.height);
 }
 
 bool Renderer::isInvisible() {
-	if(auto p = this->styleStack.get_style_property(svgdom::StyleProperty_e::VISIBILITY)){
-		if(p->visibility != svgdom::Visibility_e::VISIBLE){
+	if(auto p = this->styleStack.get_style_property(svgdom::style_property::visibility)){
+		if(p->visibility != svgdom::visibility::visible){
 			return true;
 		}
 	}
@@ -820,15 +820,15 @@ bool Renderer::isInvisible() {
 }
 
 bool Renderer::isGroupInvisible() {
-	if(auto p = this->styleStack.get_style_property(svgdom::StyleProperty_e::DISPLAY)){
-		if(p->display == svgdom::Display_e::NONE){
+	if(auto p = this->styleStack.get_style_property(svgdom::style_property::display)){
+		if(p->display == svgdom::display::none){
 			return true;
 		}
 	}
 	return false;
 }
 
-void Renderer::visit(const svgdom::PathElement& e) {
+void Renderer::visit(const svgdom::path_element& e) {
 //	TRACE(<< "rendering PathElement" << std::endl)
 	svgdom::style_stack::push pushStyles(this->styleStack, e);
 
@@ -847,15 +847,15 @@ void Renderer::visit(const svgdom::PathElement& e) {
 	double prevQuadraticX1 = 0;
 	double prevQuadraticY1 = 0;
 
-	const svgdom::PathElement::Step* prevStep = nullptr;
+	const svgdom::path_element::step* prevStep = nullptr;
 
 	for (auto& s : e.path) {
 		switch (s.type_) {
-			case svgdom::PathElement::Step::Type_e::MOVE_ABS:
+			case svgdom::path_element::step::type::move_abs:
 				cairo_move_to(this->cr, s.x, s.y);
 				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				break;
-			case svgdom::PathElement::Step::Type_e::MOVE_REL:
+			case svgdom::path_element::step::type::move_rel:
 				if (!cairo_has_current_point(this->cr)) {
 					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					cairo_move_to(this->cr, 0, 0);
@@ -865,15 +865,15 @@ void Renderer::visit(const svgdom::PathElement& e) {
 				cairo_rel_move_to(this->cr, s.x, s.y);
 				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				break;
-			case svgdom::PathElement::Step::Type_e::LINE_ABS:
+			case svgdom::path_element::step::type::line_abs:
 				cairo_line_to(this->cr, s.x, s.y);
 				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				break;
-			case svgdom::PathElement::Step::Type_e::LINE_REL:
+			case svgdom::path_element::step::type::line_rel:
 				cairo_rel_line_to(this->cr, s.x, s.y);
 				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				break;
-			case svgdom::PathElement::Step::Type_e::HORIZONTAL_LINE_ABS:
+			case svgdom::path_element::step::type::horizontal_line_abs:
 				{
 					double x, y;
 					if (cairo_has_current_point(this->cr)) {
@@ -888,11 +888,11 @@ void Renderer::visit(const svgdom::PathElement& e) {
 					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				}
 				break;
-			case svgdom::PathElement::Step::Type_e::HORIZONTAL_LINE_REL:
+			case svgdom::path_element::step::type::horizontal_line_rel:
 				cairo_rel_line_to(this->cr, s.x, 0);
 				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				break;
-			case svgdom::PathElement::Step::Type_e::VERTICAL_LINE_ABS:
+			case svgdom::path_element::step::type::vertical_line_abs:
 				{
 					double x, y;
 					if (cairo_has_current_point(this->cr)) {
@@ -907,21 +907,21 @@ void Renderer::visit(const svgdom::PathElement& e) {
 					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				}
 				break;
-			case svgdom::PathElement::Step::Type_e::VERTICAL_LINE_REL:
+			case svgdom::path_element::step::type::vertical_line_rel:
 				cairo_rel_line_to(this->cr, 0, s.y);
 				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				break;
-			case svgdom::PathElement::Step::Type_e::CLOSE:
+			case svgdom::path_element::step::type::close:
 				cairo_close_path(this->cr);
 				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				break;
-			case svgdom::PathElement::Step::Type_e::QUADRATIC_ABS:
+			case svgdom::path_element::step::type::quadratic_abs:
 				cairoQuadraticCurveTo(this->cr, s.x1, s.y1, s.x, s.y);
 				break;
-			case svgdom::PathElement::Step::Type_e::QUADRATIC_REL:
+			case svgdom::path_element::step::type::quadratic_rel:
 				cairoRelQuadraticCurveTo(this->cr, s.x1, s.y1, s.x, s.y);
 				break;
-			case svgdom::PathElement::Step::Type_e::QUADRATIC_SMOOTH_ABS:
+			case svgdom::path_element::step::type::quadratic_smooth_abs:
 				{
 					double x0, y0; // current point, absolute coordinates
 					if (cairo_has_current_point(this->cr)) {
@@ -937,20 +937,20 @@ void Renderer::visit(const svgdom::PathElement& e) {
 					}
 
 					double x1, y1; // control point
-					switch (prevStep ? prevStep->type_ : svgdom::PathElement::Step::Type_e::UNKNOWN) {
-						case svgdom::PathElement::Step::Type_e::QUADRATIC_ABS:
+					switch(prevStep ? prevStep->type_ : svgdom::path_element::step::type::unknown){
+						case svgdom::path_element::step::type::quadratic_abs:
 							x1 = -(prevStep->x1 - x0) + x0;
 							y1 = -(prevStep->y1 - y0) + y0;
 							break;
-						case svgdom::PathElement::Step::Type_e::QUADRATIC_SMOOTH_ABS:
+						case svgdom::path_element::step::type::quadratic_smooth_abs:
 							x1 = -(prevQuadraticX1 - x0) + x0;
 							y1 = -(prevQuadraticY1 - y0) + y0;
 							break;
-						case svgdom::PathElement::Step::Type_e::QUADRATIC_REL:
+						case svgdom::path_element::step::type::quadratic_rel:
 							x1 = -(prevStep->x1 - prevStep->x) + x0;
 							y1 = -(prevStep->y1 - prevStep->y) + y0;
 							break;
-						case svgdom::PathElement::Step::Type_e::QUADRATIC_SMOOTH_REL:
+						case svgdom::path_element::step::type::quadratic_smooth_rel:
 							x1 = -(prevQuadraticX1 - prevStep->x) + x0;
 							y1 = -(prevQuadraticY1 - prevStep->y) + y0;
 							break;
@@ -966,7 +966,7 @@ void Renderer::visit(const svgdom::PathElement& e) {
 					cairoQuadraticCurveTo(this->cr, x1, y1, s.x, s.y);
 				}
 				break;
-			case svgdom::PathElement::Step::Type_e::QUADRATIC_SMOOTH_REL:
+			case svgdom::path_element::step::type::quadratic_smooth_rel:
 				{
 					double x0, y0; // current point, absolute coordinates
 					if (cairo_has_current_point(this->cr)) {
@@ -982,20 +982,20 @@ void Renderer::visit(const svgdom::PathElement& e) {
 					}
 
 					double x1, y1; // control point
-					switch (prevStep ? prevStep->type_ : svgdom::PathElement::Step::Type_e::UNKNOWN) {
-						case svgdom::PathElement::Step::Type_e::QUADRATIC_SMOOTH_ABS:
+					switch(prevStep ? prevStep->type_ : svgdom::path_element::step::type::unknown){
+						case svgdom::path_element::step::type::quadratic_smooth_abs:
 							x1 = -(prevQuadraticX1 - x0);
 							y1 = -(prevQuadraticY1 - y0);
 							break;
-						case svgdom::PathElement::Step::Type_e::QUADRATIC_ABS:
+						case svgdom::path_element::step::type::quadratic_abs:
 							x1 = -(prevStep->x1 - x0);
 							y1 = -(prevStep->y1 - y0);
 							break;
-						case svgdom::PathElement::Step::Type_e::QUADRATIC_SMOOTH_REL:
+						case svgdom::path_element::step::type::quadratic_smooth_rel:
 							x1 = -(prevQuadraticX1 - prevStep->x);
 							y1 = -(prevQuadraticY1 - prevStep->y);
 							break;
-						case svgdom::PathElement::Step::Type_e::QUADRATIC_REL:
+						case svgdom::path_element::step::type::quadratic_rel:
 							x1 = -(prevStep->x1 - prevStep->x);
 							y1 = -(prevStep->y1 - prevStep->y);
 							break;
@@ -1011,15 +1011,15 @@ void Renderer::visit(const svgdom::PathElement& e) {
 					cairoRelQuadraticCurveTo(this->cr, x1, y1, s.x, s.y);
 				}
 				break;
-			case svgdom::PathElement::Step::Type_e::CUBIC_ABS:
+			case svgdom::path_element::step::type::cubic_abs:
 				cairo_curve_to(this->cr, s.x1, s.y1, s.x2, s.y2, s.x, s.y);
 				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				break;
-			case svgdom::PathElement::Step::Type_e::CUBIC_REL:
+			case svgdom::path_element::step::type::cubic_rel:
 				cairo_rel_curve_to(this->cr, s.x1, s.y1, s.x2, s.y2, s.x, s.y);
 				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				break;
-			case svgdom::PathElement::Step::Type_e::CUBIC_SMOOTH_ABS:
+			case svgdom::path_element::step::type::cubic_smooth_abs:
 				{
 					double x0, y0; // current point, absolute coordinates
 					if (cairo_has_current_point(this->cr)) {
@@ -1035,14 +1035,14 @@ void Renderer::visit(const svgdom::PathElement& e) {
 					}
 
 					double x1, y1; // first control point
-					switch (prevStep ? prevStep->type_ : svgdom::PathElement::Step::Type_e::UNKNOWN) {
-						case svgdom::PathElement::Step::Type_e::CUBIC_SMOOTH_ABS:
-						case svgdom::PathElement::Step::Type_e::CUBIC_ABS:
+					switch(prevStep ? prevStep->type_ : svgdom::path_element::step::type::unknown){
+						case svgdom::path_element::step::type::cubic_smooth_abs:
+						case svgdom::path_element::step::type::cubic_abs:
 							x1 = -(prevStep->x2 - x0) + x0;
 							y1 = -(prevStep->y2 - y0) + y0;
 							break;
-						case svgdom::PathElement::Step::Type_e::CUBIC_SMOOTH_REL:
-						case svgdom::PathElement::Step::Type_e::CUBIC_REL:
+						case svgdom::path_element::step::type::cubic_smooth_rel:
+						case svgdom::path_element::step::type::cubic_rel:
 							x1 = -(prevStep->x2 - prevStep->x) + x0;
 							y1 = -(prevStep->y2 - prevStep->y) + y0;
 							break;
@@ -1057,14 +1057,14 @@ void Renderer::visit(const svgdom::PathElement& e) {
 					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				}
 				break;
-			case svgdom::PathElement::Step::Type_e::CUBIC_SMOOTH_REL:
+			case svgdom::path_element::step::type::cubic_smooth_rel:
 				{
 					double x0, y0; // current point, absolute coordinates
-					if (cairo_has_current_point(this->cr)) {
+					if(cairo_has_current_point(this->cr)){
 						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 						cairo_get_current_point(this->cr, &x0, &y0);
 						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-					} else {
+					}else{
 						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 						cairo_move_to(this->cr, 0, 0);
 						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
@@ -1073,14 +1073,14 @@ void Renderer::visit(const svgdom::PathElement& e) {
 					}
 
 					double x1, y1; // first control point
-					switch (prevStep ? prevStep->type_ : svgdom::PathElement::Step::Type_e::UNKNOWN) {
-						case svgdom::PathElement::Step::Type_e::CUBIC_SMOOTH_ABS:
-						case svgdom::PathElement::Step::Type_e::CUBIC_ABS:
+					switch(prevStep ? prevStep->type_ : svgdom::path_element::step::type::unknown){
+						case svgdom::path_element::step::type::cubic_smooth_abs:
+						case svgdom::path_element::step::type::cubic_abs:
 							x1 = -(prevStep->x2 - x0);
 							y1 = -(prevStep->y2 - y0);
 							break;
-						case svgdom::PathElement::Step::Type_e::CUBIC_SMOOTH_REL:
-						case svgdom::PathElement::Step::Type_e::CUBIC_REL:
+						case svgdom::path_element::step::type::cubic_smooth_rel:
+						case svgdom::path_element::step::type::cubic_rel:
 							x1 = -(prevStep->x2 - prevStep->x);
 							y1 = -(prevStep->y2 - prevStep->y);
 							break;
@@ -1095,8 +1095,8 @@ void Renderer::visit(const svgdom::PathElement& e) {
 					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				}
 				break;
-			case svgdom::PathElement::Step::Type_e::ARC_ABS:
-			case svgdom::PathElement::Step::Type_e::ARC_REL:
+			case svgdom::path_element::step::type::arc_abs:
+			case svgdom::path_element::step::type::arc_rel:
 				{
 					double x, y;
 					if (cairo_has_current_point(this->cr)) {
@@ -1124,15 +1124,15 @@ void Renderer::visit(const svgdom::PathElement& e) {
 					{
 						double xx;
 						double yy;
-						if (s.type_ == svgdom::PathElement::Step::Type_e::ARC_ABS) {
+						if(s.type_ == svgdom::path_element::step::type::arc_abs){
 							xx = s.x - x;
 							yy = s.y - y;
-						} else {
+						}else{
 							xx = s.x;
 							yy = s.y;
 						}
 
-						auto res = rotate(xx, yy, degToRad(-double(s.xAxisRotation)));
+						auto res = rotate(xx, yy, degToRad(-double(s.x_axis_rotation)));
 						xe = res[0];
 						ye = res[1];
 					}
@@ -1181,7 +1181,7 @@ void Renderer::visit(const svgdom::PathElement& e) {
 
 					cairo_translate(this->cr, x, y);
 					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-					cairo_rotate(this->cr, degToRad(s.xAxisRotation));
+					cairo_rotate(this->cr, degToRad(s.x_axis_rotation));
 					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					if(radiiRatio != 0){ // cairo does not allow non-invertible scaling
 						cairo_scale(this->cr, 1, radiiRatio);
@@ -1208,7 +1208,7 @@ void Renderer::visit(const svgdom::PathElement& e) {
 	this->renderCurrentShape(cairoGroupPush.isPushed());
 }
 
-void Renderer::visit(const svgdom::CircleElement& e) {
+void Renderer::visit(const svgdom::circle_element& e){
 //	TRACE(<< "rendering CircleElement" << std::endl)
 	svgdom::style_stack::push pushStyles(this->styleStack, e);
 
@@ -1237,7 +1237,7 @@ void Renderer::visit(const svgdom::CircleElement& e) {
 	this->renderCurrentShape(cairoGroupPush.isPushed());
 }
 
-void Renderer::visit(const svgdom::PolylineElement& e) {
+void Renderer::visit(const svgdom::polyline_element& e){
 //	TRACE(<< "rendering PolylineElement" << std::endl)
 	svgdom::style_stack::push pushStyles(this->styleStack, e);
 
@@ -1272,7 +1272,7 @@ void Renderer::visit(const svgdom::PolylineElement& e) {
 	this->renderCurrentShape(cairoGroupPush.isPushed());
 }
 
-void Renderer::visit(const svgdom::PolygonElement& e) {
+void Renderer::visit(const svgdom::polygon_element& e){
 //	TRACE(<< "rendering PolygonElement" << std::endl)
 	svgdom::style_stack::push pushStyles(this->styleStack, e);
 
@@ -1308,7 +1308,7 @@ void Renderer::visit(const svgdom::PolygonElement& e) {
 	this->renderCurrentShape(cairoGroupPush.isPushed());
 }
 
-void Renderer::visit(const svgdom::LineElement& e) {
+void Renderer::visit(const svgdom::line_element& e){
 //	TRACE(<< "rendering LineElement" << std::endl)
 	svgdom::style_stack::push pushStyles(this->styleStack, e);
 
@@ -1332,7 +1332,7 @@ void Renderer::visit(const svgdom::LineElement& e) {
 	this->renderCurrentShape(cairoGroupPush.isPushed());
 }
 
-void Renderer::visit(const svgdom::EllipseElement& e) {
+void Renderer::visit(const svgdom::ellipse_element& e){
 //	TRACE(<< "rendering EllipseElement" << std::endl)
 	svgdom::style_stack::push pushStyles(this->styleStack, e);
 
@@ -1401,8 +1401,8 @@ void Renderer::visit(const svgdom::rect_element& e){
 		return;
 	}
 
-	if ((e.rx.value == 0 || !e.rx.isValid())
-			&& (e.ry.value == 0 || !e.ry.isValid())) {
+	if ((e.rx.value == 0 || !e.rx.is_valid())
+			&& (e.ry.value == 0 || !e.ry.is_valid())) {
 		cairo_rectangle(this->cr, this->lengthToPx(e.x, 0), this->lengthToPx(e.y, 1), width, height);
 		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	} else {
@@ -1410,18 +1410,18 @@ void Renderer::visit(const svgdom::rect_element& e){
 		auto rx = e.rx;
 		auto ry = e.ry;
 
-		if (!ry.isValid() && rx.isValid()) {
+		if(!ry.is_valid() && rx.is_valid()){
 			ry = rx;
-		} else if (!rx.isValid() && ry.isValid()) {
+		} else if (!rx.is_valid() && ry.is_valid()){
 			rx = ry;
 		}
-		ASSERT(rx.isValid() && ry.isValid())
+		ASSERT(rx.is_valid() && ry.is_valid())
 
-		if (this->lengthToPx(rx, 0) > width / 2) {
+		if(this->lengthToPx(rx, 0) > width / 2){
 			rx = e.width;
 			rx.value /= 2;
 		}
-		if (this->lengthToPx(ry, 1) > height / 2) {
+		if(this->lengthToPx(ry, 1) > height / 2){
 			ry = e.height;
 			ry.value /= 2;
 		}
@@ -1520,31 +1520,31 @@ void Renderer::visit(const svgdom::rect_element& e){
 }
 
 namespace{
-struct GradientCaster : public svgdom::ConstVisitor{
-	const svgdom::LinearGradientElement* linear = nullptr;
-	const svgdom::RadialGradientElement* radial = nullptr;
-	const svgdom::Gradient* gradient = nullptr;
+struct GradientCaster : public svgdom::const_visitor{
+	const svgdom::linear_gradient_element* linear = nullptr;
+	const svgdom::radial_gradient_element* radial = nullptr;
+	const svgdom::gradient* gradient = nullptr;
 
-	void visit(const svgdom::LinearGradientElement& e) override{
+	void visit(const svgdom::linear_gradient_element& e)override{
 		this->gradient = &e;
 		this->linear = &e;
 	}
 
-	void visit(const svgdom::RadialGradientElement& e) override{
+	void visit(const svgdom::radial_gradient_element& e)override{
 		this->gradient = &e;
 		this->radial = &e;
 	}
 };
 }
 
-const decltype(svgdom::Transformable::transformations)& Renderer::gradientGetTransformations(const svgdom::Gradient& g) {
+const decltype(svgdom::transformable::transformations)& Renderer::gradientGetTransformations(const svgdom::gradient& g){
 	if(g.transformations.size() != 0){
 		return g.transformations;
 	}
 
-	auto refId = g.getLocalIdFromIri();
+	auto refId = g.get_local_id_from_iri();
 	if(refId.length() != 0){
-		auto ref = this->finder.findById(refId);
+		auto ref = this->finder.find_by_id(refId);
 
 		if(ref){
 			GradientCaster caster;
@@ -1557,14 +1557,14 @@ const decltype(svgdom::Transformable::transformations)& Renderer::gradientGetTra
 	return g.transformations;
 }
 
-svgdom::CoordinateUnits_e Renderer::gradientGetUnits(const svgdom::Gradient& g) {
-	if(g.units != svgdom::CoordinateUnits_e::UNKNOWN){
+svgdom::coordinate_units Renderer::gradientGetUnits(const svgdom::gradient& g){
+	if(g.units != svgdom::coordinate_units::unknown){
 		return g.units;
 	}
 
-	auto refId = g.getLocalIdFromIri();
+	auto refId = g.get_local_id_from_iri();
 	if(refId.length() != 0){
-		auto ref = this->finder.findById(refId);
+		auto ref = this->finder.find_by_id(refId);
 
 		if(ref){
 			GradientCaster caster;
@@ -1574,17 +1574,17 @@ svgdom::CoordinateUnits_e Renderer::gradientGetUnits(const svgdom::Gradient& g) 
 			}
 		}
 	}
-	return svgdom::CoordinateUnits_e::OBJECT_BOUNDING_BOX; // bounding box is default
+	return svgdom::coordinate_units::object_bounding_box; // bounding box is default
 }
 
-svgdom::Length Renderer::gradientGetX1(const svgdom::LinearGradientElement& g){
-	if(g.x1.isValid()){
+svgdom::length Renderer::gradientGetX1(const svgdom::linear_gradient_element& g){
+	if(g.x1.is_valid()){
 		return g.x1;
 	}
 
-	auto refId = g.getLocalIdFromIri();
+	auto refId = g.get_local_id_from_iri();
 	if(refId.length() != 0){
-		auto ref = this->finder.findById(refId);
+		auto ref = this->finder.find_by_id(refId);
 
 		if(ref){
 			GradientCaster caster;
@@ -1594,17 +1594,17 @@ svgdom::Length Renderer::gradientGetX1(const svgdom::LinearGradientElement& g){
 			}
 		}
 	}
-	return svgdom::Length::make(0, svgdom::Length::Unit_e::PERCENT);
+	return svgdom::length(0, svgdom::length_unit::percent);
 }
 
-svgdom::Length Renderer::gradientGetY1(const svgdom::LinearGradientElement& g) {
-	if(g.y1.isValid()){
+svgdom::length Renderer::gradientGetY1(const svgdom::linear_gradient_element& g){
+	if(g.y1.is_valid()){
 		return g.y1;
 	}
 
-	auto refId = g.getLocalIdFromIri();
+	auto refId = g.get_local_id_from_iri();
 	if(refId.length() != 0){
-		auto ref = this->finder.findById(refId);
+		auto ref = this->finder.find_by_id(refId);
 
 		if(ref){
 			GradientCaster caster;
@@ -1614,17 +1614,17 @@ svgdom::Length Renderer::gradientGetY1(const svgdom::LinearGradientElement& g) {
 			}
 		}
 	}
-	return svgdom::Length::make(0, svgdom::Length::Unit_e::PERCENT);
+	return svgdom::length(0, svgdom::length_unit::percent);
 }
 
-svgdom::Length Renderer::gradientGetX2(const svgdom::LinearGradientElement& g) {
-	if(g.x2.isValid()){
+svgdom::length Renderer::gradientGetX2(const svgdom::linear_gradient_element& g) {
+	if(g.x2.is_valid()){
 		return g.x2;
 	}
 
-	auto refId = g.getLocalIdFromIri();
+	auto refId = g.get_local_id_from_iri();
 	if(refId.length() != 0){
-		auto ref = this->finder.findById(refId);
+		auto ref = this->finder.find_by_id(refId);
 
 		if(ref){
 			GradientCaster caster;
@@ -1634,17 +1634,17 @@ svgdom::Length Renderer::gradientGetX2(const svgdom::LinearGradientElement& g) {
 			}
 		}
 	}
-	return svgdom::Length::make(100, svgdom::Length::Unit_e::PERCENT);
+	return svgdom::length(100, svgdom::length_unit::percent);
 }
 
-svgdom::Length Renderer::gradientGetY2(const svgdom::LinearGradientElement& g) {
-	if(g.y2.isValid()){
+svgdom::length Renderer::gradientGetY2(const svgdom::linear_gradient_element& g) {
+	if(g.y2.is_valid()){
 		return g.y2;
 	}
 
-	auto refId = g.getLocalIdFromIri();
+	auto refId = g.get_local_id_from_iri();
 	if(refId.length() != 0){
-		auto ref = this->finder.findById(refId);
+		auto ref = this->finder.find_by_id(refId);
 
 		if(ref){
 			GradientCaster caster;
@@ -1654,17 +1654,17 @@ svgdom::Length Renderer::gradientGetY2(const svgdom::LinearGradientElement& g) {
 			}
 		}
 	}
-	return svgdom::Length::make(0, svgdom::Length::Unit_e::PERCENT);
+	return svgdom::length(0, svgdom::length_unit::percent);
 }
 
-svgdom::Length Renderer::gradientGetCx(const svgdom::RadialGradientElement& g) {
-	if(g.cx.isValid()){
+svgdom::length Renderer::gradientGetCx(const svgdom::radial_gradient_element& g) {
+	if(g.cx.is_valid()){
 		return g.cx;
 	}
 
-	auto refId = g.getLocalIdFromIri();
+	auto refId = g.get_local_id_from_iri();
 	if(refId.length() != 0){
-		auto ref = this->finder.findById(refId);
+		auto ref = this->finder.find_by_id(refId);
 
 		if(ref){
 			GradientCaster caster;
@@ -1674,17 +1674,17 @@ svgdom::Length Renderer::gradientGetCx(const svgdom::RadialGradientElement& g) {
 			}
 		}
 	}
-	return svgdom::Length::make(50, svgdom::Length::Unit_e::PERCENT);
+	return svgdom::length(50, svgdom::length_unit::percent);
 }
 
-svgdom::Length Renderer::gradientGetCy(const svgdom::RadialGradientElement& g) {
-	if(g.cy.isValid()){
+svgdom::length Renderer::gradientGetCy(const svgdom::radial_gradient_element& g) {
+	if(g.cy.is_valid()){
 		return g.cy;
 	}
 
-	auto refId = g.getLocalIdFromIri();
+	auto refId = g.get_local_id_from_iri();
 	if(refId.length() != 0){
-		auto ref = this->finder.findById(refId);
+		auto ref = this->finder.find_by_id(refId);
 
 		if(ref){
 			GradientCaster caster;
@@ -1694,17 +1694,17 @@ svgdom::Length Renderer::gradientGetCy(const svgdom::RadialGradientElement& g) {
 			}
 		}
 	}
-	return svgdom::Length::make(50, svgdom::Length::Unit_e::PERCENT);
+	return svgdom::length(50, svgdom::length_unit::percent);
 }
 
-svgdom::Length Renderer::gradientGetR(const svgdom::RadialGradientElement& g) {
-	if(g.r.isValid()){
+svgdom::length Renderer::gradientGetR(const svgdom::radial_gradient_element& g) {
+	if(g.r.is_valid()){
 		return g.r;
 	}
 
-	auto refId = g.getLocalIdFromIri();
+	auto refId = g.get_local_id_from_iri();
 	if(refId.length() != 0){
-		auto ref = this->finder.findById(refId);
+		auto ref = this->finder.find_by_id(refId);
 
 		if(ref){
 			GradientCaster caster;
@@ -1714,17 +1714,17 @@ svgdom::Length Renderer::gradientGetR(const svgdom::RadialGradientElement& g) {
 			}
 		}
 	}
-	return svgdom::Length::make(50, svgdom::Length::Unit_e::PERCENT);
+	return svgdom::length(50, svgdom::length_unit::percent);
 }
 
-svgdom::Length Renderer::gradientGetFx(const svgdom::RadialGradientElement& g) {
-	if(g.fx.isValid()){
+svgdom::length Renderer::gradientGetFx(const svgdom::radial_gradient_element& g) {
+	if(g.fx.is_valid()){
 		return g.fx;
 	}
 
-	auto refId = g.getLocalIdFromIri();
+	auto refId = g.get_local_id_from_iri();
 	if(refId.length() != 0){
-		auto ref = this->finder.findById(refId);
+		auto ref = this->finder.find_by_id(refId);
 
 		if(ref){
 			GradientCaster caster;
@@ -1734,17 +1734,17 @@ svgdom::Length Renderer::gradientGetFx(const svgdom::RadialGradientElement& g) {
 			}
 		}
 	}
-	return svgdom::Length::make(0, svgdom::Length::Unit_e::UNKNOWN);
+	return svgdom::length(0, svgdom::length_unit::unknown);
 }
 
-svgdom::Length Renderer::gradientGetFy(const svgdom::RadialGradientElement& g) {
-	if(g.fy.isValid()){
+svgdom::length Renderer::gradientGetFy(const svgdom::radial_gradient_element& g) {
+	if(g.fy.is_valid()){
 		return g.fy;
 	}
 
-	auto refId = g.getLocalIdFromIri();
+	auto refId = g.get_local_id_from_iri();
 	if(refId.length() != 0){
-		auto ref = this->finder.findById(refId);
+		auto ref = this->finder.find_by_id(refId);
 
 		if(ref){
 			GradientCaster caster;
@@ -1754,17 +1754,17 @@ svgdom::Length Renderer::gradientGetFy(const svgdom::RadialGradientElement& g) {
 			}
 		}
 	}
-	return svgdom::Length::make(0, svgdom::Length::Unit_e::UNKNOWN);
+	return svgdom::length(0, svgdom::length_unit::unknown);
 }
 
-const decltype(svgdom::Container::children)&  Renderer::gradientGetStops(const svgdom::Gradient& g) {
+const decltype(svgdom::container::children)& Renderer::gradientGetStops(const svgdom::gradient& g) {
 	if(g.children.size() != 0){
 		return g.children;
 	}
 
-	auto refId = g.getLocalIdFromIri();
+	auto refId = g.get_local_id_from_iri();
 	if(refId.length() != 0){
-		auto ref = this->finder.findById(refId);
+		auto ref = this->finder.find_by_id(refId);
 
 		if(ref){
 			GradientCaster caster;
@@ -1783,9 +1783,9 @@ const decltype(svgdom::styleable::styles)& Renderer::gradient_get_styles(const s
 		return g.styles;
 	}
 
-	auto refId = g.getLocalIdFromIri();
+	auto refId = g.get_local_id_from_iri();
 	if(refId.length() != 0){
-		auto ref = this->finder.findById(refId);
+		auto ref = this->finder.find_by_id(refId);
 
 		if(ref){
 			GradientCaster caster;
@@ -1821,15 +1821,15 @@ const decltype(svgdom::styleable::classes)& Renderer::gradient_get_classes(const
 }
 
 svgdom::gradient::spread_method Renderer::gradientGetSpreadMethod(const svgdom::gradient& g){
-	if(g.spreadMethod != svgdom::Gradient::SpreadMethod_e::DEFAULT){
-		return g.spreadMethod;
+	if(g.spread_method_ != svgdom::gradient::spread_method::default_){
+		return g.spread_method_;
 	}
 
-	ASSERT(g.spreadMethod == svgdom::Gradient::SpreadMethod_e::DEFAULT)
+	ASSERT(g.spread_method_ == svgdom::gradient::spread_method::default_)
 
-	auto refId = g.getLocalIdFromIri();
+	auto refId = g.get_local_id_from_iri();
 	if(refId.length() != 0){
-		auto ref = this->finder.findById(refId);
+		auto ref = this->finder.find_by_id(refId);
 
 		if(ref){
 			GradientCaster caster;
@@ -1840,7 +1840,7 @@ svgdom::gradient::spread_method Renderer::gradientGetSpreadMethod(const svgdom::
 		}
 	}
 
-	return svgdom::Gradient::SpreadMethod_e::PAD;
+	return svgdom::gradient::spread_method::pad;
 }
 
 decltype(svgdom::styleable::presentation_attributes) Renderer::gradient_get_presentation_attributes(const svgdom::gradient& g){
@@ -1850,7 +1850,7 @@ decltype(svgdom::styleable::presentation_attributes) Renderer::gradient_get_pres
 
 	auto refId = g.get_local_id_from_iri();
 	if(refId.length() != 0){
-		auto ref = this->finder.findById(refId);
+		auto ref = this->finder.find_by_id(refId);
 
 		if(ref){
 			GradientCaster caster;

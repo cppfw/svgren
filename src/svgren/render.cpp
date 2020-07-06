@@ -10,10 +10,10 @@
 
 using namespace svgren;
 	
-result svgren::render(const svgdom::SvgElement& svg, const parameters& p){
+result svgren::render(const svgdom::svg_element& svg, const parameters& p){
 	result ret;
 	
-	auto wh = svg.getDimensions(p.dpi);
+	auto wh = svg.get_dimensions(p.dpi);
 	
 	if(wh[0] <= 0 || wh[1] <= 0){
 		return ret;
@@ -23,7 +23,7 @@ result svgren::render(const svgdom::SvgElement& svg, const parameters& p){
 		ret.width = unsigned(std::ceil(wh[0]));
 		ret.height = unsigned(std::ceil(wh[1]));
 	}else{
-		real aspectRatio = svg.aspectRatio(p.dpi);
+		real aspectRatio = svg.aspect_ratio(p.dpi);
 		if (aspectRatio == 0){
 			return ret;
 		}

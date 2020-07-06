@@ -47,13 +47,13 @@ public:
 	// blit surface to current cairo surface
 	void blit(const Surface& s);
 	
-	real lengthToPx(const svgdom::Length& l, unsigned coordIndex = 0)const noexcept;
+	real lengthToPx(const svgdom::length& l, unsigned coordIndex = 0)const noexcept;
 	
-	void applyCairoTransformation(const svgdom::Transformable::Transformation& t);
+	void applyCairoTransformation(const svgdom::transformable::transformation& t);
 	
-	void applyTransformations(const decltype(svgdom::Transformable::transformations)& transformations);
+	void applyTransformations(const decltype(svgdom::transformable::transformations)& transformations);
 	
-	void setCairoPatternSource(cairo_pattern_t& pat, const svgdom::Gradient& g, const svgdom::style_stack& ss);
+	void setCairoPatternSource(cairo_pattern_t& pat, const svgdom::gradient& g, const svgdom::style_stack& ss);
 	
 	void setGradient(const std::string& id);
 	
@@ -64,34 +64,34 @@ public:
 	
 	void renderCurrentShape(bool isCairoGroupPushed);
 	
-	void applyViewBox(const svgdom::ViewBoxed& e, const svgdom::AspectRatioed& ar);
+	void applyViewBox(const svgdom::view_boxed& e, const svgdom::aspect_ratioed& ar);
 	
 	void renderSvgElement(
-			const svgdom::Container& c,
-			const svgdom::Styleable& s,
-			const svgdom::ViewBoxed& v,
-			const svgdom::AspectRatioed& a,
-			const svgdom::Length& x,
-			const svgdom::Length& y,
-			const svgdom::Length& width,
-			const svgdom::Length& height
+			const svgdom::container& c,
+			const svgdom::styleable& s,
+			const svgdom::view_boxed& v,
+			const svgdom::aspect_ratioed& a,
+			const svgdom::length& x,
+			const svgdom::length& y,
+			const svgdom::length& width,
+			const svgdom::length& height
 		);
 	
-	const decltype(svgdom::Transformable::transformations)& gradientGetTransformations(const svgdom::Gradient& g);
-	svgdom::CoordinateUnits_e gradientGetUnits(const svgdom::Gradient& g);
+	const decltype(svgdom::transformable::transformations)& gradientGetTransformations(const svgdom::gradient& g);
+	svgdom::coordinate_units gradientGetUnits(const svgdom::gradient& g);
 	
-	svgdom::Length gradientGetX1(const svgdom::LinearGradientElement& g);
-	svgdom::Length gradientGetY1(const svgdom::LinearGradientElement& g);
-	svgdom::Length gradientGetX2(const svgdom::LinearGradientElement& g);
-	svgdom::Length gradientGetY2(const svgdom::LinearGradientElement& g);
+	svgdom::length gradientGetX1(const svgdom::linear_gradient_element& g);
+	svgdom::length gradientGetY1(const svgdom::linear_gradient_element& g);
+	svgdom::length gradientGetX2(const svgdom::linear_gradient_element& g);
+	svgdom::length gradientGetY2(const svgdom::linear_gradient_element& g);
 	
-	svgdom::Length gradientGetCx(const svgdom::RadialGradientElement& g);
-	svgdom::Length gradientGetCy(const svgdom::RadialGradientElement& g);
-	svgdom::Length gradientGetR(const svgdom::RadialGradientElement& g);
-	svgdom::Length gradientGetFx(const svgdom::RadialGradientElement& g);
-	svgdom::Length gradientGetFy(const svgdom::RadialGradientElement& g);
+	svgdom::length gradientGetCx(const svgdom::radial_gradient_element& g);
+	svgdom::length gradientGetCy(const svgdom::radial_gradient_element& g);
+	svgdom::length gradientGetR(const svgdom::radial_gradient_element& g);
+	svgdom::length gradientGetFx(const svgdom::radial_gradient_element& g);
+	svgdom::length gradientGetFy(const svgdom::radial_gradient_element& g);
 	
-	const decltype(svgdom::Container::children)& gradientGetStops(const svgdom::gradient& g);
+	const decltype(svgdom::container::children)& gradientGetStops(const svgdom::gradient& g);
 	const decltype(svgdom::styleable::styles)& gradient_get_styles(const svgdom::gradient& g);
 	const decltype(svgdom::styleable::classes)& gradient_get_classes(const svgdom::gradient& g);
 	svgdom::gradient::spread_method gradientGetSpreadMethod(const svgdom::gradient& g);
@@ -105,28 +105,28 @@ public:
 			cairo_t* cr,
 			real dpi,
 			std::array<real, 2> canvasSize,
-			const svgdom::SvgElement& root
+			const svgdom::svg_element& root
 		);
 
 	// WORKAROUND: MSVS compiler complains about cannot access protected member,
 	//             Declare public method which calls protected one.
-	void relayAccept(const svgdom::Container& e){
+	void relayAccept(const svgdom::container& e){
 		this->const_visitor::relay_accept(e);
 	}
 
-	void visit(const svgdom::GElement& e)override;
-	void visit(const svgdom::UseElement& e)override;
-	void visit(const svgdom::SvgElement& e)override;
-	void visit(const svgdom::PathElement& e)override;
-	void visit(const svgdom::CircleElement& e)override;
-	void visit(const svgdom::PolylineElement& e)override;
-	void visit(const svgdom::PolygonElement& e)override;
-	void visit(const svgdom::LineElement& e)override;
-	void visit(const svgdom::EllipseElement& e)override;
-	void visit(const svgdom::RectElement& e)override;
+	void visit(const svgdom::g_element& e)override;
+	void visit(const svgdom::use_element& e)override;
+	void visit(const svgdom::svg_element& e)override;
+	void visit(const svgdom::path_element& e)override;
+	void visit(const svgdom::circle_element& e)override;
+	void visit(const svgdom::polyline_element& e)override;
+	void visit(const svgdom::polygon_element& e)override;
+	void visit(const svgdom::line_element& e)override;
+	void visit(const svgdom::ellipse_element& e)override;
+	void visit(const svgdom::rect_element& e)override;
 	void visit(const svgdom::style_element& e)override;
 
-	void default_visit(const svgdom::Element& e, const svgdom::Container& c) override{
+	void default_visit(const svgdom::element& e, const svgdom::container& c)override{
 		// do nothing by default
 	}
 };

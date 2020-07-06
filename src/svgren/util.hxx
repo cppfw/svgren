@@ -61,7 +61,7 @@ public:
 
 Surface getSubSurface(cairo_t* cr, const CanvasRegion& region = CanvasRegion());
 
-real percentLengthToFraction(const svgdom::Length& l);
+real percentLengthToFraction(const svgdom::length& l);
 
 void appendLuminanceToAlpha(Surface s);
 
@@ -100,7 +100,7 @@ class PushCairoGroupIfNeeded{
 
 	real opacity = real(1);
 	
-	const svgdom::Element* maskElement = nullptr;
+	const svgdom::element* maskElement = nullptr;
 public:
 	PushCairoGroupIfNeeded(Renderer& renderer, bool isContainer);
 	~PushCairoGroupIfNeeded()noexcept;

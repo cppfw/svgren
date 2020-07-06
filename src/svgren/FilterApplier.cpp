@@ -231,11 +231,11 @@ Surface FilterApplier::getSource(const std::string& in) {
 		return this->getSourceGraphic();
 	}
 	
-	//return empty surface
+	// return empty surface
 	return Surface();
 }
 
-Surface FilterApplier::getLastResult() {
+Surface FilterApplier::getLastResult(){
 	if (!this->lastResult) {
 		return Surface();
 	}
@@ -243,20 +243,20 @@ Surface FilterApplier::getLastResult() {
 }
 
 
-void FilterApplier::visit(const svgdom::FilterElement& e) {
-	this->primitiveUnits = e.primitiveUnits;
+void FilterApplier::visit(const svgdom::filter_element& e){
+	this->primitiveUnits = e.primitive_units;
 	
-	//set filter region
+	// set filter region
 	{
-		//filter region
+		// filter region
 		real frX;
 		real frY;
 		real frWidth;
 		real frHeight;
 
-		switch(e.filterUnits){
+		switch(e.filter_units){
 			default:
-			case svgdom::CoordinateUnits_e::OBJECT_BOUNDING_BOX:
+			case svgdom::coordinate_units::object_bounding_box:
 				{
 					auto w = this->r.deviceSpaceBoundingBox.width();
 					auto h = this->r.deviceSpaceBoundingBox.height();
@@ -267,7 +267,7 @@ void FilterApplier::visit(const svgdom::FilterElement& e) {
 					frHeight = percentLengthToFraction(e.height) * h;
 				}
 				break;
-			case svgdom::CoordinateUnits_e::USER_SPACE_ON_USE:
+			case svgdom::coordinate_units::user_space_on_use:
 				{
 					double x1, y1, x2, y2;
 					x1 = this->r.lengthToPx(e.x, 0);
@@ -314,22 +314,22 @@ void FilterApplier::visit(const svgdom::FilterElement& e) {
 	this->relay_accept(e);
 }
 
-void FilterApplier::visit(const svgdom::FeGaussianBlurElement& e) {
-	if (!e.isStdDeviationSpecified()) {
+void FilterApplier::visit(const svgdom::fe_gaussian_blur_element& e){
+	if (!e.is_std_deviation_specified()) {
 		return;
 	}
-	auto sd = e.getStdDeviation();
+	auto sd = e.get_std_deviation();
 	
 	{
 		double x, y;
 
 		switch(this->primitiveUnits){
 			default:
-			case svgdom::CoordinateUnits_e::USER_SPACE_ON_USE:
+			case svgdom::coordinate_units::user_space_on_use:
 				x = double(sd[0]);
 				y = double(sd[1]);
 				break;
-			case svgdom::CoordinateUnits_e::OBJECT_BOUNDING_BOX:
+			case svgdom::coordinate_units::object_bounding_box:
 				x = double(this->r.userSpaceShapeBoundingBoxDim[0] * sd[0]);
 				y = double(this->r.userSpaceShapeBoundingBoxDim[1] * sd[1]);
 				break;
@@ -410,11 +410,11 @@ FilterResult colorMatrix(const Surface& s, const std::array<std::array<real, 5>,
 }
 }
 
-void FilterApplier::visit(const svgdom::FeColorMatrixElement& e){
+void FilterApplier::visit(const svgdom::fe_color_matrix_element& e){
 	std::array<std::array<real, 5>, 4> m; // first index = row, second index = column
 	
 	switch(e.type_){
-		case svgdom::FeColorMatrixElement::Type_e::MATRIX:
+		case svgdom::fe_color_matrix_element::type::matrix:
 			for(unsigned i = 0, p = 0; i != m.size(); ++i){
 				for(unsigned j = 0; j != m[i].size(); ++j, ++p){
 					ASSERT(p < e.values.size())
@@ -423,7 +423,7 @@ void FilterApplier::visit(const svgdom::FeColorMatrixElement& e){
 				}
 			}
 			break;
-		case svgdom::FeColorMatrixElement::Type_e::SATURATE:
+		case svgdom::fe_color_matrix_element::type::saturate:
 			/*
 				| R' |     |0.213+0.787s  0.715-0.715s  0.072-0.072s 0  0 |   | R |
 				| G' |     |0.213-0.213s  0.715+0.285s  0.072-0.072s 0  0 |   | G |
@@ -442,7 +442,7 @@ void FilterApplier::visit(const svgdom::FeColorMatrixElement& e){
 				}};
 			}
 			break;
-		case svgdom::FeColorMatrixElement::Type_e::HUE_ROTATE:
+		case svgdom::fe_color_matrix_element::type::hue_rotate:
 			/*
 				| R' |     | a00  a01  a02  0  0 |   | R |
 				| G' |     | a10  a11  a12  0  0 |   | G |
@@ -475,7 +475,7 @@ void FilterApplier::visit(const svgdom::FeColorMatrixElement& e){
 				}};
 			}
 			break;
-		case svgdom::FeColorMatrixElement::Type_e::LUMINANCE_TO_ALPHA:
+		case svgdom::fe_color_matrix_element::type::luminance_to_alpha:
 			/*
 				| R' |     |      0        0        0  0  0 |   | R |
 				| G' |     |      0        0        0  0  0 |   | G |
@@ -494,14 +494,14 @@ void FilterApplier::visit(const svgdom::FeColorMatrixElement& e){
 	
 	auto s = this->getSource(e.in).intersectionSurface(this->filterRegion);	
 	
-	//TODO: set filter sub-region
+	// TODO: set filter sub-region
 	
 	this->setResult(e.result, colorMatrix(s, m));
 }
 
 
 namespace{
-FilterResult blend(const Surface& in, const Surface& in2, svgdom::FeBlendElement::Mode_e mode){
+FilterResult blend(const Surface& in, const Surface& in2, svgdom::fe_blend_element::mode mode){
 //	TRACE(<< "in.width = " << in.width << " in2.width = " << in2.width << std::endl)
 	auto s1 = in.intersectionSurface(in2);
 	auto s2 = in2.intersectionSurface(in);
@@ -544,8 +544,8 @@ FilterResult blend(const Surface& in, const Surface& in2, svgdom::FeBlendElement
 				cb = Color (RGB) at a given pixel for image B - premultiplied 
 			*/
 			switch(mode){
-				case svgdom::FeBlendElement::Mode_e::NORMAL:
-					//cr = (1 - qa) * cb + ca
+				case svgdom::fe_blend_element::mode::normal:
+					// cr = (1 - qa) * cb + ca
 					*dp = std::uint8_t( ((1 - a01) * b02 + b01) * real(0xff));
 					++dp;
 					*dp = std::uint8_t( ((1 - a01) * g02 + g01) * real(0xff));
@@ -553,8 +553,8 @@ FilterResult blend(const Surface& in, const Surface& in2, svgdom::FeBlendElement
 					*dp = std::uint8_t( ((1 - a01) * r02 + r01) * real(0xff));
 					++dp;
 					break;
-				case svgdom::FeBlendElement::Mode_e::MULTIPLY:
-					//cr = (1-qa)*cb + (1-qb)*ca + ca*cb
+				case svgdom::fe_blend_element::mode::multiply:
+					// cr = (1-qa)*cb + (1-qb)*ca + ca*cb
 					*dp = std::uint8_t( ((1 - a01) * b02 + (1 - a02) * b01 + b01 * b02) * real(0xff));
 					++dp;
 					*dp = std::uint8_t( ((1 - a01) * g02 + (1 - a02) * g01 + g01 * g02) * real(0xff));
@@ -562,8 +562,8 @@ FilterResult blend(const Surface& in, const Surface& in2, svgdom::FeBlendElement
 					*dp = std::uint8_t( ((1 - a01) * r02 + (1 - a02) * r01 + r01 * r02) * real(0xff));
 					++dp;
 					break;
-				case svgdom::FeBlendElement::Mode_e::SCREEN:
-					//cr = cb + ca - ca * cb
+				case svgdom::fe_blend_element::mode::screen:
+					// cr = cb + ca - ca * cb
 					*dp = std::uint8_t( (b02 + b01 - b01 * b02) * real(0xff));
 					++dp;
 					*dp = std::uint8_t( (g02 + g01 - g01 * g02) * real(0xff));
@@ -571,8 +571,8 @@ FilterResult blend(const Surface& in, const Surface& in2, svgdom::FeBlendElement
 					*dp = std::uint8_t( (r02 + r01 - r01 * r02) * real(0xff));
 					++dp;
 					break;
-				case svgdom::FeBlendElement::Mode_e::DARKEN:
-					//cr = Min ((1 - qa) * cb + ca, (1 - qb) * ca + cb)
+				case svgdom::fe_blend_element::mode::darken:
+					// cr = Min ((1 - qa) * cb + ca, (1 - qb) * ca + cb)
 					*dp = std::uint8_t( std::min((1 - a01) * b02 + b01, (1 - a02) * b01 + b02) * real(0xff));
 					++dp;
 					*dp = std::uint8_t( std::min((1 - a01) * g02 + g01, (1 - a02) * g01 + g02) * real(0xff));
@@ -580,8 +580,8 @@ FilterResult blend(const Surface& in, const Surface& in2, svgdom::FeBlendElement
 					*dp = std::uint8_t( std::min((1 - a01) * r02 + r01, (1 - a02) * r01 + r02) * real(0xff));
 					++dp;
 					break;
-				case svgdom::FeBlendElement::Mode_e::LIGHTEN:
-					//cr = Max ((1 - qa) * cb + ca, (1 - qb) * ca + cb)
+				case svgdom::fe_blend_element::mode::lighten:
+					// cr = Max ((1 - qa) * cb + ca, (1 - qb) * ca + cb)
 					*dp = std::uint8_t( std::max((1 - a01) * b02 + b01, (1 - a02) * b01 + b02) * real(0xff));
 					++dp;
 					*dp = std::uint8_t( std::max((1 - a01) * g02 + g01, (1 - a02) * g01 + g02) * real(0xff));
@@ -605,7 +605,7 @@ FilterResult blend(const Surface& in, const Surface& in2, svgdom::FeBlendElement
 }
 }
 
-void FilterApplier::visit(const svgdom::FeBlendElement& e){
+void FilterApplier::visit(const svgdom::fe_blend_element& e){
 	auto s1 = this->getSource(e.in).intersectionSurface(this->filterRegion);
 	if(!s1.data){
 		return;
@@ -622,7 +622,7 @@ void FilterApplier::visit(const svgdom::FeBlendElement& e){
 }
 
 namespace{
-FilterResult composite(const Surface& in, const Surface& in2, const svgdom::FeCompositeElement& e){
+FilterResult composite(const Surface& in, const Surface& in2, const svgdom::fe_composite_element& e){
 //	TRACE(<< "in.width = " << in.width << " in2.width = " << in2.width << std::endl)
 	auto s1 = in.intersectionSurface(in2);
 	auto s2 = in2.intersectionSurface(in);
@@ -658,9 +658,9 @@ FilterResult composite(const Surface& in, const Surface& in2, const svgdom::FeCo
 			++sp2;
 			
 			switch(e.operator__){
-				case svgdom::FeCompositeElement::Operator_e::OVER:
-					//co = as * Cs + ab * Cb * (1 – as)
-					//ao = as + ab * (1 – as)
+				case svgdom::fe_composite_element::operator_::over:
+					// co = as * Cs + ab * Cb * (1 – as)
+					// ao = as + ab * (1 – as)
 					*dp = std::uint8_t( (r01 + r02 * (1 - a01)) * real(0xff));
 					++dp;
 					*dp = std::uint8_t( (g01 + g02 * (1 - a01)) * real(0xff));
@@ -670,9 +670,9 @@ FilterResult composite(const Surface& in, const Surface& in2, const svgdom::FeCo
 					*dp = std::uint8_t( (a01 + a02 * (1 - a01)) * real(0xff));
 					++dp;
 					break;
-				case svgdom::FeCompositeElement::Operator_e::IN:
-					//co = as * Cs * ab
-					//ao = as x ab
+				case svgdom::fe_composite_element::operator_::in:
+					// co = as * Cs * ab
+					// ao = as x ab
 					*dp = std::uint8_t( (r01 * a02) * real(0xff));
 					++dp;
 					*dp = std::uint8_t( (g01 * a02) * real(0xff));
@@ -682,9 +682,9 @@ FilterResult composite(const Surface& in, const Surface& in2, const svgdom::FeCo
 					*dp = std::uint8_t( (a01 * a02) * real(0xff));
 					++dp;
 					break;
-				case svgdom::FeCompositeElement::Operator_e::OUT:
-					//co = as * Cs * (1 – ab)
-					//ao = as * (1 – ab)
+				case svgdom::fe_composite_element::operator_::out:
+					// co = as * Cs * (1 – ab)
+					// ao = as * (1 – ab)
 					*dp = std::uint8_t( (r01 * (1 - a02)) * real(0xff));
 					++dp;
 					*dp = std::uint8_t( (g01 * (1 - a02)) * real(0xff));
@@ -694,9 +694,9 @@ FilterResult composite(const Surface& in, const Surface& in2, const svgdom::FeCo
 					*dp = std::uint8_t( (a01 * (1 - a02)) * real(0xff));
 					++dp;
 					break;
-				case svgdom::FeCompositeElement::Operator_e::ATOP:
-					//co = as * Cs * ab + ab * Cb * (1 – as)
-					//ao = as * ab + ab * (1 – as)
+				case svgdom::fe_composite_element::operator_::atop:
+					// co = as * Cs * ab + ab * Cb * (1 – as)
+					// ao = as * ab + ab * (1 – as)
 					*dp = std::uint8_t( (r01 * a02 + r02 * (1 - a01)) * real(0xff));
 					++dp;
 					*dp = std::uint8_t( (g01 * a02 + g02 * (1 - a01)) * real(0xff));
@@ -706,9 +706,9 @@ FilterResult composite(const Surface& in, const Surface& in2, const svgdom::FeCo
 					*dp = std::uint8_t( (a01 * a02 + a02 * (1 - a01)) * real(0xff));
 					++dp;
 					break;
-				case svgdom::FeCompositeElement::Operator_e::XOR:
-					//co = as * Cs * (1 - ab) + ab * Cb * (1 – as)
-					//ao = as * (1 - ab) + ab * (1 – as)
+				case svgdom::fe_composite_element::operator_::xor_:
+					// co = as * Cs * (1 - ab) + ab * Cb * (1 – as)
+					// ao = as * (1 - ab) + ab * (1 – as)
 					*dp = std::uint8_t( (r01 * (1 - a02) + r02 * (1 - a01)) * real(0xff));
 					++dp;
 					*dp = std::uint8_t( (g01 * (1 - a02) + g02 * (1 - a01)) * real(0xff));
@@ -718,8 +718,8 @@ FilterResult composite(const Surface& in, const Surface& in2, const svgdom::FeCo
 					*dp = std::uint8_t( (a01 * (1 - a02) + a02 * (1 - a01)) * real(0xff));
 					++dp;
 					break;
-				case svgdom::FeCompositeElement::Operator_e::ARITHMETIC:
-					//result = k1*i1*i2 + k2*i1 + k3*i2 + k4
+				case svgdom::fe_composite_element::operator_::arithmetic:
+					// result = k1*i1*i2 + k2*i1 + k3*i2 + k4
 					*dp = std::uint8_t( std::min(e.k1 * r01 * r02 + e.k2 * r01 + e.k3 * r02 + e.k4, real(1)) * real(0xff));
 					++dp;
 					*dp = std::uint8_t( std::min(e.k1 * g01 * g02 + e.k2 * g01 + e.k3 * g02 + e.k4, real(1)) * real(0xff));
@@ -741,7 +741,7 @@ FilterResult composite(const Surface& in, const Surface& in2, const svgdom::FeCo
 }
 }
 
-void FilterApplier::visit(const svgdom::FeCompositeElement& e){
+void FilterApplier::visit(const svgdom::fe_composite_element& e){
 	auto s1 = this->getSource(e.in).intersectionSurface(this->filterRegion);
 	if(!s1.data){
 		return;
@@ -752,7 +752,7 @@ void FilterApplier::visit(const svgdom::FeCompositeElement& e){
 		return;
 	}
 	
-	//TODO: set filter sub-region
+	// TODO: set filter sub-region
 	
 	this->setResult(e.result, composite(s1, s2, e));
 }
