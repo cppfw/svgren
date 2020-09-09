@@ -25,19 +25,19 @@ void cairoRelQuadraticCurveTo(cairo_t *cr, double x1, double y1, double x, doubl
 
 void cairoQuadraticCurveTo(cairo_t *cr, double x1, double y1, double x, double y);
 
-//convert degrees to radians
+// convert degrees to radians
 template <class T> T degToRad(T deg){
 	return deg * utki::pi<T>() / T(180);
 }
 
-//Rotate a point by an angle around the origin point.
+// Rotate a point by an angle around the origin point.
 template <class T> std::array<T, 2> rotate(T x, T y, T angle){
 	using std::cos;
 	using std::sin;
     return {{x * cos(angle) - y * sin(angle), y * cos(angle) + x * sin(angle)}};
 }
 
-//Return angle between x axis and point knowing given center.
+// Return angle between x axis and point knowing given center.
 template <class T> T pointAngle(T cx, T cy, T px, T py){
 	using std::atan2;
     return atan2(py - cy, px - cx);
@@ -57,7 +57,6 @@ public:
 	CairoContextSaveRestore(cairo_t* cr);
 	~CairoContextSaveRestore()noexcept;
 };
-
 
 Surface getSubSurface(cairo_t* cr, const CanvasRegion& region = CanvasRegion());
 

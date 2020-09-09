@@ -4,7 +4,7 @@
 
 using namespace svgren;
 
-void CanvasRegion::intersect(const CanvasRegion& r) {
+void CanvasRegion::intersect(const CanvasRegion& r){
 #ifdef DEBUG
 	auto oldWidth = this->width;
 #endif

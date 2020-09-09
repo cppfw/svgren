@@ -7,21 +7,23 @@
 
 #include "Renderer.hxx"
 #include "config.hpp"
+#include "canvas.hxx"
 
 using namespace svgren;
 	
 result svgren::render(const svgdom::svg_element& svg, const parameters& p){
 	result ret;
 	
-	auto wh = svg.get_dimensions(p.dpi);
+	auto svg_width = svg.get_dimensions(p.dpi);
 	
-	if(wh[0] <= 0 || wh[1] <= 0){
+	if(svg_width[0] <= 0 || svg_width[1] <= 0){
 		return ret;
 	}
 	
 	if(p.width_request == 0 && p.height_request == 0){
-		ret.width = unsigned(std::ceil(wh[0]));
-		ret.height = unsigned(std::ceil(wh[1]));
+		using std::ceil;
+		ret.width = unsigned(ceil(svg_width[0]));
+		ret.height = unsigned(ceil(svg_width[1]));
 	}else{
 		real aspectRatio = svg.aspect_ratio(p.dpi);
 		if (aspectRatio == 0){
@@ -46,9 +48,11 @@ result svgren::render(const svgdom::svg_element& svg, const parameters& p){
 	
 	ASSERT(ret.width != 0)
 	ASSERT(ret.height != 0)
-	ASSERT(wh[0] > 0)
-	ASSERT(wh[1] > 0)
+	ASSERT(svg_width[0] > 0)
+	ASSERT(svg_width[1] > 0)
 	
+	canvas cvs(ret.width, ret.height);
+
 	int stride = ret.width * sizeof(uint32_t);
 	
 //	TRACE(<< "width = " << ret.width << " height = " << ret.height << " stride = " << stride / 4 << std::endl)
@@ -64,7 +68,7 @@ result svgren::render(const svgdom::svg_element& svg, const parameters& p){
 	}
 	
 	cairo_surface_t* surface = cairo_image_surface_create_for_data(
-			reinterpret_cast<unsigned char*>(&*ret.pixels.begin()),
+			reinterpret_cast<unsigned char*>(ret.pixels.data()),
 			CAIRO_FORMAT_ARGB32,
 			ret.width,
 			ret.height,
@@ -87,10 +91,10 @@ result svgren::render(const svgdom::svg_element& svg, const parameters& p){
 		cairo_destroy(cr);
 	});
 	
-	cairo_scale(cr, real(ret.width) / wh[0], real(ret.height) / wh[1]);
+	cairo_scale(cr, real(ret.width) / svg_width[0], real(ret.height) / svg_width[1]);
 	ASSERT(cairo_status(cr) == CAIRO_STATUS_SUCCESS)
 	
-	Renderer r(cr, p.dpi, {{wh[0], wh[1]}}, svg);
+	Renderer r(cr, p.dpi, {{svg_width[0], svg_width[1]}}, svg);
 	
 	svg.accept(r);
 	
@@ -108,12 +112,13 @@ result svgren::render(const svgdom::svg_element& svg, const parameters& p){
 			continue;
 		}
 		if(a != 0){
+			using std::min;
 			uint32_t r = (c & 0xff) * 0xff / a;
-			r = std::min(r, uint32_t(0xff)); // clamp top
+			r = min(r, uint32_t(0xff)); // clamp top
 			uint32_t g = ((c >> 8) & 0xff) * 0xff / a;
-			g = std::min(g, uint32_t(0xff)); // clamp top
+			g = min(g, uint32_t(0xff)); // clamp top
 			uint32_t b = ((c >> 16) & 0xff) * 0xff / a;
-			b = std::min(b, uint32_t(0xff)); // clamp top
+			b = min(b, uint32_t(0xff)); // clamp top
 			c = ((a << 24) | (b << 16) | (g << 8) | r);
 		}else{
 			c = 0;

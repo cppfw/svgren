@@ -280,7 +280,7 @@ PushCairoGroupIfNeeded::~PushCairoGroupIfNeeded()noexcept{
 		}
 	}
 	
-	//restore background if it was pushed
+	// restore background if it was pushed
 	if(this->oldBackground.data){
 		this->renderer.background = this->oldBackground;
 	}

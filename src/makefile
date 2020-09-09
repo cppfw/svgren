@@ -33,11 +33,11 @@ endif
 this_ldlibs += `pkg-config --libs cairo` -lsvgdom -lstdc++ -lm
 
 ifeq ($(os),linux)
-    this_cxxflags += -fPIC # Since we are building shared library, we need Position-Independend Code
+    this_cxxflags += -fPIC # since we are building shared library, we need Position-Independend Code
 else ifeq ($(os),windows)
     this_cxxflags += `pkg-config --cflags cairo`
 else ifeq ($(os),macosx)
-    this_cxxflags += -stdlib=libc++ #this is needed to be able to use c++11 std lib
+    this_cxxflags += -stdlib=libc++ # this is needed to be able to use c++11 std lib
 endif
 
 $(eval $(prorab-build-lib))

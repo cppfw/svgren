@@ -36,9 +36,9 @@ public:
 	void visit(const svgdom::filter_element& e)override;
 	
 	void visit(const svgdom::fe_gaussian_blur_element& e)override;
-	void visit(const svgdom::fe_color_matrix_element& e) override;
-	void visit(const svgdom::fe_blend_element& e) override;
-	void visit(const svgdom::fe_composite_element& e) override;
+	void visit(const svgdom::fe_color_matrix_element& e)override;
+	void visit(const svgdom::fe_blend_element& e)override;
+	void visit(const svgdom::fe_composite_element& e)override;
 
 };
 

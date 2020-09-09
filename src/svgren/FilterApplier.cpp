@@ -518,7 +518,7 @@ FilterResult blend(const Surface& in, const Surface& in2, svgdom::fe_blend_eleme
 		auto sp2 = &s2.data[(y * s2.stride) * sizeof(std::uint32_t)];
 		auto dp = &ret.surface.data[(y * ret.surface.stride) * sizeof(std::uint32_t)];
 		for(unsigned x = 0; x != ret.surface.width; ++x){
-			//TODO: optimize by using integer arithmetics instead of floating point
+			// TODO: optimize by using integer arithmetics instead of floating point
 			auto b01 = real(*sp1) / real(0xff);
 			auto b02 = real(*sp2) / real(0xff);
 			++sp1;
@@ -554,7 +554,7 @@ FilterResult blend(const Surface& in, const Surface& in2, svgdom::fe_blend_eleme
 					++dp;
 					break;
 				case svgdom::fe_blend_element::mode::multiply:
-					// cr = (1-qa)*cb + (1-qb)*ca + ca*cb
+					// cr = (1 - qa) * cb + (1 - qb) * ca + ca * cb
 					*dp = std::uint8_t( ((1 - a01) * b02 + (1 - a02) * b01 + b01 * b02) * real(0xff));
 					++dp;
 					*dp = std::uint8_t( ((1 - a01) * g02 + (1 - a02) * g01 + g01 * g02) * real(0xff));
@@ -595,7 +595,7 @@ FilterResult blend(const Surface& in, const Surface& in2, svgdom::fe_blend_eleme
 					break;
 			}
 			
-			//qr = 1 - (1-qa)*(1-qb)
+			// qr = 1 - (1 - qa) * (1 - qb)
 			*dp = std::uint8_t((1 - (1 - a01)* (1 - a02)) * real(0xff));
 			++dp;
 		}
@@ -616,7 +616,7 @@ void FilterApplier::visit(const svgdom::fe_blend_element& e){
 		return;
 	}
 	
-	//TODO: set filter sub-region
+	// TODO: set filter sub-region
 	
 	this->setResult(e.result, blend(s1, s2, e.mode_));
 }
@@ -639,7 +639,7 @@ FilterResult composite(const Surface& in, const Surface& in2, const svgdom::fe_c
 		auto sp2 = &s2.data[(y * s2.stride) * sizeof(std::uint32_t)];
 		auto dp = &ret.surface.data[(y * ret.surface.stride) * sizeof(std::uint32_t)];
 		for(unsigned x = 0; x != ret.surface.width; ++x){
-			//TODO: optimize by using integer arithmetics instead of floating point
+			// TODO: optimize by using integer arithmetics instead of floating point
 			auto r01 = real(*sp1) / real(0xff);
 			auto r02 = real(*sp2) / real(0xff);
 			++sp1;
@@ -719,7 +719,7 @@ FilterResult composite(const Surface& in, const Surface& in2, const svgdom::fe_c
 					++dp;
 					break;
 				case svgdom::fe_composite_element::operator_::arithmetic:
-					// result = k1*i1*i2 + k2*i1 + k3*i2 + k4
+					// result = k1 * i1 * i2 + k2 * i1 + k3 * i2 + k4
 					*dp = std::uint8_t( std::min(e.k1 * r01 * r02 + e.k2 * r01 + e.k3 * r02 + e.k4, real(1)) * real(0xff));
 					++dp;
 					*dp = std::uint8_t( std::min(e.k1 * g01 * g02 + e.k2 * g01 + e.k3 * g02 + e.k4, real(1)) * real(0xff));
