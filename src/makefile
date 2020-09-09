@@ -4,6 +4,8 @@ this_name := svgren
 
 this_soname := $(shell cat $(d)soname.txt)
 
+this_out_dir := build
+
 this_srcs := $(call prorab-src-dir,.)
 
 this_cxxflags += -Wall # enable all warnings
