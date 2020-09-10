@@ -15,7 +15,7 @@
 #include <svgdom/style_stack.hpp>
 #include <svgdom/elements/aspect_ratioed.hpp>
 
-#include "config.hpp"
+#include "config.hxx"
 #include "Surface.hxx"
 #include "util.hxx"
 #include "canvas.hxx"
@@ -106,7 +106,7 @@ public:
 public:
 	Renderer(
 			svgren::canvas& canvas,
-			real dpi,
+			unsigned dpi,
 			std::array<real, 2> canvasSize,
 			const svgdom::svg_element& root
 		);

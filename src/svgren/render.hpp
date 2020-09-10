@@ -2,8 +2,6 @@
 
 #include <svgdom/dom.hpp>
 
-#include "config.hpp"
-
 namespace svgren{
 
 /**
@@ -29,7 +27,7 @@ struct parameters{
 	/**
 	 * @brief Dots per inch to use for unit conversion to pixels.
 	 */
-	real dpi = 96;
+	unsigned dpi = 96;
 };
 
 /**

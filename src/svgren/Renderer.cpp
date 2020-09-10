@@ -5,11 +5,11 @@
 #include <svgdom/elements/coordinate_units.hpp>
 
 #include "util.hxx"
+#include "config.hxx"
 
 #include "FilterApplier.hxx"
 
 using namespace svgren;
-
 
 real Renderer::length_to_px(const svgdom::length& l, unsigned coordIndex) const noexcept{
 	if (l.is_percent()) {
@@ -64,6 +64,7 @@ void Renderer::applyCairoTransformation(const svgdom::transformable::transformat
 			break;
 	}
 
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	// WORKAROUND: Due to cairo/pixman bug https://bugs.freedesktop.org/show_bug.cgi?id=102966
 	//             we have to limit the maximum value of matrix element by 16 bit integer (+-0x7fff).
 	using std::min;
@@ -79,6 +80,7 @@ void Renderer::applyCairoTransformation(const svgdom::transformable::transformat
 	matrix.x0 = max(-maxValue, min(matrix.x0, maxValue));
 	matrix.y0 = max(-maxValue, min(matrix.y0, maxValue));
 	cairo_set_matrix(this->cr, &matrix);
+#endif
 }
 
 void Renderer::applyTransformations(const decltype(svgdom::transformable::transformations)& transformations) {
@@ -592,7 +594,7 @@ void Renderer::renderSvgElement(
 
 Renderer::Renderer(
 		svgren::canvas& canvas,
-		real dpi,
+		unsigned dpi,
 		std::array<real, 2> canvasSize,
 		const svgdom::svg_element& root
 	) :
@@ -605,7 +607,6 @@ Renderer::Renderer(
 	this->deviceSpaceBoundingBox.setEmpty();
 	this->background = getSubSurface(this->cr);
 }
-
 
 void Renderer::visit(const svgdom::g_element& e){
 //	TRACE(<< "rendering GElement: id = " << e.id << std::endl)

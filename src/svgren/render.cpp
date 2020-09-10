@@ -6,7 +6,7 @@
 #include <utki/util.hpp>
 
 #include "Renderer.hxx"
-#include "config.hpp"
+#include "config.hxx"
 #include "canvas.hxx"
 
 using namespace svgren;

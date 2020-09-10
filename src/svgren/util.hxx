@@ -15,7 +15,7 @@
 #	include <cairo/cairo.h>
 #endif
 
-#include "config.hpp"
+#include "config.hxx"
 #include "Surface.hxx"
 #include "CanvasRegion.hxx"
 

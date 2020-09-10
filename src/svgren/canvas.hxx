@@ -7,12 +7,7 @@
 
 #include <utki/config.hpp>
 
-#include "config.hpp"
-
-#define SVGREN_BACKEND_CAIRO 1
-#define SVGREN_BACKEND_SKIA 2
-
-#define SVGREN_BACKEND SVGREN_BACKEND_CAIRO
+#include "config.hxx"
 
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 #	if M_OS == M_OS_WINDOWS || M_OS_NAME == M_OS_NAME_IOS
