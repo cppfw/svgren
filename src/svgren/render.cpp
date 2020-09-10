@@ -14,7 +14,7 @@ using namespace svgren;
 result svgren::render(const svgdom::svg_element& svg, const parameters& p){
 	result ret;
 	
-	auto svg_width = svg.get_dimensions(p.dpi);
+	auto svg_width = svg.get_dimensions(svgdom::real(p.dpi));
 	
 	if(svg_width[0] <= 0 || svg_width[1] <= 0){
 		return ret;
@@ -25,7 +25,7 @@ result svgren::render(const svgdom::svg_element& svg, const parameters& p){
 		ret.width = unsigned(ceil(svg_width[0]));
 		ret.height = unsigned(ceil(svg_width[1]));
 	}else{
-		real aspectRatio = svg.aspect_ratio(p.dpi);
+		real aspectRatio = svg.aspect_ratio(svgdom::real(p.dpi));
 		if (aspectRatio == 0){
 			return ret;
 		}

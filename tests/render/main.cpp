@@ -169,6 +169,11 @@ int main(int argc, char **argv){
 				p.height_request = max(int(winHeight) - 2, 0);
 				auto img = svgren::render(*dom, p);
 
+				// RGBA -> BGRA
+				for(auto &c : img.pixels){
+					c = (c & 0xff00ff00) | ((c << 16) & 0xff0000) | ((c >> 16) & 0xff);
+				}
+
 //				TRACE(<< "imWidth = " << imWidth << " imHeight = " << imHeight << " img.size() = " << img.size() << std::endl)
 				
 				auto ximage = XCreateImage(display, visual, 24, ZPixmap, 0, reinterpret_cast<char*>(&*img.pixels.begin()), img.width, img.height, 8, 0);

@@ -601,7 +601,7 @@ Renderer::Renderer(
 		canvas(canvas),
 		cr(canvas.cr),
 		finder(root),
-		dpi(dpi),
+		dpi(real(dpi)),
 		viewport(canvasSize)
 {
 	this->deviceSpaceBoundingBox.setEmpty();
@@ -1048,11 +1048,14 @@ void Renderer::visit(const svgdom::path_element& e) {
 			case svgdom::path_element::step::type::arc_abs:
 			case svgdom::path_element::step::type::arc_rel:
 				{
-					double x, y;
+					real x, y;
 					if (cairo_has_current_point(this->cr)) {
+						double xx, yy;
 						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-						cairo_get_current_point(this->cr, &x, &y);
+						cairo_get_current_point(this->cr, &xx, &yy);
 						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+						x = real(xx);
+						y = real(yy);
 					} else {
 						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 						x = 0;
@@ -1063,17 +1066,17 @@ void Renderer::visit(const svgdom::path_element& e) {
 						break;
 					}
 					ASSERT(s.rx > 0)
-					double radiiRatio = s.ry / s.rx;
+					real radiiRatio = s.ry / s.rx;
 
 					if (radiiRatio <= 0) {
 						break;
 					}
 
 					// cancel rotation of end point
-					double xe, ye;
+					real xe, ye;
 					{
-						double xx;
-						double yy;
+						real xx;
+						real yy;
 						if(s.type_ == svgdom::path_element::step::type::arc_abs){
 							xx = s.x - x;
 							yy = s.y - y;
@@ -1082,7 +1085,7 @@ void Renderer::visit(const svgdom::path_element& e) {
 							yy = s.y;
 						}
 
-						auto res = rotate(xx, yy, deg_to_rad(-double(s.x_axis_rotation)));
+						auto res = rotate(xx, yy, deg_to_rad(-real(s.x_axis_rotation)));
 						xe = res[0];
 						ye = res[1];
 					}
@@ -1090,7 +1093,7 @@ void Renderer::visit(const svgdom::path_element& e) {
 					ye /= radiiRatio;
 
 					// find the angle between the end point and the x axis
-					auto angle = pointAngle(double(0), double(0), xe, ye);
+					auto angle = pointAngle(real(0), real(0), xe, ye);
 
 					using std::sqrt;
 
@@ -1101,7 +1104,7 @@ void Renderer::visit(const svgdom::path_element& e) {
 					using std::max;
 
 					// update the x radius if it is too small
-					auto rx = max(double(s.rx), xe / 2);
+					auto rx = max(s.rx, xe / 2);
 
 					// find one circle center
 					auto xc = xe / 2;
@@ -1114,7 +1117,7 @@ void Renderer::visit(const svgdom::path_element& e) {
 
 					// put the second point and the center back to their positions
 					{
-						auto res = rotate(xe, double(0), angle);
+						auto res = rotate(xe, real(0), angle);
 						xe = res[0];
 						ye = res[1];
 					}
@@ -1124,7 +1127,7 @@ void Renderer::visit(const svgdom::path_element& e) {
 						yc = res[1];
 					}
 
-					auto angle1 = pointAngle(xc, yc, double(0), double(0));
+					auto angle1 = pointAngle(xc, yc, real(0), real(0));
 					auto angle2 = pointAngle(xc, yc, xe, ye);
 
 					CairoContextSaveRestore cairoMatrixPush1(this->cr);
