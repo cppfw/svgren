@@ -1,5 +1,7 @@
 #include "canvas.hxx"
 
+#include <algorithm>
+
 #include <utki/debug.hpp>
 
 using namespace svgren;
