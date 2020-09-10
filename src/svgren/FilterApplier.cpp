@@ -270,10 +270,10 @@ void FilterApplier::visit(const svgdom::filter_element& e){
 			case svgdom::coordinate_units::user_space_on_use:
 				{
 					double x1, y1, x2, y2;
-					x1 = this->r.lengthToPx(e.x, 0);
-					y1 = this->r.lengthToPx(e.y, 1);
-					x2 = x1 + this->r.lengthToPx(e.width, 0);
-					y2 = y1 + this->r.lengthToPx(e.height, 1);
+					x1 = this->r.length_to_px(e.x, 0);
+					y1 = this->r.length_to_px(e.y, 1);
+					x2 = x1 + this->r.length_to_px(e.width, 0);
+					y2 = y1 + this->r.length_to_px(e.height, 1);
 
 					std::array<std::array<double, 2>, 4> rectVertices = {{
 						{{x1 ,y1}},
@@ -463,7 +463,7 @@ void FilterApplier::visit(const svgdom::fe_color_matrix_element& e){
 				         |-0.787 +0.715+0.072|
 			*/
 			{
-				auto a = degToRad(real(e.values[0]));
+				auto a = deg_to_rad(real(e.values[0]));
 				auto sina = std::sin(a);
 				auto cosa = std::cos(a);
 				

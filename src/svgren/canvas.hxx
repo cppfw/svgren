@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <vector>
 #include <cstdint>
 #include <stdexcept>
@@ -58,6 +59,9 @@ public:
 	canvas(unsigned width, unsigned height);
 	~canvas();
 
+	void transform(const std::array<std::array<real, 3>, 2>& matrix);
+	void translate(real x, real y);
+	void rotate(real radians);
 	void scale(real x, real y);
 
 	std::vector<uint32_t> release();

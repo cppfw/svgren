@@ -50,7 +50,7 @@ public:
 	// blit surface to current cairo surface
 	void blit(const Surface& s);
 	
-	real lengthToPx(const svgdom::length& l, unsigned coordIndex = 0)const noexcept;
+	real length_to_px(const svgdom::length& l, unsigned coordIndex = 0)const noexcept;
 	
 	void applyCairoTransformation(const svgdom::transformable::transformation& t);
 	

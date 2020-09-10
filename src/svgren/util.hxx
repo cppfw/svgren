@@ -26,7 +26,7 @@ void cairoRelQuadraticCurveTo(cairo_t *cr, double x1, double y1, double x, doubl
 void cairoQuadraticCurveTo(cairo_t *cr, double x1, double y1, double x, double y);
 
 // convert degrees to radians
-template <class T> T degToRad(T deg){
+template <class T> T deg_to_rad(T deg){
 	return deg * utki::pi<T>() / T(180);
 }
 

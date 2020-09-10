@@ -33,13 +33,6 @@ canvas::~canvas(){
 #endif
 }
 
-void canvas::scale(real x, real y){
-#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	cairo_scale(this->cr, x, y);
-	ASSERT(cairo_status(cr) == CAIRO_STATUS_SUCCESS)
-#endif
-}
-
 std::vector<uint32_t> canvas::release(){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	for(auto &c : this->data){
@@ -67,4 +60,43 @@ std::vector<uint32_t> canvas::release(){
 #endif
 
 	return std::move(this->data);
+}
+
+void canvas::transform(const std::array<std::array<real, 3>, 2>& matrix){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	cairo_matrix_t m;
+	m.xx = matrix[0][0];
+	m.yx = matrix[1][0];
+	m.xy = matrix[0][1];
+	m.yy = matrix[1][1];
+	m.x0 = matrix[0][2];
+	m.y0 = matrix[1][2];
+	cairo_transform(this->cr, &m);
+	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo status = " << cairo_status_to_string(cairo_status(this->cr)))
+#endif
+}
+
+void canvas::translate(real x, real y){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	cairo_translate(this->cr, x, y);
+	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo status = " << cairo_status_to_string(cairo_status(this->cr)))
+#endif
+}
+
+void canvas::rotate(real radians){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	cairo_rotate(this->cr, radians);
+	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo status = " << cairo_status_to_string(cairo_status(this->cr)))
+#endif
+}
+
+void canvas::scale(real x, real y){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	if(x * y != 0){ // cairo does not allow non-invertible scaling
+		cairo_scale(this->cr, x, y);
+		ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo status = " << cairo_status_to_string(cairo_status(this->cr)))
+	}else{
+		TRACE(<< "WARNING: non-invertible scaling encountered" << std::endl)
+	}
+#endif
 }
