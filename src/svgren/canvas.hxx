@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <cstdint>
+#include <stdexcept>
 
 #include <utki/config.hpp>
 
@@ -23,25 +24,33 @@
 namespace svgren{
 
 class canvas{
-
-public:
 	std::vector<uint32_t> data;
+public:
 
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	struct cairo_surface_wrapper{
 		cairo_surface_t* surface;
 
-		cairo_surface_wrapper(unsigned width, unsigned height){
-			int stride = ret.width * sizeof(uint32_t);
+		cairo_surface_wrapper(unsigned width, unsigned height, uint32_t* buffer){
+			if(width == 0 || height == 0){
+				throw std::logic_error("svgren::canvas::canvas(): width or height argument is zero");
+			}
+			int stride = width * sizeof(uint32_t);
 			this->surface = cairo_image_surface_create_for_data(
-				reinterpret_cast<unsigned char*>(ret.pixels.data()),
+				reinterpret_cast<unsigned char*>(buffer),
 				CAIRO_FORMAT_ARGB32,
-				ret.width,
-				ret.height,
+				width,
+				height,
 				stride
 			);
+			if(!this->surface){
+				throw std::runtime_error("svgren::canvas::canvas(): could not create cairo surface");
+			}
 		}
-	}
+		~cairo_surface_wrapper(){
+			cairo_surface_destroy(this->surface);
+		}
+	} surface;
 
 	cairo_t* cr;
 #endif
@@ -49,6 +58,9 @@ public:
 	canvas(unsigned width, unsigned height);
 	~canvas();
 
+	void scale(real x, real y);
+
+	std::vector<uint32_t> release();
 };
 
 }

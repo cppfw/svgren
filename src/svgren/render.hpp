@@ -30,12 +30,6 @@ struct parameters{
 	 * @brief Dots per inch to use for unit conversion to pixels.
 	 */
 	real dpi = 96;
-	
-	/**
-	 * @brief Request output format as BRGA.
-	 * By default the output format is RGBA.
-	 */
-	bool bgra = false;
 };
 
 /**

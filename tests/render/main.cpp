@@ -164,7 +164,6 @@ int main(int argc, char **argv){
 				using std::max;
 				
 				svgren::parameters p;
-				p.bgra = true;
 				p.dpi = 96;
 				p.width_request = max(int(winWidth) - 2, 0);
 				p.height_request = max(int(winHeight) - 2, 0);

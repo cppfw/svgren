@@ -51,79 +51,15 @@ result svgren::render(const svgdom::svg_element& svg, const parameters& p){
 	ASSERT(svg_width[0] > 0)
 	ASSERT(svg_width[1] > 0)
 	
-	canvas cvs(ret.width, ret.height);
-
-	int stride = ret.width * sizeof(uint32_t);
+	svgren::canvas canvas(ret.width, ret.height);
 	
-//	TRACE(<< "width = " << ret.width << " height = " << ret.height << " stride = " << stride / 4 << std::endl)
+	canvas.scale(real(ret.width) / svg_width[0], real(ret.height) / svg_width[1]);
 	
-	ret.pixels.resize((stride / sizeof(uint32_t)) * ret.height);
-	
-	for(auto& c : ret.pixels){
-#ifdef M_SVGREN_BACKGROUND
-		c = M_SVGREN_BACKGROUND;
-#else
-		c = 0;
-#endif
-	}
-	
-	cairo_surface_t* surface = cairo_image_surface_create_for_data(
-			reinterpret_cast<unsigned char*>(ret.pixels.data()),
-			CAIRO_FORMAT_ARGB32,
-			ret.width,
-			ret.height,
-			stride
-		);
-	if(!surface){
-		ret.pixels.clear();
-		return ret;
-	}
-	utki::scope_exit scope_exit_surface([&surface](){
-		cairo_surface_destroy(surface);
-	});
-	
-	cairo_t* cr = cairo_create(surface);
-	if(!cr){
-		ret.pixels.clear();
-		return ret;
-	}
-	utki::scope_exit scope_exit_context([&cr](){
-		cairo_destroy(cr);
-	});
-	
-	cairo_scale(cr, real(ret.width) / svg_width[0], real(ret.height) / svg_width[1]);
-	ASSERT(cairo_status(cr) == CAIRO_STATUS_SUCCESS)
-	
-	Renderer r(cr, p.dpi, {{svg_width[0], svg_width[1]}}, svg);
+	Renderer r(canvas.cr, p.dpi, {{svg_width[0], svg_width[1]}}, svg);
 	
 	svg.accept(r);
 	
-	// swap Red and Blue
-	if(!p.bgra){
-		for(auto& c : ret.pixels){
-			c = (c & 0xff00ff00) | ((c << 16) & 0xff0000) | ((c >> 16) & 0xff);
-		}
-	}
-	
-	// unpremultiply alpha
-	for(auto &c : ret.pixels){
-		uint32_t a = (c >> 24);
-		if(a == 0xff){
-			continue;
-		}
-		if(a != 0){
-			using std::min;
-			uint32_t r = (c & 0xff) * 0xff / a;
-			r = min(r, uint32_t(0xff)); // clamp top
-			uint32_t g = ((c >> 8) & 0xff) * 0xff / a;
-			g = min(g, uint32_t(0xff)); // clamp top
-			uint32_t b = ((c >> 16) & 0xff) * 0xff / a;
-			b = min(b, uint32_t(0xff)); // clamp top
-			c = ((a << 24) | (b << 16) | (g << 8) | r);
-		}else{
-			c = 0;
-		}
-	}
-	
+	ret.pixels = canvas.release();
+
 	return ret;
 }
