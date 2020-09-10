@@ -568,16 +568,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\svgren\CanvasRegion.cpp" />
-    <ClCompile Include="..\..\src\svgren\FilterApplier.cpp" />
-    <ClCompile Include="..\..\src\svgren\render.cpp" />
-    <ClCompile Include="..\..\src\svgren\Renderer.cpp" />
-    <ClCompile Include="..\..\src\svgren\Surface.cpp" />
-    <ClCompile Include="..\..\src\svgren\util.cpp" />
+    <ClCompile Include="..\..\src\**\*.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\svgren\config.hpp" />
-    <ClInclude Include="..\..\src\svgren\render.hpp" />
+    <ClInclude Include="..\..\src\**\*.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
