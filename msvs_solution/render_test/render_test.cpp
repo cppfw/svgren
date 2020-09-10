@@ -36,7 +36,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	ASSERT_ALWAYS(dom)
 
 	svgren::parameters params;
-	params.bgra = true;
 	auto res = svgren::render(*dom, params);
 
 	bmp = CreateBitmap(res.width, res.height, 1, 32, res.pixels.data());
