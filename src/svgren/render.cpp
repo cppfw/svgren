@@ -30,13 +30,15 @@ result svgren::render(const svgdom::svg_element& svg, const parameters& p){
 			return ret;
 		}
 		ASSERT(aspectRatio > 0)
+		using std::round;
+		using std::max;
 		if(p.width_request == 0 && p.height_request != 0){
-			ret.width = unsigned(std::round(aspectRatio * real(p.height_request)));
-			ret.width = std::max(ret.width, unsigned(1)); // we don't want zero width
+			ret.width = unsigned(round(aspectRatio * real(p.height_request)));
+			ret.width = max(ret.width, unsigned(1)); // we don't want zero width
 			ret.height = p.height_request;
 		}else if(p.width_request != 0 && p.height_request == 0){
-			ret.height = unsigned(std::round(real(p.width_request) / aspectRatio));
-			ret.height = std::max(ret.height, unsigned(1)); // we don't want zero height
+			ret.height = unsigned(round(real(p.width_request) / aspectRatio));
+			ret.height = max(ret.height, unsigned(1)); // we don't want zero height
 			ret.width = p.width_request;
 		}else{
 			ASSERT(p.width_request != 0)
@@ -55,7 +57,7 @@ result svgren::render(const svgdom::svg_element& svg, const parameters& p){
 	
 	canvas.scale(real(ret.width) / svg_width[0], real(ret.height) / svg_width[1]);
 	
-	Renderer r(canvas.cr, p.dpi, {{svg_width[0], svg_width[1]}}, svg);
+	Renderer r(canvas, p.dpi, {{svg_width[0], svg_width[1]}}, svg);
 	
 	svg.accept(r);
 	

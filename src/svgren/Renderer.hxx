@@ -18,11 +18,14 @@
 #include "config.hpp"
 #include "Surface.hxx"
 #include "util.hxx"
+#include "canvas.hxx"
 
 namespace svgren{
 
 class Renderer : public svgdom::const_visitor{
 public:
+	svgren::canvas& canvas;
+
 	cairo_t* cr;
 	
 	svgdom::finder finder;
@@ -102,7 +105,7 @@ public:
 	
 public:
 	Renderer(
-			cairo_t* cr,
+			svgren::canvas& canvas,
 			real dpi,
 			std::array<real, 2> canvasSize,
 			const svgdom::svg_element& root

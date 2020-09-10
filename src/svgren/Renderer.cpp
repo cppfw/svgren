@@ -643,12 +643,13 @@ void Renderer::renderSvgElement(
 }
 
 Renderer::Renderer(
-		cairo_t* cr,
+		svgren::canvas& canvas,
 		real dpi,
 		std::array<real, 2> canvasSize,
 		const svgdom::svg_element& root
 	) :
-		cr(cr),
+		canvas(canvas),
+		cr(canvas.cr),
 		finder(root),
 		dpi(dpi),
 		viewport(canvasSize)
