@@ -1085,7 +1085,7 @@ void Renderer::visit(const svgdom::path_element& e) {
 							yy = s.y;
 						}
 
-						auto res = rotate(xx, yy, deg_to_rad(-real(s.x_axis_rotation)));
+						auto res = rotate_vector(xx, yy, deg_to_rad(-real(s.x_axis_rotation)));
 						xe = res[0];
 						ye = res[1];
 					}
@@ -1117,12 +1117,12 @@ void Renderer::visit(const svgdom::path_element& e) {
 
 					// put the second point and the center back to their positions
 					{
-						auto res = rotate(xe, real(0), angle);
+						auto res = rotate_vector(xe, real(0), angle);
 						xe = res[0];
 						ye = res[1];
 					}
 					{
-						auto res = rotate(xc, yc, angle);
+						auto res = rotate_vector(xc, yc, angle);
 						xc = res[0];
 						yc = res[1];
 					}

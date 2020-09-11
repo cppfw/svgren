@@ -30,8 +30,8 @@ template <class T> T deg_to_rad(T deg){
 	return deg * utki::pi<T>() / T(180);
 }
 
-// Rotate a point by an angle around the origin point.
-template <class T> std::array<T, 2> rotate(T x, T y, T angle){
+// Rotate a vector by an angle around the origin point.
+template <class T> std::array<T, 2> rotate_vector(T x, T y, T angle){
 	using std::cos;
 	using std::sin;
     return {{x * cos(angle) - y * sin(angle), y * cos(angle) + x * sin(angle)}};
