@@ -263,7 +263,7 @@ void Renderer::applyFilter(const std::string& id) {
 	this->blit(visitor.getLastResult());
 }
 
-void Renderer::setGradient(const std::string& id) {
+void Renderer::set_gradient(const std::string& id){
 	auto g = this->finder.find_by_id(id);
 	if(!g){
 		cairo_set_source_rgba(this->cr, 0, 0, 0, 0);
@@ -441,7 +441,7 @@ void Renderer::renderCurrentShape(bool isCairoGroupPushed){
 	ASSERT(fill)
 	if (!fill->is_none()) {
 		if (fill->is_url()) {
-			this->setGradient(fill->get_local_id_from_iri());
+			this->set_gradient(fill->get_local_id_from_iri());
 		} else {
 			svgdom::real fillOpacity = 1;
 			if (auto p = this->styleStack.get_style_property(svgdom::style_property::fill_opacity)){
@@ -513,7 +513,7 @@ void Renderer::renderCurrentShape(bool isCairoGroupPushed){
 		}
 
 		if(stroke->is_url()){
-			this->setGradient(stroke->get_local_id_from_iri());
+			this->set_gradient(stroke->get_local_id_from_iri());
 		}else{
 			svgdom::real strokeOpacity = 1;
 			if(auto p = this->styleStack.get_style_property(svgdom::style_property::stroke_opacity)){

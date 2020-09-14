@@ -58,7 +58,7 @@ public:
 	
 	void setCairoPatternSource(cairo_pattern_t& pat, const svgdom::gradient& g, const svgdom::style_stack& ss);
 	
-	void setGradient(const std::string& id);
+	void set_gradient(const std::string& id);
 	
 	void applyFilter(const std::string& id);
 	void applyFilter();

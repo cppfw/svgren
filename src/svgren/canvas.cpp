@@ -105,15 +105,14 @@ void canvas::set_fill_rule(canvas::fill_rule fr){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	cairo_fill_rule_t cfr;
 	switch (fr){
-	case fill_rule::even_odd:
-		cfr = CAIRO_FILL_RULE_EVEN_ODD;
-		break;
-	case fill_rule::winding:
-		cfr = CAIRO_FILL_RULE_WINDING;
-		break;
-	default:
-		ASSERT(false);
-		break;
+		default:
+			ASSERT(false);
+		case fill_rule::even_odd:
+			cfr = CAIRO_FILL_RULE_EVEN_ODD;
+			break;
+		case fill_rule::winding:
+			cfr = CAIRO_FILL_RULE_WINDING;
+			break;
 	}
 	cairo_set_fill_rule(this->cr, cfr);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
