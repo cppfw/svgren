@@ -59,6 +59,13 @@ public:
 	void rotate(real radians);
 	void scale(real x, real y);
 
+	enum class fill_rule{
+		even_odd,
+		winding
+	};
+
+	void set_fill_rule(fill_rule fr);
+
 	std::vector<uint32_t> release();
 };
 

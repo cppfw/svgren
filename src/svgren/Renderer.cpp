@@ -72,14 +72,14 @@ void Renderer::applyCairoTransformation(const svgdom::transformable::transformat
 	const double maxValue = double(0x7fff);
 
 	cairo_matrix_t matrix;
-	cairo_get_matrix(this->cr, &matrix);
+	cairo_get_matrix(this->canvas.cr, &matrix);
 	matrix.xx = max(-maxValue, min(matrix.xx, maxValue));
 	matrix.yx = max(-maxValue, min(matrix.yx, maxValue));
 	matrix.xy = max(-maxValue, min(matrix.xy, maxValue));
 	matrix.yy = max(-maxValue, min(matrix.yy, maxValue));
 	matrix.x0 = max(-maxValue, min(matrix.x0, maxValue));
 	matrix.y0 = max(-maxValue, min(matrix.y0, maxValue));
-	cairo_set_matrix(this->cr, &matrix);
+	cairo_set_matrix(this->canvas.cr, &matrix);
 #endif
 }
 
@@ -398,26 +398,23 @@ void Renderer::updateCurBoundingBox() {
 	}
 }
 
-void Renderer::renderCurrentShape(bool isCairoGroupPushed) {
+void Renderer::renderCurrentShape(bool isCairoGroupPushed){
 	this->updateCurBoundingBox();
 
-	if (auto p = this->styleStack.get_style_property(svgdom::style_property::fill_rule)) {
+	if(auto p = this->styleStack.get_style_property(svgdom::style_property::fill_rule)){
 		switch (p->fill_rule) {
 			default:
 				ASSERT(false)
 				break;
 			case svgdom::fill_rule::evenodd:
-				cairo_set_fill_rule(this->cr, CAIRO_FILL_RULE_EVEN_ODD);
-				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+				this->canvas.set_fill_rule(canvas::fill_rule::even_odd);
 				break;
 			case svgdom::fill_rule::nonzero:
-				cairo_set_fill_rule(this->cr, CAIRO_FILL_RULE_WINDING);
-				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+				this->canvas.set_fill_rule(canvas::fill_rule::winding);
 				break;
 		}
-	} else {
-		cairo_set_fill_rule(this->cr, CAIRO_FILL_RULE_WINDING);
-		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+	}else{
+		this->canvas.set_fill_rule(canvas::fill_rule::winding);
 	}
 
 	svgdom::style_value blackFill;
