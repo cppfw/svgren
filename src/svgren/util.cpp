@@ -110,25 +110,25 @@ real svgren::percentLengthToFraction(const svgdom::length& l){
 	return 0;
 }
 
-void DeviceSpaceBoundingBox::setEmpty() {
+void DeviceSpaceBoundingBox::set_empty(){
 	this->left = std::numeric_limits<decltype(this->left)>::max();
 	this->top = std::numeric_limits<decltype(this->top)>::max();
 	this->right = std::numeric_limits<decltype(this->right)>::min();
 	this->bottom = std::numeric_limits<decltype(this->bottom)>::min();
 }
 
-bool DeviceSpaceBoundingBox::isEmpty() const noexcept{
+bool DeviceSpaceBoundingBox::is_empty()const noexcept{
 	return this->right - this->left < 0;
 }
 
-void DeviceSpaceBoundingBox::merge(const DeviceSpaceBoundingBox& bb) {
+void DeviceSpaceBoundingBox::merge(const DeviceSpaceBoundingBox& bb){
 	this->left = std::min(this->left, bb.left);
 	this->top = std::min(this->top, bb.top);
 	this->right = std::max(this->right, bb.right);
 	this->bottom = std::max(this->bottom, bb.bottom);
 }
 
-real DeviceSpaceBoundingBox::width() const noexcept{
+real DeviceSpaceBoundingBox::width()const noexcept{
 	auto w = this->right - this->left;
 	return std::max(w, decltype(w)(0));
 }
@@ -142,7 +142,7 @@ DeviceSpaceBoundingBoxPush::DeviceSpaceBoundingBoxPush(Renderer& r) :
 		r(r),
 		oldBb(r.deviceSpaceBoundingBox)
 {
-	this->r.deviceSpaceBoundingBox.setEmpty();
+	this->r.deviceSpaceBoundingBox.set_empty();
 }
 
 DeviceSpaceBoundingBoxPush::~DeviceSpaceBoundingBoxPush() noexcept{
@@ -160,7 +160,6 @@ ViewportPush::ViewportPush(Renderer& r, const decltype(oldViewport)& viewport) :
 ViewportPush::~ViewportPush() noexcept{
 	this->r.viewport = this->oldViewport;
 }
-
 
 PushCairoGroupIfNeeded::PushCairoGroupIfNeeded(Renderer& renderer, bool isContainer) :
 		renderer(renderer)

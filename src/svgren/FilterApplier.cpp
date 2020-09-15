@@ -10,7 +10,6 @@
 
 using namespace svgren;
 
-
 namespace{
 void boxBlurHorizontal(
 		uint8_t* dst,
@@ -114,7 +113,6 @@ FilterResult allocateResult(const Surface& src){
 }
 }
 
-
 namespace{
 FilterResult cairoImageSurfaceBlur(const Surface& src, std::array<real, 2> stdDeviation){
 	//NOTE: see https://www.w3.org/TR/SVG/filters.html#feGaussianBlurElement for Gaussian Blur approximation algorithm.
@@ -192,11 +190,9 @@ FilterResult cairoImageSurfaceBlur(const Surface& src, std::array<real, 2> stdDe
 }
 }
 
-
 Surface FilterApplier::getSourceGraphic() {
 	return getSubSurface(this->r.cr, this->filterRegion);
 }
-
 
 void FilterApplier::setResult(const std::string& name, FilterResult&& result) {
 	this->results[name] = std::move(result);
@@ -248,7 +244,6 @@ Surface FilterApplier::getLastResult(){
 	return this->lastResult->surface;
 }
 
-
 void FilterApplier::visit(const svgdom::filter_element& e){
 	this->primitiveUnits = e.primitive_units;
 	
@@ -288,7 +283,7 @@ void FilterApplier::visit(const svgdom::filter_element& e){
 					}};
 
 					DeviceSpaceBoundingBox frBb;
-					frBb.setEmpty();
+					frBb.set_empty();
 
 					for(auto& vertex : rectVertices){
 						vertex = this->r.canvas.matrix_mul(vertex);
@@ -509,7 +504,6 @@ void FilterApplier::visit(const svgdom::fe_color_matrix_element& e){
 	
 	this->setResult(e.result, colorMatrix(s, m));
 }
-
 
 namespace{
 FilterResult blend(const Surface& in, const Surface& in2, svgdom::fe_blend_element::mode mode){

@@ -67,8 +67,8 @@ void appendLuminanceToAlpha(Surface s);
 struct DeviceSpaceBoundingBox{
 	real left, top, right, bottom;
 	
-	void setEmpty();
-	bool isEmpty()const noexcept;
+	void set_empty();
+	bool is_empty()const noexcept;
 	
 	void merge(const DeviceSpaceBoundingBox& bb);
 	

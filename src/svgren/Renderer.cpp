@@ -596,7 +596,7 @@ Renderer::Renderer(
 		dpi(real(dpi)),
 		viewport(canvasSize)
 {
-	this->deviceSpaceBoundingBox.setEmpty();
+	this->deviceSpaceBoundingBox.set_empty();
 	this->background = getSubSurface(this->cr);
 }
 
