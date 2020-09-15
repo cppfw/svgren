@@ -380,32 +380,31 @@ FilterResult color_matrix(const Surface& s, const r4::matrix4<real>& m, const r4
 				bb = uint32_t(bb) * uint32_t(0xff) / uint32_t(aa);
 			}
 			
-			r4::vector4<real> c = {
-				real(rr) / real(0xff),
-				real(gg) / real(0xff),
-				real(bb) / real(0xff),
-				real(aa) / real(0xff)
-			};
+			r4::vector4<real> c;
+			c.r() = real(rr) / real(0xff);
+			c.g() = real(gg) / real(0xff);
+			c.b() = real(bb) / real(0xff);
+			c.a() = real(aa) / real(0xff);
 			
-			ASSERT_INFO(real(0) <= c.x() && c.x() <= real(1), "r = " << c.x() << ", rr = " << rr)
-			ASSERT_INFO(real(0) <= c.y() && c.y() <= real(1), "g = " << c.y() << ", gg = " << gg)
-			ASSERT_INFO(real(0) <= c.z() && c.z() <= real(1), "b = " << c.z() << ", bb = " << bb)
-			ASSERT_INFO(real(0) <= c.w() && c.w() <= real(1), "a = " << c.w() << ", aa = " << aa)
+			ASSERT_INFO(real(0) <= c.r() && c.r() <= real(1), "r = " << c.r() << ", rr = " << rr)
+			ASSERT_INFO(real(0) <= c.g() && c.g() <= real(1), "g = " << c.g() << ", gg = " << gg)
+			ASSERT_INFO(real(0) <= c.b() && c.b() <= real(1), "b = " << c.b() << ", bb = " << bb)
+			ASSERT_INFO(real(0) <= c.a() && c.a() <= real(1), "a = " << c.a() << ", aa = " << aa)
 			
 			auto c1 = m * c + mc5;
 
 			// alpha can change, so always premultiply alpha back
-			c1.x() *= c1.w();
-			c1.y() *= c1.w();
-			c1.z() *= c1.w();
+			c1.r() *= c1.a();
+			c1.g() *= c1.a();
+			c1.b() *= c1.a();
 			
-			*dp = uint8_t(c1.z() * real(0xff));
+			*dp = uint8_t(c1.b() * real(0xff));
 			++dp;
-			*dp = uint8_t(c1.y() * real(0xff));
+			*dp = uint8_t(c1.g() * real(0xff));
 			++dp;
-			*dp = uint8_t(c1.x() * real(0xff));
+			*dp = uint8_t(c1.r() * real(0xff));
 			++dp;
-			*dp = uint8_t(c1.w() * real(0xff));
+			*dp = uint8_t(c1.a() * real(0xff));
 			++dp;
 		}
 	}
