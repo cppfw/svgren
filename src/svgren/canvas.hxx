@@ -68,6 +68,8 @@ public:
 
 	void set_fill_rule(fill_rule fr);
 
+	void set_source(real r, real g, real b, real a);
+
 	std::vector<uint32_t> release();
 };
 

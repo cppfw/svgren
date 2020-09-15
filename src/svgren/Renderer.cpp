@@ -266,8 +266,7 @@ void Renderer::applyFilter(const std::string& id) {
 void Renderer::set_gradient(const std::string& id){
 	auto g = this->finder.find_by_id(id);
 	if(!g){
-		cairo_set_source_rgba(this->cr, 0, 0, 0, 0);
-		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+		this->canvas.set_source(0, 0, 0, 0);
 		return;
 	}
 
@@ -344,15 +343,14 @@ void Renderer::set_gradient(const std::string& id){
 		}
 
 		void default_visit(const svgdom::element&)override{
-			cairo_set_source_rgba(this->r.cr, 0, 0, 0, 0);
-			ASSERT(cairo_status(this->r.cr) == CAIRO_STATUS_SUCCESS)
+			this->r.canvas.set_source(0, 0, 0, 0);
 		}
 	} visitor(*this, g->ss);
 
 	g->e.accept(visitor);
 }
 
-void Renderer::updateCurBoundingBox() {
+void Renderer::updateCurBoundingBox(){
 	double x1, y1, x2, y2;
 
 	// According to SVG spec https://www.w3.org/TR/SVG/coords.html#ObjectBoundingBox
@@ -449,8 +447,7 @@ void Renderer::renderCurrentShape(bool isCairoGroupPushed){
 			}
 
 			auto fillRgb = fill->get_rgb();
-			cairo_set_source_rgba(this->cr, fillRgb.r, fillRgb.g, fillRgb.b, fillOpacity * opacity);
-			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+			this->canvas.set_source(fillRgb.r, fillRgb.g, fillRgb.b, fillOpacity * opacity);
 		}
 
 		cairo_fill_preserve(this->cr);
@@ -521,8 +518,7 @@ void Renderer::renderCurrentShape(bool isCairoGroupPushed){
 			}
 
 			auto rgb = stroke->get_rgb();
-			cairo_set_source_rgba(this->cr, rgb.r, rgb.g, rgb.b, strokeOpacity * opacity);
-			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+			this->canvas.set_source(rgb.r, rgb.g, rgb.b, strokeOpacity * opacity);
 		}
 
 		cairo_stroke_preserve(this->cr);

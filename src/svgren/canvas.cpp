@@ -118,3 +118,10 @@ void canvas::set_fill_rule(canvas::fill_rule fr){
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #endif
 }
+
+void canvas::set_source(real r, real g, real b, real a){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	cairo_set_source_rgba(this->cr, double(r), double(g), double(b), double(a));
+	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+#endif
+}
