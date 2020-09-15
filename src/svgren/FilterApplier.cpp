@@ -303,10 +303,14 @@ void FilterApplier::visit(const svgdom::filter_element& e){
 				break;
 		}
 
-		this->filterRegion.x = unsigned(std::max(std::floor(frX), decltype(frX)(0)));
-		this->filterRegion.y = unsigned(std::max(std::floor(frY), decltype(frY)(0)));
-		this->filterRegion.width = unsigned(std::max(std::ceil(frWidth), decltype(frWidth)(0)));
-		this->filterRegion.height = unsigned(std::max(std::ceil(frHeight), decltype(frHeight)(0)));
+		using std::floor;
+		using std::ceil;
+		using std::max;
+
+		this->filterRegion.x = unsigned(max(floor(frX), decltype(frX)(0)));
+		this->filterRegion.y = unsigned(max(floor(frY), decltype(frY)(0)));
+		this->filterRegion.width = unsigned(max(ceil(frWidth), decltype(frWidth)(0)));
+		this->filterRegion.height = unsigned(max(ceil(frHeight), decltype(frHeight)(0)));
 	}
 	
 	this->relay_accept(e);
