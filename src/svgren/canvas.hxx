@@ -7,6 +7,8 @@
 
 #include <utki/config.hpp>
 
+#include <r4/matrix2.hpp>
+
 #include "config.hxx"
 
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
@@ -54,7 +56,7 @@ public:
 	canvas(unsigned width, unsigned height);
 	~canvas();
 
-	void transform(const std::array<std::array<real, 3>, 2>& matrix);
+	void transform(const r4::matrix2<real>& matrix);
 	void translate(real x, real y);
 	void rotate(real radians);
 	void scale(real x, real y);

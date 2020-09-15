@@ -62,7 +62,7 @@ std::vector<uint32_t> canvas::release(){
 	return std::move(this->data);
 }
 
-void canvas::transform(const std::array<std::array<real, 3>, 2>& matrix){
+void canvas::transform(const r4::matrix2<real>& matrix){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	cairo_matrix_t m;
 	m.xx = matrix[0][0];

@@ -27,10 +27,10 @@ void Renderer::applyCairoTransformation(const svgdom::transformable::transformat
 			this->canvas.translate(t.x, t.y);
 			break;
 		case svgdom::transformable::transformation::type::matrix:
-			this->canvas.transform({{
-					{{t.a, t.c, t.e}},
-					{{t.b, t.d, t.f}}
-				}});
+			this->canvas.transform({
+					{t.a, t.c, t.e},
+					{t.b, t.d, t.f}
+				});
 			break;
 		case svgdom::transformable::transformation::type::scale:
 //			TRACE(<< "scale transformation factors = (" << t.x << ", " << t.y << ")" << std::endl)
@@ -44,19 +44,19 @@ void Renderer::applyCairoTransformation(const svgdom::transformable::transformat
 		case svgdom::transformable::transformation::type::skewx:
 			{
 				using std::tan;
-				this->canvas.transform({{
-						{{ 1, tan(deg_to_rad(t.angle)), 0 }},
-						{{ 0, 1,                        0 }}
-					}});
+				this->canvas.transform({
+						{ 1, tan(deg_to_rad(t.angle)), 0 },
+						{ 0, 1,                        0 }
+					});
 			}
 			break;
 		case svgdom::transformable::transformation::type::skewy:
 			{
 				using std::tan;
-				this->canvas.transform({{
-						{{ 1,                        0, 0 }},
-						{{ tan(deg_to_rad(t.angle)), 1, 0}}
-					}});
+				this->canvas.transform({
+						{ 1,                        0, 0 },
+						{ tan(deg_to_rad(t.angle)), 1, 0 }
+					});
 			}
 			break;
 		default:
