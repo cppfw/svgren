@@ -374,7 +374,7 @@ FilterResult color_matrix(const Surface& s, const r4::matrix4<real>& m, const r4
 			++sp;
 			
 			if(aa != 0xff && aa != 0){
-				//unpremultiply alpha
+				// unpremultiply alpha
 				rr = uint32_t(rr) * uint32_t(0xff) / uint32_t(aa);
 				gg = uint32_t(gg) * uint32_t(0xff) / uint32_t(aa);
 				bb = uint32_t(bb) * uint32_t(0xff) / uint32_t(aa);
@@ -414,8 +414,8 @@ FilterResult color_matrix(const Surface& s, const r4::matrix4<real>& m, const r4
 }
 
 void FilterApplier::visit(const svgdom::fe_color_matrix_element& e){
-	r4::matrix4<real> m;
-	r4::vector4<real> mc5; // fifth column of the matrix
+	r4::matrix4<real> m; // 1st to 4th columns of the 5x4 matrix
+	r4::vector4<real> mc5; // fifth column of the 5x4 matrix
 	
 	switch(e.type_){
 		case svgdom::fe_color_matrix_element::type::matrix:
