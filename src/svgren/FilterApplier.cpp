@@ -465,9 +465,12 @@ void FilterApplier::visit(const svgdom::fe_color_matrix_element& e){
 				         |-0.787 +0.715+0.072|
 			*/
 			{
+				using std::sin;
+				using std::cos;
+				
 				auto a = deg_to_rad(real(e.values[0]));
-				auto sina = std::sin(a);
-				auto cosa = std::cos(a);
+				auto sina = sin(a);
+				auto cosa = cos(a);
 				
 				m = {{
 					{{ real(0.213) + cosa * real(0.787) - sina * real(0.213), real(0.715) - cosa * real(0.715) - sina * real(0.715), real(0.072) - cosa * real(0.072) + sina * real(0.928), real(0), real(0) }},
