@@ -540,7 +540,7 @@ FilterResult blend(const Surface& in, const Surface& in2, svgdom::fe_blend_eleme
 			auto a02 = real(*sp2) / real(0xff);
 			++sp1;
 			++sp2;
-			
+
 			/*
 				cr = Result color (RGB) - premultiplied 
 				qa = Opacity value at a given pixel for image A 
@@ -577,21 +577,23 @@ FilterResult blend(const Surface& in, const Surface& in2, svgdom::fe_blend_eleme
 					++dp;
 					break;
 				case svgdom::fe_blend_element::mode::darken:
+					using std::min;
 					// cr = Min ((1 - qa) * cb + ca, (1 - qb) * ca + cb)
-					*dp = uint8_t( std::min((1 - a01) * b02 + b01, (1 - a02) * b01 + b02) * real(0xff));
+					*dp = uint8_t( min((1 - a01) * b02 + b01, (1 - a02) * b01 + b02) * real(0xff));
 					++dp;
-					*dp = uint8_t( std::min((1 - a01) * g02 + g01, (1 - a02) * g01 + g02) * real(0xff));
+					*dp = uint8_t( min((1 - a01) * g02 + g01, (1 - a02) * g01 + g02) * real(0xff));
 					++dp;
-					*dp = uint8_t( std::min((1 - a01) * r02 + r01, (1 - a02) * r01 + r02) * real(0xff));
+					*dp = uint8_t( min((1 - a01) * r02 + r01, (1 - a02) * r01 + r02) * real(0xff));
 					++dp;
 					break;
 				case svgdom::fe_blend_element::mode::lighten:
+					using std::max;
 					// cr = Max ((1 - qa) * cb + ca, (1 - qb) * ca + cb)
-					*dp = uint8_t( std::max((1 - a01) * b02 + b01, (1 - a02) * b01 + b02) * real(0xff));
+					*dp = uint8_t( max((1 - a01) * b02 + b01, (1 - a02) * b01 + b02) * real(0xff));
 					++dp;
-					*dp = uint8_t( std::max((1 - a01) * g02 + g01, (1 - a02) * g01 + g02) * real(0xff));
+					*dp = uint8_t( max((1 - a01) * g02 + g01, (1 - a02) * g01 + g02) * real(0xff));
 					++dp;
-					*dp = uint8_t( std::max((1 - a01) * r02 + r01, (1 - a02) * r01 + r02) * real(0xff));
+					*dp = uint8_t( max((1 - a01) * r02 + r01, (1 - a02) * r01 + r02) * real(0xff));
 					++dp;
 					break;
 				default:
