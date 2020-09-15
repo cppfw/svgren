@@ -125,3 +125,35 @@ void canvas::set_source(real r, real g, real b, real a){
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #endif
 }
+
+r4::vector2<real> canvas::matrix_mul(const r4::vector2<real>& v){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	double x = v.x();
+	double y = v.y();
+	cairo_user_to_device(this->cr, &x, &y);
+	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+	return r4::vector2<real>(x, y);
+#endif
+}
+
+r4::rectangle<real> canvas::get_shape_bounding_box()const{
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	double x1, y1, x2, y2;
+
+	// According to SVG spec https://www.w3.org/TR/SVG/coords.html#ObjectBoundingBox
+	// "The bounding box is computed exclusive of any values for clipping, masking, filter effects, opacity and stroke-width"
+	cairo_path_extents(
+			this->cr,
+			&x1,
+			&y1,
+			&x2,
+			&y2
+		);
+	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+
+	return r4::rectangle<real>{
+			{real(x1), real(y1)},
+			{real(x2 - x1), real(y2 - y1)}
+		};
+#endif
+}

@@ -8,6 +8,7 @@
 #include <utki/config.hpp>
 
 #include <r4/matrix2.hpp>
+#include <r4/rectangle.hpp>
 
 #include "config.hxx"
 
@@ -69,6 +70,10 @@ public:
 	void set_fill_rule(fill_rule fr);
 
 	void set_source(real r, real g, real b, real a);
+
+	r4::vector2<real> matrix_mul(const r4::vector2<real>& v);
+
+	r4::rectangle<real> get_shape_bounding_box()const;
 
 	std::vector<uint32_t> release();
 };

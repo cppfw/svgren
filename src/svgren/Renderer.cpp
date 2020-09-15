@@ -364,10 +364,10 @@ void Renderer::updateCurBoundingBox(){
 		);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 
-	this->userSpaceShapeBoundingBoxPos[0] = svgren::real(x1);
-	this->userSpaceShapeBoundingBoxPos[1] = svgren::real(y1);
-	this->userSpaceShapeBoundingBoxDim[0] = svgren::real(x2 - x1);
-	this->userSpaceShapeBoundingBoxDim[1] = svgren::real(y2 - y1);
+	this->userSpaceShapeBoundingBoxPos[0] = real(x1);
+	this->userSpaceShapeBoundingBoxPos[1] = real(y1);
+	this->userSpaceShapeBoundingBoxDim[0] = real(x2 - x1);
+	this->userSpaceShapeBoundingBoxDim[1] = real(y2 - y1);
 
 	if(this->userSpaceShapeBoundingBoxDim[0] == 0){
 		// empty path
@@ -375,16 +375,15 @@ void Renderer::updateCurBoundingBox(){
 	}
 
 	// set device space bounding box
-	std::array<std::array<double, 2>, 4> rectVertices = {{
-		{{x1 ,y1}},
-		{{x2, y2}},
-		{{x1, y2}},
-		{{x2, y1}}
+	std::array<r4::vector2<real>, 4> rectVertices = {{
+		{real(x1), real(y1)}, // TODO: remove casting to real
+		{real(x2), real(y2)},
+		{real(x1), real(y2)},
+		{real(x2), real(y1)}
 	}};
 
 	for(auto& vertex : rectVertices){
-		cairo_user_to_device(this->cr, &vertex[0], &vertex[1]);
-		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+		vertex = this->canvas.matrix_mul(vertex);
 
 		DeviceSpaceBoundingBox bb;
 		bb.left = decltype(bb.left)(vertex[0]);

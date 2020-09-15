@@ -269,25 +269,23 @@ void FilterApplier::visit(const svgdom::filter_element& e){
 				break;
 			case svgdom::coordinate_units::user_space_on_use:
 				{
-					double x1, y1, x2, y2;
-					x1 = this->r.length_to_px(e.x, 0);
-					y1 = this->r.length_to_px(e.y, 1);
-					x2 = x1 + this->r.length_to_px(e.width, 0);
-					y2 = y1 + this->r.length_to_px(e.height, 1);
+					auto x1 = this->r.length_to_px(e.x, 0);
+					auto y1 = this->r.length_to_px(e.y, 1);
+					auto x2 = x1 + this->r.length_to_px(e.width, 0);
+					auto y2 = y1 + this->r.length_to_px(e.height, 1);
 
-					std::array<std::array<double, 2>, 4> rectVertices = {{
-						{{x1 ,y1}},
-						{{x2, y2}},
-						{{x1, y2}},
-						{{x2, y1}}
+					std::array<r4::vector2<real>, 4> rectVertices = {{
+						{x1, y1},
+						{x2, y2},
+						{x1, y2},
+						{x2, y1}
 					}};
 
 					DeviceSpaceBoundingBox frBb;
 					frBb.setEmpty();
 
 					for(auto& vertex : rectVertices){
-						cairo_user_to_device(this->r.cr, &vertex[0], &vertex[1]);
-						ASSERT(cairo_status(this->r.cr) == CAIRO_STATUS_SUCCESS)
+						vertex = this->r.canvas.matrix_mul(vertex);
 
 						DeviceSpaceBoundingBox bb;
 						bb.left = decltype(bb.left)(vertex[0]);
