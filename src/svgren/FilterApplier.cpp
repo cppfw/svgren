@@ -6,6 +6,8 @@
 #include <utki/debug.hpp>
 #include <utki/math.hpp>
 
+#include <r4/matrix4.hpp>
+
 #include "util.hxx"
 
 using namespace svgren;
@@ -351,7 +353,7 @@ void FilterApplier::visit(const svgdom::fe_gaussian_blur_element& e){
 }
 
 namespace{
-FilterResult colorMatrix(const Surface& s, const std::array<std::array<real, 5>, 4>& m){
+FilterResult color_matrix(const Surface& s, const r4::matrix4<real>& m, const r4::vector4<real>& mc5){
 //	TRACE(<< "colorMatrix(): s.width = " << s.width << " s.height = " << s.height << std::endl)
 	FilterResult ret = allocateResult(s);
 	
@@ -378,33 +380,32 @@ FilterResult colorMatrix(const Surface& s, const std::array<std::array<real, 5>,
 				bb = uint32_t(bb) * uint32_t(0xff) / uint32_t(aa);
 			}
 			
-			auto b = real(bb) / real(0xff);
-			auto g = real(gg) / real(0xff);
-			auto r = real(rr) / real(0xff);
-			auto a = real(aa) / real(0xff);
+			r4::vector4<real> c = {
+				real(rr) / real(0xff),
+				real(gg) / real(0xff),
+				real(bb) / real(0xff),
+				real(aa) / real(0xff)
+			};
 			
-			ASSERT_INFO(real(0) <= r && r <= real(1), "r = " << r << ", rr = " << rr)
-			ASSERT_INFO(real(0) <= g && g <= real(1), "g = " << g << ", gg = " << gg)
-			ASSERT_INFO(real(0) <= b && b <= real(1), "b = " << b << ", bb = " << bb)
-			ASSERT_INFO(real(0) <= a && a <= real(1), "a = " << a << ", aa = " << aa)
+			ASSERT_INFO(real(0) <= c.x() && c.x() <= real(1), "r = " << c.x() << ", rr = " << rr)
+			ASSERT_INFO(real(0) <= c.y() && c.y() <= real(1), "g = " << c.y() << ", gg = " << gg)
+			ASSERT_INFO(real(0) <= c.z() && c.z() <= real(1), "b = " << c.z() << ", bb = " << bb)
+			ASSERT_INFO(real(0) <= c.w() && c.w() <= real(1), "a = " << c.w() << ", aa = " << aa)
 			
-			auto r1 = m[0][0] * r + m[0][1] * g + m[0][2] * b + m[0][3] * a + m[0][4];
-			auto g1 = m[1][0] * r + m[1][1] * g + m[1][2] * b + m[1][3] * a + m[1][4];
-			auto b1 = m[2][0] * r + m[2][1] * g + m[2][2] * b + m[2][3] * a + m[2][4];
-			auto a1 = m[3][0] * r + m[3][1] * g + m[3][2] * b + m[3][3] * a + m[3][4];
+			auto c1 = m * c + mc5;
+
+			// alpha can change, so always premultiply alpha back
+			c1.x() *= c1.w();
+			c1.y() *= c1.w();
+			c1.z() *= c1.w();
 			
-			//Alpha can change, so always premultiply alpha back
-			r1 *= a1;
-			g1 *= a1;
-			b1 *= a1;
-			
-			*dp = uint8_t(b1 * real(0xff));
+			*dp = uint8_t(c1.z() * real(0xff));
 			++dp;
-			*dp = uint8_t(g1 * real(0xff));
+			*dp = uint8_t(c1.y() * real(0xff));
 			++dp;
-			*dp = uint8_t(r1 * real(0xff));
+			*dp = uint8_t(c1.x() * real(0xff));
 			++dp;
-			*dp = uint8_t(a1 * real(0xff));
+			*dp = uint8_t(c1.w() * real(0xff));
 			++dp;
 		}
 	}
@@ -414,35 +415,41 @@ FilterResult colorMatrix(const Surface& s, const std::array<std::array<real, 5>,
 }
 
 void FilterApplier::visit(const svgdom::fe_color_matrix_element& e){
-	std::array<std::array<real, 5>, 4> m; // first index = row, second index = column
+	r4::matrix4<real> m;
+	r4::vector4<real> mc5; // fifth column of the matrix
 	
 	switch(e.type_){
 		case svgdom::fe_color_matrix_element::type::matrix:
 			for(unsigned i = 0, p = 0; i != m.size(); ++i){
-				for(unsigned j = 0; j != m[i].size(); ++j, ++p){
+				unsigned j = 0;
+				for(; j != m[i].size(); ++j, ++p){
 					ASSERT(p < e.values.size())
 					m[i][j] = e.values[p];
 //					TRACE(<< "m[" << i << "][" << j << "] = " << m[i][j] << std::endl)
 				}
+				ASSERT(p < e.values.size())
+				mc5[i] = e.values[p];
+				++p;
 			}
 			break;
 		case svgdom::fe_color_matrix_element::type::saturate:
 			/*
-				| R' |     |0.213+0.787s  0.715-0.715s  0.072-0.072s 0  0 |   | R |
-				| G' |     |0.213-0.213s  0.715+0.285s  0.072-0.072s 0  0 |   | G |
-				| B' |  =  |0.213-0.213s  0.715-0.715s  0.072+0.928s 0  0 | * | B |
-				| A' |     |           0            0             0  1  0 |   | A |
-				| 1  |     |           0            0             0  0  1 |   | 1 |
+				| R' |     | 0.213 +0.787s  0.715-0.715s  0.072-0.072s 0  0 |   | R |
+				| G' |     | 0.213 -0.213s  0.715+0.285s  0.072-0.072s 0  0 |   | G |
+				| B' |  =  | 0.213 -0.213s  0.715-0.715s  0.072+0.928s 0  0 | * | B |
+				| A' |     |             0             0             0 1  0 |   | A |
+				| 1  |     |             0             0             0 0  1 |   | 1 |
 			 */
 			{
 				auto s = real(e.values[0]);
 				
-				m = {{
-					{{ real(0.213) + real(0.787) * s, real(0.715) - real(0.715) * s, real(0.072) - real(0.072) * s, real(0), real(0)}},
-					{{ real(0.213) - real(0.213) * s, real(0.715) + real(0.285) * s, real(0.072) - real(0.072) * s, real(0), real(0)}},
-					{{ real(0.213) - real(0.213) * s, real(0.715) - real(0.715) * s, real(0.072) + real(0.928) * s, real(0), real(0)}},
-					{{ real(0),                       real(0),                       real(0),                       real(1), real(0)}}
-				}};
+				m = {
+					{ real(0.213) + real(0.787) * s, real(0.715) - real(0.715) * s, real(0.072) - real(0.072) * s, real(0)},
+					{ real(0.213) - real(0.213) * s, real(0.715) + real(0.285) * s, real(0.072) - real(0.072) * s, real(0)},
+					{ real(0.213) - real(0.213) * s, real(0.715) - real(0.715) * s, real(0.072) + real(0.928) * s, real(0)},
+					{ real(0),                       real(0),                       real(0),                       real(1)}
+				};
+				mc5.set(real(0));
 			}
 			break;
 		case svgdom::fe_color_matrix_element::type::hue_rotate:
@@ -453,17 +460,17 @@ void FilterApplier::visit(const svgdom::fe_color_matrix_element& e){
 				| A' |     | 0    0    0    1  0 |   | A |
 				| 1  |     | 0    0    0    0  1 |   | 1 |
 			
-				| a00 a01 a02 |   |+0.213 +0.715 +0.072|
-				| a10 a11 a12 | = |+0.213 +0.715 +0.072| +
-				| a20 a21 a22 |   |+0.213 +0.715 +0.072|
+				| a00 a01 a02 |   | +0.213 +0.715 +0.072 |
+				| a10 a11 a12 | = | +0.213 +0.715 +0.072 | +
+				| a20 a21 a22 |   | +0.213 +0.715 +0.072 |
 
-				         |+0.787 -0.715 -0.072|
-				cos(a) * |-0.213 +0.285 -0.072| +
-				         |-0.213 -0.715 +0.928|
+				         | +0.787 -0.715 -0.072 |
+				cos(a) * | -0.213 +0.285 -0.072 | +
+				         | -0.213 -0.715 +0.928 |
 
-				         |-0.213 -0.715+0.928|
-				sin(a) * |+0.143 +0.140-0.283|
-				         |-0.787 +0.715+0.072|
+				         | -0.213 -0.715 +0.928 |
+				sin(a) * | +0.143 +0.140 -0.283 |
+				         | -0.787 +0.715 +0.072 |
 			*/
 			{
 				using std::sin;
@@ -473,12 +480,13 @@ void FilterApplier::visit(const svgdom::fe_color_matrix_element& e){
 				auto sina = sin(a);
 				auto cosa = cos(a);
 				
-				m = {{
-					{{ real(0.213) + cosa * real(0.787) - sina * real(0.213), real(0.715) - cosa * real(0.715) - sina * real(0.715), real(0.072) - cosa * real(0.072) + sina * real(0.928), real(0), real(0) }},
-					{{ real(0.213) - cosa * real(0.213) + sina * real(0.143), real(0.715) + cosa * real(0.285) + sina * real(0.140), real(0.072) - cosa * real(0.072) - sina * real(0.283), real(0), real(0) }},
-					{{ real(0.213) - cosa * real(0.213) - sina * real(0.787), real(0.715) - cosa * real(0.715) + sina * real(0.715), real(0.072) + cosa * real(0.928) + sina * real(0.072), real(0), real(0) }},
-					{{ real(0),                                               real(0),                                               real(0),                                               real(1), real(0) }}
-				}};
+				m = {
+					{ real(0.213) + cosa * real(0.787) - sina * real(0.213), real(0.715) - cosa * real(0.715) - sina * real(0.715), real(0.072) - cosa * real(0.072) + sina * real(0.928), real(0) },
+					{ real(0.213) - cosa * real(0.213) + sina * real(0.143), real(0.715) + cosa * real(0.285) + sina * real(0.140), real(0.072) - cosa * real(0.072) - sina * real(0.283), real(0) },
+					{ real(0.213) - cosa * real(0.213) - sina * real(0.787), real(0.715) - cosa * real(0.715) + sina * real(0.715), real(0.072) + cosa * real(0.928) + sina * real(0.072), real(0) },
+					{ real(0),                                               real(0),                                               real(0),                                               real(1) }
+				};
+				mc5.set(real(0));
 			}
 			break;
 		case svgdom::fe_color_matrix_element::type::luminance_to_alpha:
@@ -489,12 +497,13 @@ void FilterApplier::visit(const svgdom::fe_color_matrix_element& e){
 				| A' |     | 0.2125   0.7154   0.0721  0  0 |   | A |
 				| 1  |     |      0        0        0  0  1 |   | 1 |
 			 */
-			m = {{
-				{{ real(0),      real(0),      real(0),      real(0), real(0) }},
-				{{ real(0),      real(0),      real(0),      real(0), real(0) }},
-				{{ real(0),      real(0),      real(0),      real(0), real(0) }},
-				{{ real(0.2125), real(0.7154), real(0.0721), real(0), real(0) }}
-			}};
+			m = {
+				{ real(0),      real(0),      real(0),      real(0) },
+				{ real(0),      real(0),      real(0),      real(0) },
+				{ real(0),      real(0),      real(0),      real(0) },
+				{ real(0.2125), real(0.7154), real(0.0721), real(0) }
+			};
+			mc5.set(real(0));
 			break;
 	}
 	
@@ -502,7 +511,7 @@ void FilterApplier::visit(const svgdom::fe_color_matrix_element& e){
 	
 	// TODO: set filter sub-region
 	
-	this->setResult(e.result, colorMatrix(s, m));
+	this->setResult(e.result, color_matrix(s, m, mc5));
 }
 
 namespace{
