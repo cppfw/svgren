@@ -28,17 +28,20 @@ void boxBlurHorizontal(
 		return;
 	}
 	for(unsigned y = 0; y != height; ++y){
+		using std::min;
+		using std::max;
+
 		unsigned sum = 0;
 		for(unsigned i = 0; i != boxSize; ++i){
 			int pos = i - boxOffset;
-			pos = std::max(pos, 0);
-			pos = std::min(pos, int(width - 1));
+			pos = max(pos, 0);
+			pos = min(pos, int(width - 1));
 			sum += src[(srcStride * y + pos) * sizeof(uint32_t) + channel];
 		}
 		for(unsigned x = 0; x != width; ++x){
 			int tmp = x - boxOffset;
-			int last = std::max(tmp, 0);
-			int next = std::min(tmp + boxSize, width - 1);
+			int last = max(tmp, 0);
+			int next = min(tmp + boxSize, width - 1);
 
 			dst[(dstStride * y + x) * sizeof(uint32_t) + channel] = sum / boxSize;
 
@@ -66,17 +69,19 @@ void boxBlurVertical(
 		return;
 	}
 	for(unsigned x = 0; x != width; ++x){
+		using std::min;
+		using std::max;
 		unsigned sum = 0;
 		for(unsigned i = 0; i != boxSize; ++i){
 			int pos = i - boxOffset;
-			pos = std::max(pos, 0);
-			pos = std::min(pos, int(height - 1));
+			pos = max(pos, 0);
+			pos = min(pos, int(height - 1));
 			sum += src[(srcStride * pos + x) * sizeof(uint32_t) + channel];
 		}
 		for(unsigned y = 0; y != height; ++y){
 			int tmp = y - boxOffset;
-			int last = std::max(tmp, 0);
-			int next = std::min(tmp + boxSize, height - 1);
+			int last = max(tmp, 0);
+			int next = min(tmp + boxSize, height - 1);
 
 			dst[(dstStride * y + x) * sizeof(uint32_t) + channel] = sum / boxSize;
 
@@ -118,7 +123,8 @@ FilterResult cairoImageSurfaceBlur(const Surface& src, std::array<real, 2> stdDe
 	
 	std::array<unsigned, 2> d;
 	for(unsigned i = 0; i != 2; ++i){
-		d[i] = unsigned(float(stdDeviation[i]) * 3 * std::sqrt(2 * utki::pi<float>()) / 4 + 0.5f);
+		using std::sqrt;
+		d[i] = unsigned(float(stdDeviation[i]) * 3 * sqrt(2 * utki::pi<float>()) / 4 + 0.5f);
 	}
 	
 //	TRACE(<< "d = " << d[0] << ", " << d[1] << std::endl)
@@ -726,14 +732,15 @@ FilterResult composite(const Surface& in, const Surface& in2, const svgdom::fe_c
 					++dp;
 					break;
 				case svgdom::fe_composite_element::operator_::arithmetic:
+					using std::min;
 					// result = k1 * i1 * i2 + k2 * i1 + k3 * i2 + k4
-					*dp = uint8_t( std::min(e.k1 * r01 * r02 + e.k2 * r01 + e.k3 * r02 + e.k4, real(1)) * real(0xff));
+					*dp = uint8_t( min(e.k1 * r01 * r02 + e.k2 * r01 + e.k3 * r02 + e.k4, real(1)) * real(0xff));
 					++dp;
-					*dp = uint8_t( std::min(e.k1 * g01 * g02 + e.k2 * g01 + e.k3 * g02 + e.k4, real(1)) * real(0xff));
+					*dp = uint8_t( min(e.k1 * g01 * g02 + e.k2 * g01 + e.k3 * g02 + e.k4, real(1)) * real(0xff));
 					++dp;
-					*dp = uint8_t( std::min(e.k1 * b01 * b02 + e.k2 * b01 + e.k3 * b02 + e.k4, real(1)) * real(0xff));
+					*dp = uint8_t( min(e.k1 * b01 * b02 + e.k2 * b01 + e.k3 * b02 + e.k4, real(1)) * real(0xff));
 					++dp;
-					*dp = uint8_t( std::min(e.k1 * a01 * a02 + e.k2 * a01 + e.k3 * a02 + e.k4, real(1)) * real(0xff));
+					*dp = uint8_t( min(e.k1 * a01 * a02 + e.k2 * a01 + e.k3 * a02 + e.k4, real(1)) * real(0xff));
 					++dp;
 					break;
 				default:
