@@ -18,7 +18,7 @@
 #	include <X11/Xutil.h>
 #endif
 
-void write_png(const char* filename, int width, int height, std::uint32_t *buffer){
+void write_png(const char* filename, int width, int height, uint32_t *buffer){
    FILE *fp = NULL;
    png_structp png_ptr = NULL;
    png_infop info_ptr = NULL;
@@ -72,8 +72,8 @@ void write_png(const char* filename, int width, int height, std::uint32_t *buffe
 }
 
 namespace{
-std::uint32_t getTicks(){
-	return std::uint32_t(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count());
+uint32_t getTicks(){
+	return uint32_t(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count());
 }
 }
 

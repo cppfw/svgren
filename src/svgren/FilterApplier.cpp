@@ -33,17 +33,17 @@ void boxBlurHorizontal(
 			int pos = i - boxOffset;
 			pos = std::max(pos, 0);
 			pos = std::min(pos, int(width - 1));
-			sum += src[(srcStride * y + pos) * sizeof(std::uint32_t) + channel];
+			sum += src[(srcStride * y + pos) * sizeof(uint32_t) + channel];
 		}
 		for(unsigned x = 0; x != width; ++x){
 			int tmp = x - boxOffset;
 			int last = std::max(tmp, 0);
 			int next = std::min(tmp + boxSize, width - 1);
 
-			dst[(dstStride * y + x) * sizeof(std::uint32_t) + channel] = sum / boxSize;
+			dst[(dstStride * y + x) * sizeof(uint32_t) + channel] = sum / boxSize;
 
-			sum += src[(srcStride * y + next) * sizeof(std::uint32_t) + channel]
-					- src[(srcStride * y + last) * sizeof(std::uint32_t) + channel];
+			sum += src[(srcStride * y + next) * sizeof(uint32_t) + channel]
+					- src[(srcStride * y + last) * sizeof(uint32_t) + channel];
 		}
 	}
 }
@@ -71,17 +71,17 @@ void boxBlurVertical(
 			int pos = i - boxOffset;
 			pos = std::max(pos, 0);
 			pos = std::min(pos, int(height - 1));
-			sum += src[(srcStride * pos + x) * sizeof(std::uint32_t) + channel];
+			sum += src[(srcStride * pos + x) * sizeof(uint32_t) + channel];
 		}
 		for(unsigned y = 0; y != height; ++y){
 			int tmp = y - boxOffset;
 			int last = std::max(tmp, 0);
 			int next = std::min(tmp + boxSize, height - 1);
 
-			dst[(dstStride * y + x) * sizeof(std::uint32_t) + channel] = sum / boxSize;
+			dst[(dstStride * y + x) * sizeof(uint32_t) + channel] = sum / boxSize;
 
-			sum += src[(x + srcStride * next) * sizeof(std::uint32_t) + channel]
-					- src[(x + srcStride * last) * sizeof(std::uint32_t) + channel];
+			sum += src[(x + srcStride * next) * sizeof(uint32_t) + channel]
+					- src[(x + srcStride * last) * sizeof(uint32_t) + channel];
 		}
 	}
 }
@@ -91,7 +91,7 @@ namespace{
 FilterResult allocateResult(const Surface& src){
 	FilterResult ret;
 	ret.surface = src;
-	auto dataSize = src.width * src.height * sizeof(std::uint32_t);
+	auto dataSize = src.width * src.height * sizeof(uint32_t);
 	if (dataSize != 0) {
 		ret.data.resize(dataSize);
 		ASSERT_INFO(ret.data.size() != 0, "src.width = " << src.width << " src.height = " << src.height)
@@ -357,9 +357,9 @@ FilterResult colorMatrix(const Surface& s, const std::array<std::array<real, 5>,
 	ASSERT(s.data)
 	
 	for(unsigned y = 0; y != s.height; ++y){
-		auto sp = &s.data[(y * s.stride) * sizeof(std::uint32_t)];
+		auto sp = &s.data[(y * s.stride) * sizeof(uint32_t)];
 		ASSERT_INFO(sp < s.end, "sp = " << std::hex << static_cast<void*>(sp) << " s.end = " << static_cast<void*>(s.end))
-		auto dp = &ret.surface.data[(y * ret.surface.stride) * sizeof(std::uint32_t)];
+		auto dp = &ret.surface.data[(y * ret.surface.stride) * sizeof(uint32_t)];
 		for(unsigned x = 0; x != s.width; ++x){
 			auto bb = *sp;
 			++sp;
@@ -372,9 +372,9 @@ FilterResult colorMatrix(const Surface& s, const std::array<std::array<real, 5>,
 			
 			if(aa != 0xff && aa != 0){
 				//unpremultiply alpha
-				rr = std::uint32_t(rr) * std::uint32_t(0xff) / std::uint32_t(aa);
-				gg = std::uint32_t(gg) * std::uint32_t(0xff) / std::uint32_t(aa);
-				bb = std::uint32_t(bb) * std::uint32_t(0xff) / std::uint32_t(aa);
+				rr = uint32_t(rr) * uint32_t(0xff) / uint32_t(aa);
+				gg = uint32_t(gg) * uint32_t(0xff) / uint32_t(aa);
+				bb = uint32_t(bb) * uint32_t(0xff) / uint32_t(aa);
 			}
 			
 			auto b = real(bb) / real(0xff);
@@ -516,9 +516,9 @@ FilterResult blend(const Surface& in, const Surface& in2, svgdom::fe_blend_eleme
 	auto ret = allocateResult(s1);
 	
 	for(unsigned y = 0; y != ret.surface.height; ++y){
-		auto sp1 = &s1.data[(y * s1.stride) * sizeof(std::uint32_t)];
-		auto sp2 = &s2.data[(y * s2.stride) * sizeof(std::uint32_t)];
-		auto dp = &ret.surface.data[(y * ret.surface.stride) * sizeof(std::uint32_t)];
+		auto sp1 = &s1.data[(y * s1.stride) * sizeof(uint32_t)];
+		auto sp2 = &s2.data[(y * s2.stride) * sizeof(uint32_t)];
+		auto dp = &ret.surface.data[(y * ret.surface.stride) * sizeof(uint32_t)];
 		for(unsigned x = 0; x != ret.surface.width; ++x){
 			// TODO: optimize by using integer arithmetics instead of floating point
 			auto b01 = real(*sp1) / real(0xff);
@@ -637,9 +637,9 @@ FilterResult composite(const Surface& in, const Surface& in2, const svgdom::fe_c
 	auto ret = allocateResult(s1);
 	
 	for(unsigned y = 0; y != ret.surface.height; ++y){
-		auto sp1 = &s1.data[(y * s1.stride) * sizeof(std::uint32_t)];
-		auto sp2 = &s2.data[(y * s2.stride) * sizeof(std::uint32_t)];
-		auto dp = &ret.surface.data[(y * ret.surface.stride) * sizeof(std::uint32_t)];
+		auto sp1 = &s1.data[(y * s1.stride) * sizeof(uint32_t)];
+		auto sp2 = &s2.data[(y * s2.stride) * sizeof(uint32_t)];
+		auto dp = &ret.surface.data[(y * ret.surface.stride) * sizeof(uint32_t)];
 		for(unsigned x = 0; x != ret.surface.width; ++x){
 			// TODO: optimize by using integer arithmetics instead of floating point
 			auto r01 = real(*sp1) / real(0xff);

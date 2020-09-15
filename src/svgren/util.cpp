@@ -82,7 +82,7 @@ Surface svgren::getSubSurface(cairo_t* cr, const CanvasRegion& region){
 	auto s = cairo_get_group_target(cr);
 	ASSERT(s)
 	
-	ret.stride = cairo_image_surface_get_stride(s) / sizeof(std::uint32_t); //stride is returned in bytes
+	ret.stride = cairo_image_surface_get_stride(s) / sizeof(uint32_t); //stride is returned in bytes
 			
 	auto sw = unsigned(cairo_image_surface_get_width(s));
 	auto sh = unsigned(cairo_image_surface_get_height(s));
@@ -95,7 +95,7 @@ Surface svgren::getSubSurface(cairo_t* cr, const CanvasRegion& region){
 	ret.y = region.y;
 	
 	ASSERT(ret.height <= sh)
-	ASSERT(&ret.data[ret.stride * (ret.height - 1) * sizeof(std::uint32_t)] < ret.end || ret.height == 0)
+	ASSERT(&ret.data[ret.stride * (ret.height - 1) * sizeof(uint32_t)] < ret.end || ret.height == 0)
 
 	return ret;
 }
@@ -295,11 +295,11 @@ void svgren::appendLuminanceToAlpha(Surface s){
 	//For faster calculation it can be simplified to L = (2 * R + 3 * G + B) / 6
 		
 	for(auto p = s.data; p != s.end; ++p){
-		std::uint32_t l = 2 * std::uint32_t(*p);
+		uint32_t l = 2 * uint32_t(*p);
 		++p;
-		l += 3 * std::uint32_t(*p);
+		l += 3 * uint32_t(*p);
 		++p;
-		l += std::uint32_t(*p);
+		l += uint32_t(*p);
 		++p;
 		
 		l /= 6;

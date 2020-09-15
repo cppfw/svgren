@@ -1803,8 +1803,8 @@ void Renderer::blit(const Surface& s) {
 		return;
 	}
 
-	auto dstp = reinterpret_cast<std::uint32_t*>(dst.data) + s.y * dst.stride + s.x;
-	auto srcp = reinterpret_cast<std::uint32_t*>(s.data);
+	auto dstp = reinterpret_cast<uint32_t*>(dst.data) + s.y * dst.stride + s.x;
+	auto srcp = reinterpret_cast<uint32_t*>(s.data);
 	unsigned dx = std::min(s.width, dst.width - s.x);
 	unsigned dy = std::min(s.height, dst.height - s.y);
 

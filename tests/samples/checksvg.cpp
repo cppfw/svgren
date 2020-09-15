@@ -353,11 +353,11 @@ int main(int argc, char** argv){
 			}
 
 			if(unsigned(c2 - c1) > tolerance){
-				std::uint32_t pixel =
-					std::uint32_t(png.buf()[i * png.numChannels()]) |
-					(std::uint32_t(png.buf()[i * png.numChannels() + 1]) << 8) |
-					(std::uint32_t(png.buf()[i * png.numChannels() + 2]) << 16) |
-					(std::uint32_t(png.buf()[i * png.numChannels() + 3]) << 24)
+				uint32_t pixel =
+					uint32_t(png.buf()[i * png.numChannels()]) |
+					(uint32_t(png.buf()[i * png.numChannels() + 1]) << 8) |
+					(uint32_t(png.buf()[i * png.numChannels() + 2]) << 16) |
+					(uint32_t(png.buf()[i * png.numChannels() + 3]) << 24)
 				;
 
 				std::cout << "Error: PNG pixel #" << std::dec << i << " [" << (i % res.width) << ", " << (i / res.width) << "] " << " (0x" << std::hex << pixel << ") did not match SVG pixel (0x" << img[i] << ")" << std::endl;
