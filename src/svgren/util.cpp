@@ -306,6 +306,6 @@ void svgren::appendLuminanceToAlpha(Surface s){
 		
 		//Cairo uses premultiplied alpha, so no need to multiply alpha by liminance.
 		ASSERT(l <= 255)
-		*p = std::uint8_t(l);
+		*p = uint8_t(l);
 	}
 }

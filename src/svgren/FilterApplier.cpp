@@ -13,8 +13,8 @@ using namespace svgren;
 
 namespace{
 void boxBlurHorizontal(
-		std::uint8_t* dst,
-		const std::uint8_t* src,
+		uint8_t* dst,
+		const uint8_t* src,
 		unsigned dstStride,
 		unsigned srcStride,
 		unsigned width,
@@ -51,8 +51,8 @@ void boxBlurHorizontal(
 
 namespace{
 void boxBlurVertical(
-		std::uint8_t* dst,
-		const std::uint8_t* src,
+		uint8_t* dst,
+		const uint8_t* src,
 		unsigned dstStride,
 		unsigned srcStride,
 		unsigned width,
@@ -125,7 +125,7 @@ FilterResult cairoImageSurfaceBlur(const Surface& src, std::array<real, 2> stdDe
 	
 	FilterResult ret = allocateResult(src);
 	
-	std::vector<std::uint8_t> tmp(ret.data.size());
+	std::vector<uint8_t> tmp(ret.data.size());
 	
 	std::array<unsigned, 3> hBoxSize;
 	std::array<unsigned, 3> hOffset;
@@ -397,13 +397,13 @@ FilterResult colorMatrix(const Surface& s, const std::array<std::array<real, 5>,
 			g1 *= a1;
 			b1 *= a1;
 			
-			*dp = std::uint8_t(b1 * real(0xff));
+			*dp = uint8_t(b1 * real(0xff));
 			++dp;
-			*dp = std::uint8_t(g1 * real(0xff));
+			*dp = uint8_t(g1 * real(0xff));
 			++dp;
-			*dp = std::uint8_t(r1 * real(0xff));
+			*dp = uint8_t(r1 * real(0xff));
 			++dp;
-			*dp = std::uint8_t(a1 * real(0xff));
+			*dp = uint8_t(a1 * real(0xff));
 			++dp;
 		}
 	}
@@ -548,47 +548,47 @@ FilterResult blend(const Surface& in, const Surface& in2, svgdom::fe_blend_eleme
 			switch(mode){
 				case svgdom::fe_blend_element::mode::normal:
 					// cr = (1 - qa) * cb + ca
-					*dp = std::uint8_t( ((1 - a01) * b02 + b01) * real(0xff));
+					*dp = uint8_t( ((1 - a01) * b02 + b01) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( ((1 - a01) * g02 + g01) * real(0xff));
+					*dp = uint8_t( ((1 - a01) * g02 + g01) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( ((1 - a01) * r02 + r01) * real(0xff));
+					*dp = uint8_t( ((1 - a01) * r02 + r01) * real(0xff));
 					++dp;
 					break;
 				case svgdom::fe_blend_element::mode::multiply:
 					// cr = (1 - qa) * cb + (1 - qb) * ca + ca * cb
-					*dp = std::uint8_t( ((1 - a01) * b02 + (1 - a02) * b01 + b01 * b02) * real(0xff));
+					*dp = uint8_t( ((1 - a01) * b02 + (1 - a02) * b01 + b01 * b02) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( ((1 - a01) * g02 + (1 - a02) * g01 + g01 * g02) * real(0xff));
+					*dp = uint8_t( ((1 - a01) * g02 + (1 - a02) * g01 + g01 * g02) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( ((1 - a01) * r02 + (1 - a02) * r01 + r01 * r02) * real(0xff));
+					*dp = uint8_t( ((1 - a01) * r02 + (1 - a02) * r01 + r01 * r02) * real(0xff));
 					++dp;
 					break;
 				case svgdom::fe_blend_element::mode::screen:
 					// cr = cb + ca - ca * cb
-					*dp = std::uint8_t( (b02 + b01 - b01 * b02) * real(0xff));
+					*dp = uint8_t( (b02 + b01 - b01 * b02) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( (g02 + g01 - g01 * g02) * real(0xff));
+					*dp = uint8_t( (g02 + g01 - g01 * g02) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( (r02 + r01 - r01 * r02) * real(0xff));
+					*dp = uint8_t( (r02 + r01 - r01 * r02) * real(0xff));
 					++dp;
 					break;
 				case svgdom::fe_blend_element::mode::darken:
 					// cr = Min ((1 - qa) * cb + ca, (1 - qb) * ca + cb)
-					*dp = std::uint8_t( std::min((1 - a01) * b02 + b01, (1 - a02) * b01 + b02) * real(0xff));
+					*dp = uint8_t( std::min((1 - a01) * b02 + b01, (1 - a02) * b01 + b02) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( std::min((1 - a01) * g02 + g01, (1 - a02) * g01 + g02) * real(0xff));
+					*dp = uint8_t( std::min((1 - a01) * g02 + g01, (1 - a02) * g01 + g02) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( std::min((1 - a01) * r02 + r01, (1 - a02) * r01 + r02) * real(0xff));
+					*dp = uint8_t( std::min((1 - a01) * r02 + r01, (1 - a02) * r01 + r02) * real(0xff));
 					++dp;
 					break;
 				case svgdom::fe_blend_element::mode::lighten:
 					// cr = Max ((1 - qa) * cb + ca, (1 - qb) * ca + cb)
-					*dp = std::uint8_t( std::max((1 - a01) * b02 + b01, (1 - a02) * b01 + b02) * real(0xff));
+					*dp = uint8_t( std::max((1 - a01) * b02 + b01, (1 - a02) * b01 + b02) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( std::max((1 - a01) * g02 + g01, (1 - a02) * g01 + g02) * real(0xff));
+					*dp = uint8_t( std::max((1 - a01) * g02 + g01, (1 - a02) * g01 + g02) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( std::max((1 - a01) * r02 + r01, (1 - a02) * r01 + r02) * real(0xff));
+					*dp = uint8_t( std::max((1 - a01) * r02 + r01, (1 - a02) * r01 + r02) * real(0xff));
 					++dp;
 					break;
 				default:
@@ -598,7 +598,7 @@ FilterResult blend(const Surface& in, const Surface& in2, svgdom::fe_blend_eleme
 			}
 			
 			// qr = 1 - (1 - qa) * (1 - qb)
-			*dp = std::uint8_t((1 - (1 - a01)* (1 - a02)) * real(0xff));
+			*dp = uint8_t((1 - (1 - a01)* (1 - a02)) * real(0xff));
 			++dp;
 		}
 	}
@@ -663,72 +663,72 @@ FilterResult composite(const Surface& in, const Surface& in2, const svgdom::fe_c
 				case svgdom::fe_composite_element::operator_::over:
 					// co = as * Cs + ab * Cb * (1 – as)
 					// ao = as + ab * (1 – as)
-					*dp = std::uint8_t( (r01 + r02 * (1 - a01)) * real(0xff));
+					*dp = uint8_t( (r01 + r02 * (1 - a01)) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( (g01 + g02 * (1 - a01)) * real(0xff));
+					*dp = uint8_t( (g01 + g02 * (1 - a01)) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( (b01 + b02 * (1 - a01)) * real(0xff));
+					*dp = uint8_t( (b01 + b02 * (1 - a01)) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( (a01 + a02 * (1 - a01)) * real(0xff));
+					*dp = uint8_t( (a01 + a02 * (1 - a01)) * real(0xff));
 					++dp;
 					break;
 				case svgdom::fe_composite_element::operator_::in:
 					// co = as * Cs * ab
 					// ao = as x ab
-					*dp = std::uint8_t( (r01 * a02) * real(0xff));
+					*dp = uint8_t( (r01 * a02) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( (g01 * a02) * real(0xff));
+					*dp = uint8_t( (g01 * a02) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( (b01 * a02) * real(0xff));
+					*dp = uint8_t( (b01 * a02) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( (a01 * a02) * real(0xff));
+					*dp = uint8_t( (a01 * a02) * real(0xff));
 					++dp;
 					break;
 				case svgdom::fe_composite_element::operator_::out:
 					// co = as * Cs * (1 – ab)
 					// ao = as * (1 – ab)
-					*dp = std::uint8_t( (r01 * (1 - a02)) * real(0xff));
+					*dp = uint8_t( (r01 * (1 - a02)) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( (g01 * (1 - a02)) * real(0xff));
+					*dp = uint8_t( (g01 * (1 - a02)) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( (b01 * (1 - a02)) * real(0xff));
+					*dp = uint8_t( (b01 * (1 - a02)) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( (a01 * (1 - a02)) * real(0xff));
+					*dp = uint8_t( (a01 * (1 - a02)) * real(0xff));
 					++dp;
 					break;
 				case svgdom::fe_composite_element::operator_::atop:
 					// co = as * Cs * ab + ab * Cb * (1 – as)
 					// ao = as * ab + ab * (1 – as)
-					*dp = std::uint8_t( (r01 * a02 + r02 * (1 - a01)) * real(0xff));
+					*dp = uint8_t( (r01 * a02 + r02 * (1 - a01)) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( (g01 * a02 + g02 * (1 - a01)) * real(0xff));
+					*dp = uint8_t( (g01 * a02 + g02 * (1 - a01)) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( (b01 * a02 + b02 * (1 - a01)) * real(0xff));
+					*dp = uint8_t( (b01 * a02 + b02 * (1 - a01)) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( (a01 * a02 + a02 * (1 - a01)) * real(0xff));
+					*dp = uint8_t( (a01 * a02 + a02 * (1 - a01)) * real(0xff));
 					++dp;
 					break;
 				case svgdom::fe_composite_element::operator_::xor_:
 					// co = as * Cs * (1 - ab) + ab * Cb * (1 – as)
 					// ao = as * (1 - ab) + ab * (1 – as)
-					*dp = std::uint8_t( (r01 * (1 - a02) + r02 * (1 - a01)) * real(0xff));
+					*dp = uint8_t( (r01 * (1 - a02) + r02 * (1 - a01)) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( (g01 * (1 - a02) + g02 * (1 - a01)) * real(0xff));
+					*dp = uint8_t( (g01 * (1 - a02) + g02 * (1 - a01)) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( (b01 * (1 - a02) + b02 * (1 - a01)) * real(0xff));
+					*dp = uint8_t( (b01 * (1 - a02) + b02 * (1 - a01)) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( (a01 * (1 - a02) + a02 * (1 - a01)) * real(0xff));
+					*dp = uint8_t( (a01 * (1 - a02) + a02 * (1 - a01)) * real(0xff));
 					++dp;
 					break;
 				case svgdom::fe_composite_element::operator_::arithmetic:
 					// result = k1 * i1 * i2 + k2 * i1 + k3 * i2 + k4
-					*dp = std::uint8_t( std::min(e.k1 * r01 * r02 + e.k2 * r01 + e.k3 * r02 + e.k4, real(1)) * real(0xff));
+					*dp = uint8_t( std::min(e.k1 * r01 * r02 + e.k2 * r01 + e.k3 * r02 + e.k4, real(1)) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( std::min(e.k1 * g01 * g02 + e.k2 * g01 + e.k3 * g02 + e.k4, real(1)) * real(0xff));
+					*dp = uint8_t( std::min(e.k1 * g01 * g02 + e.k2 * g01 + e.k3 * g02 + e.k4, real(1)) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( std::min(e.k1 * b01 * b02 + e.k2 * b01 + e.k3 * b02 + e.k4, real(1)) * real(0xff));
+					*dp = uint8_t( std::min(e.k1 * b01 * b02 + e.k2 * b01 + e.k3 * b02 + e.k4, real(1)) * real(0xff));
 					++dp;
-					*dp = std::uint8_t( std::min(e.k1 * a01 * a02 + e.k2 * a01 + e.k3 * a02 + e.k4, real(1)) * real(0xff));
+					*dp = uint8_t( std::min(e.k1 * a01 * a02 + e.k2 * a01 + e.k3 * a02 + e.k4, real(1)) * real(0xff));
 					++dp;
 					break;
 				default:

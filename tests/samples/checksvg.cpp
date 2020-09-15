@@ -45,7 +45,7 @@ public:
 private:
 	ColorDepth_e colorDepth_v;
 	r4::vec2ui dim_v = r4::vec2ui(0);
-	std::vector<std::uint8_t> buf_v;//image pixels data
+	std::vector<uint8_t> buf_v;//image pixels data
 
 public:
 	/**
@@ -94,7 +94,7 @@ public:
 	 * @brief Get pixel data.
 	 * @return Pixel data of the image.
 	 */
-	utki::span<std::uint8_t> buf(){
+	utki::span<uint8_t> buf(){
 		return utki::make_span(this->buf_v);
 	}
 
@@ -102,7 +102,7 @@ public:
 	 * @brief Get pixel data.
 	 * @return Pixel data of the image.
 	 */
-	utki::span<const std::uint8_t> buf()const{
+	utki::span<const uint8_t> buf()const{
 		return utki::make_span(this->buf_v);
 	}
 
@@ -339,7 +339,7 @@ int main(int argc, char** argv){
 	}
 
 	for(size_t i = 0; i != img.size(); ++i){
-		std::array<std::uint8_t, 4> rgba;
+		std::array<uint8_t, 4> rgba;
 		rgba[0] = img[i] & 0xff;
 		rgba[1] = (img[i] >> 8) & 0xff;
 		rgba[2] = (img[i] >> 16) & 0xff;
