@@ -11,15 +11,15 @@
 
 using namespace svgren;
 
-real Renderer::length_to_px(const svgdom::length& l, unsigned coordIndex) const noexcept{
+real Renderer::length_to_px(const svgdom::length& l, unsigned coordIndex)const noexcept{
 	if (l.is_percent()) {
 		ASSERT(coordIndex < this->viewport.size())
 		return this->viewport[coordIndex] * (l.value / 100);
 	}
-	return l.to_px(this->dpi);
+	return real(l.to_px(this->dpi));
 }
 
-void Renderer::applyCairoTransformation(const svgdom::transformable::transformation& t) {
+void Renderer::applyCairoTransformation(const svgdom::transformable::transformation& t){
 //	TRACE(<< "Renderer::applyCairoTransformation(): applying transformation " << unsigned(t.type) << std::endl)
 	switch (t.type_) {
 		case svgdom::transformable::transformation::type::translate:
@@ -83,13 +83,13 @@ void Renderer::applyCairoTransformation(const svgdom::transformable::transformat
 #endif
 }
 
-void Renderer::applyTransformations(const decltype(svgdom::transformable::transformations)& transformations) {
+void Renderer::applyTransformations(const decltype(svgdom::transformable::transformations)& transformations){
 	for (auto& t : transformations) {
 		this->applyCairoTransformation(t);
 	}
 }
 
-void Renderer::applyViewBox(const svgdom::view_boxed& e, const svgdom::aspect_ratioed& ar) {
+void Renderer::applyViewBox(const svgdom::view_boxed& e, const svgdom::aspect_ratioed& ar){
 	if (!e.is_view_box_specified()) {
 		return;
 	}
@@ -147,7 +147,7 @@ void Renderer::applyViewBox(const svgdom::view_boxed& e, const svgdom::aspect_ra
 
 			this->canvas.scale(scaleFactor, scaleFactor);
 		}
-	} else { // if no preserveAspectRatio enforced
+	}else{ // if no preserveAspectRatio enforced
 		if (e.view_box[2] != 0 && e.view_box[3] != 0) { // if viewBox width and height are not 0
 			this->canvas.scale(
 					this->viewport[0] / e.view_box[2],
@@ -249,7 +249,7 @@ void Renderer::applyFilter() {
 	}
 }
 
-void Renderer::applyFilter(const std::string& id) {
+void Renderer::applyFilter(const std::string& id){
 	auto f = this->finder.find_by_id(id);
 	if(!f){
 		return;
@@ -376,10 +376,10 @@ void Renderer::updateCurBoundingBox(){
 
 	// set device space bounding box
 	std::array<r4::vector2<real>, 4> rectVertices = {{
-		{real(x1), real(y1)}, // TODO: remove casting to real
-		{real(x2), real(y2)},
-		{real(x1), real(y2)},
-		{real(x2), real(y1)}
+		r4::vector2<real>{real(x1), real(y1)}, // TODO: remove casting to real
+		r4::vector2<real>{real(x2), real(y2)},
+		r4::vector2<real>{real(x1), real(y2)},
+		r4::vector2<real>{real(x2), real(y1)}
 	}};
 
 	for(auto& vertex : rectVertices){
