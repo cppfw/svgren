@@ -117,15 +117,12 @@ FilterResult allocateResult(const Surface& src){
 
 namespace{
 FilterResult cairoImageSurfaceBlur(const Surface& src, r4::vector2<real> stdDeviation){
-	//NOTE: see https://www.w3.org/TR/SVG/filters.html#feGaussianBlurElement for Gaussian Blur approximation algorithm.
+	// see https://www.w3.org/TR/SVG/filters.html#feGaussianBlurElement for Gaussian Blur approximation algorithm
 	
 	ASSERT(src.d.x() <= src.stride)
 	
-	r4::vec2ui d;
-	for(unsigned i = 0; i != 2; ++i){
-		using std::sqrt;
-		d[i] = unsigned(stdDeviation[i] * 3 * sqrt(2 * utki::pi<real>()) / 4 + 0.5f);
-	}
+	using std::sqrt;
+	auto d = (stdDeviation * (3 * sqrt(2 * utki::pi<real>()) / 4) + r4::vector2<real>(0.5)).to<unsigned>();
 	
 //	TRACE(<< "d = " << d[0] << ", " << d[1] << std::endl)
 	
@@ -140,7 +137,7 @@ FilterResult cairoImageSurfaceBlur(const Surface& src, r4::vector2<real> stdDevi
 	if(d[0] % 2 == 0){
 		hOffset[0] = d[0] / 2;
 		hBoxSize[0] = d[0];
-		hOffset[1] = d[0] / 2 - 1; //it is ok if d[0] is 0 and -1 will give a large number because box size is also 0 in that case and blur will have no effect anyway
+		hOffset[1] = d[0] / 2 - 1; // it is ok if d[0] is 0 and -1 will give a large number because box size is also 0 in that case and blur will have no effect anyway
 		hBoxSize[1] = d[0];
 		hOffset[2] = d[0] / 2;
 		hBoxSize[2] = d[0] + 1;
@@ -156,7 +153,7 @@ FilterResult cairoImageSurfaceBlur(const Surface& src, r4::vector2<real> stdDevi
 	if(d[1] % 2 == 0){
 		vOffset[0] = d[1] / 2;
 		vBoxSize[0] = d[1];
-		vOffset[1] = d[1] / 2 - 1; //it is ok if d[0] is 0 and -1 will give a large number because box size is also 0 in that case and blur will have no effect anyway
+		vOffset[1] = d[1] / 2 - 1; // it is ok if d[0] is 0 and -1 will give a large number because box size is also 0 in that case and blur will have no effect anyway
 		vBoxSize[1] = d[1];
 		vOffset[2] = d[1] / 2;
 		vBoxSize[2] = d[1] + 1;
@@ -192,37 +189,37 @@ FilterResult cairoImageSurfaceBlur(const Surface& src, r4::vector2<real> stdDevi
 }
 }
 
-Surface FilterApplier::getSourceGraphic() {
+Surface FilterApplier::getSourceGraphic(){
 	return getSubSurface(this->r.cr, this->filterRegion);
 }
 
-void FilterApplier::setResult(const std::string& name, FilterResult&& result) {
+void FilterApplier::setResult(const std::string& name, FilterResult&& result){
 	this->results[name] = std::move(result);
 	this->lastResult = &this->results[name];
 	ASSERT(this->lastResult->data.size() == 0 || this->lastResult->surface.data == &*this->lastResult->data.begin())
 }
 
-Surface FilterApplier::getSource(const std::string& in) {
+Surface FilterApplier::getSource(const std::string& in){
 	if(in == "SourceGraphic"){
 		return this->getSourceGraphic();
 	}
 	if(in == "SourceAlpha"){
-		//TODO: implement
+		// TODO: implement
 		throw std::runtime_error("SourceAlpha not implemented");
 	}
 	if(in == "BackgroundImage"){
 		return this->r.background;
 	}
 	if(in == "BackgroundAlpha"){
-		//TODO: implement
+		// TODO: implement
 		throw std::runtime_error("BackgroundAlpha not implemented");
 	}
 	if(in == "FillPaint"){
-		//TODO: implement
+		// TODO: implement
 		throw std::runtime_error("FillPaint not implemented");
 	}
 	if(in == "StrokePaint"){
-		//TODO: implement
+		// TODO: implement
 		throw std::runtime_error("StrokePaint not implemented");
 	}
 	
@@ -337,7 +334,7 @@ void FilterApplier::visit(const svgdom::fe_gaussian_blur_element& e){
 
 	auto s = this->getSource(e.in).intersectionSurface(this->filterRegion);
 	
-	//TODO: set filter sub-region
+	// TODO: set filter sub-region
 
 	this->setResult(e.result, cairoImageSurfaceBlur(s, sd));
 }
