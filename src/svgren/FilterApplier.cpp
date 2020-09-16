@@ -116,15 +116,15 @@ FilterResult allocateResult(const Surface& src){
 }
 
 namespace{
-FilterResult cairoImageSurfaceBlur(const Surface& src, std::array<real, 2> stdDeviation){
+FilterResult cairoImageSurfaceBlur(const Surface& src, r4::vector2<real> stdDeviation){
 	//NOTE: see https://www.w3.org/TR/SVG/filters.html#feGaussianBlurElement for Gaussian Blur approximation algorithm.
 	
 	ASSERT(src.width <= src.stride)
 	
-	std::array<unsigned, 2> d;
+	r4::vec2ui d;
 	for(unsigned i = 0; i != 2; ++i){
 		using std::sqrt;
-		d[i] = unsigned(float(stdDeviation[i]) * 3 * sqrt(2 * utki::pi<float>()) / 4 + 0.5f);
+		d[i] = unsigned(stdDeviation[i] * 3 * sqrt(2 * utki::pi<real>()) / 4 + 0.5f);
 	}
 	
 //	TRACE(<< "d = " << d[0] << ", " << d[1] << std::endl)
@@ -349,7 +349,7 @@ void FilterApplier::visit(const svgdom::fe_gaussian_blur_element& e){
 	
 	//TODO: set filter sub-region
 
-	this->setResult(e.result, cairoImageSurfaceBlur(s, sd));
+	this->setResult(e.result, cairoImageSurfaceBlur(s, sd.to<real>()));
 }
 
 namespace{

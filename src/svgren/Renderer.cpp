@@ -1096,7 +1096,7 @@ void Renderer::visit(const svgdom::path_element& e) {
 					using std::max;
 
 					// update the x radius if it is too small
-					auto rx = max(s.rx, xe / 2);
+					auto rx = max(real(s.rx), xe / 2);
 
 					// find one circle center
 					auto xc = xe / 2;
