@@ -333,8 +333,8 @@ void FilterApplier::visit(const svgdom::fe_gaussian_blur_element& e){
 				y = double(sd[1]);
 				break;
 			case svgdom::coordinate_units::object_bounding_box:
-				x = double(this->r.userSpaceShapeBoundingBoxDim[0] * sd[0]);
-				y = double(this->r.userSpaceShapeBoundingBoxDim[1] * sd[1]);
+				x = double(this->r.userSpaceShapeBoundingBox.d[0] * sd[0]);
+				y = double(this->r.userSpaceShapeBoundingBox.d[1] * sd[1]);
 				break;
 		}
 		cairo_user_to_device_distance(this->r.cr, &x, &y);

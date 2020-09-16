@@ -59,8 +59,14 @@ public:
 
 	void transform(const r4::matrix2<real>& matrix);
 	void translate(real x, real y);
+	void translate(const r4::vector2<real>& v){
+		this->translate(v.x(), v.y());
+	}
 	void rotate(real radians);
 	void scale(real x, real y);
+	void scale(const r4::vector2<real>& v){
+		this->scale(v.x(), v.y());
+	}
 
 	enum class fill_rule{
 		even_odd,

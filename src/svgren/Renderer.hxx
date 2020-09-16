@@ -37,8 +37,7 @@ public:
 	std::array<real, 2> viewport; // width, height
 	
 	// this bounding box is used for gradients
-	std::array<real, 2> userSpaceShapeBoundingBoxPos = {{0, 0}};
-	std::array<real, 2> userSpaceShapeBoundingBoxDim = {{0, 0}};
+	r4::rectangle<real> userSpaceShapeBoundingBox;
 	
 	// this bounding box is used for filter region calculation.
 	DeviceSpaceBoundingBox deviceSpaceBoundingBox;

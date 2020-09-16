@@ -279,8 +279,8 @@ void Renderer::set_gradient(const std::string& id){
 				cairoMatrixPush(r.cr)
 		{
 			if (r.gradientGetUnits(gradient) == svgdom::coordinate_units::object_bounding_box) {
-				r.canvas.translate(r.userSpaceShapeBoundingBoxPos[0], r.userSpaceShapeBoundingBoxPos[1]);
-				r.canvas.scale(r.userSpaceShapeBoundingBoxDim[0], r.userSpaceShapeBoundingBoxDim[1]);
+				r.canvas.translate(r.userSpaceShapeBoundingBox.p);
+				r.canvas.scale(r.userSpaceShapeBoundingBox.d);
 				this->viewportPush = std::unique_ptr<ViewportPush>(new ViewportPush(r, {{1, 1}}));
 			}
 
@@ -351,35 +351,19 @@ void Renderer::set_gradient(const std::string& id){
 }
 
 void Renderer::updateCurBoundingBox(){
-	double x1, y1, x2, y2;
+	this->userSpaceShapeBoundingBox = this->canvas.get_shape_bounding_box();
 
-	// According to SVG spec https://www.w3.org/TR/SVG/coords.html#ObjectBoundingBox
-	// "The bounding box is computed exclusive of any values for clipping, masking, filter effects, opacity and stroke-width"
-	cairo_path_extents(
-			this->cr,
-			&x1,
-			&y1,
-			&x2,
-			&y2
-		);
-	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-
-	this->userSpaceShapeBoundingBoxPos[0] = real(x1);
-	this->userSpaceShapeBoundingBoxPos[1] = real(y1);
-	this->userSpaceShapeBoundingBoxDim[0] = real(x2 - x1);
-	this->userSpaceShapeBoundingBoxDim[1] = real(y2 - y1);
-
-	if(this->userSpaceShapeBoundingBoxDim[0] == 0){
+	if(this->userSpaceShapeBoundingBox.d[0] == 0){
 		// empty path
 		return;
 	}
 
 	// set device space bounding box
 	std::array<r4::vector2<real>, 4> rectVertices = {{
-		r4::vector2<real>{real(x1), real(y1)}, // TODO: remove casting to real
-		r4::vector2<real>{real(x2), real(y2)},
-		r4::vector2<real>{real(x1), real(y2)},
-		r4::vector2<real>{real(x2), real(y1)}
+		this->userSpaceShapeBoundingBox.p,
+		this->userSpaceShapeBoundingBox.pdx_pdy(),
+		this->userSpaceShapeBoundingBox.x_pdy(),
+		this->userSpaceShapeBoundingBox.pdx_y()
 	}};
 
 	for(auto& vertex : rectVertices){

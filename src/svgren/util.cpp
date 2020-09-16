@@ -13,8 +13,6 @@
 
 using namespace svgren;
 
-
-
 void svgren::cairoRelQuadraticCurveTo(cairo_t *cr, double x1, double y1, double x, double y){
 	cairo_rel_curve_to(cr,
 			2.0 / 3.0 * x1,
