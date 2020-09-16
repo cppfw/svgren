@@ -86,7 +86,7 @@ before_install:
 - if [ "$TRAVIS_JOB_NAME" == "macosx" ]; then
     brew update  &&
     brew upgrade &&
-    brew install prorab prorab-extra libutki libsvgdom cairo r4 libclargs libpng;
+    brew install prorab prorab-extra libutki libsvgdom cairo libr4 libclargs libpng;
   fi
 - if [ "$TRAVIS_JOB_NAME" == "ios" ]; then
     sudo gem install cocoapods &&
