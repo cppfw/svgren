@@ -132,7 +132,7 @@ r4::vector2<real> canvas::matrix_mul(const r4::vector2<real>& v){
 	double y = v.y();
 	cairo_user_to_device(this->cr, &x, &y);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-	return r4::vector2<real>(x, y);
+	return r4::vector2<real>(real(x), real(y));
 #endif
 }
 
