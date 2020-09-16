@@ -44,7 +44,7 @@ nuget{
 		};
 
 		//==== v140 tools =====
-
+/*
 		[x86,v140,release] {
 			lib: ..\msvs_solution\v140_Release\libsvgren.lib;
 		}
@@ -57,6 +57,7 @@ nuget{
 		[x64,v140,debug] {
 			lib: ..\msvs_solution\x64\v140_Debug\libsvgren.lib;
 		}
+*/
 
 		//==== v141 tools ====
 
