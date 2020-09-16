@@ -278,10 +278,10 @@ void FilterApplier::visit(const svgdom::filter_element& e){
 					auto y2 = y1 + this->r.length_to_px(e.height, 1);
 
 					std::array<r4::vector2<real>, 4> rectVertices = {{
-						{x1, y1},
-						{x2, y2},
-						{x1, y2},
-						{x2, y1}
+						r4::vector2<real>{x1, y1},
+						r4::vector2<real>{x2, y2},
+						r4::vector2<real>{x1, y2},
+						r4::vector2<real>{x2, y1}
 					}};
 
 					DeviceSpaceBoundingBox frBb;
@@ -291,10 +291,10 @@ void FilterApplier::visit(const svgdom::filter_element& e){
 						vertex = this->r.canvas.matrix_mul(vertex);
 
 						DeviceSpaceBoundingBox bb;
-						bb.left = decltype(bb.left)(vertex[0]);
-						bb.right = decltype(bb.right)(vertex[0]);
-						bb.top = decltype(bb.top)(vertex[1]);
-						bb.bottom = decltype(bb.bottom)(vertex[1]);
+						bb.left = decltype(bb.left)(vertex.x());
+						bb.right = decltype(bb.right)(vertex.x());
+						bb.top = decltype(bb.top)(vertex.y());
+						bb.bottom = decltype(bb.bottom)(vertex.y());
 
 						frBb.merge(bb);
 					}
