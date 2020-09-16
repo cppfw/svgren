@@ -44,8 +44,8 @@ public:
 
 private:
 	ColorDepth_e colorDepth_v;
-	r4::vec2ui dim_v = r4::vec2ui(0);
-	std::vector<uint8_t> buf_v;//image pixels data
+	r4::vector2<unsigned> dim_v = 0;
+	std::vector<uint8_t> buf_v; // image pixels data
 
 public:
 	/**
@@ -62,7 +62,7 @@ public:
 	 * @brief Get image dimensions.
 	 * @return Image dimensions.
 	 */
-	const r4::vec2ui& dim()const noexcept{
+	const r4::vector2<unsigned>& dim()const noexcept{
 		return this->dim_v;
 	}
 
@@ -113,20 +113,17 @@ public:
 	 * @param dimensions - image dimensions.
 	 * @param colorDepth - color depth.
 	 */
-	void init(r4::vec2ui dimensions, ColorDepth_e colorDepth){
+	void init(r4::vector2<unsigned> dimensions, ColorDepth_e colorDepth){
 		this->dim_v = dimensions;
 		this->colorDepth_v = colorDepth;
 		this->buf_v.resize(this->dim().x() * this->dim().y() * this->numChannels());
 	}
 
-
 	/**
 	 * @brief Flip image vertically.
 	 */
 	void flipVertical();
-
-
-
+	
 private:
 	static void PNG_CustomReadFunction(png_structp pngPtr, png_bytep data, png_size_t length){
 		papki::file* fi = reinterpret_cast<papki::file*>(png_get_io_ptr(pngPtr));
@@ -246,7 +243,7 @@ public:
 		// Great! Number of channels and bits per pixel are initialized now!
 
 		// set image dimensions and set buffer size
-		this->init(r4::vec2ui(width, height), imageType);//Set buf array size (allocate memory)
+		this->init(r4::vector2<unsigned>(width, height), imageType);//Set buf array size (allocate memory)
 		// Great! height and width are initialized and buffer memory allocated
 
 //		TRACE(<< "Image::LoadPNG(): memory for image allocated" << std::endl)
