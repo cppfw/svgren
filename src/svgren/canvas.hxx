@@ -79,6 +79,9 @@ public:
 
 	r4::vector2<real> matrix_mul(const r4::vector2<real>& v);
 
+	// multiply by current matrix without translation part
+	r4::vector2<real> matrix_mul_distance(const r4::vector2<real>& v);
+
 	r4::rectangle<real> get_shape_bounding_box()const;
 
 	std::vector<uint32_t> release();

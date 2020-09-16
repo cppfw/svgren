@@ -136,6 +136,16 @@ r4::vector2<real> canvas::matrix_mul(const r4::vector2<real>& v){
 #endif
 }
 
+r4::vector2<real> canvas::matrix_mul_distance(const r4::vector2<real>& v){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	double x = v.x();
+	double y = v.y();
+	cairo_user_to_device_distance(this->cr, &x, &y);
+	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+	return r4::vector2<real>(real(x), real(y));
+#endif
+}
+
 r4::rectangle<real> canvas::get_shape_bounding_box()const{
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	double x1, y1, x2, y2;

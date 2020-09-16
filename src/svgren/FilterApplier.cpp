@@ -321,33 +321,25 @@ void FilterApplier::visit(const svgdom::fe_gaussian_blur_element& e){
 	if (!e.is_std_deviation_specified()) {
 		return;
 	}
-	auto sd = e.get_std_deviation();
-	
-	{
-		double x, y;
+	auto sd = e.get_std_deviation().to<real>();
 
-		switch(this->primitiveUnits){
-			default:
-			case svgdom::coordinate_units::user_space_on_use:
-				x = double(sd[0]);
-				y = double(sd[1]);
-				break;
-			case svgdom::coordinate_units::object_bounding_box:
-				x = double(this->r.userSpaceShapeBoundingBox.d[0] * sd[0]);
-				y = double(this->r.userSpaceShapeBoundingBox.d[1] * sd[1]);
-				break;
-		}
-		cairo_user_to_device_distance(this->r.cr, &x, &y);
-		ASSERT(cairo_status(this->r.cr) == CAIRO_STATUS_SUCCESS)
-		sd[0] = real(x);
-		sd[1] = real(y);
+	switch(this->primitiveUnits){
+		default:
+		case svgdom::coordinate_units::user_space_on_use:
+			sd = this->r.canvas.matrix_mul_distance(sd);
+			break;
+		case svgdom::coordinate_units::object_bounding_box:
+			sd = this->r.canvas.matrix_mul_distance(
+					this->r.userSpaceShapeBoundingBox.d.comp_mul(sd)
+				);
+			break;
 	}
-	
+
 	auto s = this->getSource(e.in).intersectionSurface(this->filterRegion);
 	
 	//TODO: set filter sub-region
 
-	this->setResult(e.result, cairoImageSurfaceBlur(s, sd.to<real>()));
+	this->setResult(e.result, cairoImageSurfaceBlur(s, sd));
 }
 
 namespace{
