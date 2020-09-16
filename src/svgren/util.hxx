@@ -74,6 +74,20 @@ struct DeviceSpaceBoundingBox{
 	
 	real width()const noexcept;
 	real height()const noexcept;
+
+	r4::vector2<real> pos()const noexcept{
+		return r4::vector2<real>{
+			this->left,
+			this->top
+		};
+	}
+
+	r4::vector2<real> dims()const noexcept{
+		return r4::vector2<real>{
+			this->width(),
+			this->height()
+		};
+	}
 };
 
 class DeviceSpaceBoundingBoxPush{

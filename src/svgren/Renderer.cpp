@@ -1790,28 +1790,28 @@ decltype(svgdom::styleable::presentation_attributes) Renderer::gradient_get_pres
 }
 
 void Renderer::blit(const Surface& s) {
-	if(!s.data || s.width == 0 || s.height == 0){
+	if(!s.data || s.d.x() == 0 || s.d.y() == 0){
 		TRACE(<< "Renderer::blit(): source image is empty" << std::endl)
 		return;
 	}
-	ASSERT(s.data && s.width != 0 && s.height != 0)
+	ASSERT(s.data && s.d.x() != 0 && s.d.y() != 0)
 
 	auto dst = getSubSurface(this->cr);
 
-	if(s.x >= dst.width || s.y >= dst.height){
+	if(s.p.x() >= dst.d.x() || s.p.y() >= dst.d.y()){
 		TRACE(<< "Renderer::blit(): source image is out of canvas" << std::endl)
 		return;
 	}
 
-	auto dstp = reinterpret_cast<uint32_t*>(dst.data) + s.y * dst.stride + s.x;
+	auto dstp = reinterpret_cast<uint32_t*>(dst.data) + s.p.y() * dst.stride + s.p.x();
 	auto srcp = reinterpret_cast<uint32_t*>(s.data);
-	unsigned dx = std::min(s.width, dst.width - s.x);
-	unsigned dy = std::min(s.height, dst.height - s.y);
+	using std::min;
+	auto dp = min(s.d, dst.d - s.p);
 
-	for(unsigned y = 0; y != dy; ++y){
+	for(unsigned y = 0; y != dp.y(); ++y){
 		auto p = dstp + y * dst.stride;
 		auto sp = srcp + y * s.stride;
-		for(unsigned x = 0; x != dx; ++x, ++p, ++sp){
+		for(unsigned x = 0; x != dp.x(); ++x, ++p, ++sp){
 			*p = *sp;
 		}
 	}

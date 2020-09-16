@@ -2,13 +2,15 @@
 
 #include <limits>
 
+#include <r4/rectangle.hpp>
+
 namespace svgren{
 
 /**
  * @brief rectangular region on canvas.
  */
-struct CanvasRegion{
-	unsigned x = 0, y = 0, width = 0, height = 0; // in pixels
+struct CanvasRegion : public r4::rectangle<unsigned>{
+	// unsigned x = 0, y = 0, width = 0, height = 0; // in pixels
 	
 	CanvasRegion(
 			unsigned x = 0,
@@ -16,20 +18,19 @@ struct CanvasRegion{
 			unsigned width = std::numeric_limits<unsigned>::max(),
 			unsigned height = std::numeric_limits<unsigned>::max()
 		) :
-			x(x),
-			y(y),
-			width(width),
-			height(height)
+			r4::rectangle<unsigned>{x, y, width, height}
 	{}
 	
-	void intersect(const CanvasRegion& r);
+	// void intersect1(const CanvasRegion& r);
 	
 	unsigned right()const{
-		return this->x + this->width;
+		return this->pdx();
+		// return this->x + this->width;
 	}
 	
 	unsigned bottom()const{
-		return this->y + this->height;
+		return this->pdy();
+		// return this->y + this->height;
 	}
 };
 

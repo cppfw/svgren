@@ -97,13 +97,13 @@ namespace{
 FilterResult allocateResult(const Surface& src){
 	FilterResult ret;
 	ret.surface = src;
-	auto dataSize = src.width * src.height * sizeof(uint32_t);
+	auto dataSize = src.d.x() * src.d.y() * sizeof(uint32_t);
 	if (dataSize != 0) {
 		ret.data.resize(dataSize);
-		ASSERT_INFO(ret.data.size() != 0, "src.width = " << src.width << " src.height = " << src.height)
-		ret.surface.data = &*ret.data.begin();
-		ret.surface.stride = ret.surface.width;
-		ret.surface.end = &*ret.data.begin() + ret.data.size();
+		ASSERT_INFO(ret.data.size() != 0, "src.d = " << src.d)
+		ret.surface.data = ret.data.data();
+		ret.surface.stride = ret.surface.d.x();
+		ret.surface.end = ret.data.data() + ret.data.size();
 	}else{
 		ret.data.clear();
 		ret.surface.data = nullptr;
@@ -119,7 +119,7 @@ namespace{
 FilterResult cairoImageSurfaceBlur(const Surface& src, r4::vector2<real> stdDeviation){
 	//NOTE: see https://www.w3.org/TR/SVG/filters.html#feGaussianBlurElement for Gaussian Blur approximation algorithm.
 	
-	ASSERT(src.width <= src.stride)
+	ASSERT(src.d.x() <= src.stride)
 	
 	r4::vec2ui d;
 	for(unsigned i = 0; i != 2; ++i){
@@ -170,22 +170,22 @@ FilterResult cairoImageSurfaceBlur(const Surface& src, r4::vector2<real> stdDevi
 	}
 	
 	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurHorizontal(&*tmp.begin(), src.data, src.width, src.stride, src.width, src.height, hBoxSize[0], hOffset[0], channel);
+		boxBlurHorizontal(tmp.data(), src.data, src.d.x(), src.stride, src.d.x(), src.d.y(), hBoxSize[0], hOffset[0], channel);
 	}
 	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurHorizontal(ret.surface.data, &*tmp.begin(), ret.surface.stride, src.width, src.width, src.height, hBoxSize[1], hOffset[1], channel);
+		boxBlurHorizontal(ret.surface.data, tmp.data(), ret.surface.stride, src.d.x(), src.d.x(), src.d.y(), hBoxSize[1], hOffset[1], channel);
 	}
 	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurHorizontal(&*tmp.begin(), ret.surface.data, src.width, ret.surface.stride, src.width, src.height, hBoxSize[2], hOffset[2], channel);
+		boxBlurHorizontal(tmp.data(), ret.surface.data, src.d.x(), ret.surface.stride, src.d.x(), src.d.y(), hBoxSize[2], hOffset[2], channel);
 	}
 	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurVertical(ret.surface.data, &*tmp.begin(), ret.surface.stride, src.width, src.width, src.height, vBoxSize[0], vOffset[0], channel);
+		boxBlurVertical(ret.surface.data, tmp.data(), ret.surface.stride, src.d.x(), src.d.x(), src.d.y(), vBoxSize[0], vOffset[0], channel);
 	}
 	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurVertical(&*tmp.begin(), ret.surface.data, src.width, ret.surface.stride, src.width, src.height, vBoxSize[1], vOffset[1], channel);
+		boxBlurVertical(tmp.data(), ret.surface.data, src.d.x(), ret.surface.stride, src.d.x(), src.d.y(), vBoxSize[1], vOffset[1], channel);
 	}
 	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurVertical(ret.surface.data, &*tmp.begin(), ret.surface.stride, src.width, src.width, src.height, vBoxSize[2], vOffset[2], channel);
+		boxBlurVertical(ret.surface.data, tmp.data(), ret.surface.stride, src.d.x(), src.d.x(), src.d.y(), vBoxSize[2], vOffset[2], channel);
 	}
 	
 	return ret;
@@ -252,22 +252,24 @@ void FilterApplier::visit(const svgdom::filter_element& e){
 	// set filter region
 	{
 		// filter region
-		real frX;
-		real frY;
-		real frWidth;
-		real frHeight;
+		r4::rectangle<real> fr;
 
 		switch(e.filter_units){
 			default:
 			case svgdom::coordinate_units::object_bounding_box:
 				{
-					auto w = this->r.deviceSpaceBoundingBox.width();
-					auto h = this->r.deviceSpaceBoundingBox.height();
+					r4::vector2<real> fe_pos{
+						percentLengthToFraction(e.x),
+						percentLengthToFraction(e.y)
+					};
 
-					frX = this->r.deviceSpaceBoundingBox.left + percentLengthToFraction(e.x) * w;
-					frY = this->r.deviceSpaceBoundingBox.top + percentLengthToFraction(e.y) * h;
-					frWidth = percentLengthToFraction(e.width) * w;
-					frHeight = percentLengthToFraction(e.height) * h;
+					r4::vector2<real> fe_dims{
+						percentLengthToFraction(e.width),
+						percentLengthToFraction(e.height)
+					};
+
+					fr.p = this->r.deviceSpaceBoundingBox.pos() + fe_pos.comp_mul(this->r.deviceSpaceBoundingBox.dims());
+					fr.d = fe_dims.comp_mul(this->r.deviceSpaceBoundingBox.dims());
 				}
 				break;
 			case svgdom::coordinate_units::user_space_on_use:
@@ -298,10 +300,8 @@ void FilterApplier::visit(const svgdom::filter_element& e){
 
 						frBb.merge(bb);
 					}
-					frX = frBb.left;
-					frY = frBb.top;
-					frWidth = frBb.width();
-					frHeight = frBb.height();
+					fr.p = frBb.pos();
+					fr.d = frBb.dims();
 				}
 				break;
 		}
@@ -310,10 +310,8 @@ void FilterApplier::visit(const svgdom::filter_element& e){
 		using std::ceil;
 		using std::max;
 
-		this->filterRegion.x = unsigned(max(floor(frX), decltype(frX)(0)));
-		this->filterRegion.y = unsigned(max(floor(frY), decltype(frY)(0)));
-		this->filterRegion.width = unsigned(max(ceil(frWidth), decltype(frWidth)(0)));
-		this->filterRegion.height = unsigned(max(ceil(frHeight), decltype(frHeight)(0)));
+		this->filterRegion.p = max(floor(fr.p), 0).to<unsigned>();
+		this->filterRegion.d = max(ceil(fr.d), 0).to<unsigned>();
 	}
 	
 	this->relay_accept(e);
@@ -359,11 +357,11 @@ FilterResult color_matrix(const Surface& s, const r4::matrix4<real>& m, const r4
 	
 	ASSERT(s.data)
 	
-	for(unsigned y = 0; y != s.height; ++y){
+	for(unsigned y = 0; y != s.d.y(); ++y){
 		auto sp = &s.data[(y * s.stride) * sizeof(uint32_t)];
 		ASSERT_INFO(sp < s.end, "sp = " << std::hex << static_cast<void*>(sp) << " s.end = " << static_cast<void*>(s.end))
 		auto dp = &ret.surface.data[(y * ret.surface.stride) * sizeof(uint32_t)];
-		for(unsigned x = 0; x != s.width; ++x){
+		for(unsigned x = 0; x != s.d.x(); ++x){
 			auto bb = *sp;
 			++sp;
 			auto gg = *sp;
@@ -519,18 +517,17 @@ FilterResult blend(const Surface& in, const Surface& in2, svgdom::fe_blend_eleme
 	auto s1 = in.intersectionSurface(in2);
 	auto s2 = in2.intersectionSurface(in);
 	
-	ASSERT_INFO(s1.width == s2.width, "s1.width = " << s1.width << " s2.width = " << s2.width)
-	ASSERT(s1.height == s2.height)
-	ASSERT(s1.x == s2.x)
-	ASSERT(s1.y == s2.y)
+	ASSERT_INFO(s1.d.x() == s2.d.x(), "s1.d.x() = " << s1.d.x() << " s2.d.x() = " << s2.d.x())
+	ASSERT(s1.d.y() == s2.d.y())
+	ASSERT(s1.p == s2.p)
 	
 	auto ret = allocateResult(s1);
 	
-	for(unsigned y = 0; y != ret.surface.height; ++y){
+	for(unsigned y = 0; y != ret.surface.d.y(); ++y){
 		auto sp1 = &s1.data[(y * s1.stride) * sizeof(uint32_t)];
 		auto sp2 = &s2.data[(y * s2.stride) * sizeof(uint32_t)];
 		auto dp = &ret.surface.data[(y * ret.surface.stride) * sizeof(uint32_t)];
-		for(unsigned x = 0; x != ret.surface.width; ++x){
+		for(unsigned x = 0; x != ret.surface.d.x(); ++x){
 			// TODO: optimize by using integer arithmetics instead of floating point
 			auto b01 = real(*sp1) / real(0xff);
 			auto b02 = real(*sp2) / real(0xff);
@@ -642,18 +639,17 @@ FilterResult composite(const Surface& in, const Surface& in2, const svgdom::fe_c
 	auto s1 = in.intersectionSurface(in2);
 	auto s2 = in2.intersectionSurface(in);
 	
-	ASSERT_INFO(s1.width == s2.width, "s1.width = " << s1.width << " s2.width = " << s2.width)
-	ASSERT(s1.height == s2.height)
-	ASSERT(s1.x == s2.x)
-	ASSERT(s1.y == s2.y)
+	ASSERT_INFO(s1.d.x() == s2.d.x(), "s1.d.x() = " << s1.d.x() << " s2.d.x()) = " << s2.d.x())
+	ASSERT(s1.d.y() == s2.d.y())
+	ASSERT(s1.p == s2.p)
 	
 	auto ret = allocateResult(s1);
 	
-	for(unsigned y = 0; y != ret.surface.height; ++y){
+	for(unsigned y = 0; y != ret.surface.d.y(); ++y){
 		auto sp1 = &s1.data[(y * s1.stride) * sizeof(uint32_t)];
 		auto sp2 = &s2.data[(y * s2.stride) * sizeof(uint32_t)];
 		auto dp = &ret.surface.data[(y * ret.surface.stride) * sizeof(uint32_t)];
-		for(unsigned x = 0; x != ret.surface.width; ++x){
+		for(unsigned x = 0; x != ret.surface.d.x(); ++x){
 			// TODO: optimize by using integer arithmetics instead of floating point
 			auto r01 = real(*sp1) / real(0xff);
 			auto r02 = real(*sp2) / real(0xff);

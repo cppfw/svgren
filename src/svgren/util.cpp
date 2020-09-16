@@ -83,19 +83,20 @@ Surface svgren::getSubSurface(cairo_t* cr, const CanvasRegion& region){
 	ASSERT(s)
 	
 	ret.stride = cairo_image_surface_get_stride(s) / sizeof(uint32_t); //stride is returned in bytes
-			
-	auto sw = unsigned(cairo_image_surface_get_width(s));
-	auto sh = unsigned(cairo_image_surface_get_height(s));
-
-	ret.width = std::min(region.width, sw - region.x);
-	ret.height = std::min(region.height, sh - region.y);
-	ret.data = cairo_image_surface_get_data(s) + 4 * (region.y * ret.stride + region.x);
-	ret.end = cairo_image_surface_get_data(s) + cairo_image_surface_get_stride(s) * cairo_image_surface_get_height(s);
-	ret.x = region.x;
-	ret.y = region.y;
 	
-	ASSERT(ret.height <= sh)
-	ASSERT(&ret.data[ret.stride * (ret.height - 1) * sizeof(uint32_t)] < ret.end || ret.height == 0)
+	r4::vector2<unsigned> s_dims{
+		unsigned(cairo_image_surface_get_width(s)),
+		unsigned(cairo_image_surface_get_height(s))
+	};
+
+	using std::min;
+	ret.d = min(region.d, s_dims - region.p);
+	ret.data = cairo_image_surface_get_data(s) + 4 * (region.p.y() * ret.stride + region.p.x());
+	ret.end = cairo_image_surface_get_data(s) + cairo_image_surface_get_stride(s) * cairo_image_surface_get_height(s);
+	ret.p = region.p;
+	
+	ASSERT(ret.d.y() <= s_dims.y())
+	ASSERT(&ret.data[ret.stride * (ret.d.y() - 1) * sizeof(uint32_t)] < ret.end || ret.d.y() == 0)
 
 	return ret;
 }

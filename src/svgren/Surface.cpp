@@ -10,15 +10,15 @@ Surface Surface::intersectionSurface(const CanvasRegion& r)const{
 	ASSERT(ret.data == this->data)
 	
 	ret.intersect(r);
-	ASSERT(ret.height <= r.height)
+	ASSERT(ret.d.y() <= r.d.y())
 	
-	ASSERT(ret.x >= this->x)
-	ASSERT(ret.y >= this->y)
+	ASSERT(ret.p.x() >= this->p.x())
+	ASSERT(ret.p.y() >= this->p.y())
 	
-	ret.data += ((ret.y - this->y) * ret.stride + (ret.x - this->x)) * sizeof(uint32_t);
+	ret.data += ((ret.p.y() - this->p.y()) * ret.stride + (ret.p.x() - this->p.x())) * sizeof(uint32_t);
 	
 	ASSERT(ret.end == this->end)
-	ASSERT_INFO(ret.height <= this->height, "ret.height = " << ret.height << " this->height = " << this->height << " r.height = " << r.height)
+	ASSERT_INFO(ret.d.y() <= this->d.y(), "ret = " << ret << " this = " << *this << " r = " << r)
 	
 	return ret;
 }
