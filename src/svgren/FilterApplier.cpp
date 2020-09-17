@@ -201,6 +201,7 @@ void FilterApplier::setResult(const std::string& name, FilterResult&& result){
 
 Surface FilterApplier::getSource(const std::string& in){
 	if(in == "SourceGraphic"){
+		// TRACE(<< "source graphic" << std::endl)
 		return this->getSourceGraphic();
 	}
 	if(in == "SourceAlpha"){
@@ -208,6 +209,7 @@ Surface FilterApplier::getSource(const std::string& in){
 		throw std::runtime_error("SourceAlpha not implemented");
 	}
 	if(in == "BackgroundImage"){
+		// TRACE(<< "background image" << std::endl)
 		return this->r.background;
 	}
 	if(in == "BackgroundAlpha"){
@@ -225,14 +227,17 @@ Surface FilterApplier::getSource(const std::string& in){
 	
 	auto i = this->results.find(in);
 	if(i != this->results.end()){
+		// TRACE(<< "results" << std::endl)
 		return i->second.surface;
 	}
 	
 	if(in.length() == 0){
+		// TRACE(<< "length = 0" << std::endl)
 		return this->getSourceGraphic();
 	}
 	
 	// return empty surface
+	// TRACE(<< "empty surface" << std::endl)
 	return Surface();
 }
 
@@ -342,9 +347,10 @@ void FilterApplier::visit(const svgdom::fe_gaussian_blur_element& e){
 namespace{
 FilterResult color_matrix(const Surface& s, const r4::matrix4<real>& m, const r4::vector4<real>& mc5){
 //	TRACE(<< "colorMatrix(): s.width = " << s.width << " s.height = " << s.height << std::endl)
+	ASSERT(s.data || s.d.is_zero())
 	FilterResult ret = allocateResult(s);
 	
-	ASSERT(s.data)
+	ASSERT(s.data || s.d.is_zero())
 	
 	for(unsigned y = 0; y != s.d.y(); ++y){
 		auto sp = &s.data[(y * s.stride) * sizeof(uint32_t)];
@@ -493,7 +499,10 @@ void FilterApplier::visit(const svgdom::fe_color_matrix_element& e){
 			break;
 	}
 	
-	auto s = this->getSource(e.in).intersectionSurface(this->filterRegion);	
+	// TRACE(<< "color matrix getSource()" << std::endl)
+	auto src = this->getSource(e.in);
+	ASSERT(src.data || src.d.is_zero())
+	auto s = src.intersectionSurface(this->filterRegion);	
 	
 	// TODO: set filter sub-region
 	

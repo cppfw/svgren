@@ -73,14 +73,14 @@ CairoMatrixSaveRestore::~CairoMatrixSaveRestore()noexcept{
 }
 
 
-Surface svgren::getSubSurface(cairo_t* cr, const CanvasRegion& region){
+Surface svgren::getSubSurface(cairo_t* cr, const r4::rectangle<unsigned>& region){
 //	TRACE(<< "region = (" << region[0] << ", " << region[1] << ") (" << region[2] << ", " << region[3] << ")" << std::endl)
 	
 	Surface ret;
 	auto s = cairo_get_group_target(cr);
 	ASSERT(s)
 	
-	ret.stride = cairo_image_surface_get_stride(s) / sizeof(uint32_t); //stride is returned in bytes
+	ret.stride = cairo_image_surface_get_stride(s) / sizeof(uint32_t); // stride is returned in bytes
 	
 	r4::vector2<unsigned> s_dims{
 		unsigned(cairo_image_surface_get_width(s)),

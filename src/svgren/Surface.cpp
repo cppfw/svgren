@@ -4,13 +4,17 @@
 
 using namespace svgren;
 
-Surface Surface::intersectionSurface(const CanvasRegion& r)const{
+Surface Surface::intersectionSurface(const r4::rectangle<unsigned>& r)const{
 	Surface ret = *this;
 
 	ASSERT(ret.data == this->data)
+	ASSERT(ret.p == this->p)
+	ASSERT(ret.d == this->d)
 	
+	// TRACE(<< "ret = " << ret << " r = " << r << std::endl)
 	ret.intersect(r);
-	ASSERT(ret.d.y() <= r.d.y())
+	// TRACE(<< "ret = " << ret << std::endl)
+	ASSERT_INFO(ret.d.y() <= r.d.y(), "ret = " << ret << " this = " << (*this) << " r = " << r)
 	
 	ASSERT(ret.p.x() >= this->p.x())
 	ASSERT(ret.p.y() >= this->p.y())

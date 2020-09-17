@@ -17,7 +17,6 @@
 
 #include "config.hxx"
 #include "Surface.hxx"
-#include "CanvasRegion.hxx"
 
 namespace svgren{
 
@@ -58,7 +57,7 @@ public:
 	~CairoContextSaveRestore()noexcept;
 };
 
-Surface getSubSurface(cairo_t* cr, const CanvasRegion& region = CanvasRegion());
+Surface getSubSurface(cairo_t* cr, const r4::rectangle<unsigned>& region = {0, std::numeric_limits<unsigned>::max()});
 
 real percentLengthToFraction(const svgdom::length& l);
 

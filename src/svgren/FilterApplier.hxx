@@ -16,7 +16,7 @@ class FilterApplier : public svgdom::const_visitor{
 
 	decltype(svgdom::filter_element::primitive_units) primitiveUnits;
 	
-	CanvasRegion filterRegion;
+	r4::rectangle<unsigned> filterRegion = {0, std::numeric_limits<unsigned>::max()};
 	
 	std::map<std::string, FilterResult> results;
 	

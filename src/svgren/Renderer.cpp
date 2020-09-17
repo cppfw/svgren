@@ -1773,7 +1773,7 @@ decltype(svgdom::styleable::presentation_attributes) Renderer::gradient_get_pres
 	return ret;
 }
 
-void Renderer::blit(const Surface& s) {
+void Renderer::blit(const Surface& s){
 	if(!s.data || s.d.x() == 0 || s.d.y() == 0){
 		TRACE(<< "Renderer::blit(): source image is empty" << std::endl)
 		return;
