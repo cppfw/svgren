@@ -810,8 +810,7 @@ void Renderer::visit(const svgdom::path_element& e){
 				this->canvas.line_to_rel({0, real(s.y)});
 				break;
 			case svgdom::path_element::step::type::close:
-				cairo_close_path(this->cr);
-				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+				this->canvas.close_path();
 				break;
 			case svgdom::path_element::step::type::quadratic_abs:
 				this->canvas.quadratic_curve_to_abs({real(s.x1), real(s.y1)}, {real(s.x), real(s.y)});
@@ -880,12 +879,18 @@ void Renderer::visit(const svgdom::path_element& e){
 				}
 				break;
 			case svgdom::path_element::step::type::cubic_abs:
-				cairo_curve_to(this->cr, real(s.x1), real(s.y1), real(s.x2), real(s.y2), real(s.x), real(s.y));
-				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+				this->canvas.cubic_curve_to_abs(
+						{real(s.x1), real(s.y1)},
+						{real(s.x2), real(s.y2)},
+						{real(s.x), real(s.y)}
+					);
 				break;
 			case svgdom::path_element::step::type::cubic_rel:
-				cairo_rel_curve_to(this->cr, real(s.x1), real(s.y1), real(s.x2), real(s.y2), real(s.x), real(s.y));
-				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+				this->canvas.cubic_curve_to_rel(
+						{real(s.x1), real(s.y1)},
+						{real(s.x2), real(s.y2)},
+						{real(s.x), real(s.y)}
+					);
 				break;
 			case svgdom::path_element::step::type::cubic_smooth_abs:
 				{
@@ -909,8 +914,11 @@ void Renderer::visit(const svgdom::path_element& e){
 							cp1 = cur_p;
 							break;
 					}
-					cairo_curve_to(this->cr, cp1.x(), cp1.y(), real(s.x2), real(s.y2), real(s.x), real(s.y));
-					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+					this->canvas.cubic_curve_to_abs(
+							cp1,
+							{real(s.x2), real(s.y2)},
+							{real(s.x), real(s.y)}
+						);
 				}
 				break;
 			case svgdom::path_element::step::type::cubic_smooth_rel:
@@ -935,8 +943,11 @@ void Renderer::visit(const svgdom::path_element& e){
 							cp1.set(0);
 							break;
 					}
-					cairo_rel_curve_to(this->cr, cp1.x(), cp1.y(), real(s.x2), real(s.y2), real(s.x), real(s.y));
-					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+					this->canvas.cubic_curve_to_rel(
+							cp1,
+							{real(s.x2), real(s.y2)},
+							{real(s.x), real(s.y)}
+						);
 				}
 				break;
 			case svgdom::path_element::step::type::arc_abs:

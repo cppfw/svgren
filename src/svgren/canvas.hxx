@@ -96,6 +96,11 @@ public:
 	void quadratic_curve_to_abs(const r4::vector2<real>& cp1, const r4::vector2<real>& ep);
 	void quadratic_curve_to_rel(const r4::vector2<real>& cp1, const r4::vector2<real>& ep);
 
+	void cubic_curve_to_abs(const r4::vector2<real>& cp1, const r4::vector2<real>& cp2, const r4::vector2<real>& ep);
+	void cubic_curve_to_rel(const r4::vector2<real>& cp1, const r4::vector2<real>& cp2, const r4::vector2<real>& ep);
+
+	void close_path();
+
 	std::vector<uint32_t> release();
 };
 
