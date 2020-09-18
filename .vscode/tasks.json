@@ -49,7 +49,7 @@
         {
             "label": "run_debug",
             "type": "shell",
-            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/back.svg out.png)",
+            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/-3color.svg out.png)",
             "problemMatcher": [],
             "dependsOn": "build_debug",
             // "dependsOn": "build_debug_grey_bg"
