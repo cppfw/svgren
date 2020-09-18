@@ -84,6 +84,7 @@ public:
 
 	r4::rectangle<real> get_shape_bounding_box()const;
 
+	bool has_current_point()const;
 	r4::vector2<real> get_current_point()const;
 
 	std::vector<uint32_t> release();

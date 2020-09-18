@@ -731,12 +731,12 @@ void Renderer::visit(const svgdom::use_element& e){
 	ref->e.accept(visitor);
 }
 
-void Renderer::visit(const svgdom::svg_element& e) {
+void Renderer::visit(const svgdom::svg_element& e){
 //	TRACE(<< "rendering SvgElement" << std::endl)
 	renderSvgElement(e, e, e, e, e.x, e.y, e.width, e.height);
 }
 
-bool Renderer::isInvisible() {
+bool Renderer::isInvisible(){
 	if(auto p = this->styleStack.get_style_property(svgdom::style_property::visibility)){
 		if(p->visibility != svgdom::visibility::visible){
 			return true;
@@ -745,7 +745,7 @@ bool Renderer::isInvisible() {
 	return this->isGroupInvisible();
 }
 
-bool Renderer::isGroupInvisible() {
+bool Renderer::isGroupInvisible(){
 	if(auto p = this->styleStack.get_style_property(svgdom::style_property::display)){
 		if(p->display == svgdom::display::none){
 			return true;
@@ -754,7 +754,7 @@ bool Renderer::isGroupInvisible() {
 	return false;
 }
 
-void Renderer::visit(const svgdom::path_element& e) {
+void Renderer::visit(const svgdom::path_element& e){
 //	TRACE(<< "rendering PathElement" << std::endl)
 	svgdom::style_stack::push pushStyles(this->styleStack, e);
 
@@ -770,19 +770,18 @@ void Renderer::visit(const svgdom::path_element& e) {
 
 	this->applyTransformations(e.transformations);
 
-	real prevQuadraticX1 = 0;
-	real prevQuadraticY1 = 0;
+	r4::vector2<real> prev_quadratic_p{0};
 
 	const svgdom::path_element::step* prevStep = nullptr;
 
-	for (auto& s : e.path) {
-		switch (s.type_) {
+	for(auto& s : e.path){
+		switch(s.type_){
 			case svgdom::path_element::step::type::move_abs:
 				cairo_move_to(this->cr, real(s.x), real(s.y));
 				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				break;
 			case svgdom::path_element::step::type::move_rel:
-				if(!cairo_has_current_point(this->cr)){
+				if(!this->canvas.has_current_point()){
 					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					cairo_move_to(this->cr, 0, 0);
 					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
@@ -801,16 +800,8 @@ void Renderer::visit(const svgdom::path_element& e) {
 				break;
 			case svgdom::path_element::step::type::horizontal_line_abs:
 				{
-					double x, y;
-					if(cairo_has_current_point(this->cr)){
-						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-						cairo_get_current_point(this->cr, &x, &y);
-						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-					}else{
-						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-						y = 0;
-					}
-					cairo_line_to(this->cr, real(s.x), y);
+					auto cur_p = this->canvas.get_current_point();
+					cairo_line_to(this->cr, real(s.x), cur_p.y());
 					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				}
 				break;
@@ -820,16 +811,8 @@ void Renderer::visit(const svgdom::path_element& e) {
 				break;
 			case svgdom::path_element::step::type::vertical_line_abs:
 				{
-					double x, y;
-					if(cairo_has_current_point(this->cr)){
-						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-						cairo_get_current_point(this->cr, &x, &y);
-						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-					}else{
-						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-						x = 0;
-					}
-					cairo_line_to(this->cr, x, real(s.y));
+					auto cur_p = this->canvas.get_current_point();
+					cairo_line_to(this->cr, cur_p.x(), real(s.y));
 					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				}
 				break;
@@ -849,98 +832,62 @@ void Renderer::visit(const svgdom::path_element& e) {
 				break;
 			case svgdom::path_element::step::type::quadratic_smooth_abs:
 				{
-					real x0, y0; // current point, absolute coordinates
-					if (cairo_has_current_point(this->cr)) {
-						double xxx, yyy;
-						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-						cairo_get_current_point(this->cr, &xxx, &yyy);
-						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-						x0 = real(xxx);
-						y0 = real(yyy);
-					} else {
-						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-						cairo_move_to(this->cr, 0, 0);
-						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-						x0 = 0;
-						y0 = 0;
-					}
+					auto cur_p = this->canvas.get_current_point();
+					auto p = r4::vector2<real>{real(prevStep->x), real(prevStep->y)};
+					auto p1 = r4::vector2<real>{real(prevStep->x1), real(prevStep->y1)};
 
-					real x1, y1; // control point
+					r4::vector2<real> cp1; // control point
 					switch(prevStep ? prevStep->type_ : svgdom::path_element::step::type::unknown){
 						case svgdom::path_element::step::type::quadratic_abs:
-							x1 = -(real(prevStep->x1) - x0) + x0;
-							y1 = -(real(prevStep->y1) - y0) + y0;
+							cp1 = -(p1 - cur_p) + cur_p;
 							break;
 						case svgdom::path_element::step::type::quadratic_smooth_abs:
-							x1 = -(prevQuadraticX1 - x0) + x0;
-							y1 = -(prevQuadraticY1 - y0) + y0;
+							cp1 = -(prev_quadratic_p - cur_p) + cur_p;
 							break;
 						case svgdom::path_element::step::type::quadratic_rel:
-							x1 = -(real(prevStep->x1) - real(prevStep->x)) + x0;
-							y1 = -(real(prevStep->y1) - real(prevStep->y)) + y0;
+							cp1 = -(p1 - p) + cur_p;
 							break;
 						case svgdom::path_element::step::type::quadratic_smooth_rel:
-							x1 = -(prevQuadraticX1 - real(prevStep->x)) + x0;
-							y1 = -(prevQuadraticY1 - real(prevStep->y)) + y0;
+							cp1 = -(prev_quadratic_p - p) + cur_p;
 							break;
 						default:
 							// No previous step or previous step is not a quadratic Bezier curve.
 							// Set first control point equal to current point
-							x1 = x0;
-							y1 = y0;
+							cp1 = cur_p;
 							break;
 					}
-					prevQuadraticX1 = x1;
-					prevQuadraticY1 = y1;
-					cairoQuadraticCurveTo(this->cr, x1, y1, real(s.x), real(s.y));
+					prev_quadratic_p = cp1;
+					cairoQuadraticCurveTo(this->cr, cp1.x(), cp1.y(), real(s.x), real(s.y));
 				}
 				break;
 			case svgdom::path_element::step::type::quadratic_smooth_rel:
 				{
-					real x0, y0; // current point, absolute coordinates
-					if (cairo_has_current_point(this->cr)) {
-						double xxx, yyy;
-						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-						cairo_get_current_point(this->cr, &xxx, &yyy);
-						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-						x0 = real(xxx);
-						y0 = real(yyy);
-					} else {
-						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-						cairo_move_to(this->cr, 0, 0);
-						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-						x0 = 0;
-						y0 = 0;
-					}
+					auto cur_p = this->canvas.get_current_point();
+					auto p = r4::vector2<real>{real(prevStep->x), real(prevStep->y)};
+					auto p1 = r4::vector2<real>{real(prevStep->x1), real(prevStep->y1)};
 
-					real x1, y1; // control point
+					r4::vector2<real> cp1; // control point
 					switch(prevStep ? prevStep->type_ : svgdom::path_element::step::type::unknown){
 						case svgdom::path_element::step::type::quadratic_smooth_abs:
-							x1 = -(prevQuadraticX1 - x0);
-							y1 = -(prevQuadraticY1 - y0);
+							cp1 = -(prev_quadratic_p - cur_p);
 							break;
 						case svgdom::path_element::step::type::quadratic_abs:
-							x1 = -(real(prevStep->x1) - x0);
-							y1 = -(real(prevStep->y1) - y0);
+							cp1 = -(p1 - cur_p);
 							break;
 						case svgdom::path_element::step::type::quadratic_smooth_rel:
-							x1 = -(prevQuadraticX1 - real(prevStep->x));
-							y1 = -(prevQuadraticY1 - real(prevStep->y));
+							cp1 = -(prev_quadratic_p - p);
 							break;
 						case svgdom::path_element::step::type::quadratic_rel:
-							x1 = -(real(prevStep->x1) - real(prevStep->x));
-							y1 = -(real(prevStep->y1) - real(prevStep->y));
+							cp1 = -(p1 - p);
 							break;
 						default:
 							// No previous step or previous step is not a quadratic Bezier curve.
 							// Set first control point equal to current point, i.e. 0 because this is Relative step.
-							x1 = 0;
-							y1 = 0;
+							cp1.set(0);
 							break;
 					}
-					prevQuadraticX1 = x1;
-					prevQuadraticY1 = y1;
-					cairoRelQuadraticCurveTo(this->cr, x1, y1, real(s.x), real(s.y));
+					prev_quadratic_p = cp1;
+					cairoRelQuadraticCurveTo(this->cr, cp1.x(), cp1.y(), real(s.x), real(s.y));
 				}
 				break;
 			case svgdom::path_element::step::type::cubic_abs:
@@ -953,83 +900,53 @@ void Renderer::visit(const svgdom::path_element& e) {
 				break;
 			case svgdom::path_element::step::type::cubic_smooth_abs:
 				{
-					real x0, y0; // current point, absolute coordinates
-					if (cairo_has_current_point(this->cr)) {
-						double xxx, yyy;
-						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-						cairo_get_current_point(this->cr, &xxx, &yyy);
-						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-						x0 = real(xxx);
-						y0 = real(yyy);
-					} else {
-						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-						cairo_move_to(this->cr, 0, 0);
-						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-						x0 = 0;
-						y0 = 0;
-					}
+					auto cur_p = this->canvas.get_current_point();
+					auto p = r4::vector2<real>{real(prevStep->x), real(prevStep->y)};
+					auto p2 = r4::vector2<real>{real(prevStep->x2), real(prevStep->y2)};
 
-					real x1, y1; // first control point
+					r4::vector2<real> cp1; // first control point
 					switch(prevStep ? prevStep->type_ : svgdom::path_element::step::type::unknown){
 						case svgdom::path_element::step::type::cubic_smooth_abs:
 						case svgdom::path_element::step::type::cubic_abs:
-							x1 = -(real(prevStep->x2) - x0) + x0;
-							y1 = -(real(prevStep->y2) - y0) + y0;
+							cp1 = -(p2 - cur_p) + cur_p;
 							break;
 						case svgdom::path_element::step::type::cubic_smooth_rel:
 						case svgdom::path_element::step::type::cubic_rel:
-							x1 = -(real(prevStep->x2) - real(prevStep->x)) + x0;
-							y1 = -(real(prevStep->y2) - real(prevStep->y)) + y0;
+							cp1 = -(p2 - p) + cur_p;
 							break;
 						default:
 							// No previous step or previous step is not a cubic Bezier curve.
 							// Set first control point equal to current point
-							x1 = x0;
-							y1 = y0;
+							cp1 = cur_p;
 							break;
 					}
-					cairo_curve_to(this->cr, x1, y1, real(s.x2), real(s.y2), real(s.x), real(s.y));
+					cairo_curve_to(this->cr, cp1.x(), cp1.y(), real(s.x2), real(s.y2), real(s.x), real(s.y));
 					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				}
 				break;
 			case svgdom::path_element::step::type::cubic_smooth_rel:
 				{
-					real x0, y0; // current point, absolute coordinates
-					if(cairo_has_current_point(this->cr)){
-						double xxx, yyy;
-						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-						cairo_get_current_point(this->cr, &xxx, &yyy);
-						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-						x0 = real(xxx);
-						y0 = real(yyy);
-					}else{
-						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-						cairo_move_to(this->cr, 0, 0);
-						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-						x0 = 0;
-						y0 = 0;
-					}
+					auto cur_p = this->canvas.get_current_point();
+					auto p = r4::vector2<real>{real(prevStep->x), real(prevStep->y)};
+					auto p2 = r4::vector2<real>{real(prevStep->x2), real(prevStep->y2)};
 
-					real x1, y1; // first control point
+					r4::vector2<real> cp1; // first control point
 					switch(prevStep ? prevStep->type_ : svgdom::path_element::step::type::unknown){
 						case svgdom::path_element::step::type::cubic_smooth_abs:
 						case svgdom::path_element::step::type::cubic_abs:
-							x1 = -(real(prevStep->x2) - x0);
-							y1 = -(real(prevStep->y2) - y0);
+							cp1 = -(p2 - cur_p);
 							break;
 						case svgdom::path_element::step::type::cubic_smooth_rel:
 						case svgdom::path_element::step::type::cubic_rel:
-							x1 = -(real(prevStep->x2) - real(prevStep->x));
-							y1 = -(real(prevStep->y2) - real(prevStep->y));
+							cp1 = -(p2 - p);
 							break;
 						default:
 							// No previous step or previous step is not a cubic Bezier curve.
 							// Set first control point equal to current point, i.e. 0 because this is Relative step.
-							x1 = 0;
-							y1 = 0;
+							cp1.set(0);
 							break;
 					}
-					cairo_rel_curve_to(this->cr, x1, y1, real(s.x2), real(s.y2), real(s.x), real(s.y));
+					cairo_rel_curve_to(this->cr, cp1.x(), cp1.y(), real(s.x2), real(s.y2), real(s.x), real(s.y));
 					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				}
 				break;
