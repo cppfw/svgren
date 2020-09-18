@@ -777,58 +777,47 @@ void Renderer::visit(const svgdom::path_element& e){
 	for(auto& s : e.path){
 		switch(s.type_){
 			case svgdom::path_element::step::type::move_abs:
-				cairo_move_to(this->cr, real(s.x), real(s.y));
-				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+				this->canvas.move_to_abs({real(s.x), real(s.y)});
 				break;
 			case svgdom::path_element::step::type::move_rel:
 				if(!this->canvas.has_current_point()){
-					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-					cairo_move_to(this->cr, 0, 0);
-					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+					this->canvas.move_to_abs(0);
 				}
-				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-				cairo_rel_move_to(this->cr, real(s.x), real(s.y));
-				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+				this->canvas.move_to_rel({real(s.x), real(s.y)});
 				break;
 			case svgdom::path_element::step::type::line_abs:
-				cairo_line_to(this->cr, real(s.x), real(s.y));
-				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+				this->canvas.line_to_abs({real(s.x), real(s.y)});
 				break;
 			case svgdom::path_element::step::type::line_rel:
-				cairo_rel_line_to(this->cr, real(s.x), real(s.y));
-				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+				this->canvas.line_to_rel({real(s.x), real(s.y)});
 				break;
 			case svgdom::path_element::step::type::horizontal_line_abs:
-				{
-					auto cur_p = this->canvas.get_current_point();
-					cairo_line_to(this->cr, real(s.x), cur_p.y());
-					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-				}
+				this->canvas.line_to_abs({
+						real(s.x),
+						this->canvas.get_current_point().y()
+					});
 				break;
 			case svgdom::path_element::step::type::horizontal_line_rel:
-				cairo_rel_line_to(this->cr, real(s.x), 0);
-				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+				this->canvas.line_to_rel({real(s.x), 0});
 				break;
 			case svgdom::path_element::step::type::vertical_line_abs:
-				{
-					auto cur_p = this->canvas.get_current_point();
-					cairo_line_to(this->cr, cur_p.x(), real(s.y));
-					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-				}
+				this->canvas.line_to_abs({
+						this->canvas.get_current_point().x(),
+						real(s.y)
+					});
 				break;
 			case svgdom::path_element::step::type::vertical_line_rel:
-				cairo_rel_line_to(this->cr, 0, real(s.y));
-				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+				this->canvas.line_to_rel({0, real(s.y)});
 				break;
 			case svgdom::path_element::step::type::close:
 				cairo_close_path(this->cr);
 				ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				break;
 			case svgdom::path_element::step::type::quadratic_abs:
-				cairoQuadraticCurveTo(this->cr, real(s.x1), real(s.y1), real(s.x), real(s.y));
+				this->canvas.quadratic_curve_to_abs({real(s.x1), real(s.y1)}, {real(s.x), real(s.y)});
 				break;
 			case svgdom::path_element::step::type::quadratic_rel:
-				cairoRelQuadraticCurveTo(this->cr, real(s.x1), real(s.y1), real(s.x), real(s.y));
+				this->canvas.quadratic_curve_to_rel({real(s.x1), real(s.y1)}, {real(s.x), real(s.y)});
 				break;
 			case svgdom::path_element::step::type::quadratic_smooth_abs:
 				{
@@ -857,7 +846,7 @@ void Renderer::visit(const svgdom::path_element& e){
 							break;
 					}
 					prev_quadratic_p = cp1;
-					cairoQuadraticCurveTo(this->cr, cp1.x(), cp1.y(), real(s.x), real(s.y));
+					this->canvas.quadratic_curve_to_abs(cp1, {real(s.x), real(s.y)});
 				}
 				break;
 			case svgdom::path_element::step::type::quadratic_smooth_rel:
@@ -887,7 +876,7 @@ void Renderer::visit(const svgdom::path_element& e){
 							break;
 					}
 					prev_quadratic_p = cp1;
-					cairoRelQuadraticCurveTo(this->cr, cp1.x(), cp1.y(), real(s.x), real(s.y));
+					this->canvas.quadratic_curve_to_rel(cp1, {real(s.x), real(s.y)});
 				}
 				break;
 			case svgdom::path_element::step::type::cubic_abs:

@@ -87,6 +87,15 @@ public:
 	bool has_current_point()const;
 	r4::vector2<real> get_current_point()const;
 
+	void move_to_abs(const r4::vector2<real>& p);
+	void move_to_rel(const r4::vector2<real>& p);
+
+	void line_to_abs(const r4::vector2<real>& p);
+	void line_to_rel(const r4::vector2<real>& p);
+
+	void quadratic_curve_to_abs(const r4::vector2<real>& cp1, const r4::vector2<real>& ep);
+	void quadratic_curve_to_rel(const r4::vector2<real>& cp1, const r4::vector2<real>& ep);
+
 	std::vector<uint32_t> release();
 };
 

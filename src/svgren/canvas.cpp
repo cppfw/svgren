@@ -191,3 +191,72 @@ r4::vector2<real> canvas::get_current_point()const{
 	return real(0);
 #endif
 }
+
+void canvas::move_to_abs(const r4::vector2<real>& p){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	cairo_move_to(this->cr, double(p.x()), double(p.y()));
+	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+#endif
+}
+
+void canvas::move_to_rel(const r4::vector2<real>& p){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	cairo_rel_move_to(this->cr, double(p.x()), double(p.y()));
+	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+#endif
+}
+
+void canvas::line_to_abs(const r4::vector2<real>& p){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	cairo_line_to(this->cr, double(p.x()), double(p.y()));
+	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+#endif
+}
+
+void canvas::line_to_rel(const r4::vector2<real>& p){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	cairo_rel_line_to(this->cr, double(p.x()), double(p.y()));
+	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+#endif
+}
+
+void canvas::quadratic_curve_to_abs(const r4::vector2<real>& cp1, const r4::vector2<real>& ep){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	double x0, y0; // current point, absolute coordinates
+	if (cairo_has_current_point(cr)) {
+		ASSERT(cairo_status(cr) == CAIRO_STATUS_SUCCESS)
+		cairo_get_current_point(cr, &x0, &y0);
+		ASSERT(cairo_status(cr) == CAIRO_STATUS_SUCCESS)
+	}
+	else {
+		ASSERT(cairo_status(cr) == CAIRO_STATUS_SUCCESS)
+		cairo_move_to(cr, 0, 0);
+		ASSERT(cairo_status(cr) == CAIRO_STATUS_SUCCESS)
+		x0 = 0;
+		y0 = 0;
+	}
+	cairo_curve_to(cr,
+			2.0 / 3.0 * double(cp1.x()) + 1.0 / 3.0 * x0,
+			2.0 / 3.0 * double(cp1.y()) + 1.0 / 3.0 * y0,
+			2.0 / 3.0 * double(cp1.x()) + 1.0 / 3.0 * double(ep.x()),
+			2.0 / 3.0 * double(cp1.y()) + 1.0 / 3.0 * double(ep.y()),
+			double(ep.x()),
+			double(ep.y())
+		);
+	ASSERT(cairo_status(cr) == CAIRO_STATUS_SUCCESS)
+#endif
+}
+
+void canvas::quadratic_curve_to_rel(const r4::vector2<real>& cp1, const r4::vector2<real>& ep){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	cairo_rel_curve_to(cr,
+			2.0 / 3.0 * double(cp1.x()),
+			2.0 / 3.0 * double(cp1.y()),
+			2.0 / 3.0 * double(cp1.x()) + 1.0 / 3.0 * double(ep.x()),
+			2.0 / 3.0 * double(cp1.y()) + 1.0 / 3.0 * double(ep.y()),
+			double(ep.x()),
+			double(ep.y())
+		);
+	ASSERT(cairo_status(cr) == CAIRO_STATUS_SUCCESS)
+#endif
+}

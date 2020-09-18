@@ -20,10 +20,6 @@
 
 namespace svgren{
 
-void cairoRelQuadraticCurveTo(cairo_t *cr, double x1, double y1, double x, double y);
-
-void cairoQuadraticCurveTo(cairo_t *cr, double x1, double y1, double x, double y);
-
 // convert degrees to radians
 inline real deg_to_rad(real deg){
 	return deg * utki::pi<real>() / real(180);

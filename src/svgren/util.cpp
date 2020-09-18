@@ -13,43 +13,6 @@
 
 using namespace svgren;
 
-void svgren::cairoRelQuadraticCurveTo(cairo_t *cr, double x1, double y1, double x, double y){
-	cairo_rel_curve_to(cr,
-			2.0 / 3.0 * x1,
-			2.0 / 3.0 * y1,
-			2.0 / 3.0 * x1 + 1.0 / 3.0 * x,
-			2.0 / 3.0 * y1 + 1.0 / 3.0 * y,
-			x,
-			y
-		);
-	ASSERT(cairo_status(cr) == CAIRO_STATUS_SUCCESS)
-}
-
-void svgren::cairoQuadraticCurveTo(cairo_t *cr, double x1, double y1, double x, double y){
-	double x0, y0; //current point, absolute coordinates
-	if (cairo_has_current_point(cr)) {
-		ASSERT(cairo_status(cr) == CAIRO_STATUS_SUCCESS)
-		cairo_get_current_point(cr, &x0, &y0);
-		ASSERT(cairo_status(cr) == CAIRO_STATUS_SUCCESS)
-	}
-	else {
-		ASSERT(cairo_status(cr) == CAIRO_STATUS_SUCCESS)
-		cairo_move_to(cr, 0, 0);
-		ASSERT(cairo_status(cr) == CAIRO_STATUS_SUCCESS)
-		x0 = 0;
-		y0 = 0;
-	}
-	cairo_curve_to(cr,
-			2.0 / 3.0 * x1 + 1.0 / 3.0 * x0,
-			2.0 / 3.0 * y1 + 1.0 / 3.0 * y0,
-			2.0 / 3.0 * x1 + 1.0 / 3.0 * x,
-			2.0 / 3.0 * y1 + 1.0 / 3.0 * y,
-			x,
-			y
-		);
-	ASSERT(cairo_status(cr) == CAIRO_STATUS_SUCCESS)
-}
-
 CairoContextSaveRestore::CairoContextSaveRestore(cairo_t* cr) :
 		cr(cr)
 {
