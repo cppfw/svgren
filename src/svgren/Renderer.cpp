@@ -953,11 +953,14 @@ void Renderer::visit(const svgdom::path_element& e) {
 				break;
 			case svgdom::path_element::step::type::cubic_smooth_abs:
 				{
-					double x0, y0; // current point, absolute coordinates
+					real x0, y0; // current point, absolute coordinates
 					if (cairo_has_current_point(this->cr)) {
+						double xxx, yyy;
 						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-						cairo_get_current_point(this->cr, &x0, &y0);
+						cairo_get_current_point(this->cr, &xxx, &yyy);
 						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+						x0 = real(xxx);
+						y0 = real(yyy);
 					} else {
 						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 						cairo_move_to(this->cr, 0, 0);
@@ -966,17 +969,17 @@ void Renderer::visit(const svgdom::path_element& e) {
 						y0 = 0;
 					}
 
-					double x1, y1; // first control point
+					real x1, y1; // first control point
 					switch(prevStep ? prevStep->type_ : svgdom::path_element::step::type::unknown){
 						case svgdom::path_element::step::type::cubic_smooth_abs:
 						case svgdom::path_element::step::type::cubic_abs:
-							x1 = -(prevStep->x2 - x0) + x0;
-							y1 = -(prevStep->y2 - y0) + y0;
+							x1 = -(real(prevStep->x2) - x0) + x0;
+							y1 = -(real(prevStep->y2) - y0) + y0;
 							break;
 						case svgdom::path_element::step::type::cubic_smooth_rel:
 						case svgdom::path_element::step::type::cubic_rel:
-							x1 = -(prevStep->x2 - prevStep->x) + x0;
-							y1 = -(prevStep->y2 - prevStep->y) + y0;
+							x1 = -(real(prevStep->x2) - real(prevStep->x)) + x0;
+							y1 = -(real(prevStep->y2) - real(prevStep->y)) + y0;
 							break;
 						default:
 							// No previous step or previous step is not a cubic Bezier curve.
@@ -985,17 +988,20 @@ void Renderer::visit(const svgdom::path_element& e) {
 							y1 = y0;
 							break;
 					}
-					cairo_curve_to(this->cr, x1, y1, s.x2, s.y2, s.x, s.y);
+					cairo_curve_to(this->cr, x1, y1, real(s.x2), real(s.y2), real(s.x), real(s.y));
 					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				}
 				break;
 			case svgdom::path_element::step::type::cubic_smooth_rel:
 				{
-					double x0, y0; // current point, absolute coordinates
+					real x0, y0; // current point, absolute coordinates
 					if(cairo_has_current_point(this->cr)){
+						double xxx, yyy;
 						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-						cairo_get_current_point(this->cr, &x0, &y0);
+						cairo_get_current_point(this->cr, &xxx, &yyy);
 						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+						x0 = real(xxx);
+						y0 = real(yyy);
 					}else{
 						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 						cairo_move_to(this->cr, 0, 0);
@@ -1004,17 +1010,17 @@ void Renderer::visit(const svgdom::path_element& e) {
 						y0 = 0;
 					}
 
-					double x1, y1; // first control point
+					real x1, y1; // first control point
 					switch(prevStep ? prevStep->type_ : svgdom::path_element::step::type::unknown){
 						case svgdom::path_element::step::type::cubic_smooth_abs:
 						case svgdom::path_element::step::type::cubic_abs:
-							x1 = -(prevStep->x2 - x0);
-							y1 = -(prevStep->y2 - y0);
+							x1 = -(real(prevStep->x2) - x0);
+							y1 = -(real(prevStep->y2) - y0);
 							break;
 						case svgdom::path_element::step::type::cubic_smooth_rel:
 						case svgdom::path_element::step::type::cubic_rel:
-							x1 = -(prevStep->x2 - prevStep->x);
-							y1 = -(prevStep->y2 - prevStep->y);
+							x1 = -(real(prevStep->x2) - real(prevStep->x));
+							y1 = -(real(prevStep->y2) - real(prevStep->y));
 							break;
 						default:
 							// No previous step or previous step is not a cubic Bezier curve.
@@ -1023,7 +1029,7 @@ void Renderer::visit(const svgdom::path_element& e) {
 							y1 = 0;
 							break;
 					}
-					cairo_rel_curve_to(this->cr, x1, y1, s.x2, s.y2, s.x, s.y);
+					cairo_rel_curve_to(this->cr, x1, y1, real(s.x2), real(s.y2), real(s.x), real(s.y));
 					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 				}
 				break;
@@ -1120,7 +1126,7 @@ void Renderer::visit(const svgdom::path_element& e) {
 					if(s.flags.sweep){
 						cairo_arc(this->cr, xc, yc, rx, angle1, angle2);
 						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-					} else {
+					}else{
 						cairo_arc_negative(this->cr, xc, yc, rx, angle1, angle2);
 						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					}
