@@ -25,21 +25,14 @@ void cairoRelQuadraticCurveTo(cairo_t *cr, double x1, double y1, double x, doubl
 void cairoQuadraticCurveTo(cairo_t *cr, double x1, double y1, double x, double y);
 
 // convert degrees to radians
-template <class T> T deg_to_rad(T deg){
-	return deg * utki::pi<T>() / T(180);
-}
-
-// Rotate a vector by an angle around the origin point.
-template <class T> std::array<T, 2> rotate_vector(T x, T y, T angle){
-	using std::cos;
-	using std::sin;
-    return {{x * cos(angle) - y * sin(angle), y * cos(angle) + x * sin(angle)}};
+inline real deg_to_rad(real deg){
+	return deg * utki::pi<real>() / real(180);
 }
 
 // Return angle between x axis and point knowing given center.
-template <class T> T pointAngle(T cx, T cy, T px, T py){
+inline real point_angle(const r4::vector2<real>& c, const r4::vector2<real>& p){
 	using std::atan2;
-    return atan2(py - cy, px - cx);
+    return atan2(p.y() - c.y(), p.x() - c.x());
 }
 
 class CairoMatrixSaveRestore{

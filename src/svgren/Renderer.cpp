@@ -1036,98 +1036,76 @@ void Renderer::visit(const svgdom::path_element& e) {
 			case svgdom::path_element::step::type::arc_abs:
 			case svgdom::path_element::step::type::arc_rel:
 				{
-					real x, y;
-					if(cairo_has_current_point(this->cr)){
-						double xx, yy;
-						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-						cairo_get_current_point(this->cr, &xx, &yy);
-						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-						x = real(xx);
-						y = real(yy);
-					}else{
-						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-						x = 0;
-						y = 0;
-					}
+					auto cp = this->canvas.get_current_point();
+					auto r = r4::vector2<real>{real(s.rx), real(s.ry)};
+					auto p = r4::vector2<real>{real(s.x), real(s.y)};
 
-					if(s.rx <= 0){
+					if(r.x() <= 0){
 						break;
 					}
-					ASSERT(s.rx > 0)
-					real radiiRatio = real(s.ry) / real(s.rx);
+					ASSERT(r.x() > 0)
+					auto radiiRatio = r.y() / r.x();
 
 					if(radiiRatio <= 0){
 						break;
 					}
 
-					// cancel rotation of end point
-					real xe, ye;
-					{
-						real xx;
-						real yy;
-						if(s.type_ == svgdom::path_element::step::type::arc_abs){
-							xx = real(s.x) - x;
-							yy = real(s.y) - y;
-						}else{
-							xx = real(s.x);
-							yy = real(s.y);
-						}
-
-						auto res = rotate_vector(xx, yy, deg_to_rad(-real(s.x_axis_rotation)));
-						xe = res[0];
-						ye = res[1];
+					r4::vector2<real> e; // end point
+					
+					if(s.type_ == svgdom::path_element::step::type::arc_abs){
+						e = p - cp;
+					}else{
+						e = p;
 					}
+
+					// cancel rotation of end point
+					e.rotate(deg_to_rad(-real(s.x_axis_rotation)));
+				
 					ASSERT(radiiRatio > 0)
-					ye /= radiiRatio;
+					e.y() /= radiiRatio;
 
 					// find the angle between the end point and the x axis
-					auto angle = pointAngle(real(0), real(0), xe, ye);
+					auto angle = point_angle(real(0), e);
 
 					using std::sqrt;
 
 					// put the end point onto the x axis
-					xe = sqrt(xe * xe + ye * ye);
-					ye = 0;
+					e.x() = e.norm();
+					e.y() = 0;
 
 					using std::max;
 
 					// update the x radius if it is too small
-					auto rx = max(real(s.rx), xe / 2);
+					auto rx = max(r.x(), e.x() / real(2));
 
 					// find one circle center
-					auto xc = xe / 2;
-					auto yc = sqrt(rx * rx - xc * xc);
+					r4::vector2<real> c;
+					c.x() = e.x() / 2;
+					c.y() = sqrt(utki::pow2(rx) - utki::pow2(c.x()));
 
 					// choose between the two circles according to flags
 					if (!(s.flags.large_arc ^ s.flags.sweep)) {
-						yc = -yc;
+						c.y() = -c.y();
 					}
 
 					// put the second point and the center back to their positions
-					{
-						auto res = rotate_vector(xe, real(0), angle);
-						xe = res[0];
-						ye = res[1];
-					}
-					{
-						auto res = rotate_vector(xc, yc, angle);
-						xc = res[0];
-						yc = res[1];
-					}
+					e = r4::vector2<real>{e.x(), real(0)}.rot(angle);
+					c.rotate(angle);
 
-					auto angle1 = pointAngle(xc, yc, real(0), real(0));
-					auto angle2 = pointAngle(xc, yc, xe, ye);
+					auto angle1 = point_angle(c, real(0));
+					auto angle2 = point_angle(c, e);
 
 					CairoContextSaveRestore cairoMatrixPush1(this->cr);
 
-					this->canvas.translate(x, y);
+					this->canvas.translate(cp);
 					this->canvas.rotate(deg_to_rad(real(s.x_axis_rotation)));
 					this->canvas.scale(1, radiiRatio);
+					
 					if(s.flags.sweep){
-						cairo_arc(this->cr, xc, yc, rx, angle1, angle2);
+						cairo_arc(this->cr, c.x(), c.y(), rx, angle1, angle2);
 						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					}else{
-						cairo_arc_negative(this->cr, xc, yc, rx, angle1, angle2);
+						cairo_arc_negative(this->cr, c.x(), c.y(), rx, angle1, angle2);
 						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 					}
 				}

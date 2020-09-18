@@ -167,3 +167,17 @@ r4::rectangle<real> canvas::get_shape_bounding_box()const{
 		};
 #endif
 }
+
+r4::vector2<real> canvas::get_current_point()const{
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	if(cairo_has_current_point(this->cr)){
+		double xx, yy;
+		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+		cairo_get_current_point(this->cr, &xx, &yy);
+		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+		return {real(xx), real(yy)};
+	}
+	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+	return real(0);
+#endif
+}
