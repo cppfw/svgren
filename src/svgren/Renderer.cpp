@@ -375,7 +375,7 @@ void Renderer::updateCurBoundingBox(){
 		bb.top = decltype(bb.top)(vertex[1]);
 		bb.bottom = decltype(bb.bottom)(vertex[1]);
 
-		this->deviceSpaceBoundingBox.merge(bb);
+		this->deviceSpaceBoundingBox.unite(bb);
 	}
 }
 

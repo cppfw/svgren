@@ -56,9 +56,8 @@ struct DeviceSpaceBoundingBox{
 	real left, top, right, bottom;
 	
 	void set_empty();
-	bool is_empty()const noexcept;
 	
-	void merge(const DeviceSpaceBoundingBox& bb);
+	void unite(const DeviceSpaceBoundingBox& bb);
 	
 	real width()const noexcept;
 	real height()const noexcept;

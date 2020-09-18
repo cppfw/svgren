@@ -300,7 +300,7 @@ void FilterApplier::visit(const svgdom::filter_element& e){
 						bb.top = decltype(bb.top)(vertex.y());
 						bb.bottom = decltype(bb.bottom)(vertex.y());
 
-						frBb.merge(bb);
+						frBb.unite(bb);
 					}
 					fr.p = frBb.pos();
 					fr.d = frBb.dims();

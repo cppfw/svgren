@@ -79,25 +79,25 @@ void DeviceSpaceBoundingBox::set_empty(){
 	this->bottom = std::numeric_limits<decltype(this->bottom)>::min();
 }
 
-bool DeviceSpaceBoundingBox::is_empty()const noexcept{
-	return this->right - this->left < 0;
-}
-
-void DeviceSpaceBoundingBox::merge(const DeviceSpaceBoundingBox& bb){
-	this->left = std::min(this->left, bb.left);
-	this->top = std::min(this->top, bb.top);
-	this->right = std::max(this->right, bb.right);
-	this->bottom = std::max(this->bottom, bb.bottom);
+void DeviceSpaceBoundingBox::unite(const DeviceSpaceBoundingBox& bb){
+	using std::min;
+	using std::max;
+	this->left = min(this->left, bb.left);
+	this->top = min(this->top, bb.top);
+	this->right = max(this->right, bb.right);
+	this->bottom = max(this->bottom, bb.bottom);
 }
 
 real DeviceSpaceBoundingBox::width()const noexcept{
+	using std::max;
 	auto w = this->right - this->left;
-	return std::max(w, decltype(w)(0));
+	return max(w, decltype(w)(0));
 }
 
 real DeviceSpaceBoundingBox::height() const noexcept{
+	using std::max;
 	auto h = this->bottom - this->top;
-	return std::max(h, decltype(h)(0));
+	return max(h, decltype(h)(0));
 }
 
 DeviceSpaceBoundingBoxPush::DeviceSpaceBoundingBoxPush(Renderer& r) :
@@ -108,7 +108,7 @@ DeviceSpaceBoundingBoxPush::DeviceSpaceBoundingBoxPush(Renderer& r) :
 }
 
 DeviceSpaceBoundingBoxPush::~DeviceSpaceBoundingBoxPush() noexcept{
-	this->oldBb.merge(this->r.deviceSpaceBoundingBox);
+	this->oldBb.unite(this->r.deviceSpaceBoundingBox);
 	this->r.deviceSpaceBoundingBox = this->oldBb;
 }
 
