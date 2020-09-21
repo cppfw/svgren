@@ -35,7 +35,6 @@ CairoMatrixSaveRestore::~CairoMatrixSaveRestore()noexcept{
 	cairo_set_matrix(this->cr, &this->m);
 }
 
-
 Surface svgren::getSubSurface(cairo_t* cr, const r4::rectangle<unsigned>& region){
 //	TRACE(<< "region = (" << region[0] << ", " << region[1] << ") (" << region[2] << ", " << region[3] << ")" << std::endl)
 	
@@ -247,13 +246,11 @@ PushCairoGroupIfNeeded::~PushCairoGroupIfNeeded()noexcept{
 	}
 }
 
-
-
 void svgren::appendLuminanceToAlpha(Surface s){
 	ASSERT((s.end - s.data) % 4 == 0)
 	
-	//Luminance is calculated using formula L = 0.2126 * R + 0.7152 * G + 0.0722 * B
-	//For faster calculation it can be simplified to L = (2 * R + 3 * G + B) / 6
+	// Luminance is calculated using formula L = 0.2126 * R + 0.7152 * G + 0.0722 * B
+	// For faster calculation it can be simplified to L = (2 * R + 3 * G + B) / 6
 		
 	for(auto p = s.data; p != s.end; ++p){
 		uint32_t l = 2 * uint32_t(*p);
@@ -265,7 +262,7 @@ void svgren::appendLuminanceToAlpha(Surface s){
 		
 		l /= 6;
 		
-		//Cairo uses premultiplied alpha, so no need to multiply alpha by liminance.
+		// Cairo uses premultiplied alpha, so no need to multiply alpha by liminance.
 		ASSERT(l <= 255)
 		*p = uint8_t(l);
 	}

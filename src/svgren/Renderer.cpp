@@ -19,7 +19,7 @@ real Renderer::length_to_px(const svgdom::length& l, unsigned coordIndex)const n
 	return real(l.to_px(this->dpi));
 }
 
-void Renderer::applyCairoTransformation(const svgdom::transformable::transformation& t){
+void Renderer::apply_transformation(const svgdom::transformable::transformation& t){
 //	TRACE(<< "Renderer::applyCairoTransformation(): applying transformation " << unsigned(t.type) << std::endl)
 	switch (t.type_) {
 		case svgdom::transformable::transformation::type::translate:
@@ -83,9 +83,9 @@ void Renderer::applyCairoTransformation(const svgdom::transformable::transformat
 #endif
 }
 
-void Renderer::applyTransformations(const decltype(svgdom::transformable::transformations)& transformations){
+void Renderer::apply_transformations(const decltype(svgdom::transformable::transformations)& transformations){
 	for (auto& t : transformations) {
-		this->applyCairoTransformation(t);
+		this->apply_transformation(t);
 	}
 }
 
@@ -284,7 +284,7 @@ void Renderer::set_gradient(const std::string& id){
 				this->viewportPush = std::unique_ptr<ViewportPush>(new ViewportPush(r, {{1, 1}}));
 			}
 
-			r.applyTransformations(r.gradientGetTransformations(gradient));
+			r.apply_transformations(r.gradient_get_transformations(gradient));
 		}
 
 		~CommonGradientPush()noexcept{}
@@ -598,7 +598,7 @@ void Renderer::visit(const svgdom::g_element& e){
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
-	this->applyTransformations(e.transformations);
+	this->apply_transformations(e.transformations);
 
 	this->relayAccept(e);
 
@@ -736,7 +736,7 @@ void Renderer::visit(const svgdom::svg_element& e){
 	renderSvgElement(e, e, e, e, e.x, e.y, e.width, e.height);
 }
 
-bool Renderer::isInvisible(){
+bool Renderer::is_invisible(){
 	if(auto p = this->styleStack.get_style_property(svgdom::style_property::visibility)){
 		if(p->visibility != svgdom::visibility::visible){
 			return true;
@@ -758,7 +758,7 @@ void Renderer::visit(const svgdom::path_element& e){
 //	TRACE(<< "rendering PathElement" << std::endl)
 	svgdom::style_stack::push pushStyles(this->styleStack, e);
 
-	if(this->isInvisible()){
+	if(this->is_invisible()){
 		return;
 	}
 
@@ -768,7 +768,7 @@ void Renderer::visit(const svgdom::path_element& e){
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
-	this->applyTransformations(e.transformations);
+	this->apply_transformations(e.transformations);
 
 	r4::vector2<real> prev_quadratic_p{0};
 
@@ -1042,7 +1042,7 @@ void Renderer::visit(const svgdom::circle_element& e){
 //	TRACE(<< "rendering CircleElement" << std::endl)
 	svgdom::style_stack::push pushStyles(this->styleStack, e);
 
-	if(this->isInvisible()){
+	if(this->is_invisible()){
 		return;
 	}
 
@@ -1052,7 +1052,7 @@ void Renderer::visit(const svgdom::circle_element& e){
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
-	this->applyTransformations(e.transformations);
+	this->apply_transformations(e.transformations);
 
 	cairo_arc(
 			this->cr,
@@ -1071,7 +1071,7 @@ void Renderer::visit(const svgdom::polyline_element& e){
 //	TRACE(<< "rendering PolylineElement" << std::endl)
 	svgdom::style_stack::push pushStyles(this->styleStack, e);
 
-	if(this->isInvisible()){
+	if(this->is_invisible()){
 		return;
 	}
 
@@ -1083,7 +1083,7 @@ void Renderer::visit(const svgdom::polyline_element& e){
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
-	this->applyTransformations(e.transformations);
+	this->apply_transformations(e.transformations);
 
 	if (e.points.size() == 0) {
 		return;
@@ -1106,7 +1106,7 @@ void Renderer::visit(const svgdom::polygon_element& e){
 //	TRACE(<< "rendering PolygonElement" << std::endl)
 	svgdom::style_stack::push pushStyles(this->styleStack, e);
 
-	if(this->isInvisible()){
+	if(this->is_invisible()){
 		return;
 	}
 
@@ -1116,7 +1116,7 @@ void Renderer::visit(const svgdom::polygon_element& e){
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
-	this->applyTransformations(e.transformations);
+	this->apply_transformations(e.transformations);
 
 	if (e.points.size() == 0) {
 		return;
@@ -1142,7 +1142,7 @@ void Renderer::visit(const svgdom::line_element& e){
 //	TRACE(<< "rendering LineElement" << std::endl)
 	svgdom::style_stack::push pushStyles(this->styleStack, e);
 
-	if(this->isInvisible()){
+	if(this->is_invisible()){
 		return;
 	}
 
@@ -1152,7 +1152,7 @@ void Renderer::visit(const svgdom::line_element& e){
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
-	this->applyTransformations(e.transformations);
+	this->apply_transformations(e.transformations);
 
 	cairo_move_to(this->cr, this->length_to_px(e.x1, 0), this->length_to_px(e.y1, 1));
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
@@ -1166,7 +1166,7 @@ void Renderer::visit(const svgdom::ellipse_element& e){
 //	TRACE(<< "rendering EllipseElement" << std::endl)
 	svgdom::style_stack::push pushStyles(this->styleStack, e);
 
-	if(this->isInvisible()){
+	if(this->is_invisible()){
 		return;
 	}
 
@@ -1176,7 +1176,7 @@ void Renderer::visit(const svgdom::ellipse_element& e){
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
-	this->applyTransformations(e.transformations);
+	this->apply_transformations(e.transformations);
 
 	{
 		CairoContextSaveRestore saveRestore(this->cr);
@@ -1207,7 +1207,7 @@ void Renderer::visit(const svgdom::rect_element& e){
 //	TRACE(<< "rendering RectElement" << std::endl)
 	svgdom::style_stack::push pushStyles(this->styleStack, e);
 
-	if(this->isInvisible()){
+	if(this->is_invisible()){
 		return;
 	}
 
@@ -1217,7 +1217,7 @@ void Renderer::visit(const svgdom::rect_element& e){
 
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
-	this->applyTransformations(e.transformations);
+	this->apply_transformations(e.transformations);
 
 	auto width = this->length_to_px(e.width, 0);
 	auto height = this->length_to_px(e.height, 1);
@@ -1348,7 +1348,7 @@ struct GradientCaster : public svgdom::const_visitor{
 };
 }
 
-const decltype(svgdom::transformable::transformations)& Renderer::gradientGetTransformations(const svgdom::gradient& g){
+const decltype(svgdom::transformable::transformations)& Renderer::gradient_get_transformations(const svgdom::gradient& g){
 	if(g.transformations.size() != 0){
 		return g.transformations;
 	}
@@ -1361,7 +1361,7 @@ const decltype(svgdom::transformable::transformations)& Renderer::gradientGetTra
 			GradientCaster caster;
 			ref->e.accept(caster);
 			if(caster.gradient){
-				return this->gradientGetTransformations(*caster.gradient);
+				return this->gradient_get_transformations(*caster.gradient);
 			}
 		}
 	}

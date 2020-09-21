@@ -51,9 +51,9 @@ public:
 	
 	real length_to_px(const svgdom::length& l, unsigned coordIndex = 0)const noexcept;
 	
-	void applyCairoTransformation(const svgdom::transformable::transformation& t);
+	void apply_transformation(const svgdom::transformable::transformation& t);
 	
-	void applyTransformations(const decltype(svgdom::transformable::transformations)& transformations);
+	void apply_transformations(const decltype(svgdom::transformable::transformations)& transformations);
 	
 	void setCairoPatternSource(cairo_pattern_t& pat, const svgdom::gradient& g, const svgdom::style_stack& ss);
 	
@@ -79,7 +79,7 @@ public:
 			const svgdom::length& height
 		);
 	
-	const decltype(svgdom::transformable::transformations)& gradientGetTransformations(const svgdom::gradient& g);
+	const decltype(svgdom::transformable::transformations)& gradient_get_transformations(const svgdom::gradient& g);
 	svgdom::coordinate_units gradientGetUnits(const svgdom::gradient& g);
 	
 	svgdom::length gradientGetX1(const svgdom::linear_gradient_element& g);
@@ -99,7 +99,7 @@ public:
 	svgdom::gradient::spread_method gradientGetSpreadMethod(const svgdom::gradient& g);
 	decltype(svgdom::styleable::presentation_attributes) gradient_get_presentation_attributes(const svgdom::gradient& g);
 	
-	bool isInvisible();
+	bool is_invisible();
 	bool isGroupInvisible();
 	
 public:
