@@ -298,7 +298,7 @@ void Renderer::set_gradient(const std::string& id){
 		GradientSetter(Renderer& r, const svgdom::style_stack& ss) : r(r), ss(ss) {}
 
 		void visit(const svgdom::linear_gradient_element& gradient)override{
-			CommonGradientPush commonPush(this->r, gradient); // TODO: move out of visitor?
+			CommonGradientPush commonPush(this->r, gradient);
 
 			if(auto pat = cairo_pattern_create_linear(
 					this->r.length_to_px(this->r.gradientGetX1(gradient), 0),
@@ -313,7 +313,7 @@ void Renderer::set_gradient(const std::string& id){
 		}
 
 		void visit(const svgdom::radial_gradient_element& gradient)override{
-			CommonGradientPush commonPush(this->r, gradient); // TODO: move out of visitor?
+			CommonGradientPush commonPush(this->r, gradient);
 
 			auto cx = this->r.gradientGetCx(gradient);
 			auto cy = this->r.gradientGetCy(gradient);
@@ -1468,7 +1468,7 @@ svgdom::length Renderer::gradientGetY2(const svgdom::linear_gradient_element& g)
 	return svgdom::length(0, svgdom::length_unit::percent);
 }
 
-svgdom::length Renderer::gradientGetCx(const svgdom::radial_gradient_element& g) {
+svgdom::length Renderer::gradientGetCx(const svgdom::radial_gradient_element& g){
 	if(g.cx.is_valid()){
 		return g.cx;
 	}
@@ -1488,7 +1488,7 @@ svgdom::length Renderer::gradientGetCx(const svgdom::radial_gradient_element& g)
 	return svgdom::length(50, svgdom::length_unit::percent);
 }
 
-svgdom::length Renderer::gradientGetCy(const svgdom::radial_gradient_element& g) {
+svgdom::length Renderer::gradientGetCy(const svgdom::radial_gradient_element& g){
 	if(g.cy.is_valid()){
 		return g.cy;
 	}
