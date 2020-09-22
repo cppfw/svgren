@@ -632,8 +632,9 @@ void Renderer::visit(const svgdom::use_element& e){
 			{
 				svgdom::transformable::transformation t;
 				t.type_ = svgdom::transformable::transformation::type::translate;
-				t.x = this->r.length_to_px(e.x, 0);
-				t.y = this->r.length_to_px(e.y, 1);
+				auto p = this->r.length_to_px(e.x, e.y);
+				t.x = p.x();
+				t.y = p.y();
 
 				this->fakeGElement.transformations.push_back(t);
 			}
