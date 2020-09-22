@@ -1190,10 +1190,9 @@ void Renderer::visit(const svgdom::ellipse_element& e){
 				this->length_to_px(e.rx, 0),
 				this->length_to_px(e.ry, 1)
 			);
-		cairo_arc(this->cr, 0, 0, 1, 0, 2 * utki::pi<double>());
-		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-		cairo_close_path(this->cr);
-		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+		
+		this->canvas.arc_abs(0, 1, 0, real(2) * utki::pi<real>());
+		this->canvas.close_path();
 	}
 
 	this->renderCurrentShape(cairoGroupPush.isPushed());
@@ -1228,11 +1227,9 @@ void Renderer::visit(const svgdom::rect_element& e){
 		return;
 	}
 
-	if ((e.rx.value == 0 || !e.rx.is_valid())
-			&& (e.ry.value == 0 || !e.ry.is_valid())) {
-		cairo_rectangle(this->cr, this->length_to_px(e.x, 0), this->length_to_px(e.y, 1), width, height);
-		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-	} else {
+	if((e.rx.value == 0 || !e.rx.is_valid()) & (e.ry.value == 0 || !e.ry.is_valid())){
+		this->canvas.rectangle({this->length_to_px(e.x, 0), this->length_to_px(e.y, 1), width, height});
+	}else{
 		// compute real rx and ry
 		auto rx = e.rx;
 		auto ry = e.ry;

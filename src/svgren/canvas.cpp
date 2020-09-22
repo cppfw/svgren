@@ -299,3 +299,17 @@ void canvas::close_path(){
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #endif
 }
+
+void canvas::arc_abs(const r4::vector2<real>& center, real radius, real angle1, real angle2){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	cairo_arc(this->cr, double(center.x()), double(center.y()), double(radius), double(angle1), double(angle2));
+	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+#endif
+}
+
+void canvas::rectangle(const r4::rectangle<real>& rect){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	cairo_rectangle(this->cr, double(rect.p.x()), double(rect.p.y()), double(rect.d.x()), double(rect.d.y()));
+	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+#endif
+}
