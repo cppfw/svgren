@@ -302,7 +302,11 @@ void canvas::close_path(){
 
 void canvas::arc_abs(const r4::vector2<real>& center, real radius, real angle1, real angle2){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	cairo_arc(this->cr, double(center.x()), double(center.y()), double(radius), double(angle1), double(angle2));
+	if(angle2 > angle1){
+		cairo_arc(this->cr, double(center.x()), double(center.y()), double(radius), double(angle1), double(angle2));
+	}else{
+		cairo_arc_negative(this->cr, double(center.x()), double(center.y()), double(radius), double(angle1), double(angle2));
+	}
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #endif
 }

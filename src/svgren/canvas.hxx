@@ -99,6 +99,7 @@ public:
 	void cubic_curve_to_abs(const r4::vector2<real>& cp1, const r4::vector2<real>& cp2, const r4::vector2<real>& ep);
 	void cubic_curve_to_rel(const r4::vector2<real>& cp1, const r4::vector2<real>& cp2, const r4::vector2<real>& ep);
 
+	// draw arc from smaller angle to larger angle
 	void arc_abs(const r4::vector2<real>& center, real radius, real angle1, real angle2);
 
 	void close_path();

@@ -1020,11 +1020,17 @@ void Renderer::visit(const svgdom::path_element& e){
 					this->canvas.scale(1, radii_ratio);
 
 					if(s.flags.sweep){
-						cairo_arc(this->cr, center.x(), center.y(), r.x(), angle1, angle2);
-						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+						// make sure angle1 is smaller than angle2
+						if(angle1 > angle2){
+							angle1 -= 2 * utki::pi<real>();
+						}
+						this->canvas.arc_abs(center, r.x(), angle1, angle2);
 					}else{
-						cairo_arc_negative(this->cr, center.x(), center.y(), r.x(), angle1, angle2);
-						ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+						// make sure angle2 is smaller than angle1
+						if(angle2 > angle1){
+							angle2 -= 2 * utki::pi<real>();
+						}
+						this->canvas.arc_abs(center, r.x(), angle1, angle2);
 					}
 				}
 				break;
@@ -1054,15 +1060,12 @@ void Renderer::visit(const svgdom::circle_element& e){
 
 	this->apply_transformations(e.transformations);
 
-	cairo_arc(
-			this->cr,
-			this->length_to_px(e.cx, 0),
-			this->length_to_px(e.cy, 1),
+	this->canvas.arc_abs(
+			{this->length_to_px(e.cx, 0), this->length_to_px(e.cy, 1)},
 			this->length_to_px(e.r),
 			0,
-			2 * utki::pi<double>()
+			2 * utki::pi<real>()
 		);
-	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 
 	this->renderCurrentShape(cairoGroupPush.isPushed());
 }
@@ -1250,10 +1253,14 @@ void Renderer::visit(const svgdom::rect_element& e){
 			ry.value /= 2;
 		}
 
-		cairo_move_to(this->cr, this->length_to_px(e.x, 0) + this->length_to_px(rx, 0), this->length_to_px(e.y, 1));
-		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-		cairo_line_to(this->cr, this->length_to_px(e.x, 0) + width - this->length_to_px(rx, 0), this->length_to_px(e.y, 1));
-		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+		this->canvas.move_to_abs({
+				this->length_to_px(e.x, 0) + this->length_to_px(rx, 0),
+				this->length_to_px(e.y, 1)
+			});
+		this->canvas.line_to_abs({
+				this->length_to_px(e.x, 0) + width - this->length_to_px(rx, 0),
+				this->length_to_px(e.y, 1)
+			});
 
 		{
 			CairoContextSaveRestore saveRestore(this->cr);
@@ -1265,12 +1272,13 @@ void Renderer::visit(const svgdom::rect_element& e){
 					this->length_to_px(rx, 0),
 					this->length_to_px(ry, 1)
 				);
-			cairo_arc(this->cr, 0, 0, 1, -utki::pi<double>() / 2, 0);
-			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+			this->canvas.arc_abs(0, 1, -utki::pi<real>() / 2, 0);
 		}
 
-		cairo_line_to(this->cr, this->length_to_px(e.x, 0) + width, this->length_to_px(e.y, 1) + height - this->length_to_px(ry, 1));
-		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+		this->canvas.line_to_abs({
+				this->length_to_px(e.x, 0) + width,
+				this->length_to_px(e.y, 1) + height - this->length_to_px(ry, 1)
+			});
 
 		{
 			CairoContextSaveRestore saveRestore(this->cr);
@@ -1282,12 +1290,13 @@ void Renderer::visit(const svgdom::rect_element& e){
 					this->length_to_px(rx, 0),
 					this->length_to_px(ry, 1)
 				);
-			cairo_arc(this->cr, 0, 0, 1, 0, utki::pi<double>() / 2);
-			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+			this->canvas.arc_abs(0, 1, 0, utki::pi<real>() / 2);
 		}
 
-		cairo_line_to(this->cr, this->length_to_px(e.x, 0) + this->length_to_px(rx, 0), this->length_to_px(e.y, 1) + height);
-		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+		this->canvas.line_to_abs({
+				this->length_to_px(e.x, 0) + this->length_to_px(rx, 0),
+				this->length_to_px(e.y, 1) + height
+			});
 
 		{
 			CairoContextSaveRestore saveRestore(this->cr);
@@ -1299,12 +1308,13 @@ void Renderer::visit(const svgdom::rect_element& e){
 					this->length_to_px(rx, 0),
 					this->length_to_px(ry, 1)
 				);
-			cairo_arc(this->cr, 0, 0, 1, utki::pi<double>() / 2, utki::pi<double>());
-			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+			this->canvas.arc_abs(0, 1, utki::pi<real>() / 2, utki::pi<real>());
 		}
 
-		cairo_line_to(this->cr, this->length_to_px(e.x, 0), this->length_to_px(e.y, 1) + this->length_to_px(ry, 1));
-		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+		this->canvas.line_to_abs({
+				this->length_to_px(e.x, 0),
+				this->length_to_px(e.y, 1) + this->length_to_px(ry, 1)
+			});
 
 		{
 			CairoContextSaveRestore saveRestore(this->cr);
@@ -1316,12 +1326,10 @@ void Renderer::visit(const svgdom::rect_element& e){
 					this->length_to_px(rx, 0),
 					this->length_to_px(ry, 1)
 				);
-			cairo_arc(this->cr, 0, 0, 1, utki::pi<double>(), utki::pi<double>() * 3 / 2);
-			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+			this->canvas.arc_abs(0, 1, utki::pi<real>(), utki::pi<real>() * 3 / 2);
 		}
 
-		cairo_close_path(this->cr);
-		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+		this->canvas.close_path();
 	}
 
 	this->renderCurrentShape(cairoGroupPush.isPushed());
