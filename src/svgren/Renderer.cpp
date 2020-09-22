@@ -12,7 +12,7 @@
 using namespace svgren;
 
 real Renderer::length_to_px(const svgdom::length& l, unsigned coordIndex)const noexcept{
-	if (l.is_percent()) {
+	if(l.is_percent()){
 		ASSERT(coordIndex < this->viewport.size())
 		return this->viewport[coordIndex] * (l.value / 100);
 	}
@@ -1225,14 +1225,15 @@ void Renderer::visit(const svgdom::rect_element& e){
 		// compute real rx and ry
 		auto rx = e.rx;
 		auto ry = e.ry;
-		auto r = this->length_to_px(rx, ry);
 
 		if(!ry.is_valid() && rx.is_valid()){
 			ry = rx;
-		} else if (!rx.is_valid() && ry.is_valid()){
+		}else if(!rx.is_valid() && ry.is_valid()){
 			rx = ry;
 		}
 		ASSERT(rx.is_valid() && ry.is_valid())
+
+		auto r = this->length_to_px(rx, ry);
 
 		if(r.x() > dims.x() / 2){
 			rx = e.width;
@@ -1243,79 +1244,44 @@ void Renderer::visit(const svgdom::rect_element& e){
 			ry.value /= 2;
 		}
 
-		this->canvas.move_to_abs({
-				this->length_to_px(e.x, 0) + this->length_to_px(rx, 0),
-				this->length_to_px(e.y, 1)
-			});
-		this->canvas.line_to_abs({
-				this->length_to_px(e.x, 0) + dims.x() - this->length_to_px(rx, 0),
-				this->length_to_px(e.y, 1)
-			});
+		r = this->length_to_px(rx, ry);
+
+		auto p = this->length_to_px(e.x, e.y);
+
+		this->canvas.move_to_abs(p + r4::vector2<real>{r.x(), 0});
+		this->canvas.line_to_abs(p + r4::vector2<real>{dims.x() - r.x(), 0});
 
 		{
 			CairoContextSaveRestore saveRestore(this->cr);
-			this->canvas.translate(
-					this->length_to_px(e.x, 0) + dims.x() - this->length_to_px(rx, 0),
-					this->length_to_px(e.y, 1) + this->length_to_px(ry, 1)
-				);
-			this->canvas.scale(
-					this->length_to_px(rx, 0),
-					this->length_to_px(ry, 1)
-				);
+			this->canvas.translate(p + r4::vector2<real>{dims.x() - r.x(), r.y()});
+			this->canvas.scale(r);
 			this->canvas.arc_abs(0, 1, -utki::pi<real>() / 2, 0);
 		}
 
-		this->canvas.line_to_abs({
-				this->length_to_px(e.x, 0) + dims.x(),
-				this->length_to_px(e.y, 1) + dims.y() - this->length_to_px(ry, 1)
-			});
+		this->canvas.line_to_abs(p + dims - r4::vector2<real>{0, r.y()});
 
 		{
 			CairoContextSaveRestore saveRestore(this->cr);
-			this->canvas.translate(
-					this->length_to_px(e.x, 0) + dims.x() - this->length_to_px(rx, 0),
-					this->length_to_px(e.y, 1) + dims.y() - this->length_to_px(ry, 1)
-				);
-			this->canvas.scale(
-					this->length_to_px(rx, 0),
-					this->length_to_px(ry, 1)
-				);
+			this->canvas.translate(p + dims - r);
+			this->canvas.scale(r);
 			this->canvas.arc_abs(0, 1, 0, utki::pi<real>() / 2);
 		}
 
-		this->canvas.line_to_abs({
-				this->length_to_px(e.x, 0) + this->length_to_px(rx, 0),
-				this->length_to_px(e.y, 1) + dims.y()
-			});
+		this->canvas.line_to_abs(p + r4::vector2<real>{r.x(), dims.y()});
 
 		{
 			CairoContextSaveRestore saveRestore(this->cr);
-			this->canvas.translate(
-					this->length_to_px(e.x, 0) + this->length_to_px(rx, 0),
-					this->length_to_px(e.y, 1) + dims.y() - this->length_to_px(ry, 1)
-				);
-			this->canvas.scale(
-					this->length_to_px(rx, 0),
-					this->length_to_px(ry, 1)
-				);
+			this->canvas.translate(p + r4::vector2<real>{r.x(), dims.y() - r.y()});
+			this->canvas.scale(r);
 			this->canvas.arc_abs(0, 1, utki::pi<real>() / 2, utki::pi<real>());
 		}
 
-		this->canvas.line_to_abs({
-				this->length_to_px(e.x, 0),
-				this->length_to_px(e.y, 1) + this->length_to_px(ry, 1)
-			});
-
+		this->canvas.line_to_abs(p + r4::vector2<real>{0, r.y()});
+		
 		{
 			CairoContextSaveRestore saveRestore(this->cr);
-			this->canvas.translate(
-					this->length_to_px(e.x, 0) + this->length_to_px(rx, 0),
-					this->length_to_px(e.y, 1) + this->length_to_px(ry, 1)
-				);
-			this->canvas.scale(
-					this->length_to_px(rx, 0),
-					this->length_to_px(ry, 1)
-				);
+			this->canvas.translate(p + r);
+			this->canvas.scale(r);
 			this->canvas.arc_abs(0, 1, utki::pi<real>(), utki::pi<real>() * 3 / 2);
 		}
 
