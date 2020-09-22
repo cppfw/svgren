@@ -19,6 +19,13 @@ real Renderer::length_to_px(const svgdom::length& l, unsigned coordIndex)const n
 	return real(l.to_px(this->dpi));
 }
 
+r4::vector2<real> Renderer::length_to_px(const svgdom::length& x, const svgdom::length& y)const noexcept{
+	return r4::vector2<real>{
+			this->length_to_px(x, 0),
+			this->length_to_px(y, 1)
+		};
+}
+
 void Renderer::apply_transformation(const svgdom::transformable::transformation& t){
 //	TRACE(<< "Renderer::applyCairoTransformation(): applying transformation " << unsigned(t.type) << std::endl)
 	switch (t.type_) {
@@ -334,7 +341,7 @@ void Renderer::set_gradient(const std::string& id){
 					0,
 					this->r.length_to_px(cx, 0),
 					this->r.length_to_px(cy, 1),
-					this->r.length_to_px(radius)
+					this->r.length_to_px(radius, 0)
 				))
 			{
 				utki::scope_exit pat_scope_exit([&pat]() {cairo_pattern_destroy(pat);});
@@ -439,7 +446,7 @@ void Renderer::renderCurrentShape(bool isCairoGroupPushed){
 
 	if (stroke && !stroke->is_none()) {
 		if (auto p = this->styleStack.get_style_property(svgdom::style_property::stroke_width)){
-			cairo_set_line_width(this->cr, this->length_to_px(p->stroke_width));
+			cairo_set_line_width(this->cr, this->length_to_px(p->stroke_width, 0));
 			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 		} else {
 			cairo_set_line_width(this->cr, 1);
@@ -539,10 +546,7 @@ void Renderer::renderSvgElement(
 	CairoContextSaveRestore cairoMatrixPush(this->cr);
 
 	if (this->isOutermostElement) {
-		this->canvas.translate(
-				this->length_to_px(x, 0),
-				this->length_to_px(y, 1)
-			);
+		this->canvas.translate(this->length_to_px(x, y));
 	}
 
 	ViewportPush viewportPush(
@@ -1061,8 +1065,8 @@ void Renderer::visit(const svgdom::circle_element& e){
 	this->apply_transformations(e.transformations);
 
 	this->canvas.arc_abs(
-			{this->length_to_px(e.cx, 0), this->length_to_px(e.cy, 1)},
-			this->length_to_px(e.r),
+			this->length_to_px(e.cx, e.cy),
+			this->length_to_px(e.r, 0),
 			0,
 			2 * utki::pi<real>()
 		);
@@ -1152,8 +1156,8 @@ void Renderer::visit(const svgdom::line_element& e){
 
 	this->apply_transformations(e.transformations);
 
-	this->canvas.move_to_abs({this->length_to_px(e.x1, 0), this->length_to_px(e.y1, 1)});
-	this->canvas.line_to_abs({this->length_to_px(e.x2, 0), this->length_to_px(e.y2, 1)});
+	this->canvas.move_to_abs(this->length_to_px(e.x1, e.y1));
+	this->canvas.line_to_abs(this->length_to_px(e.x2, e.y2));
 
 	this->renderCurrentShape(cairoGroupPush.isPushed());
 }
