@@ -1181,16 +1181,9 @@ void Renderer::visit(const svgdom::ellipse_element& e){
 	{
 		CairoContextSaveRestore saveRestore(this->cr);
 
-		this->canvas.translate(
-				this->length_to_px(e.cx, 0),
-				this->length_to_px(e.cy, 1)
-			);
+		this->canvas.translate(this->length_to_px(e.cx, e.cy));
+		this->canvas.scale(this->length_to_px(e.rx, e.ry));
 
-		this->canvas.scale(
-				this->length_to_px(e.rx, 0),
-				this->length_to_px(e.ry, 1)
-			);
-		
 		this->canvas.arc_abs(0, 1, 0, real(2) * utki::pi<real>());
 		this->canvas.close_path();
 	}
@@ -1218,21 +1211,21 @@ void Renderer::visit(const svgdom::rect_element& e){
 
 	this->apply_transformations(e.transformations);
 
-	auto width = this->length_to_px(e.width, 0);
-	auto height = this->length_to_px(e.height, 1);
+	auto dims = this->length_to_px(e.width, e.height);
 
 	// NOTE: see SVG sect: https://www.w3.org/TR/SVG/shapes.html#RectElementWidthAttribute
 	//       Zero values disable rendering of the element.
-	if(width == real(0) || height == real(0)){
+	if(dims.x() == real(0) || dims.y() == real(0)){
 		return;
 	}
 
 	if((e.rx.value == 0 || !e.rx.is_valid()) & (e.ry.value == 0 || !e.ry.is_valid())){
-		this->canvas.rectangle({this->length_to_px(e.x, 0), this->length_to_px(e.y, 1), width, height});
+		this->canvas.rectangle({this->length_to_px(e.x, e.y), dims});
 	}else{
 		// compute real rx and ry
 		auto rx = e.rx;
 		auto ry = e.ry;
+		auto r = this->length_to_px(rx, ry);
 
 		if(!ry.is_valid() && rx.is_valid()){
 			ry = rx;
@@ -1241,11 +1234,11 @@ void Renderer::visit(const svgdom::rect_element& e){
 		}
 		ASSERT(rx.is_valid() && ry.is_valid())
 
-		if(this->length_to_px(rx, 0) > width / 2){
+		if(r.x() > dims.x() / 2){
 			rx = e.width;
 			rx.value /= 2;
 		}
-		if(this->length_to_px(ry, 1) > height / 2){
+		if(r.y() > dims.y() / 2){
 			ry = e.height;
 			ry.value /= 2;
 		}
@@ -1255,14 +1248,14 @@ void Renderer::visit(const svgdom::rect_element& e){
 				this->length_to_px(e.y, 1)
 			});
 		this->canvas.line_to_abs({
-				this->length_to_px(e.x, 0) + width - this->length_to_px(rx, 0),
+				this->length_to_px(e.x, 0) + dims.x() - this->length_to_px(rx, 0),
 				this->length_to_px(e.y, 1)
 			});
 
 		{
 			CairoContextSaveRestore saveRestore(this->cr);
 			this->canvas.translate(
-					this->length_to_px(e.x, 0) + width - this->length_to_px(rx, 0),
+					this->length_to_px(e.x, 0) + dims.x() - this->length_to_px(rx, 0),
 					this->length_to_px(e.y, 1) + this->length_to_px(ry, 1)
 				);
 			this->canvas.scale(
@@ -1273,15 +1266,15 @@ void Renderer::visit(const svgdom::rect_element& e){
 		}
 
 		this->canvas.line_to_abs({
-				this->length_to_px(e.x, 0) + width,
-				this->length_to_px(e.y, 1) + height - this->length_to_px(ry, 1)
+				this->length_to_px(e.x, 0) + dims.x(),
+				this->length_to_px(e.y, 1) + dims.y() - this->length_to_px(ry, 1)
 			});
 
 		{
 			CairoContextSaveRestore saveRestore(this->cr);
 			this->canvas.translate(
-					this->length_to_px(e.x, 0) + width - this->length_to_px(rx, 0),
-					this->length_to_px(e.y, 1) + height - this->length_to_px(ry, 1)
+					this->length_to_px(e.x, 0) + dims.x() - this->length_to_px(rx, 0),
+					this->length_to_px(e.y, 1) + dims.y() - this->length_to_px(ry, 1)
 				);
 			this->canvas.scale(
 					this->length_to_px(rx, 0),
@@ -1292,14 +1285,14 @@ void Renderer::visit(const svgdom::rect_element& e){
 
 		this->canvas.line_to_abs({
 				this->length_to_px(e.x, 0) + this->length_to_px(rx, 0),
-				this->length_to_px(e.y, 1) + height
+				this->length_to_px(e.y, 1) + dims.y()
 			});
 
 		{
 			CairoContextSaveRestore saveRestore(this->cr);
 			this->canvas.translate(
 					this->length_to_px(e.x, 0) + this->length_to_px(rx, 0),
-					this->length_to_px(e.y, 1) + height - this->length_to_px(ry, 1)
+					this->length_to_px(e.y, 1) + dims.y() - this->length_to_px(ry, 1)
 				);
 			this->canvas.scale(
 					this->length_to_px(rx, 0),
