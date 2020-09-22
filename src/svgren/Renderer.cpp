@@ -1088,18 +1088,16 @@ void Renderer::visit(const svgdom::polyline_element& e){
 
 	this->apply_transformations(e.transformations);
 
-	if (e.points.size() == 0) {
+	if(e.points.empty()){
 		return;
 	}
 
 	auto i = e.points.begin();
-	cairo_move_to(this->cr, (*i)[0], (*i)[1]);
-	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+	this->canvas.move_to_abs(i->to<real>());
 	++i;
 
-	for (; i != e.points.end(); ++i) {
-		cairo_line_to(this->cr, (*i)[0], (*i)[1]);
-		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+	for(; i != e.points.end(); ++i){
+		this->canvas.line_to_abs(i->to<real>());
 	}
 
 	this->renderCurrentShape(cairoGroupPush.isPushed());
