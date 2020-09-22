@@ -1124,17 +1124,14 @@ void Renderer::visit(const svgdom::polygon_element& e){
 	}
 
 	auto i = e.points.begin();
-	cairo_move_to(this->cr, (*i)[0], (*i)[1]);
-	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+	this->canvas.move_to_abs(i->to<real>());
 	++i;
 
 	for (; i != e.points.end(); ++i) {
-		cairo_line_to(this->cr, (*i)[0], (*i)[1]);
-		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+		this->canvas.line_to_abs(i->to<real>());
 	}
 
-	cairo_close_path(this->cr);
-	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+	this->canvas.close_path();
 
 	this->renderCurrentShape(cairoGroupPush.isPushed());
 }
@@ -1155,10 +1152,8 @@ void Renderer::visit(const svgdom::line_element& e){
 
 	this->apply_transformations(e.transformations);
 
-	cairo_move_to(this->cr, this->length_to_px(e.x1, 0), this->length_to_px(e.y1, 1));
-	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-	cairo_line_to(this->cr, this->length_to_px(e.x2, 0), this->length_to_px(e.y2, 1));
-	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+	this->canvas.move_to_abs({this->length_to_px(e.x1, 0), this->length_to_px(e.y1, 1)});
+	this->canvas.line_to_abs({this->length_to_px(e.x2, 0), this->length_to_px(e.y2, 1)});
 
 	this->renderCurrentShape(cairoGroupPush.isPushed());
 }
