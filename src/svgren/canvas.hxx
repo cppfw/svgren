@@ -32,7 +32,7 @@ public:
 
 		cairo_surface_wrapper(unsigned width, unsigned height, uint32_t* buffer){
 			if(width == 0 || height == 0){
-				throw std::logic_error("svgren::canvas::canvas(): width or height argument is zero");
+				throw std::invalid_argument("svgren::canvas::canvas(): width or height argument is zero");
 			}
 			int stride = width * sizeof(uint32_t);
 			this->surface = cairo_image_surface_create_for_data(
@@ -103,6 +103,8 @@ public:
 	void arc_abs(const r4::vector2<real>& center, real radius, real angle1, real angle2);
 
 	void close_path();
+
+	void clear_path();
 
 	void rectangle(const r4::rectangle<real>& rect);
 

@@ -314,7 +314,7 @@ void Renderer::set_gradient(const std::string& id){
 					this->r.length_to_px(this->r.gradientGetY2(gradient), 1)
 				))
 			{
-				utki::scope_exit pat_scope_exit([&pat]() {cairo_pattern_destroy(pat);});
+				utki::scope_exit pat_scope_exit([&pat](){cairo_pattern_destroy(pat);});
 				this->r.setCairoPatternSource(*pat, gradient, this->ss);
 			}
 		}
@@ -344,7 +344,7 @@ void Renderer::set_gradient(const std::string& id){
 					this->r.length_to_px(radius, 0)
 				))
 			{
-				utki::scope_exit pat_scope_exit([&pat]() {cairo_pattern_destroy(pat);});
+				utki::scope_exit pat_scope_exit([&pat](){cairo_pattern_destroy(pat);});
 				this->r.setCairoPatternSource(*pat, gradient, this->ss);
 			}
 		}
@@ -516,9 +516,8 @@ void Renderer::renderCurrentShape(bool isCairoGroupPushed){
 	}
 
 	// clear path if any left
-	cairo_new_path(this->cr);
-	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-
+	this->canvas.clear_path();
+	
 	this->applyFilter();
 }
 
@@ -549,13 +548,7 @@ void Renderer::renderSvgElement(
 		this->canvas.translate(this->length_to_px(x, y));
 	}
 
-	ViewportPush viewportPush(
-			*this,
-			{{
-				this->length_to_px(width, 0),
-				this->length_to_px(height, 1)
-			}}
-		);
+	ViewportPush viewportPush(*this, this->length_to_px(width, height));
 
 	this->applyViewBox(v, a);
 
@@ -575,7 +568,7 @@ void Renderer::renderSvgElement(
 Renderer::Renderer(
 		svgren::canvas& canvas,
 		unsigned dpi,
-		std::array<real, 2> canvasSize,
+		r4::vector2<real> canvasSize,
 		const svgdom::svg_element& root
 	) :
 		canvas(canvas),

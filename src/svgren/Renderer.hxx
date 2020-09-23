@@ -34,7 +34,7 @@ public:
 	
 	bool isOutermostElement = true;
 	
-	std::array<real, 2> viewport; // width, height
+	r4::vector2<real> viewport; // width, height
 	
 	// this bounding box is used for gradients
 	r4::rectangle<real> userSpaceShapeBoundingBox;
@@ -107,7 +107,7 @@ public:
 	Renderer(
 			svgren::canvas& canvas,
 			unsigned dpi,
-			std::array<real, 2> canvasSize,
+			r4::vector2<real> canvasSize,
 			const svgdom::svg_element& root
 		);
 

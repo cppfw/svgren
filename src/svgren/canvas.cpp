@@ -300,6 +300,13 @@ void canvas::close_path(){
 #endif
 }
 
+void canvas::clear_path(){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	cairo_new_path(this->cr);
+	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+#endif
+}
+
 void canvas::arc_abs(const r4::vector2<real>& center, real radius, real angle1, real angle2){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	if(angle2 > angle1){
