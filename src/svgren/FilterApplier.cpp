@@ -94,7 +94,7 @@ void boxBlurVertical(
 }
 
 namespace{
-FilterResult allocateResult(const Surface& src){
+FilterResult allocateResult(const surface& src){
 	FilterResult ret;
 	ret.surface = src;
 	auto dataSize = src.d.x() * src.d.y() * sizeof(uint32_t);
@@ -116,7 +116,7 @@ FilterResult allocateResult(const Surface& src){
 }
 
 namespace{
-FilterResult cairoImageSurfaceBlur(const Surface& src, r4::vector2<real> stdDeviation){
+FilterResult cairoImageSurfaceBlur(const surface& src, r4::vector2<real> stdDeviation){
 	// see https://www.w3.org/TR/SVG/filters.html#feGaussianBlurElement for Gaussian Blur approximation algorithm
 	
 	ASSERT(src.d.x() <= src.stride)
@@ -189,8 +189,8 @@ FilterResult cairoImageSurfaceBlur(const Surface& src, r4::vector2<real> stdDevi
 }
 }
 
-Surface FilterApplier::getSourceGraphic(){
-	return getSubSurface(this->r.cr, this->filterRegion);
+surface FilterApplier::getSourceGraphic(){
+	return this->r.canvas.get_sub_surface(this->filterRegion);
 }
 
 void FilterApplier::setResult(const std::string& name, FilterResult&& result){
@@ -199,7 +199,7 @@ void FilterApplier::setResult(const std::string& name, FilterResult&& result){
 	ASSERT(this->lastResult->data.size() == 0 || this->lastResult->surface.data == &*this->lastResult->data.begin())
 }
 
-Surface FilterApplier::getSource(const std::string& in){
+surface FilterApplier::getSource(const std::string& in){
 	if(in == "SourceGraphic"){
 		// TRACE(<< "source graphic" << std::endl)
 		return this->getSourceGraphic();
@@ -238,12 +238,12 @@ Surface FilterApplier::getSource(const std::string& in){
 	
 	// return empty surface
 	// TRACE(<< "empty surface" << std::endl)
-	return Surface();
+	return surface();
 }
 
-Surface FilterApplier::getLastResult(){
+surface FilterApplier::getLastResult(){
 	if (!this->lastResult) {
-		return Surface();
+		return surface();
 	}
 	return this->lastResult->surface;
 }
@@ -345,7 +345,7 @@ void FilterApplier::visit(const svgdom::fe_gaussian_blur_element& e){
 }
 
 namespace{
-FilterResult color_matrix(const Surface& s, const r4::matrix4<real>& m, const r4::vector4<real>& mc5){
+FilterResult color_matrix(const surface& s, const r4::matrix4<real>& m, const r4::vector4<real>& mc5){
 //	TRACE(<< "colorMatrix(): s.width = " << s.width << " s.height = " << s.height << std::endl)
 	ASSERT(s.data || s.d.is_zero())
 	FilterResult ret = allocateResult(s);
@@ -510,7 +510,7 @@ void FilterApplier::visit(const svgdom::fe_color_matrix_element& e){
 }
 
 namespace{
-FilterResult blend(const Surface& in, const Surface& in2, svgdom::fe_blend_element::mode mode){
+FilterResult blend(const surface& in, const surface& in2, svgdom::fe_blend_element::mode mode){
 //	TRACE(<< "in.width = " << in.width << " in2.width = " << in2.width << std::endl)
 	auto s1 = in.intersectionSurface(in2);
 	auto s2 = in2.intersectionSurface(in);
@@ -632,7 +632,7 @@ void FilterApplier::visit(const svgdom::fe_blend_element& e){
 }
 
 namespace{
-FilterResult composite(const Surface& in, const Surface& in2, const svgdom::fe_composite_element& e){
+FilterResult composite(const surface& in, const surface& in2, const svgdom::fe_composite_element& e){
 //	TRACE(<< "in.width = " << in.width << " in2.width = " << in2.width << std::endl)
 	auto s1 = in.intersectionSurface(in2);
 	auto s2 = in2.intersectionSurface(in);

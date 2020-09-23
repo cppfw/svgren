@@ -420,3 +420,30 @@ void canvas::set_matrix(const r4::matrix2<real>& m){
 	cairo_set_matrix(this->cr, &cm);
 #endif
 }
+
+svgren::surface canvas::get_sub_surface(const r4::rectangle<unsigned>& region){
+	svgren::surface ret;
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	auto s = cairo_get_group_target(cr);
+	ASSERT(s)
+	
+	ret.stride = cairo_image_surface_get_stride(s) / sizeof(uint32_t); // stride is returned in bytes
+	
+	r4::vector2<unsigned> s_dims{
+		unsigned(cairo_image_surface_get_width(s)),
+		unsigned(cairo_image_surface_get_height(s))
+	};
+
+	using std::min;
+	ret.d = min(region.d, s_dims - region.p);
+	ret.data = cairo_image_surface_get_data(s) + 4 * (region.p.y() * ret.stride + region.p.x());
+	ret.end = cairo_image_surface_get_data(s) + cairo_image_surface_get_stride(s) * cairo_image_surface_get_height(s);
+	ret.p = region.p;
+	
+	ASSERT(ret.d.y() <= s_dims.y())
+#endif
+
+	ASSERT(&ret.data[ret.stride * (ret.d.y() - 1) * sizeof(uint32_t)] < ret.end || ret.d.y() == 0)
+
+	return ret;
+}

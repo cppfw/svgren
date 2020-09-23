@@ -16,7 +16,7 @@
 #include <svgdom/elements/aspect_ratioed.hpp>
 
 #include "config.hxx"
-#include "Surface.hxx"
+#include "surface.hxx"
 #include "util.hxx"
 #include "canvas.hxx"
 
@@ -44,10 +44,10 @@ public:
 	
 	svgdom::style_stack styleStack;
 	
-	Surface background; // for accessing background image from filter effects
+	surface background; // for accessing background image from filter effects
 	
 	// blit surface to current cairo surface
-	void blit(const Surface& s);
+	void blit(const surface& s);
 	
 	real length_to_px(const svgdom::length& l, unsigned coordIndex)const noexcept;
 	r4::vector2<real> length_to_px(const svgdom::length& x, const svgdom::length& y)const noexcept;

@@ -16,7 +16,7 @@
 #endif
 
 #include "config.hxx"
-#include "Surface.hxx"
+#include "surface.hxx"
 #include "canvas.hxx"
 
 namespace svgren{
@@ -47,11 +47,9 @@ public:
 	~canvas_context_push()noexcept;
 };
 
-Surface getSubSurface(cairo_t* cr, const r4::rectangle<unsigned>& region = {0, std::numeric_limits<unsigned>::max()});
-
 real percentLengthToFraction(const svgdom::length& l);
 
-void appendLuminanceToAlpha(Surface s);
+void appendLuminanceToAlpha(surface s);
 
 struct DeviceSpaceBoundingBox{
 	real left, top, right, bottom;
@@ -96,7 +94,7 @@ public:
 
 class PushCairoGroupIfNeeded{
 	bool groupPushed;
-	Surface oldBackground;
+	surface oldBackground;
 	class Renderer& renderer;
 
 	real opacity = real(1);

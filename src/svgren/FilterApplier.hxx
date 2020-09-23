@@ -8,7 +8,7 @@ namespace svgren{
 
 struct FilterResult{
 	std::vector<uint8_t> data;
-	Surface surface;
+	svgren::surface surface;
 };
 
 class FilterApplier : public svgdom::const_visitor{
@@ -22,14 +22,14 @@ class FilterApplier : public svgdom::const_visitor{
 	
 	FilterResult* lastResult = nullptr;
 	
-	Surface getSource(const std::string& in);
+	surface getSource(const std::string& in);
 	void setResult(const std::string& name, FilterResult&& result);
 	
-	Surface getSourceGraphic();
+	surface getSourceGraphic();
 	
 public:
 	
-	Surface getLastResult();
+	surface getLastResult();
 	
 	FilterApplier(Renderer& r) : r(r) {}
 	

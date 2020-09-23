@@ -13,6 +13,7 @@
 #include <svgdom/elements/styleable.hpp>
 
 #include "config.hxx"
+#include "surface.hxx"
 
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 #	if M_OS == M_OS_WINDOWS || M_OS_NAME == M_OS_NAME_IOS
@@ -122,6 +123,8 @@ public:
 
 	r4::matrix2<real> get_matrix();
 	void set_matrix(const r4::matrix2<real>& m);
+
+	svgren::surface get_sub_surface(const r4::rectangle<unsigned>& region = {0, std::numeric_limits<unsigned>::max()});
 
 	std::vector<uint32_t> release();
 };

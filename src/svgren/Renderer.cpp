@@ -540,7 +540,7 @@ Renderer::Renderer(
 		viewport(canvasSize)
 {
 	this->deviceSpaceBoundingBox.set_empty();
-	this->background = getSubSurface(this->cr);
+	this->background = this->canvas.get_sub_surface();
 }
 
 void Renderer::visit(const svgdom::g_element& e){
@@ -1598,14 +1598,14 @@ decltype(svgdom::styleable::presentation_attributes) Renderer::gradient_get_pres
 	return ret;
 }
 
-void Renderer::blit(const Surface& s){
+void Renderer::blit(const surface& s){
 	if(!s.data || s.d.x() == 0 || s.d.y() == 0){
 		TRACE(<< "Renderer::blit(): source image is empty" << std::endl)
 		return;
 	}
 	ASSERT(s.data && s.d.x() != 0 && s.d.y() != 0)
 
-	auto dst = getSubSurface(this->cr);
+	auto dst = this->canvas.get_sub_surface();
 
 	if(s.p.x() >= dst.d.x() || s.p.y() >= dst.d.y()){
 		TRACE(<< "Renderer::blit(): source image is out of canvas" << std::endl)

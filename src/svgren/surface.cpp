@@ -1,11 +1,11 @@
-#include "Surface.hxx"
+#include "surface.hxx"
 
 #include <utki/debug.hpp>
 
 using namespace svgren;
 
-Surface Surface::intersectionSurface(const r4::rectangle<unsigned>& r)const{
-	Surface ret = *this;
+surface surface::intersectionSurface(const r4::rectangle<unsigned>& r)const{
+	surface ret = *this;
 
 	ASSERT(ret.data == this->data)
 	ASSERT(ret.p == this->p)

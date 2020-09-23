@@ -33,32 +33,6 @@ canvas_matrix_push::~canvas_matrix_push()noexcept{
 	this->c.set_matrix(this->m);
 }
 
-Surface svgren::getSubSurface(cairo_t* cr, const r4::rectangle<unsigned>& region){
-//	TRACE(<< "region = (" << region[0] << ", " << region[1] << ") (" << region[2] << ", " << region[3] << ")" << std::endl)
-	
-	Surface ret;
-	auto s = cairo_get_group_target(cr);
-	ASSERT(s)
-	
-	ret.stride = cairo_image_surface_get_stride(s) / sizeof(uint32_t); // stride is returned in bytes
-	
-	r4::vector2<unsigned> s_dims{
-		unsigned(cairo_image_surface_get_width(s)),
-		unsigned(cairo_image_surface_get_height(s))
-	};
-
-	using std::min;
-	ret.d = min(region.d, s_dims - region.p);
-	ret.data = cairo_image_surface_get_data(s) + 4 * (region.p.y() * ret.stride + region.p.x());
-	ret.end = cairo_image_surface_get_data(s) + cairo_image_surface_get_stride(s) * cairo_image_surface_get_height(s);
-	ret.p = region.p;
-	
-	ASSERT(ret.d.y() <= s_dims.y())
-	ASSERT(&ret.data[ret.stride * (ret.d.y() - 1) * sizeof(uint32_t)] < ret.end || ret.d.y() == 0)
-
-	return ret;
-}
-
 real svgren::percentLengthToFraction(const svgdom::length& l){
 	if(l.is_percent()){
 		return l.value / real(100);
@@ -174,7 +148,7 @@ PushCairoGroupIfNeeded::PushCairoGroupIfNeeded(Renderer& renderer, bool isContai
 	}
 	
 	if(this->oldBackground.data){
-		this->renderer.background = getSubSurface(this->renderer.cr);
+		this->renderer.background = this->renderer.canvas.get_sub_surface();
 	}
 }
 
@@ -213,7 +187,7 @@ PushCairoGroupIfNeeded::~PushCairoGroupIfNeeded()noexcept{
 			
 			this->maskElement->accept(maskRenderer);
 			
-			appendLuminanceToAlpha(getSubSurface(this->renderer.cr));
+			appendLuminanceToAlpha(this->renderer.canvas.get_sub_surface());
 		}
 	}catch(...){
 		// rendering mask failed, just ignore it
@@ -244,7 +218,7 @@ PushCairoGroupIfNeeded::~PushCairoGroupIfNeeded()noexcept{
 	}
 }
 
-void svgren::appendLuminanceToAlpha(Surface s){
+void svgren::appendLuminanceToAlpha(surface s){
 	ASSERT((s.end - s.data) % 4 == 0)
 	
 	// Luminance is calculated using formula L = 0.2126 * R + 0.7152 * G + 0.0722 * B
