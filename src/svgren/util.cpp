@@ -251,7 +251,8 @@ void svgren::appendLuminanceToAlpha(Surface s){
 	
 	// Luminance is calculated using formula L = 0.2126 * R + 0.7152 * G + 0.0722 * B
 	// For faster calculation it can be simplified to L = (2 * R + 3 * G + B) / 6
-		
+	
+	// TODO: take stride into account, do not append luminance to alpha for data out of the surface width
 	for(auto p = s.data; p != s.end; ++p){
 		uint32_t l = 2 * uint32_t(*p);
 		++p;
