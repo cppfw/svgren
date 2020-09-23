@@ -120,6 +120,9 @@ public:
 	void push_context();
 	void pop_context();
 
+	r4::matrix2<real> get_matrix();
+	void set_matrix(const r4::matrix2<real>& m);
+
 	std::vector<uint32_t> release();
 };
 

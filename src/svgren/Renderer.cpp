@@ -278,12 +278,12 @@ void Renderer::set_gradient(const std::string& id){
 	}
 
 	struct CommonGradientPush{
-		CairoMatrixSaveRestore cairoMatrixPush; // here we need to save/restore only matrix!
+		canvas_matrix_push matrix_push; // here we need to save/restore only matrix!
 
 		std::unique_ptr<ViewportPush> viewportPush;
 
 		CommonGradientPush(Renderer& r, const svgdom::gradient& gradient) :
-				cairoMatrixPush(r.cr)
+				matrix_push(r.canvas)
 		{
 			if (r.gradientGetUnits(gradient) == svgdom::coordinate_units::object_bounding_box) {
 				r.canvas.translate(r.userSpaceShapeBoundingBox.p);

@@ -32,12 +32,12 @@ inline real point_angle(const r4::vector2<real>& c, const r4::vector2<real>& p){
     return atan2(p.y() - c.y(), p.x() - c.x());
 }
 
-class CairoMatrixSaveRestore{
-	cairo_matrix_t m;
-	cairo_t* cr;
+class canvas_matrix_push{
+	r4::matrix2<real> m;
+	canvas& c;
 public:
-	CairoMatrixSaveRestore(cairo_t* cr);
-	~CairoMatrixSaveRestore()noexcept;
+	canvas_matrix_push(canvas& c);
+	~canvas_matrix_push()noexcept;
 };
 
 class canvas_context_push{

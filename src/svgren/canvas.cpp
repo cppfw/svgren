@@ -399,3 +399,24 @@ void canvas::pop_context(){
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #endif
 }
+
+r4::matrix2<real> canvas::get_matrix(){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	cairo_matrix_t cm;
+	cairo_get_matrix(this->cr, &cm);
+	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+	return {
+		{real(cm.xx), real(cm.xy), real(cm.x0)},
+		{real(cm.yx), real(cm.yy), real(cm.y0)}
+	};
+#endif
+}
+
+void canvas::set_matrix(const r4::matrix2<real>& m){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	cairo_matrix_t cm;
+	cm.xx = double(m[0][0]); cm.xy = double(m[0][1]); cm.x0 = double(m[0][2]);
+	cm.yx = double(m[1][0]); cm.yy = double(m[1][1]); cm.y0 = double(m[1][2]);
+	cairo_set_matrix(this->cr, &cm);
+#endif
+}

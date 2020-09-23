@@ -23,15 +23,14 @@ canvas_context_push::~canvas_context_push()noexcept{
 	this->c.pop_context();
 }
 
-CairoMatrixSaveRestore::CairoMatrixSaveRestore(cairo_t* cr) :
-		cr(cr)
+canvas_matrix_push::canvas_matrix_push(canvas& c) :
+		c(c)
 {
-	ASSERT(this->cr)
-	cairo_get_matrix(this->cr, &this->m);
+	this->m = this->c.get_matrix();
 }
 
-CairoMatrixSaveRestore::~CairoMatrixSaveRestore()noexcept{
-	cairo_set_matrix(this->cr, &this->m);
+canvas_matrix_push::~canvas_matrix_push()noexcept{
+	this->c.set_matrix(this->m);
 }
 
 Surface svgren::getSubSurface(cairo_t* cr, const r4::rectangle<unsigned>& region){
