@@ -318,9 +318,70 @@ void canvas::arc_abs(const r4::vector2<real>& center, real radius, real angle1, 
 #endif
 }
 
+void canvas::fill(){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	cairo_fill_preserve(this->cr);
+	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
+#endif
+}
+
+void canvas::stroke(){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	cairo_stroke_preserve(this->cr);
+	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
+#endif
+}
+
 void canvas::rectangle(const r4::rectangle<real>& rect){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	cairo_rectangle(this->cr, double(rect.p.x()), double(rect.p.y()), double(rect.d.x()), double(rect.d.y()));
+	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+#endif
+}
+
+void canvas::set_line_width(real width){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	cairo_set_line_width(this->cr, double(width));
+	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+#endif
+}
+
+void canvas::set_line_cap(svgdom::stroke_line_cap lc){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	cairo_line_cap_t clc;
+	switch(lc){
+		default:
+		case svgdom::stroke_line_cap::butt:
+			clc = CAIRO_LINE_CAP_BUTT;
+			break;
+		case svgdom::stroke_line_cap::round:
+			clc = CAIRO_LINE_CAP_ROUND;
+			break;
+		case svgdom::stroke_line_cap::square:
+			clc = CAIRO_LINE_CAP_SQUARE;
+			break;
+	}
+	cairo_set_line_cap(this->cr, clc);
+	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+#endif
+}
+
+void canvas::set_line_join(svgdom::stroke_line_join lj){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	cairo_line_join_t clj;
+	switch(lj){
+		default:
+		case svgdom::stroke_line_join::miter:
+			clj = CAIRO_LINE_JOIN_MITER;
+			break;
+		case svgdom::stroke_line_join::round:
+			clj = CAIRO_LINE_JOIN_ROUND;
+			break;
+		case svgdom::stroke_line_join::bevel:
+			clj = CAIRO_LINE_JOIN_BEVEL;
+			break;
+	}
+	cairo_set_line_join(this->cr, clj);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #endif
 }

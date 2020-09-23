@@ -10,6 +10,8 @@
 #include <r4/matrix2.hpp>
 #include <r4/rectangle.hpp>
 
+#include <svgdom/elements/styleable.hpp>
+
 #include "config.hxx"
 
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
@@ -105,6 +107,13 @@ public:
 	void close_path();
 
 	void clear_path();
+
+	void fill();
+	void stroke();
+
+	void set_line_width(real width);
+	void set_line_cap(svgdom::stroke_line_cap lc);
+	void set_line_join(svgdom::stroke_line_join lj);
 
 	void rectangle(const r4::rectangle<real>& rect);
 

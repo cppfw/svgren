@@ -440,63 +440,26 @@ void Renderer::renderCurrentShape(bool isCairoGroupPushed){
 			this->canvas.set_source(fillRgb.r, fillRgb.g, fillRgb.b, fillOpacity * opacity);
 		}
 
-		cairo_fill_preserve(this->cr);
-		ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
+		this->canvas.fill();
 	}
 
-	if (stroke && !stroke->is_none()) {
-		if (auto p = this->styleStack.get_style_property(svgdom::style_property::stroke_width)){
-			cairo_set_line_width(this->cr, this->length_to_px(p->stroke_width, 0));
-			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-		} else {
-			cairo_set_line_width(this->cr, 1);
-			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+	if(stroke && !stroke->is_none()){
+		if(auto p = this->styleStack.get_style_property(svgdom::style_property::stroke_width)){
+			this->canvas.set_line_width(this->length_to_px(p->stroke_width, 0));
+		}else{
+			this->canvas.set_line_width(1);
 		}
 
-		if (auto p = this->styleStack.get_style_property(svgdom::style_property::stroke_linecap)) {
-			switch(p->stroke_line_cap){
-				default:
-					ASSERT(false)
-					break;
-				case svgdom::stroke_line_cap::butt:
-					cairo_set_line_cap(this->cr, CAIRO_LINE_CAP_BUTT);
-					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-					break;
-				case svgdom::stroke_line_cap::round:
-					cairo_set_line_cap(this->cr, CAIRO_LINE_CAP_ROUND);
-					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-					break;
-				case svgdom::stroke_line_cap::square:
-					cairo_set_line_cap(this->cr, CAIRO_LINE_CAP_SQUARE);
-					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-					break;
-			}
+		if(auto p = this->styleStack.get_style_property(svgdom::style_property::stroke_linecap)){
+			this->canvas.set_line_cap(p->stroke_line_cap);
 		}else{
-			cairo_set_line_cap(this->cr, CAIRO_LINE_CAP_BUTT);
-			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+			this->canvas.set_line_cap(svgdom::stroke_line_cap::butt);
 		}
 
 		if(auto p = this->styleStack.get_style_property(svgdom::style_property::stroke_linejoin)){
-			switch(p->stroke_line_join){
-				default:
-					ASSERT(false)
-					break;
-				case svgdom::stroke_line_join::miter:
-					cairo_set_line_join(this->cr, CAIRO_LINE_JOIN_MITER);
-					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-					break;
-				case svgdom::stroke_line_join::round:
-					cairo_set_line_join(this->cr, CAIRO_LINE_JOIN_ROUND);
-					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-					break;
-				case svgdom::stroke_line_join::bevel:
-					cairo_set_line_join(this->cr, CAIRO_LINE_JOIN_BEVEL);
-					ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-					break;
-			}
+			this->canvas.set_line_join(p->stroke_line_join);
 		}else{
-			cairo_set_line_join(this->cr, CAIRO_LINE_JOIN_MITER);
-			ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+			this->canvas.set_line_join(svgdom::stroke_line_join::miter);
 		}
 
 		if(stroke->is_url()){
@@ -511,8 +474,7 @@ void Renderer::renderCurrentShape(bool isCairoGroupPushed){
 			this->canvas.set_source(rgb.r, rgb.g, rgb.b, strokeOpacity * opacity);
 		}
 
-		cairo_stroke_preserve(this->cr);
-		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+		this->canvas.stroke();
 	}
 
 	// clear path if any left
