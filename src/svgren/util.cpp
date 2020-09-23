@@ -205,7 +205,7 @@ PushCairoGroupIfNeeded::~PushCairoGroupIfNeeded()noexcept{
 		cairo_mask(this->renderer.cr, mask);
 	}else{
 		ASSERT(0 <= this->opacity && this->opacity <= 1)
-		if(this->opacity < svgdom::real(1)){
+		if(this->opacity < real(1)){
 			cairo_paint_with_alpha(this->renderer.cr, this->opacity);
 		}else{
 			cairo_paint(this->renderer.cr);
