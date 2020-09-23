@@ -101,7 +101,7 @@ public:
 	decltype(svgdom::styleable::presentation_attributes) gradient_get_presentation_attributes(const svgdom::gradient& g);
 	
 	bool is_invisible();
-	bool isGroupInvisible();
+	bool is_group_invisible();
 	
 public:
 	Renderer(

@@ -496,7 +496,7 @@ void Renderer::renderSvgElement(
 {
 	svgdom::style_stack::push pushStyles(this->styleStack, s);
 
-	if(this->isGroupInvisible()){
+	if(this->is_group_invisible()){
 		return;
 	}
 
@@ -504,7 +504,7 @@ void Renderer::renderSvgElement(
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
-	CairoContextSaveRestore cairoMatrixPush(this->cr);
+	canvas_context_push context_push(this->canvas);
 
 	if (this->isOutermostElement) {
 		this->canvas.translate(this->length_to_px(x, y));
@@ -547,7 +547,7 @@ void Renderer::visit(const svgdom::g_element& e){
 //	TRACE(<< "rendering GElement: id = " << e.id << std::endl)
 	svgdom::style_stack::push pushStyles(this->styleStack, e);
 
-	if(this->isGroupInvisible()){
+	if(this->is_group_invisible()){
 		return;
 	}
 
@@ -555,7 +555,7 @@ void Renderer::visit(const svgdom::g_element& e){
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
-	CairoContextSaveRestore cairoMatrixPush(this->cr);
+	canvas_context_push context_push(this->canvas);
 
 	this->apply_transformations(e.transformations);
 
@@ -702,10 +702,10 @@ bool Renderer::is_invisible(){
 			return true;
 		}
 	}
-	return this->isGroupInvisible();
+	return this->is_group_invisible();
 }
 
-bool Renderer::isGroupInvisible(){
+bool Renderer::is_group_invisible(){
 	if(auto p = this->styleStack.get_style_property(svgdom::style_property::display)){
 		if(p->display == svgdom::display::none){
 			return true;
@@ -726,7 +726,7 @@ void Renderer::visit(const svgdom::path_element& e){
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
-	CairoContextSaveRestore cairoMatrixPush(this->cr);
+	canvas_context_push context_push(this->canvas);
 
 	this->apply_transformations(e.transformations);
 
@@ -973,7 +973,7 @@ void Renderer::visit(const svgdom::path_element& e){
 					auto angle1 = point_angle(center, real(0));
 					auto angle2 = point_angle(center, end_p);
 
-					CairoContextSaveRestore cairoMatrixPush1(this->cr);
+					canvas_context_push context_push_1(this->canvas);
 
 					this->canvas.translate(cur_p);
 					this->canvas.rotate(deg_to_rad(real(s.x_axis_rotation)));
@@ -1016,7 +1016,7 @@ void Renderer::visit(const svgdom::circle_element& e){
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
-	CairoContextSaveRestore cairoMatrixPush(this->cr);
+	canvas_context_push context_push(this->canvas);
 
 	this->apply_transformations(e.transformations);
 
@@ -1044,7 +1044,7 @@ void Renderer::visit(const svgdom::polyline_element& e){
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
-	CairoContextSaveRestore cairoMatrixPush(this->cr);
+	canvas_context_push context_push(this->canvas);
 
 	this->apply_transformations(e.transformations);
 
@@ -1075,7 +1075,7 @@ void Renderer::visit(const svgdom::polygon_element& e){
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
-	CairoContextSaveRestore cairoMatrixPush(this->cr);
+	canvas_context_push context_push(this->canvas);
 
 	this->apply_transformations(e.transformations);
 
@@ -1108,7 +1108,7 @@ void Renderer::visit(const svgdom::line_element& e){
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
-	CairoContextSaveRestore cairoMatrixPush(this->cr);
+	canvas_context_push context_push(this->canvas);
 
 	this->apply_transformations(e.transformations);
 
@@ -1130,12 +1130,12 @@ void Renderer::visit(const svgdom::ellipse_element& e){
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
-	CairoContextSaveRestore cairoMatrixPush(this->cr);
+	canvas_context_push context_push(this->canvas);
 
 	this->apply_transformations(e.transformations);
 
 	{
-		CairoContextSaveRestore saveRestore(this->cr);
+		canvas_context_push context_push_1(this->canvas);
 
 		this->canvas.translate(this->length_to_px(e.cx, e.cy));
 		this->canvas.scale(this->length_to_px(e.rx, e.ry));
@@ -1163,7 +1163,7 @@ void Renderer::visit(const svgdom::rect_element& e){
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
-	CairoContextSaveRestore cairoMatrixPush(this->cr);
+	canvas_context_push context_push(this->canvas);
 
 	this->apply_transformations(e.transformations);
 
@@ -1208,7 +1208,7 @@ void Renderer::visit(const svgdom::rect_element& e){
 		this->canvas.line_to_abs(p + r4::vector2<real>{dims.x() - r.x(), 0});
 
 		{
-			CairoContextSaveRestore saveRestore(this->cr);
+			canvas_context_push context_push(this->canvas);
 			this->canvas.translate(p + r4::vector2<real>{dims.x() - r.x(), r.y()});
 			this->canvas.scale(r);
 			this->canvas.arc_abs(0, 1, -utki::pi<real>() / 2, 0);
@@ -1217,7 +1217,7 @@ void Renderer::visit(const svgdom::rect_element& e){
 		this->canvas.line_to_abs(p + dims - r4::vector2<real>{0, r.y()});
 
 		{
-			CairoContextSaveRestore saveRestore(this->cr);
+			canvas_context_push context_push(this->canvas);
 			this->canvas.translate(p + dims - r);
 			this->canvas.scale(r);
 			this->canvas.arc_abs(0, 1, 0, utki::pi<real>() / 2);
@@ -1226,7 +1226,7 @@ void Renderer::visit(const svgdom::rect_element& e){
 		this->canvas.line_to_abs(p + r4::vector2<real>{r.x(), dims.y()});
 
 		{
-			CairoContextSaveRestore saveRestore(this->cr);
+			canvas_context_push context_push(this->canvas);
 			this->canvas.translate(p + r4::vector2<real>{r.x(), dims.y() - r.y()});
 			this->canvas.scale(r);
 			this->canvas.arc_abs(0, 1, utki::pi<real>() / 2, utki::pi<real>());
@@ -1235,7 +1235,7 @@ void Renderer::visit(const svgdom::rect_element& e){
 		this->canvas.line_to_abs(p + r4::vector2<real>{0, r.y()});
 		
 		{
-			CairoContextSaveRestore saveRestore(this->cr);
+			canvas_context_push context_push(this->canvas);
 			this->canvas.translate(p + r);
 			this->canvas.scale(r);
 			this->canvas.arc_abs(0, 1, utki::pi<real>(), utki::pi<real>() * 3 / 2);

@@ -117,6 +117,9 @@ public:
 
 	void rectangle(const r4::rectangle<real>& rect);
 
+	void push_context();
+	void pop_context();
+
 	std::vector<uint32_t> release();
 };
 

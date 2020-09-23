@@ -13,15 +13,14 @@
 
 using namespace svgren;
 
-CairoContextSaveRestore::CairoContextSaveRestore(cairo_t* cr) :
-		cr(cr)
+canvas_context_push::canvas_context_push(canvas& c) :
+		c(c)
 {
-	ASSERT(this->cr)
-	cairo_save(this->cr);
+	this->c.push_context();
 }
 
-CairoContextSaveRestore::~CairoContextSaveRestore()noexcept{
-	cairo_restore(this->cr);
+canvas_context_push::~canvas_context_push()noexcept{
+	this->c.pop_context();
 }
 
 CairoMatrixSaveRestore::CairoMatrixSaveRestore(cairo_t* cr) :

@@ -17,6 +17,7 @@
 
 #include "config.hxx"
 #include "Surface.hxx"
+#include "canvas.hxx"
 
 namespace svgren{
 
@@ -39,11 +40,11 @@ public:
 	~CairoMatrixSaveRestore()noexcept;
 };
 
-class CairoContextSaveRestore{
-	cairo_t* cr;
+class canvas_context_push{
+	canvas& c;
 public:
-	CairoContextSaveRestore(cairo_t* cr);
-	~CairoContextSaveRestore()noexcept;
+	canvas_context_push(canvas& c);
+	~canvas_context_push()noexcept;
 };
 
 Surface getSubSurface(cairo_t* cr, const r4::rectangle<unsigned>& region = {0, std::numeric_limits<unsigned>::max()});

@@ -385,3 +385,17 @@ void canvas::set_line_join(svgdom::stroke_line_join lj){
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #endif
 }
+
+void canvas::push_context(){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	cairo_save(this->cr);
+	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+#endif
+}
+
+void canvas::pop_context(){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	cairo_restore(this->cr);
+	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+#endif
+}
