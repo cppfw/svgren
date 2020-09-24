@@ -262,7 +262,7 @@ void renderer::applyFilter(const std::string& id){
 		return;
 	}
 
-	FilterApplier visitor(*this);
+	filter_applier visitor(*this);
 
 	ASSERT(f)
 	f->e.accept(visitor);

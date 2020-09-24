@@ -6,24 +6,24 @@
 
 namespace svgren{
 
-struct FilterResult{
+struct filter_result{
 	std::vector<uint8_t> data;
 	svgren::surface surface;
 };
 
-class FilterApplier : public svgdom::const_visitor{
+class filter_applier : public svgdom::const_visitor{
 	renderer& r;
 
 	decltype(svgdom::filter_element::primitive_units) primitiveUnits;
 	
 	r4::rectangle<unsigned> filterRegion = {0, std::numeric_limits<unsigned>::max()};
 	
-	std::map<std::string, FilterResult> results;
+	std::map<std::string, filter_result> results;
 	
-	FilterResult* lastResult = nullptr;
+	filter_result* lastResult = nullptr;
 	
 	surface getSource(const std::string& in);
-	void setResult(const std::string& name, FilterResult&& result);
+	void setResult(const std::string& name, filter_result&& result);
 	
 	surface getSourceGraphic();
 	
@@ -31,7 +31,7 @@ public:
 	
 	surface getLastResult();
 	
-	FilterApplier(renderer& r) : r(r) {}
+	filter_applier(renderer& r) : r(r) {}
 	
 	void visit(const svgdom::filter_element& e)override;
 	
