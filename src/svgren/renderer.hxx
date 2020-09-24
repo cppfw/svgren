@@ -22,7 +22,7 @@
 
 namespace svgren{
 
-class Renderer : public svgdom::const_visitor{
+class renderer : public svgdom::const_visitor{
 public:
 	svgren::canvas& canvas;
 
@@ -104,7 +104,7 @@ public:
 	bool is_group_invisible();
 	
 public:
-	Renderer(
+	renderer(
 			svgren::canvas& canvas,
 			unsigned dpi,
 			r4::vector2<real> canvasSize,

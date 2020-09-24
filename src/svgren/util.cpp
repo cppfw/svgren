@@ -71,7 +71,7 @@ real DeviceSpaceBoundingBox::height() const noexcept{
 	return max(h, decltype(h)(0));
 }
 
-DeviceSpaceBoundingBoxPush::DeviceSpaceBoundingBoxPush(Renderer& r) :
+DeviceSpaceBoundingBoxPush::DeviceSpaceBoundingBoxPush(renderer& r) :
 		r(r),
 		oldBb(r.deviceSpaceBoundingBox)
 {
@@ -83,7 +83,7 @@ DeviceSpaceBoundingBoxPush::~DeviceSpaceBoundingBoxPush() noexcept{
 	this->r.deviceSpaceBoundingBox = this->oldBb;
 }
 
-ViewportPush::ViewportPush(Renderer& r, const decltype(oldViewport)& viewport) :
+ViewportPush::ViewportPush(renderer& r, const decltype(oldViewport)& viewport) :
 		r(r),
 		oldViewport(r.viewport)
 {
@@ -94,7 +94,7 @@ ViewportPush::~ViewportPush() noexcept{
 	this->r.viewport = this->oldViewport;
 }
 
-PushCairoGroupIfNeeded::PushCairoGroupIfNeeded(Renderer& renderer, bool isContainer) :
+PushCairoGroupIfNeeded::PushCairoGroupIfNeeded(svgren::renderer& renderer, bool isContainer) :
 		renderer(renderer)
 {
 	auto backgroundP = this->renderer.styleStack.get_style_property(svgdom::style_property::enable_background);
@@ -174,9 +174,9 @@ PushCairoGroupIfNeeded::~PushCairoGroupIfNeeded()noexcept{
 			//       Currently nothing on that is done which is equivalent to userSpaceOnUse
 			
 			class MaskRenderer : public svgdom::const_visitor{
-				Renderer& r;
+				svgren::renderer& r;
 			public:
-				MaskRenderer(Renderer& r) : r(r){}
+				MaskRenderer(svgren::renderer& r) : r(r){}
 				
 				void visit(const svgdom::mask_element& e)override{
 					svgdom::style_stack::push pushStyles(this->r.styleStack, e);

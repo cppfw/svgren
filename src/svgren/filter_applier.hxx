@@ -12,7 +12,7 @@ struct FilterResult{
 };
 
 class FilterApplier : public svgdom::const_visitor{
-	Renderer& r;
+	renderer& r;
 
 	decltype(svgdom::filter_element::primitive_units) primitiveUnits;
 	
@@ -31,7 +31,7 @@ public:
 	
 	surface getLastResult();
 	
-	FilterApplier(Renderer& r) : r(r) {}
+	FilterApplier(renderer& r) : r(r) {}
 	
 	void visit(const svgdom::filter_element& e)override;
 	

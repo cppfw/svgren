@@ -11,7 +11,7 @@
 
 using namespace svgren;
 
-real Renderer::length_to_px(const svgdom::length& l, unsigned coordIndex)const noexcept{
+real renderer::length_to_px(const svgdom::length& l, unsigned coordIndex)const noexcept{
 	if(l.is_percent()){
 		ASSERT(coordIndex < this->viewport.size())
 		return this->viewport[coordIndex] * (l.value / 100);
@@ -19,15 +19,15 @@ real Renderer::length_to_px(const svgdom::length& l, unsigned coordIndex)const n
 	return real(l.to_px(this->dpi));
 }
 
-r4::vector2<real> Renderer::length_to_px(const svgdom::length& x, const svgdom::length& y)const noexcept{
+r4::vector2<real> renderer::length_to_px(const svgdom::length& x, const svgdom::length& y)const noexcept{
 	return r4::vector2<real>{
 			this->length_to_px(x, 0),
 			this->length_to_px(y, 1)
 		};
 }
 
-void Renderer::apply_transformation(const svgdom::transformable::transformation& t){
-//	TRACE(<< "Renderer::applyCairoTransformation(): applying transformation " << unsigned(t.type) << std::endl)
+void renderer::apply_transformation(const svgdom::transformable::transformation& t){
+//	TRACE(<< "renderer::applyCairoTransformation(): applying transformation " << unsigned(t.type) << std::endl)
 	switch (t.type_) {
 		case svgdom::transformable::transformation::type::translate:
 //			TRACE(<< "translate x,y = (" << t.x << ", " << t.y << ")" << std::endl)
@@ -90,13 +90,13 @@ void Renderer::apply_transformation(const svgdom::transformable::transformation&
 #endif
 }
 
-void Renderer::apply_transformations(const decltype(svgdom::transformable::transformations)& transformations){
+void renderer::apply_transformations(const decltype(svgdom::transformable::transformations)& transformations){
 	for (auto& t : transformations) {
 		this->apply_transformation(t);
 	}
 }
 
-void Renderer::applyViewBox(const svgdom::view_boxed& e, const svgdom::aspect_ratioed& ar){
+void renderer::applyViewBox(const svgdom::view_boxed& e, const svgdom::aspect_ratioed& ar){
 	if (!e.is_view_box_specified()) {
 		return;
 	}
@@ -165,7 +165,7 @@ void Renderer::applyViewBox(const svgdom::view_boxed& e, const svgdom::aspect_ra
 	this->canvas.translate(-e.view_box[0], -e.view_box[1]);
 }
 
-void Renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::gradient& g, const svgdom::style_stack& ss){
+void renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::gradient& g, const svgdom::style_stack& ss){
 	// Gradient inherits all attributes from other gradients it refers via href.
 	// Here we need to make sure that the gradient inherits 'styles', 'class' and all possible presentation attributes.
 	// For that we need to replace the gradient element in the style stack with the one which has those inherited
@@ -250,13 +250,13 @@ void Renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::gradien
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 }
 
-void Renderer::applyFilter() {
+void renderer::applyFilter() {
 	if(auto filter = this->styleStack.get_style_property(svgdom::style_property::filter)){
 		this->applyFilter(filter->get_local_id_from_iri());
 	}
 }
 
-void Renderer::applyFilter(const std::string& id){
+void renderer::applyFilter(const std::string& id){
 	auto f = this->finder.find_by_id(id);
 	if(!f){
 		return;
@@ -270,7 +270,7 @@ void Renderer::applyFilter(const std::string& id){
 	this->blit(visitor.getLastResult());
 }
 
-void Renderer::set_gradient(const std::string& id){
+void renderer::set_gradient(const std::string& id){
 	auto g = this->finder.find_by_id(id);
 	if(!g){
 		this->canvas.set_source(0, 0, 0, 0);
@@ -282,7 +282,7 @@ void Renderer::set_gradient(const std::string& id){
 
 		std::unique_ptr<ViewportPush> viewportPush;
 
-		CommonGradientPush(Renderer& r, const svgdom::gradient& gradient) :
+		CommonGradientPush(renderer& r, const svgdom::gradient& gradient) :
 				matrix_push(r.canvas)
 		{
 			if (r.gradientGetUnits(gradient) == svgdom::coordinate_units::object_bounding_box) {
@@ -298,11 +298,11 @@ void Renderer::set_gradient(const std::string& id){
 	};
 
 	struct GradientSetter : public svgdom::const_visitor{
-		Renderer& r;
+		renderer& r;
 
 		const svgdom::style_stack& ss;
 
-		GradientSetter(Renderer& r, const svgdom::style_stack& ss) : r(r), ss(ss) {}
+		GradientSetter(renderer& r, const svgdom::style_stack& ss) : r(r), ss(ss) {}
 
 		void visit(const svgdom::linear_gradient_element& gradient)override{
 			CommonGradientPush commonPush(this->r, gradient);
@@ -357,7 +357,7 @@ void Renderer::set_gradient(const std::string& id){
 	g->e.accept(visitor);
 }
 
-void Renderer::updateCurBoundingBox(){
+void renderer::updateCurBoundingBox(){
 	this->userSpaceShapeBoundingBox = this->canvas.get_shape_bounding_box();
 
 	if(this->userSpaceShapeBoundingBox.d[0] == 0){
@@ -386,7 +386,7 @@ void Renderer::updateCurBoundingBox(){
 	}
 }
 
-void Renderer::renderCurrentShape(bool isCairoGroupPushed){
+void renderer::renderCurrentShape(bool isCairoGroupPushed){
 	this->updateCurBoundingBox();
 
 	if(auto p = this->styleStack.get_style_property(svgdom::style_property::fill_rule)){
@@ -483,7 +483,7 @@ void Renderer::renderCurrentShape(bool isCairoGroupPushed){
 	this->applyFilter();
 }
 
-void Renderer::renderSvgElement(
+void renderer::renderSvgElement(
 		const svgdom::container& e,
 		const svgdom::styleable& s,
 		const svgdom::view_boxed& v,
@@ -527,7 +527,7 @@ void Renderer::renderSvgElement(
 	this->applyFilter();
 }
 
-Renderer::Renderer(
+renderer::renderer(
 		svgren::canvas& canvas,
 		unsigned dpi,
 		r4::vector2<real> canvasSize,
@@ -543,7 +543,7 @@ Renderer::Renderer(
 	this->background = this->canvas.get_sub_surface();
 }
 
-void Renderer::visit(const svgdom::g_element& e){
+void renderer::visit(const svgdom::g_element& e){
 //	TRACE(<< "rendering GElement: id = " << e.id << std::endl)
 	svgdom::style_stack::push pushStyles(this->styleStack, e);
 
@@ -564,7 +564,7 @@ void Renderer::visit(const svgdom::g_element& e){
 	this->applyFilter();
 }
 
-void Renderer::visit(const svgdom::use_element& e){
+void renderer::visit(const svgdom::use_element& e){
 //	TRACE(<< "rendering UseElement" << std::endl)
 	auto ref = this->finder.find_by_id(e.get_local_id_from_iri());
 	if(!ref){
@@ -572,11 +572,11 @@ void Renderer::visit(const svgdom::use_element& e){
 	}
 
 	struct RefRenderer : public svgdom::const_visitor{
-		Renderer& r;
+		renderer& r;
 		const svgdom::use_element& ue;
 		svgdom::g_element fakeGElement;
 
-		RefRenderer(Renderer& r, const svgdom::use_element& e) :
+		RefRenderer(renderer& r, const svgdom::use_element& e) :
 				r(r), ue(e)
 		{
 			this->fakeGElement.styles = e.styles;
@@ -597,11 +597,11 @@ void Renderer::visit(const svgdom::use_element& e){
 
 		void visit(const svgdom::symbol_element& symbol)override{
 			struct FakeSvgElement : public svgdom::element{
-				Renderer& r;
+				renderer& r;
 				const svgdom::use_element& ue;
 				const svgdom::symbol_element& se;
 
-				FakeSvgElement(Renderer& r, const svgdom::use_element& ue, const svgdom::symbol_element& se) :
+				FakeSvgElement(renderer& r, const svgdom::use_element& ue, const svgdom::symbol_element& se) :
 						r(r), ue(ue), se(se)
 				{}
 
@@ -630,11 +630,11 @@ void Renderer::visit(const svgdom::use_element& e){
 
 		void visit(const svgdom::svg_element& svg)override{
 			struct FakeSvgElement : public svgdom::element{
-				Renderer& r;
+				renderer& r;
 				const svgdom::use_element& ue;
 				const svgdom::svg_element& se;
 
-				FakeSvgElement(Renderer& r, const svgdom::use_element& ue, const svgdom::svg_element& se) :
+				FakeSvgElement(renderer& r, const svgdom::use_element& ue, const svgdom::svg_element& se) :
 						r(r), ue(ue), se(se)
 				{}
 
@@ -662,10 +662,10 @@ void Renderer::visit(const svgdom::use_element& e){
 
 		void default_visit(const svgdom::element& element)override{
 			struct FakeSvgElement : public svgdom::element{
-				Renderer& r;
+				renderer& r;
 				const svgdom::element& e;
 
-				FakeSvgElement(Renderer& r, const svgdom::element& e) :
+				FakeSvgElement(renderer& r, const svgdom::element& e) :
 						r(r), e(e)
 				{}
 
@@ -691,12 +691,12 @@ void Renderer::visit(const svgdom::use_element& e){
 	ref->e.accept(visitor);
 }
 
-void Renderer::visit(const svgdom::svg_element& e){
+void renderer::visit(const svgdom::svg_element& e){
 //	TRACE(<< "rendering SvgElement" << std::endl)
 	renderSvgElement(e, e, e, e, e.x, e.y, e.width, e.height);
 }
 
-bool Renderer::is_invisible(){
+bool renderer::is_invisible(){
 	if(auto p = this->styleStack.get_style_property(svgdom::style_property::visibility)){
 		if(p->visibility != svgdom::visibility::visible){
 			return true;
@@ -705,7 +705,7 @@ bool Renderer::is_invisible(){
 	return this->is_group_invisible();
 }
 
-bool Renderer::is_group_invisible(){
+bool renderer::is_group_invisible(){
 	if(auto p = this->styleStack.get_style_property(svgdom::style_property::display)){
 		if(p->display == svgdom::display::none){
 			return true;
@@ -714,7 +714,7 @@ bool Renderer::is_group_invisible(){
 	return false;
 }
 
-void Renderer::visit(const svgdom::path_element& e){
+void renderer::visit(const svgdom::path_element& e){
 //	TRACE(<< "rendering PathElement" << std::endl)
 	svgdom::style_stack::push pushStyles(this->styleStack, e);
 
@@ -1004,7 +1004,7 @@ void Renderer::visit(const svgdom::path_element& e){
 	this->renderCurrentShape(cairoGroupPush.isPushed());
 }
 
-void Renderer::visit(const svgdom::circle_element& e){
+void renderer::visit(const svgdom::circle_element& e){
 //	TRACE(<< "rendering CircleElement" << std::endl)
 	svgdom::style_stack::push pushStyles(this->styleStack, e);
 
@@ -1030,7 +1030,7 @@ void Renderer::visit(const svgdom::circle_element& e){
 	this->renderCurrentShape(cairoGroupPush.isPushed());
 }
 
-void Renderer::visit(const svgdom::polyline_element& e){
+void renderer::visit(const svgdom::polyline_element& e){
 //	TRACE(<< "rendering PolylineElement" << std::endl)
 	svgdom::style_stack::push pushStyles(this->styleStack, e);
 
@@ -1063,7 +1063,7 @@ void Renderer::visit(const svgdom::polyline_element& e){
 	this->renderCurrentShape(cairoGroupPush.isPushed());
 }
 
-void Renderer::visit(const svgdom::polygon_element& e){
+void renderer::visit(const svgdom::polygon_element& e){
 //	TRACE(<< "rendering PolygonElement" << std::endl)
 	svgdom::style_stack::push pushStyles(this->styleStack, e);
 
@@ -1096,7 +1096,7 @@ void Renderer::visit(const svgdom::polygon_element& e){
 	this->renderCurrentShape(cairoGroupPush.isPushed());
 }
 
-void Renderer::visit(const svgdom::line_element& e){
+void renderer::visit(const svgdom::line_element& e){
 //	TRACE(<< "rendering LineElement" << std::endl)
 	svgdom::style_stack::push pushStyles(this->styleStack, e);
 
@@ -1118,7 +1118,7 @@ void Renderer::visit(const svgdom::line_element& e){
 	this->renderCurrentShape(cairoGroupPush.isPushed());
 }
 
-void Renderer::visit(const svgdom::ellipse_element& e){
+void renderer::visit(const svgdom::ellipse_element& e){
 //	TRACE(<< "rendering EllipseElement" << std::endl)
 	svgdom::style_stack::push pushStyles(this->styleStack, e);
 
@@ -1147,11 +1147,11 @@ void Renderer::visit(const svgdom::ellipse_element& e){
 	this->renderCurrentShape(cairoGroupPush.isPushed());
 }
 
-void Renderer::visit(const svgdom::style_element& e){
+void renderer::visit(const svgdom::style_element& e){
 	this->styleStack.add_css(e.css);
 }
 
-void Renderer::visit(const svgdom::rect_element& e){
+void renderer::visit(const svgdom::rect_element& e){
 //	TRACE(<< "rendering RectElement" << std::endl)
 	svgdom::style_stack::push pushStyles(this->styleStack, e);
 
@@ -1265,7 +1265,7 @@ struct GradientCaster : public svgdom::const_visitor{
 };
 }
 
-const decltype(svgdom::transformable::transformations)& Renderer::gradient_get_transformations(const svgdom::gradient& g){
+const decltype(svgdom::transformable::transformations)& renderer::gradient_get_transformations(const svgdom::gradient& g){
 	if(g.transformations.size() != 0){
 		return g.transformations;
 	}
@@ -1285,7 +1285,7 @@ const decltype(svgdom::transformable::transformations)& Renderer::gradient_get_t
 	return g.transformations;
 }
 
-svgdom::coordinate_units Renderer::gradientGetUnits(const svgdom::gradient& g){
+svgdom::coordinate_units renderer::gradientGetUnits(const svgdom::gradient& g){
 	if(g.units != svgdom::coordinate_units::unknown){
 		return g.units;
 	}
@@ -1305,7 +1305,7 @@ svgdom::coordinate_units Renderer::gradientGetUnits(const svgdom::gradient& g){
 	return svgdom::coordinate_units::object_bounding_box; // bounding box is default
 }
 
-svgdom::length Renderer::gradientGetX1(const svgdom::linear_gradient_element& g){
+svgdom::length renderer::gradientGetX1(const svgdom::linear_gradient_element& g){
 	if(g.x1.is_valid()){
 		return g.x1;
 	}
@@ -1325,7 +1325,7 @@ svgdom::length Renderer::gradientGetX1(const svgdom::linear_gradient_element& g)
 	return svgdom::length(0, svgdom::length_unit::percent);
 }
 
-svgdom::length Renderer::gradientGetY1(const svgdom::linear_gradient_element& g){
+svgdom::length renderer::gradientGetY1(const svgdom::linear_gradient_element& g){
 	if(g.y1.is_valid()){
 		return g.y1;
 	}
@@ -1345,7 +1345,7 @@ svgdom::length Renderer::gradientGetY1(const svgdom::linear_gradient_element& g)
 	return svgdom::length(0, svgdom::length_unit::percent);
 }
 
-svgdom::length Renderer::gradientGetX2(const svgdom::linear_gradient_element& g) {
+svgdom::length renderer::gradientGetX2(const svgdom::linear_gradient_element& g) {
 	if(g.x2.is_valid()){
 		return g.x2;
 	}
@@ -1365,7 +1365,7 @@ svgdom::length Renderer::gradientGetX2(const svgdom::linear_gradient_element& g)
 	return svgdom::length(100, svgdom::length_unit::percent);
 }
 
-svgdom::length Renderer::gradientGetY2(const svgdom::linear_gradient_element& g) {
+svgdom::length renderer::gradientGetY2(const svgdom::linear_gradient_element& g) {
 	if(g.y2.is_valid()){
 		return g.y2;
 	}
@@ -1385,7 +1385,7 @@ svgdom::length Renderer::gradientGetY2(const svgdom::linear_gradient_element& g)
 	return svgdom::length(0, svgdom::length_unit::percent);
 }
 
-svgdom::length Renderer::gradientGetCx(const svgdom::radial_gradient_element& g){
+svgdom::length renderer::gradientGetCx(const svgdom::radial_gradient_element& g){
 	if(g.cx.is_valid()){
 		return g.cx;
 	}
@@ -1405,7 +1405,7 @@ svgdom::length Renderer::gradientGetCx(const svgdom::radial_gradient_element& g)
 	return svgdom::length(50, svgdom::length_unit::percent);
 }
 
-svgdom::length Renderer::gradientGetCy(const svgdom::radial_gradient_element& g){
+svgdom::length renderer::gradientGetCy(const svgdom::radial_gradient_element& g){
 	if(g.cy.is_valid()){
 		return g.cy;
 	}
@@ -1425,7 +1425,7 @@ svgdom::length Renderer::gradientGetCy(const svgdom::radial_gradient_element& g)
 	return svgdom::length(50, svgdom::length_unit::percent);
 }
 
-svgdom::length Renderer::gradientGetR(const svgdom::radial_gradient_element& g) {
+svgdom::length renderer::gradientGetR(const svgdom::radial_gradient_element& g) {
 	if(g.r.is_valid()){
 		return g.r;
 	}
@@ -1445,7 +1445,7 @@ svgdom::length Renderer::gradientGetR(const svgdom::radial_gradient_element& g) 
 	return svgdom::length(50, svgdom::length_unit::percent);
 }
 
-svgdom::length Renderer::gradientGetFx(const svgdom::radial_gradient_element& g) {
+svgdom::length renderer::gradientGetFx(const svgdom::radial_gradient_element& g) {
 	if(g.fx.is_valid()){
 		return g.fx;
 	}
@@ -1465,7 +1465,7 @@ svgdom::length Renderer::gradientGetFx(const svgdom::radial_gradient_element& g)
 	return svgdom::length(0, svgdom::length_unit::unknown);
 }
 
-svgdom::length Renderer::gradientGetFy(const svgdom::radial_gradient_element& g) {
+svgdom::length renderer::gradientGetFy(const svgdom::radial_gradient_element& g) {
 	if(g.fy.is_valid()){
 		return g.fy;
 	}
@@ -1485,7 +1485,7 @@ svgdom::length Renderer::gradientGetFy(const svgdom::radial_gradient_element& g)
 	return svgdom::length(0, svgdom::length_unit::unknown);
 }
 
-const decltype(svgdom::container::children)& Renderer::gradientGetStops(const svgdom::gradient& g) {
+const decltype(svgdom::container::children)& renderer::gradientGetStops(const svgdom::gradient& g) {
 	if(g.children.size() != 0){
 		return g.children;
 	}
@@ -1506,7 +1506,7 @@ const decltype(svgdom::container::children)& Renderer::gradientGetStops(const sv
 	return g.children;
 }
 
-const decltype(svgdom::styleable::styles)& Renderer::gradient_get_styles(const svgdom::gradient& g){
+const decltype(svgdom::styleable::styles)& renderer::gradient_get_styles(const svgdom::gradient& g){
 	if(g.styles.size() != 0){
 		return g.styles;
 	}
@@ -1527,7 +1527,7 @@ const decltype(svgdom::styleable::styles)& Renderer::gradient_get_styles(const s
 	return g.styles;
 }
 
-const decltype(svgdom::styleable::classes)& Renderer::gradient_get_classes(const svgdom::gradient& g){
+const decltype(svgdom::styleable::classes)& renderer::gradient_get_classes(const svgdom::gradient& g){
 	if(!g.classes.empty()){
 		return g.classes;
 	}
@@ -1548,7 +1548,7 @@ const decltype(svgdom::styleable::classes)& Renderer::gradient_get_classes(const
 	return g.classes;
 }
 
-svgdom::gradient::spread_method Renderer::gradientGetSpreadMethod(const svgdom::gradient& g){
+svgdom::gradient::spread_method renderer::gradientGetSpreadMethod(const svgdom::gradient& g){
 	if(g.spread_method_ != svgdom::gradient::spread_method::default_){
 		return g.spread_method_;
 	}
@@ -1571,7 +1571,7 @@ svgdom::gradient::spread_method Renderer::gradientGetSpreadMethod(const svgdom::
 	return svgdom::gradient::spread_method::pad;
 }
 
-decltype(svgdom::styleable::presentation_attributes) Renderer::gradient_get_presentation_attributes(const svgdom::gradient& g){
+decltype(svgdom::styleable::presentation_attributes) renderer::gradient_get_presentation_attributes(const svgdom::gradient& g){
 	decltype(svgdom::styleable::presentation_attributes) ret = g.presentation_attributes; // copy
 
 	decltype(svgdom::styleable::presentation_attributes) ref_attrs;
@@ -1598,9 +1598,9 @@ decltype(svgdom::styleable::presentation_attributes) Renderer::gradient_get_pres
 	return ret;
 }
 
-void Renderer::blit(const surface& s){
+void renderer::blit(const surface& s){
 	if(!s.data || s.d.x() == 0 || s.d.y() == 0){
-		TRACE(<< "Renderer::blit(): source image is empty" << std::endl)
+		TRACE(<< "renderer::blit(): source image is empty" << std::endl)
 		return;
 	}
 	ASSERT(s.data && s.d.x() != 0 && s.d.y() != 0)
@@ -1608,7 +1608,7 @@ void Renderer::blit(const surface& s){
 	auto dst = this->canvas.get_sub_surface();
 
 	if(s.p.x() >= dst.d.x() || s.p.y() >= dst.d.y()){
-		TRACE(<< "Renderer::blit(): source image is out of canvas" << std::endl)
+		TRACE(<< "renderer::blit(): source image is out of canvas" << std::endl)
 		return;
 	}
 

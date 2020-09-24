@@ -77,31 +77,31 @@ struct DeviceSpaceBoundingBox{
 };
 
 class DeviceSpaceBoundingBoxPush{
-	class Renderer& r;
+	class renderer& r;
 	DeviceSpaceBoundingBox oldBb;
 public:
-	DeviceSpaceBoundingBoxPush(Renderer& r);
+	DeviceSpaceBoundingBoxPush(renderer& r);
 	~DeviceSpaceBoundingBoxPush()noexcept;
 };
 
 class ViewportPush{
-	class Renderer& r;
+	class renderer& r;
 	r4::vector2<real> oldViewport;
 public:
-	ViewportPush(Renderer& r, const decltype(oldViewport)& viewport);
+	ViewportPush(renderer& r, const decltype(oldViewport)& viewport);
 	~ViewportPush()noexcept;
 };
 
 class PushCairoGroupIfNeeded{
 	bool groupPushed;
 	surface oldBackground;
-	class Renderer& renderer;
+	class svgren::renderer& renderer;
 
 	real opacity = real(1);
 	
 	const svgdom::element* maskElement = nullptr;
 public:
-	PushCairoGroupIfNeeded(Renderer& renderer, bool isContainer);
+	PushCairoGroupIfNeeded(svgren::renderer& renderer, bool isContainer);
 	~PushCairoGroupIfNeeded()noexcept;
 	
 	bool isPushed()const noexcept{
