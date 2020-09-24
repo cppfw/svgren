@@ -5,7 +5,7 @@
 #include <utki/config.hpp>
 #include <utki/util.hpp>
 
-#include "Renderer.hxx"
+#include "renderer.hxx"
 #include "config.hxx"
 #include "canvas.hxx"
 

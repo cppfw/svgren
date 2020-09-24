@@ -1,4 +1,4 @@
-#include "FilterApplier.hxx"
+#include "filter_applier.hxx"
 
 #include <cmath>
 #include <stdexcept>

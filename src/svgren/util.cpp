@@ -9,7 +9,7 @@
 
 #include <svgdom/length.hpp>
 
-#include "Renderer.hxx"
+#include "renderer.hxx"
 
 using namespace svgren;
 

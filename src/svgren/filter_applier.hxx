@@ -2,7 +2,7 @@
 
 #include <svgdom/visitor.hpp>
 
-#include "Renderer.hxx"
+#include "renderer.hxx"
 
 namespace svgren{
 

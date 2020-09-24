@@ -1,4 +1,4 @@
-#include "Renderer.hxx"
+#include "renderer.hxx"
 
 #include <utki/math.hpp>
 
@@ -7,7 +7,7 @@
 #include "util.hxx"
 #include "config.hxx"
 
-#include "FilterApplier.hxx"
+#include "filter_applier.hxx"
 
 using namespace svgren;
 
