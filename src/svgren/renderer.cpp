@@ -288,7 +288,7 @@ void renderer::set_gradient(const std::string& id){
 			if (r.gradientGetUnits(gradient) == svgdom::coordinate_units::object_bounding_box) {
 				r.canvas.translate(r.userSpaceShapeBoundingBox.p);
 				r.canvas.scale(r.userSpaceShapeBoundingBox.d);
-				this->viewportPush = std::unique_ptr<ViewportPush>(new ViewportPush(r, {{1, 1}}));
+				this->viewportPush = std::unique_ptr<ViewportPush>(new ViewportPush(r, {1, 1}));
 			}
 
 			r.apply_transformations(r.gradient_get_transformations(gradient));
@@ -307,16 +307,19 @@ void renderer::set_gradient(const std::string& id){
 		void visit(const svgdom::linear_gradient_element& gradient)override{
 			CommonGradientPush commonPush(this->r, gradient);
 
-			if(auto pat = cairo_pattern_create_linear(
+			auto pat = cairo_pattern_create_linear(
 					this->r.length_to_px(this->r.gradientGetX1(gradient), 0),
 					this->r.length_to_px(this->r.gradientGetY1(gradient), 1),
 					this->r.length_to_px(this->r.gradientGetX2(gradient), 0),
 					this->r.length_to_px(this->r.gradientGetY2(gradient), 1)
-				))
-			{
-				utki::scope_exit pat_scope_exit([&pat](){cairo_pattern_destroy(pat);});
-				this->r.setCairoPatternSource(*pat, gradient, this->ss);
+				);
+			
+			if(!pat){
+				throw std::runtime_error("cairo_pattern_create_linear() failed");
 			}
+
+			utki::scope_exit pat_scope_exit([&pat](){cairo_pattern_destroy(pat);});
+			this->r.setCairoPatternSource(*pat, gradient, this->ss);
 		}
 
 		void visit(const svgdom::radial_gradient_element& gradient)override{
@@ -335,18 +338,21 @@ void renderer::set_gradient(const std::string& id){
 				fy = cy;
 			}
 
-			if(auto pat = cairo_pattern_create_radial(
+			auto pat = cairo_pattern_create_radial(
 					this->r.length_to_px(fx, 0),
 					this->r.length_to_px(fy, 1),
 					0,
 					this->r.length_to_px(cx, 0),
 					this->r.length_to_px(cy, 1),
 					this->r.length_to_px(radius, 0)
-				))
-			{
-				utki::scope_exit pat_scope_exit([&pat](){cairo_pattern_destroy(pat);});
-				this->r.setCairoPatternSource(*pat, gradient, this->ss);
+				);
+			
+			if(!pat){
+				throw std::runtime_error("cairo_pattern_create_radial(): failed");
 			}
+
+			utki::scope_exit pat_scope_exit([&pat](){cairo_pattern_destroy(pat);});
+			this->r.setCairoPatternSource(*pat, gradient, this->ss);
 		}
 
 		void default_visit(const svgdom::element&)override{
