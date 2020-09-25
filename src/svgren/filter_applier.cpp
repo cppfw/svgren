@@ -101,14 +101,12 @@ filter_result allocateResult(const surface& src){
 	if (dataSize != 0) {
 		ret.data.resize(dataSize);
 		ASSERT_INFO(ret.data.size() != 0, "src.d = " << src.d)
-		ret.surface.data = ret.data.data();
+		ret.surface.span = utki::make_span(ret.data);
 		ret.surface.stride = ret.surface.d.x();
-		ret.surface.end = ret.data.data() + ret.data.size();
 	}else{
 		ret.data.clear();
-		ret.surface.data = nullptr;
+		ret.surface.span = nullptr;
 		ret.surface.stride = 0;
-		ret.surface.end = nullptr;
 	}
 	
 	return ret;
@@ -167,22 +165,22 @@ filter_result cairoImageSurfaceBlur(const surface& src, r4::vector2<real> stdDev
 	}
 	
 	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurHorizontal(tmp.data(), src.data, src.d.x(), src.stride, src.d.x(), src.d.y(), hBoxSize[0], hOffset[0], channel);
+		boxBlurHorizontal(tmp.data(), src.span.data(), src.d.x(), src.stride, src.d.x(), src.d.y(), hBoxSize[0], hOffset[0], channel);
 	}
 	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurHorizontal(ret.surface.data, tmp.data(), ret.surface.stride, src.d.x(), src.d.x(), src.d.y(), hBoxSize[1], hOffset[1], channel);
+		boxBlurHorizontal(ret.surface.span.data(), tmp.data(), ret.surface.stride, src.d.x(), src.d.x(), src.d.y(), hBoxSize[1], hOffset[1], channel);
 	}
 	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurHorizontal(tmp.data(), ret.surface.data, src.d.x(), ret.surface.stride, src.d.x(), src.d.y(), hBoxSize[2], hOffset[2], channel);
+		boxBlurHorizontal(tmp.data(), ret.surface.span.data(), src.d.x(), ret.surface.stride, src.d.x(), src.d.y(), hBoxSize[2], hOffset[2], channel);
 	}
 	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurVertical(ret.surface.data, tmp.data(), ret.surface.stride, src.d.x(), src.d.x(), src.d.y(), vBoxSize[0], vOffset[0], channel);
+		boxBlurVertical(ret.surface.span.data(), tmp.data(), ret.surface.stride, src.d.x(), src.d.x(), src.d.y(), vBoxSize[0], vOffset[0], channel);
 	}
 	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurVertical(tmp.data(), ret.surface.data, src.d.x(), ret.surface.stride, src.d.x(), src.d.y(), vBoxSize[1], vOffset[1], channel);
+		boxBlurVertical(tmp.data(), ret.surface.span.data(), src.d.x(), ret.surface.stride, src.d.x(), src.d.y(), vBoxSize[1], vOffset[1], channel);
 	}
 	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurVertical(ret.surface.data, tmp.data(), ret.surface.stride, src.d.x(), src.d.x(), src.d.y(), vBoxSize[2], vOffset[2], channel);
+		boxBlurVertical(ret.surface.span.data(), tmp.data(), ret.surface.stride, src.d.x(), src.d.x(), src.d.y(), vBoxSize[2], vOffset[2], channel);
 	}
 	
 	return ret;
@@ -196,7 +194,7 @@ surface filter_applier::getSourceGraphic(){
 void filter_applier::setResult(const std::string& name, filter_result&& result){
 	this->results[name] = std::move(result);
 	this->lastResult = &this->results[name];
-	ASSERT(this->lastResult->data.size() == 0 || this->lastResult->surface.data == &*this->lastResult->data.begin())
+	ASSERT(this->lastResult->data.size() == 0 || this->lastResult->surface.span.data() == this->lastResult->data.data())
 }
 
 surface filter_applier::getSource(const std::string& in){
@@ -345,15 +343,15 @@ void filter_applier::visit(const svgdom::fe_gaussian_blur_element& e){
 namespace{
 filter_result color_matrix(const surface& s, const r4::matrix4<real>& m, const r4::vector4<real>& mc5){
 //	TRACE(<< "colorMatrix(): s.width = " << s.width << " s.height = " << s.height << std::endl)
-	ASSERT(s.data || s.d.is_zero())
+	ASSERT(!s.span.empty() || s.d.is_zero())
 	filter_result ret = allocateResult(s);
 	
-	ASSERT(s.data || s.d.is_zero())
+	ASSERT(!s.span.empty() || s.d.is_zero())
 	
 	for(unsigned y = 0; y != s.d.y(); ++y){
-		auto sp = &s.data[(y * s.stride) * sizeof(uint32_t)];
-		ASSERT_INFO(sp < s.end, "sp = " << std::hex << static_cast<void*>(sp) << " s.end = " << static_cast<void*>(s.end))
-		auto dp = &ret.surface.data[(y * ret.surface.stride) * sizeof(uint32_t)];
+		auto sp = &s.span[(y * s.stride) * sizeof(uint32_t)];
+		ASSERT_INFO(sp < s.span.end(), "sp = " << std::hex << static_cast<const void*>(sp) << " s.end = " << static_cast<const void*>(s.span.end()))
+		auto dp = &ret.surface.span[(y * ret.surface.stride) * sizeof(uint32_t)];
 		for(unsigned x = 0; x != s.d.x(); ++x){
 			auto bb = *sp;
 			++sp;
@@ -499,7 +497,7 @@ void filter_applier::visit(const svgdom::fe_color_matrix_element& e){
 	
 	// TRACE(<< "color matrix getSource()" << std::endl)
 	auto src = this->getSource(e.in);
-	ASSERT(src.data || src.d.is_zero())
+	ASSERT(!src.span.empty() || src.d.is_zero())
 	auto s = src.intersection(this->filterRegion);	
 	
 	// TODO: set filter sub-region
@@ -520,9 +518,9 @@ filter_result blend(const surface& in, const surface& in2, svgdom::fe_blend_elem
 	auto ret = allocateResult(s1);
 	
 	for(unsigned y = 0; y != ret.surface.d.y(); ++y){
-		auto sp1 = &s1.data[(y * s1.stride) * sizeof(uint32_t)];
-		auto sp2 = &s2.data[(y * s2.stride) * sizeof(uint32_t)];
-		auto dp = &ret.surface.data[(y * ret.surface.stride) * sizeof(uint32_t)];
+		auto sp1 = &s1.span[(y * s1.stride) * sizeof(uint32_t)];
+		auto sp2 = &s2.span[(y * s2.stride) * sizeof(uint32_t)];
+		auto dp = &ret.surface.span[(y * ret.surface.stride) * sizeof(uint32_t)];
 		for(unsigned x = 0; x != ret.surface.d.x(); ++x){
 			// TODO: optimize by using integer arithmetics instead of floating point
 			auto b01 = real(*sp1) / real(0xff);
@@ -615,12 +613,12 @@ filter_result blend(const surface& in, const surface& in2, svgdom::fe_blend_elem
 
 void filter_applier::visit(const svgdom::fe_blend_element& e){
 	auto s1 = this->getSource(e.in).intersection(this->filterRegion);
-	if(!s1.data){
+	if(s1.span.empty()){
 		return;
 	}
 	
 	auto s2 = this->getSource(e.in2).intersection(this->filterRegion);
-	if(!s2.data){
+	if(s2.span.empty()){
 		return;
 	}
 	
@@ -642,9 +640,9 @@ filter_result composite(const surface& in, const surface& in2, const svgdom::fe_
 	auto ret = allocateResult(s1);
 	
 	for(unsigned y = 0; y != ret.surface.d.y(); ++y){
-		auto sp1 = &s1.data[(y * s1.stride) * sizeof(uint32_t)];
-		auto sp2 = &s2.data[(y * s2.stride) * sizeof(uint32_t)];
-		auto dp = &ret.surface.data[(y * ret.surface.stride) * sizeof(uint32_t)];
+		auto sp1 = &s1.span[(y * s1.stride) * sizeof(uint32_t)];
+		auto sp2 = &s2.span[(y * s2.stride) * sizeof(uint32_t)];
+		auto dp = &ret.surface.span[(y * ret.surface.stride) * sizeof(uint32_t)];
 		for(unsigned x = 0; x != ret.surface.d.x(); ++x){
 			// TODO: optimize by using integer arithmetics instead of floating point
 			auto r01 = real(*sp1) / real(0xff);
@@ -751,12 +749,12 @@ filter_result composite(const surface& in, const surface& in2, const svgdom::fe_
 
 void filter_applier::visit(const svgdom::fe_composite_element& e){
 	auto s1 = this->getSource(e.in).intersection(this->filterRegion);
-	if(!s1.data){
+	if(s1.span.empty()){
 		return;
 	}
 	
 	auto s2 = this->getSource(e.in2).intersection(this->filterRegion);
-	if(!s2.data){
+	if(s2.span.empty()){
 		return;
 	}
 	

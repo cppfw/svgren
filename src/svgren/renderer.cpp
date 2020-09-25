@@ -1566,11 +1566,11 @@ decltype(svgdom::styleable::presentation_attributes) renderer::gradient_get_pres
 }
 
 void renderer::blit(const surface& s){
-	if(!s.data || s.d.x() == 0 || s.d.y() == 0){
+	if(s.span.empty() || s.d.x() == 0 || s.d.y() == 0){
 		TRACE(<< "renderer::blit(): source image is empty" << std::endl)
 		return;
 	}
-	ASSERT(s.data && s.d.x() != 0 && s.d.y() != 0)
+	ASSERT(!s.span.empty() && s.d.x() != 0 && s.d.y() != 0)
 
 	auto dst = this->canvas.get_sub_surface();
 
@@ -1579,8 +1579,8 @@ void renderer::blit(const surface& s){
 		return;
 	}
 
-	auto dstp = reinterpret_cast<uint32_t*>(dst.data) + s.p.y() * dst.stride + s.p.x();
-	auto srcp = reinterpret_cast<uint32_t*>(s.data);
+	auto dstp = reinterpret_cast<uint32_t*>(dst.span.data()) + s.p.y() * dst.stride + s.p.x();
+	auto srcp = reinterpret_cast<const uint32_t*>(s.span.data());
 	using std::min;
 	auto dp = min(s.d, dst.d - s.p);
 

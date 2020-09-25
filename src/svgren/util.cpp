@@ -111,7 +111,7 @@ PushCairoGroupIfNeeded::PushCairoGroupIfNeeded(svgren::renderer& renderer, bool 
 		}
 	}
 	
-	this->groupPushed = filterP || this->maskElement || this->oldBackground.data;
+	this->groupPushed = filterP || this->maskElement || !this->oldBackground.span.empty();
 
 	auto opacity = svgdom::real(1);
 	{
@@ -147,7 +147,7 @@ PushCairoGroupIfNeeded::PushCairoGroupIfNeeded(svgren::renderer& renderer, bool 
 		this->opacity = opacity;
 	}
 	
-	if(this->oldBackground.data){
+	if(!this->oldBackground.span.empty()){
 		this->renderer.background = this->renderer.canvas.get_sub_surface();
 	}
 }
@@ -213,19 +213,19 @@ PushCairoGroupIfNeeded::~PushCairoGroupIfNeeded()noexcept{
 	}
 	
 	// restore background if it was pushed
-	if(this->oldBackground.data){
+	if(!this->oldBackground.span.empty()){
 		this->renderer.background = this->oldBackground;
 	}
 }
 
 void svgren::appendLuminanceToAlpha(surface s){
-	ASSERT((s.end - s.data) % 4 == 0)
+	ASSERT(s.span.size() % 4 == 0)
 	
 	// Luminance is calculated using formula L = 0.2126 * R + 0.7152 * G + 0.0722 * B
 	// For faster calculation it can be simplified to L = (2 * R + 3 * G + B) / 6
 	
 	// TODO: take stride into account, do not append luminance to alpha for data out of the surface width
-	for(auto p = s.data; p != s.end; ++p){
+	for(auto p = s.span.begin(); p != s.span.end(); ++p){
 		uint32_t l = 2 * uint32_t(*p);
 		++p;
 		l += 3 * uint32_t(*p);

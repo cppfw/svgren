@@ -2,13 +2,14 @@
 
 #include <cstdint>
 
+#include <utki/span.hpp>
+
 #include <r4/rectangle.hpp>
 
 namespace svgren{
 
 struct surface : public r4::rectangle<unsigned>{
-	uint8_t* data = nullptr; // RGBA data
-	uint8_t* end = nullptr;
+	utki::span<uint8_t> span; // RGBA data
 	unsigned stride = 0;
 
 	surface() :
