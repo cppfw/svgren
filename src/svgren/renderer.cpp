@@ -220,8 +220,8 @@ void renderer::set_gradient_properties(svgren::gradient& gradient, const svgdom:
 				opacity = 1;
 			}
 			this->gradient.stops.push_back(gradient::stop{
-					rgba: {rgb, opacity},
-					offset: real(stop.offset)
+					{rgb, opacity},
+					real(stop.offset)
 				});
 		}
 	} visitor(gradient, gradient_ss);

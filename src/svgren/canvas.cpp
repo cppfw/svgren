@@ -245,7 +245,7 @@ bool canvas::has_current_point()const{
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	auto cp = cairo_has_current_point(this->cr);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-	return bool(cp);
+	return bool(cp != 0);
 #endif
 }
 
