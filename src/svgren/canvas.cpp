@@ -510,15 +510,15 @@ svgren::surface canvas::get_sub_surface(const r4::rectangle<unsigned>& region){
 	using std::min;
 	ret.d = min(region.d, s_dims - region.p);
 	ret.span = utki::make_span(
-			cairo_image_surface_get_data(s) + 4 * (region.p.y() * ret.stride + region.p.x()),
-			cairo_image_surface_get_stride(s) * cairo_image_surface_get_height(s)
+			cairo_image_surface_get_data(s) + sizeof(uint32_t) * (region.p.y() * ret.stride + region.p.x()),
+			ret.stride * ret.d.y() * sizeof(uint32_t)
 		);
 	ret.p = region.p;
 	
 	ASSERT(ret.d.y() <= s_dims.y())
 #endif
 
-	ASSERT(&ret.span[ret.stride * (ret.d.y() - 1) * sizeof(uint32_t)] < ret.span.end() || ret.d.y() == 0)
+	ASSERT(ret.d.y() == 0 || &ret.span[ret.stride * (ret.d.y() - 1) * sizeof(uint32_t)] < ret.span.end())
 
 	return ret;
 }

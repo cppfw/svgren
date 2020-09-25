@@ -9,10 +9,10 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/tests/render/tests",
-            "args": ["${workspaceFolder}/tests/samples/testdata/mouse.svg"],
+            "args": ["${workspaceFolder}/tests/samples/testdata/0.451.svg"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/tests/render",
-            "environment": [],
+            "environment": [{"name": "LD_LIBRARY_PATH", "value": "../../src/build"}],
             "externalConsole": false,
             "MIMode": "gdb",
             "setupCommands": [
@@ -22,7 +22,7 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "build"
+            "preLaunchTask": "build_debug"
         },
         {
             "name": "debug checksvg",
@@ -32,7 +32,7 @@
             "args": ["${workspaceFolder}/tests/samples/testdata/mouse.svg", "${workspaceFolder}/tests/samples/testdata/mouse.png"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/tests/render",
-            "environment": [{"name": "LD_LIBRARY_PATH", "value": "../../src"}],
+            "environment": [{"name": "LD_LIBRARY_PATH", "value": "../../src/build"}],
             "externalConsole": false,
             "MIMode": "gdb",
             "setupCommands": [
@@ -42,7 +42,7 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "build"
+            "preLaunchTask": "build_debug"
         }
     ]
 }
