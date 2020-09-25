@@ -4,7 +4,7 @@
 
 using namespace svgren;
 
-surface surface::intersectionSurface(const r4::rectangle<unsigned>& r)const{
+surface surface::intersection(const r4::rectangle<unsigned>& r)const{
 	surface ret = *this;
 
 	ASSERT(ret.data == this->data)

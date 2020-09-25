@@ -15,7 +15,7 @@ struct surface : public r4::rectangle<unsigned>{
 			r4::rectangle<unsigned>{0, std::numeric_limits<unsigned>::max()}
 	{}
 
-	surface intersectionSurface(const r4::rectangle<unsigned>& r)const;
+	surface intersection(const r4::rectangle<unsigned>& r)const;
 };
 
 }

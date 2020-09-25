@@ -335,7 +335,7 @@ void filter_applier::visit(const svgdom::fe_gaussian_blur_element& e){
 			break;
 	}
 
-	auto s = this->getSource(e.in).intersectionSurface(this->filterRegion);
+	auto s = this->getSource(e.in).intersection(this->filterRegion);
 	
 	// TODO: set filter sub-region
 
@@ -500,7 +500,7 @@ void filter_applier::visit(const svgdom::fe_color_matrix_element& e){
 	// TRACE(<< "color matrix getSource()" << std::endl)
 	auto src = this->getSource(e.in);
 	ASSERT(src.data || src.d.is_zero())
-	auto s = src.intersectionSurface(this->filterRegion);	
+	auto s = src.intersection(this->filterRegion);	
 	
 	// TODO: set filter sub-region
 	
@@ -510,8 +510,8 @@ void filter_applier::visit(const svgdom::fe_color_matrix_element& e){
 namespace{
 filter_result blend(const surface& in, const surface& in2, svgdom::fe_blend_element::mode mode){
 //	TRACE(<< "in.width = " << in.width << " in2.width = " << in2.width << std::endl)
-	auto s1 = in.intersectionSurface(in2);
-	auto s2 = in2.intersectionSurface(in);
+	auto s1 = in.intersection(in2);
+	auto s2 = in2.intersection(in);
 	
 	ASSERT_INFO(s1.d.x() == s2.d.x(), "s1.d.x() = " << s1.d.x() << " s2.d.x() = " << s2.d.x())
 	ASSERT(s1.d.y() == s2.d.y())
@@ -614,12 +614,12 @@ filter_result blend(const surface& in, const surface& in2, svgdom::fe_blend_elem
 }
 
 void filter_applier::visit(const svgdom::fe_blend_element& e){
-	auto s1 = this->getSource(e.in).intersectionSurface(this->filterRegion);
+	auto s1 = this->getSource(e.in).intersection(this->filterRegion);
 	if(!s1.data){
 		return;
 	}
 	
-	auto s2 = this->getSource(e.in2).intersectionSurface(this->filterRegion);
+	auto s2 = this->getSource(e.in2).intersection(this->filterRegion);
 	if(!s2.data){
 		return;
 	}
@@ -632,8 +632,8 @@ void filter_applier::visit(const svgdom::fe_blend_element& e){
 namespace{
 filter_result composite(const surface& in, const surface& in2, const svgdom::fe_composite_element& e){
 //	TRACE(<< "in.width = " << in.width << " in2.width = " << in2.width << std::endl)
-	auto s1 = in.intersectionSurface(in2);
-	auto s2 = in2.intersectionSurface(in);
+	auto s1 = in.intersection(in2);
+	auto s2 = in2.intersection(in);
 	
 	ASSERT_INFO(s1.d.x() == s2.d.x(), "s1.d.x() = " << s1.d.x() << " s2.d.x()) = " << s2.d.x())
 	ASSERT(s1.d.y() == s2.d.y())
@@ -750,12 +750,12 @@ filter_result composite(const surface& in, const surface& in2, const svgdom::fe_
 }
 
 void filter_applier::visit(const svgdom::fe_composite_element& e){
-	auto s1 = this->getSource(e.in).intersectionSurface(this->filterRegion);
+	auto s1 = this->getSource(e.in).intersection(this->filterRegion);
 	if(!s1.data){
 		return;
 	}
 	
-	auto s2 = this->getSource(e.in2).intersectionSurface(this->filterRegion);
+	auto s2 = this->getSource(e.in2).intersection(this->filterRegion);
 	if(!s2.data){
 		return;
 	}
