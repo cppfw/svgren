@@ -11,18 +11,17 @@
 
 using namespace svgren;
 
-real renderer::length_to_px(const svgdom::length& l, unsigned coordIndex)const noexcept{
+real renderer::length_to_px(const svgdom::length& l)const noexcept{
 	if(l.is_percent()){
-		ASSERT(coordIndex < this->viewport.size())
-		return this->viewport[coordIndex] * (l.value / 100);
+		return this->viewport.x() * (l.value / 100);
 	}
 	return real(l.to_px(this->dpi));
 }
 
 r4::vector2<real> renderer::length_to_px(const svgdom::length& x, const svgdom::length& y)const noexcept{
 	return r4::vector2<real>{
-			this->length_to_px(x, 0),
-			this->length_to_px(y, 1)
+			x.is_percent() ? (this->viewport.x() * (x.value / 100)) : x.to_px(this->dpi),
+			y.is_percent() ? (this->viewport.y() * (y.value / 100)) : y.to_px(this->dpi)
 		};
 }
 
@@ -328,7 +327,7 @@ void renderer::set_gradient(const std::string& id){
 			g.c0 = this->r.length_to_px(fx, fy);
 			g.c1 = this->r.length_to_px(cx, cy);
 			g.r0 = 0;
-			g.r1 = this->r.length_to_px(radius, 0);
+			g.r1 = this->r.length_to_px(radius);
 
 			this->r.set_gradient_properties(g, gradient, this->ss);
 
@@ -431,7 +430,7 @@ void renderer::renderCurrentShape(bool isCairoGroupPushed){
 
 	if(stroke && !stroke->is_none()){
 		if(auto p = this->styleStack.get_style_property(svgdom::style_property::stroke_width)){
-			this->canvas.set_line_width(this->length_to_px(p->stroke_width, 0));
+			this->canvas.set_line_width(this->length_to_px(p->stroke_width));
 		}else{
 			this->canvas.set_line_width(1);
 		}
@@ -1008,7 +1007,7 @@ void renderer::visit(const svgdom::circle_element& e){
 
 	this->canvas.arc_abs(
 			this->length_to_px(e.cx, e.cy),
-			this->length_to_px(e.r, 0),
+			this->length_to_px(e.r),
 			0,
 			2 * utki::pi<real>()
 		);

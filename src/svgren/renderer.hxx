@@ -49,7 +49,7 @@ public:
 	// blit surface to current cairo surface
 	void blit(const surface& s);
 	
-	real length_to_px(const svgdom::length& l, unsigned coordIndex)const noexcept;
+	real length_to_px(const svgdom::length& l)const noexcept;
 	r4::vector2<real> length_to_px(const svgdom::length& x, const svgdom::length& y)const noexcept;
 	
 	void apply_transformation(const svgdom::transformable::transformation& t);
