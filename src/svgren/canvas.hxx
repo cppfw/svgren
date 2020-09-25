@@ -78,7 +78,7 @@ public:
 
 	void set_fill_rule(fill_rule fr);
 
-	void set_source(real r, real g, real b, real a);
+	void set_source(const r4::vector4<real>& rgba);
 
 	r4::vector2<real> matrix_mul(const r4::vector2<real>& v);
 

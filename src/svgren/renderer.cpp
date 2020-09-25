@@ -204,13 +204,11 @@ void renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::gradien
 		void visit(const svgdom::gradient::stop_element& s)override{
 			svgdom::style_stack::push stylePush(this->ss, s);
 
-			svgdom::rgb rgb;
+			r4::vector3<real> rgb;
 			if(auto p = this->ss.get_style_property(svgdom::style_property::stop_color)){
-				rgb = p->get_rgb();
+				rgb = p->get_rgb().to<real>();
 			}else{
-				rgb.r = 0;
-				rgb.g = 0;
-				rgb.b = 0;
+				rgb.set(0);
 			}
 
 			svgdom::real opacity;
@@ -219,7 +217,7 @@ void renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::gradien
 			}else{
 				opacity = 1;
 			}
-			cairo_pattern_add_color_stop_rgba(&this->pat, s.offset, rgb.r, rgb.g, rgb.b, opacity);
+			cairo_pattern_add_color_stop_rgba(&this->pat, s.offset, rgb.r(), rgb.g(), rgb.b(), opacity);
 			ASSERT(cairo_pattern_status(&this->pat) == CAIRO_STATUS_SUCCESS)
 		}
 	} visitor(pat, gradient_ss);
@@ -273,7 +271,7 @@ void renderer::applyFilter(const std::string& id){
 void renderer::set_gradient(const std::string& id){
 	auto g = this->finder.find_by_id(id);
 	if(!g){
-		this->canvas.set_source(0, 0, 0, 0);
+		this->canvas.set_source(0);
 		return;
 	}
 
@@ -356,7 +354,7 @@ void renderer::set_gradient(const std::string& id){
 		}
 
 		void default_visit(const svgdom::element&)override{
-			this->r.canvas.set_source(0, 0, 0, 0);
+			this->r.canvas.set_source(0);
 		}
 	} visitor(*this, g->ss);
 
@@ -433,17 +431,17 @@ void renderer::renderCurrentShape(bool isCairoGroupPushed){
 	}
 
 	ASSERT(fill)
-	if (!fill->is_none()) {
-		if (fill->is_url()) {
+	if(!fill->is_none()){
+		if(fill->is_url()){
 			this->set_gradient(fill->get_local_id_from_iri());
-		} else {
+		}else{
 			svgdom::real fillOpacity = 1;
-			if (auto p = this->styleStack.get_style_property(svgdom::style_property::fill_opacity)){
+			if(auto p = this->styleStack.get_style_property(svgdom::style_property::fill_opacity)){
 				fillOpacity = p->opacity;
 			}
 
-			auto fillRgb = fill->get_rgb();
-			this->canvas.set_source(fillRgb.r, fillRgb.g, fillRgb.b, fillOpacity * opacity);
+			auto fillRgb = fill->get_rgb().to<real>();
+			this->canvas.set_source({fillRgb, fillOpacity * opacity});
 		}
 
 		this->canvas.fill();
@@ -476,8 +474,8 @@ void renderer::renderCurrentShape(bool isCairoGroupPushed){
 				strokeOpacity = p->opacity;
 			}
 
-			auto rgb = stroke->get_rgb();
-			this->canvas.set_source(rgb.r, rgb.g, rgb.b, strokeOpacity * opacity);
+			auto rgb = stroke->get_rgb().to<real>();
+			this->canvas.set_source({rgb, strokeOpacity * opacity});
 		}
 
 		this->canvas.stroke();

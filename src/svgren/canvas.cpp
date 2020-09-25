@@ -119,9 +119,9 @@ void canvas::set_fill_rule(canvas::fill_rule fr){
 #endif
 }
 
-void canvas::set_source(real r, real g, real b, real a){
+void canvas::set_source(const r4::vector4<real>& rgba){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	cairo_set_source_rgba(this->cr, double(r), double(g), double(b), double(a));
+	cairo_set_source_rgba(this->cr, double(rgba.r()), double(rgba.g()), double(rgba.b()), double(rgba.a()));
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #endif
 }
