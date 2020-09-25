@@ -73,14 +73,14 @@ real DeviceSpaceBoundingBox::height() const noexcept{
 
 DeviceSpaceBoundingBoxPush::DeviceSpaceBoundingBoxPush(renderer& r) :
 		r(r),
-		oldBb(r.deviceSpaceBoundingBox)
+		oldBb(r.device_space_bounding_box)
 {
-	this->r.deviceSpaceBoundingBox.set_empty();
+	this->r.device_space_bounding_box.set_empty();
 }
 
 DeviceSpaceBoundingBoxPush::~DeviceSpaceBoundingBoxPush() noexcept{
-	this->oldBb.unite(this->r.deviceSpaceBoundingBox);
-	this->r.deviceSpaceBoundingBox = this->oldBb;
+	this->oldBb.unite(this->r.device_space_bounding_box);
+	this->r.device_space_bounding_box = this->oldBb;
 }
 
 ViewportPush::ViewportPush(renderer& r, const decltype(oldViewport)& viewport) :
@@ -181,7 +181,7 @@ PushCairoGroupIfNeeded::~PushCairoGroupIfNeeded()noexcept{
 				void visit(const svgdom::mask_element& e)override{
 					svgdom::style_stack::push pushStyles(this->r.styleStack, e);
 	
-					this->r.relayAccept(e);
+					this->r.relay_accept(e);
 				}
 			} maskRenderer(this->renderer);
 			
@@ -240,5 +240,3 @@ void svgren::appendLuminanceToAlpha(surface s){
 		*p = uint8_t(l);
 	}
 }
-
-

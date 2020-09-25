@@ -270,8 +270,8 @@ void filter_applier::visit(const svgdom::filter_element& e){
 						percentLengthToFraction(e.height)
 					};
 
-					fr.p = this->r.deviceSpaceBoundingBox.pos() + fe_pos.comp_mul(this->r.deviceSpaceBoundingBox.dims());
-					fr.d = fe_dims.comp_mul(this->r.deviceSpaceBoundingBox.dims());
+					fr.p = this->r.device_space_bounding_box.pos() + fe_pos.comp_mul(this->r.device_space_bounding_box.dims());
+					fr.d = fe_dims.comp_mul(this->r.device_space_bounding_box.dims());
 				}
 				break;
 			case svgdom::coordinate_units::user_space_on_use:
@@ -330,7 +330,7 @@ void filter_applier::visit(const svgdom::fe_gaussian_blur_element& e){
 			break;
 		case svgdom::coordinate_units::object_bounding_box:
 			sd = this->r.canvas.matrix_mul_distance(
-					this->r.userSpaceShapeBoundingBox.d.comp_mul(sd)
+					this->r.user_space_bounding_box.d.comp_mul(sd)
 				);
 			break;
 	}

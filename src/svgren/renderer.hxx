@@ -32,15 +32,15 @@ public:
 	
 	const real dpi;
 	
-	bool isOutermostElement = true;
+	bool is_outermost_element = true;
 	
 	r4::vector2<real> viewport; // width, height
 	
 	// this bounding box is used for gradients
-	r4::rectangle<real> userSpaceShapeBoundingBox;
+	r4::rectangle<real> user_space_bounding_box;
 	
 	// this bounding box is used for filter region calculation.
-	DeviceSpaceBoundingBox deviceSpaceBoundingBox;
+	DeviceSpaceBoundingBox device_space_bounding_box;
 	
 	svgdom::style_stack styleStack;
 	
@@ -111,9 +111,8 @@ public:
 			const svgdom::svg_element& root
 		);
 
-	// WORKAROUND: MSVS compiler complains about cannot access protected member,
-	//             Declare public method which calls protected one.
-	void relayAccept(const svgdom::container& e){
+	// declare public method which calls protected one.
+	void relay_accept(const svgdom::container& e){
 		this->const_visitor::relay_accept(e);
 	}
 

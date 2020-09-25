@@ -269,8 +269,8 @@ void renderer::set_gradient(const std::string& id){
 				matrix_push(r.canvas)
 		{
 			if(r.gradient_get_units(gradient) == svgdom::coordinate_units::object_bounding_box){
-				r.canvas.translate(r.userSpaceShapeBoundingBox.p);
-				r.canvas.scale(r.userSpaceShapeBoundingBox.d);
+				r.canvas.translate(r.user_space_bounding_box.p);
+				r.canvas.scale(r.user_space_bounding_box.d);
 				this->viewportPush = std::unique_ptr<ViewportPush>(new ViewportPush(r, {1, 1}));
 			}
 
@@ -343,19 +343,19 @@ void renderer::set_gradient(const std::string& id){
 }
 
 void renderer::updateCurBoundingBox(){
-	this->userSpaceShapeBoundingBox = this->canvas.get_shape_bounding_box();
+	this->user_space_bounding_box = this->canvas.get_shape_bounding_box();
 
-	if(this->userSpaceShapeBoundingBox.d[0] == 0){
+	if(this->user_space_bounding_box.d[0] == 0){
 		// empty path
 		return;
 	}
 
 	// set device space bounding box
 	std::array<r4::vector2<real>, 4> rectVertices = {{
-		this->userSpaceShapeBoundingBox.p,
-		this->userSpaceShapeBoundingBox.pdx_pdy(),
-		this->userSpaceShapeBoundingBox.x_pdy(),
-		this->userSpaceShapeBoundingBox.pdx_y()
+		this->user_space_bounding_box.p,
+		this->user_space_bounding_box.pdx_pdy(),
+		this->user_space_bounding_box.x_pdy(),
+		this->user_space_bounding_box.pdx_y()
 	}};
 
 	for(auto& vertex : rectVertices){
@@ -367,7 +367,7 @@ void renderer::updateCurBoundingBox(){
 		bb.top = decltype(bb.top)(vertex[1]);
 		bb.bottom = decltype(bb.bottom)(vertex[1]);
 
-		this->deviceSpaceBoundingBox.unite(bb);
+		this->device_space_bounding_box.unite(bb);
 	}
 }
 
@@ -491,7 +491,7 @@ void renderer::renderSvgElement(
 
 	canvas_context_push context_push(this->canvas);
 
-	if (this->isOutermostElement) {
+	if(this->is_outermost_element){
 		this->canvas.translate(this->length_to_px(x, y));
 	}
 
@@ -500,10 +500,10 @@ void renderer::renderSvgElement(
 	this->applyViewBox(v, a);
 
 	{
-		bool oldOutermostElementFlag = this->isOutermostElement;
-		this->isOutermostElement = false;
+		bool oldOutermostElementFlag = this->is_outermost_element;
+		this->is_outermost_element = false;
 		utki::scope_exit scope_exit([oldOutermostElementFlag, this](){
-			this->isOutermostElement = oldOutermostElementFlag;
+			this->is_outermost_element = oldOutermostElementFlag;
 		});
 
 		this->relay_accept(e);
@@ -524,7 +524,7 @@ renderer::renderer(
 		dpi(real(dpi)),
 		viewport(canvasSize)
 {
-	this->deviceSpaceBoundingBox.set_empty();
+	this->device_space_bounding_box.set_empty();
 	this->background = this->canvas.get_sub_surface();
 }
 
@@ -544,7 +544,7 @@ void renderer::visit(const svgdom::g_element& e){
 
 	this->apply_transformations(e.transformations);
 
-	this->relayAccept(e);
+	this->relay_accept(e);
 
 	this->applyFilter();
 }
