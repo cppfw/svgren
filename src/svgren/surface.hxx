@@ -9,7 +9,7 @@
 namespace svgren{
 
 struct surface : public r4::rectangle<unsigned>{
-	utki::span<uint8_t> span; // RGBA data
+	utki::span<uint32_t> span; // RGBA data
 	unsigned stride = 0; // stride in pixels, not bytes
 
 	surface() :

@@ -26,6 +26,25 @@
 
 namespace svgren{
 
+inline r4::vector4<unsigned> get_rgba(uint32_t c){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	// cairo uses BGRA format
+	return {
+		unsigned((c >> 16) & 0xff),
+		unsigned((c >> 8) & 0xff),
+		unsigned((c >> 0) & 0xff),
+		unsigned((c >> 24) & 0xff)
+	};
+#endif
+}
+
+inline uint32_t get_uint32_t(const r4::vector4<unsigned>& rgba){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	// cairo uses BGRA format
+	return rgba.b() | (rgba.g() << 8) | (rgba.r() << 16) | (rgba.a() << 24);
+#endif
+}
+
 class canvas{
 	std::vector<uint32_t> data;
 public:

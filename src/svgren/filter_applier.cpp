@@ -14,15 +14,14 @@ using namespace svgren;
 
 namespace{
 void boxBlurHorizontal(
-		uint8_t* dst,
-		const uint8_t* src,
+		uint32_t* dst,
+		const uint32_t* src,
 		unsigned dstStride,
 		unsigned srcStride,
 		unsigned width,
 		unsigned height,
 		unsigned boxSize,
-		unsigned boxOffset,
-		unsigned channel
+		unsigned boxOffset
 	)
 {
 	if(boxSize == 0){
@@ -32,22 +31,26 @@ void boxBlurHorizontal(
 		using std::min;
 		using std::max;
 
-		unsigned sum = 0;
+		r4::vector4<unsigned> sum{0};
+		//unsigned sum = 0; // TODO: remove
 		for(unsigned i = 0; i != boxSize; ++i){
 			int pos = i - boxOffset;
 			pos = max(pos, 0);
 			pos = min(pos, int(width - 1));
-			sum += src[(srcStride * y + pos) * sizeof(uint32_t) + channel];
+			sum += get_rgba(src[srcStride * y + pos]);
+			// sum += src[(srcStride * y + pos) * sizeof(uint32_t) + channel]; // TODO: remove
 		}
 		for(unsigned x = 0; x != width; ++x){
 			int tmp = x - boxOffset;
 			int last = max(tmp, 0);
 			int next = min(tmp + boxSize, width - 1);
 
-			dst[(dstStride * y + x) * sizeof(uint32_t) + channel] = sum / boxSize;
+			dst[dstStride * y + x] = get_uint32_t((sum / boxSize));
+			//dst[(dstStride * y + x) * sizeof(uint32_t) + channel] = sum / boxSize; // TODO: remove
 
-			sum += src[(srcStride * y + next) * sizeof(uint32_t) + channel]
-					- src[(srcStride * y + last) * sizeof(uint32_t) + channel];
+			sum += get_rgba(src[srcStride * y + next]) - get_rgba(src[srcStride * y + last]);
+			//sum += src[(srcStride * y + next) * sizeof(uint32_t) + channel] // TODO: remove
+			//		- src[(srcStride * y + last) * sizeof(uint32_t) + channel];
 		}
 	}
 }
@@ -55,15 +58,14 @@ void boxBlurHorizontal(
 
 namespace{
 void boxBlurVertical(
-		uint8_t* dst,
-		const uint8_t* src,
+		uint32_t* dst,
+		const uint32_t* src,
 		unsigned dstStride,
 		unsigned srcStride,
 		unsigned width,
 		unsigned height,
 		unsigned boxSize,
-		unsigned boxOffset,
-		unsigned channel
+		unsigned boxOffset
 	)
 {
 	if(boxSize == 0){
@@ -72,22 +74,28 @@ void boxBlurVertical(
 	for(unsigned x = 0; x != width; ++x){
 		using std::min;
 		using std::max;
-		unsigned sum = 0;
+
+		r4::vector4<unsigned> sum{0};
+		// unsigned sum = 0; // TODO: remove
 		for(unsigned i = 0; i != boxSize; ++i){
 			int pos = i - boxOffset;
 			pos = max(pos, 0);
 			pos = min(pos, int(height - 1));
-			sum += src[(srcStride * pos + x) * sizeof(uint32_t) + channel];
+
+			sum += get_rgba(src[srcStride * pos + x]);
+			//sum += src[(srcStride * pos + x) * sizeof(uint32_t) + channel]; // TODO: remove
 		}
 		for(unsigned y = 0; y != height; ++y){
 			int tmp = y - boxOffset;
 			int last = max(tmp, 0);
 			int next = min(tmp + boxSize, height - 1);
 
-			dst[(dstStride * y + x) * sizeof(uint32_t) + channel] = sum / boxSize;
+			dst[dstStride * y + x] = get_uint32_t(sum / boxSize);
+			//dst[(dstStride * y + x) * sizeof(uint32_t) + channel] = sum / boxSize; // TODO: remove
 
-			sum += src[(x + srcStride * next) * sizeof(uint32_t) + channel]
-					- src[(x + srcStride * last) * sizeof(uint32_t) + channel];
+			sum += get_rgba(src[srcStride * next + x]) - get_rgba(src[srcStride * last + x]);
+			//sum += src[(x + srcStride * next) * sizeof(uint32_t) + channel] // TODO: remove
+			//		- src[(x + srcStride * last) * sizeof(uint32_t) + channel];
 		}
 	}
 }
@@ -97,7 +105,7 @@ namespace{
 filter_result allocateResult(const surface& src){
 	filter_result ret;
 	ret.surface = src;
-	auto dataSize = src.d.x() * src.d.y() * sizeof(uint32_t);
+	auto dataSize = src.d.x() * src.d.y();
 	if (dataSize != 0) {
 		ret.data.resize(dataSize);
 		ASSERT_INFO(ret.data.size() != 0, "src.d = " << src.d)
@@ -126,7 +134,7 @@ filter_result cairoImageSurfaceBlur(const surface& src, r4::vector2<real> stdDev
 	
 	filter_result ret = allocateResult(src);
 	
-	std::vector<uint8_t> tmp(ret.data.size());
+	std::vector<uint32_t> tmp(ret.data.size());
 	
 	std::array<unsigned, 3> hBoxSize;
 	std::array<unsigned, 3> hOffset;
@@ -164,24 +172,13 @@ filter_result cairoImageSurfaceBlur(const surface& src, r4::vector2<real> stdDev
 		vBoxSize[2] = d[1];
 	}
 	
-	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurHorizontal(tmp.data(), src.span.data(), src.d.x(), src.stride, src.d.x(), src.d.y(), hBoxSize[0], hOffset[0], channel);
-	}
-	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurHorizontal(ret.surface.span.data(), tmp.data(), ret.surface.stride, src.d.x(), src.d.x(), src.d.y(), hBoxSize[1], hOffset[1], channel);
-	}
-	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurHorizontal(tmp.data(), ret.surface.span.data(), src.d.x(), ret.surface.stride, src.d.x(), src.d.y(), hBoxSize[2], hOffset[2], channel);
-	}
-	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurVertical(ret.surface.span.data(), tmp.data(), ret.surface.stride, src.d.x(), src.d.x(), src.d.y(), vBoxSize[0], vOffset[0], channel);
-	}
-	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurVertical(tmp.data(), ret.surface.span.data(), src.d.x(), ret.surface.stride, src.d.x(), src.d.y(), vBoxSize[1], vOffset[1], channel);
-	}
-	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurVertical(ret.surface.span.data(), tmp.data(), ret.surface.stride, src.d.x(), src.d.x(), src.d.y(), vBoxSize[2], vOffset[2], channel);
-	}
+	boxBlurHorizontal(tmp.data(), src.span.data(), src.d.x(), src.stride, src.d.x(), src.d.y(), hBoxSize[0], hOffset[0]);
+	boxBlurHorizontal(ret.surface.span.data(), tmp.data(), ret.surface.stride, src.d.x(), src.d.x(), src.d.y(), hBoxSize[1], hOffset[1]);
+	boxBlurHorizontal(tmp.data(), ret.surface.span.data(), src.d.x(), ret.surface.stride, src.d.x(), src.d.y(), hBoxSize[2], hOffset[2]);
+
+	boxBlurVertical(ret.surface.span.data(), tmp.data(), ret.surface.stride, src.d.x(), src.d.x(), src.d.y(), vBoxSize[0], vOffset[0]);
+	boxBlurVertical(tmp.data(), ret.surface.span.data(), src.d.x(), ret.surface.stride, src.d.x(), src.d.y(), vBoxSize[1], vOffset[1]);
+	boxBlurVertical(ret.surface.span.data(), tmp.data(), ret.surface.stride, src.d.x(), src.d.x(), src.d.y(), vBoxSize[2], vOffset[2]);
 	
 	return ret;
 }
@@ -349,10 +346,14 @@ filter_result color_matrix(const surface& s, const r4::matrix4<real>& m, const r
 	ASSERT(!s.span.empty() || s.d.is_zero())
 	
 	for(unsigned y = 0; y != s.d.y(); ++y){
-		auto sp = &s.span[(y * s.stride) * sizeof(uint32_t)];
+		auto sp = &s.span[y * s.stride];
 		ASSERT_INFO(sp < s.span.end(), "sp = " << std::hex << static_cast<const void*>(sp) << " s.end = " << static_cast<const void*>(s.span.end()))
-		auto dp = &ret.surface.span[(y * ret.surface.stride) * sizeof(uint32_t)];
+		auto dp = &ret.surface.span[y * ret.surface.stride];
 		for(unsigned x = 0; x != s.d.x(); ++x){
+			auto cc = get_rgba(*sp);
+			++sp;
+
+			/*
 			auto bb = *sp;
 			++sp;
 			auto gg = *sp;
@@ -361,25 +362,42 @@ filter_result color_matrix(const surface& s, const r4::matrix4<real>& m, const r
 			++sp;
 			auto aa = *sp;
 			++sp;
+			*/
 			
-			if(aa != 0xff && aa != 0){
+			//if(aa != 0xff && aa != 0){
+			if(cc.a() != 0xff && cc.a() != 0){
 				// unpremultiply alpha
-				rr = uint32_t(rr) * uint32_t(0xff) / uint32_t(aa);
-				gg = uint32_t(gg) * uint32_t(0xff) / uint32_t(aa);
-				bb = uint32_t(bb) * uint32_t(0xff) / uint32_t(aa);
+				
+				r4::vector3<unsigned> rgb{cc};
+				rgb *= 0xff; // first multiply
+				rgb /= cc.a(); // then divide
+				cc = decltype(cc){rgb, cc.a()};
+				
+				/*
+				cc.r() = cc.r() * 0xff / cc.a();
+				cc.g() = cc.g() * 0xff / cc.a();
+				cc.b() = cc.b() * 0xff / cc.a();*/
 			}
 			
+			/*
 			r4::vector4<real> c;
 			c.r() = real(rr) / real(0xff);
 			c.g() = real(gg) / real(0xff);
 			c.b() = real(bb) / real(0xff);
 			c.a() = real(aa) / real(0xff);
+			*/
+			auto c = min(cc.to<real>() / 0xff, 1); // clamp top
+
+			// TRACE(<< "c = " << c << std::endl)
 			
-			ASSERT_INFO(real(0) <= c.r() && c.r() <= real(1), "r = " << c.r() << ", rr = " << rr)
-			ASSERT_INFO(real(0) <= c.g() && c.g() <= real(1), "g = " << c.g() << ", gg = " << gg)
-			ASSERT_INFO(real(0) <= c.b() && c.b() <= real(1), "b = " << c.b() << ", bb = " << bb)
-			ASSERT_INFO(real(0) <= c.a() && c.a() <= real(1), "a = " << c.a() << ", aa = " << aa)
+			ASSERT_INFO(real(0) <= c.r() && c.r() <= real(1), "c = " << c << ", cc = " << cc)
+			ASSERT_INFO(real(0) <= c.g() && c.g() <= real(1), "c = " << c << ", cc = " << cc)
+			ASSERT_INFO(real(0) <= c.b() && c.b() <= real(1), "c = " << c << ", cc = " << cc)
+			ASSERT_INFO(real(0) <= c.a() && c.a() <= real(1), "c = " << c << ", cc = " << cc)
 			
+			// TRACE(<< "m = " << m << std::endl)
+			// TRACE(<< "mc5 = " << mc5 << std::endl)
+
 			auto c1 = m * c + mc5;
 
 			// alpha can change, so always premultiply alpha back
@@ -387,6 +405,9 @@ filter_result color_matrix(const surface& s, const r4::matrix4<real>& m, const r
 			c1.g() *= c1.a();
 			c1.b() *= c1.a();
 			
+			*dp = get_uint32_t(min((c1 * 0xff).to<unsigned>(), 0xff));
+			++dp;
+/*
 			*dp = uint8_t(c1.b() * real(0xff));
 			++dp;
 			*dp = uint8_t(c1.g() * real(0xff));
@@ -394,7 +415,7 @@ filter_result color_matrix(const surface& s, const r4::matrix4<real>& m, const r
 			*dp = uint8_t(c1.r() * real(0xff));
 			++dp;
 			*dp = uint8_t(c1.a() * real(0xff));
-			++dp;
+			++dp;*/
 		}
 	}
 	
@@ -518,11 +539,17 @@ filter_result blend(const surface& in, const surface& in2, svgdom::fe_blend_elem
 	auto ret = allocateResult(s1);
 	
 	for(unsigned y = 0; y != ret.surface.d.y(); ++y){
-		auto sp1 = &s1.span[(y * s1.stride) * sizeof(uint32_t)];
-		auto sp2 = &s2.span[(y * s2.stride) * sizeof(uint32_t)];
-		auto dp = &ret.surface.span[(y * ret.surface.stride) * sizeof(uint32_t)];
+		auto sp1 = &s1.span[y * s1.stride];
+		auto sp2 = &s2.span[y * s2.stride];
+		auto dp = &ret.surface.span[y * ret.surface.stride];
 		for(unsigned x = 0; x != ret.surface.d.x(); ++x){
 			// TODO: optimize by using integer arithmetics instead of floating point
+			auto c01 = get_rgba(*sp1).to<real>() / 0xff;
+			++sp1;
+			auto c02 = get_rgba(*sp2).to<real>() / 0xff;
+			++sp2;
+
+			/*
 			auto b01 = real(*sp1) / real(0xff);
 			auto b02 = real(*sp2) / real(0xff);
 			++sp1;
@@ -538,7 +565,7 @@ filter_result blend(const surface& in, const surface& in2, svgdom::fe_blend_elem
 			auto a01 = real(*sp1) / real(0xff);
 			auto a02 = real(*sp2) / real(0xff);
 			++sp1;
-			++sp2;
+			++sp2;*/ 
 
 			/*
 				cr = Result color (RGB) - premultiplied 
@@ -547,63 +574,82 @@ filter_result blend(const surface& in, const surface& in2, svgdom::fe_blend_elem
 				ca = Color (RGB) at a given pixel for image A - premultiplied 
 				cb = Color (RGB) at a given pixel for image B - premultiplied 
 			*/
+			r4::vector3<real> cr;
 			switch(mode){
 				case svgdom::fe_blend_element::mode::normal:
 					// cr = (1 - qa) * cb + ca
+					cr = c02 * (real(1) - c01.a()) + c01;
+					/*
 					*dp = uint8_t( ((1 - a01) * b02 + b01) * real(0xff));
 					++dp;
 					*dp = uint8_t( ((1 - a01) * g02 + g01) * real(0xff));
 					++dp;
 					*dp = uint8_t( ((1 - a01) * r02 + r01) * real(0xff));
 					++dp;
+					*/
 					break;
 				case svgdom::fe_blend_element::mode::multiply:
 					// cr = (1 - qa) * cb + (1 - qb) * ca + ca * cb
+					cr = c02 * (1 - c01.a()) + c01 * (1 - c02.a()) + c01.comp_mul(c02);
+/*
 					*dp = uint8_t( ((1 - a01) * b02 + (1 - a02) * b01 + b01 * b02) * real(0xff));
 					++dp;
 					*dp = uint8_t( ((1 - a01) * g02 + (1 - a02) * g01 + g01 * g02) * real(0xff));
 					++dp;
 					*dp = uint8_t( ((1 - a01) * r02 + (1 - a02) * r01 + r01 * r02) * real(0xff));
-					++dp;
+					++dp;*/
 					break;
 				case svgdom::fe_blend_element::mode::screen:
 					// cr = cb + ca - ca * cb
+					cr = c02 + c01 - c01.comp_mul(c02);
+
+					/*
 					*dp = uint8_t( (b02 + b01 - b01 * b02) * real(0xff));
 					++dp;
 					*dp = uint8_t( (g02 + g01 - g01 * g02) * real(0xff));
 					++dp;
 					*dp = uint8_t( (r02 + r01 - r01 * r02) * real(0xff));
-					++dp;
+					++dp;*/
 					break;
 				case svgdom::fe_blend_element::mode::darken:
 					using std::min;
 					// cr = Min ((1 - qa) * cb + ca, (1 - qb) * ca + cb)
+					cr = min(c02 * (1 - c01.a()) + c01, c01 * (1 - c02.a()) + c02);
+
+					/*
 					*dp = uint8_t( min((1 - a01) * b02 + b01, (1 - a02) * b01 + b02) * real(0xff));
 					++dp;
 					*dp = uint8_t( min((1 - a01) * g02 + g01, (1 - a02) * g01 + g02) * real(0xff));
 					++dp;
 					*dp = uint8_t( min((1 - a01) * r02 + r01, (1 - a02) * r01 + r02) * real(0xff));
-					++dp;
+					++dp;*/
 					break;
 				case svgdom::fe_blend_element::mode::lighten:
 					using std::max;
 					// cr = Max ((1 - qa) * cb + ca, (1 - qb) * ca + cb)
+					cr = max(c02 * (1 - c01.a()) + c01, c01 * (1 - c02.a()) + c02);
+
+					/*
 					*dp = uint8_t( max((1 - a01) * b02 + b01, (1 - a02) * b01 + b02) * real(0xff));
 					++dp;
 					*dp = uint8_t( max((1 - a01) * g02 + g01, (1 - a02) * g01 + g02) * real(0xff));
 					++dp;
 					*dp = uint8_t( max((1 - a01) * r02 + r01, (1 - a02) * r01 + r02) * real(0xff));
-					++dp;
+					++dp;*/
 					break;
 				default:
 					ASSERT(false)
-					dp += 3;
+					//dp += 3;
 					break;
 			}
-			
 			// qr = 1 - (1 - qa) * (1 - qb)
-			*dp = uint8_t((1 - (1 - a01)* (1 - a02)) * real(0xff));
+			auto qr = 1 - (1 - c01.a()) * (1 - c02.a());
+
+			*dp = get_uint32_t((r4::vector4<real>{cr, qr} * 0xff).to<unsigned>());
 			++dp;
+			
+			//*dp = uint8_t((1 - (1 - a01)* (1 - a02)) * real(0xff));
+			//++dp;
 		}
 	}
 	
@@ -640,106 +686,128 @@ filter_result composite(const surface& in, const surface& in2, const svgdom::fe_
 	auto ret = allocateResult(s1);
 	
 	for(unsigned y = 0; y != ret.surface.d.y(); ++y){
-		auto sp1 = &s1.span[(y * s1.stride) * sizeof(uint32_t)];
-		auto sp2 = &s2.span[(y * s2.stride) * sizeof(uint32_t)];
-		auto dp = &ret.surface.span[(y * ret.surface.stride) * sizeof(uint32_t)];
+		auto sp1 = &s1.span[y * s1.stride];
+		auto sp2 = &s2.span[y * s2.stride];
+		auto dp = &ret.surface.span[y * ret.surface.stride];
 		for(unsigned x = 0; x != ret.surface.d.x(); ++x){
 			// TODO: optimize by using integer arithmetics instead of floating point
-			auto r01 = real(*sp1) / real(0xff);
-			auto r02 = real(*sp2) / real(0xff);
+			auto c01 = get_rgba(*sp1).to<real>() / 0xff;
 			++sp1;
+			auto c02 = get_rgba(*sp2).to<real>() / 0xff;
 			++sp2;
-			auto g01 = real(*sp1) / real(0xff);
-			auto g02 = real(*sp2) / real(0xff);
-			++sp1;
-			++sp2;
-			auto b01 = real(*sp1) / real(0xff);
-			auto b02 = real(*sp2) / real(0xff);
-			++sp1;
-			++sp2;
-			auto a01 = real(*sp1) / real(0xff);
-			auto a02 = real(*sp2) / real(0xff);
-			++sp1;
-			++sp2;
+
+
+			// auto r01 = real(*sp1) / real(0xff);
+			// auto r02 = real(*sp2) / real(0xff);
+			// ++sp1;
+			// ++sp2;
+			// auto g01 = real(*sp1) / real(0xff);
+			// auto g02 = real(*sp2) / real(0xff);
+			// ++sp1;
+			// ++sp2;
+			// auto b01 = real(*sp1) / real(0xff);
+			// auto b02 = real(*sp2) / real(0xff);
+			// ++sp1;
+			// ++sp2;
+			// auto a01 = real(*sp1) / real(0xff);
+			// auto a02 = real(*sp2) / real(0xff);
+			// ++sp1;
+			// ++sp2;
 			
+			r4::vector4<real> o;
 			switch(e.operator__){
 				case svgdom::fe_composite_element::operator_::over:
 					// co = as * Cs + ab * Cb * (1 – as)
 					// ao = as + ab * (1 – as)
-					*dp = uint8_t( (r01 + r02 * (1 - a01)) * real(0xff));
-					++dp;
-					*dp = uint8_t( (g01 + g02 * (1 - a01)) * real(0xff));
-					++dp;
-					*dp = uint8_t( (b01 + b02 * (1 - a01)) * real(0xff));
-					++dp;
-					*dp = uint8_t( (a01 + a02 * (1 - a01)) * real(0xff));
-					++dp;
+					o = c01 + c02 * (1 - c01.a());
+
+					// *dp = uint8_t( (r01 + r02 * (1 - a01)) * real(0xff));
+					// ++dp;
+					// *dp = uint8_t( (g01 + g02 * (1 - a01)) * real(0xff));
+					// ++dp;
+					// *dp = uint8_t( (b01 + b02 * (1 - a01)) * real(0xff));
+					// ++dp;
+					// *dp = uint8_t( (a01 + a02 * (1 - a01)) * real(0xff));
+					// ++dp;
 					break;
 				case svgdom::fe_composite_element::operator_::in:
 					// co = as * Cs * ab
 					// ao = as x ab
-					*dp = uint8_t( (r01 * a02) * real(0xff));
-					++dp;
-					*dp = uint8_t( (g01 * a02) * real(0xff));
-					++dp;
-					*dp = uint8_t( (b01 * a02) * real(0xff));
-					++dp;
-					*dp = uint8_t( (a01 * a02) * real(0xff));
-					++dp;
+					o = c01 * c02.a();
+
+					// *dp = uint8_t( (r01 * a02) * real(0xff));
+					// ++dp;
+					// *dp = uint8_t( (g01 * a02) * real(0xff));
+					// ++dp;
+					// *dp = uint8_t( (b01 * a02) * real(0xff));
+					// ++dp;
+					// *dp = uint8_t( (a01 * a02) * real(0xff));
+					// ++dp;
 					break;
 				case svgdom::fe_composite_element::operator_::out:
 					// co = as * Cs * (1 – ab)
 					// ao = as * (1 – ab)
-					*dp = uint8_t( (r01 * (1 - a02)) * real(0xff));
-					++dp;
-					*dp = uint8_t( (g01 * (1 - a02)) * real(0xff));
-					++dp;
-					*dp = uint8_t( (b01 * (1 - a02)) * real(0xff));
-					++dp;
-					*dp = uint8_t( (a01 * (1 - a02)) * real(0xff));
-					++dp;
+					o = c01 * (1 - c02.a());
+
+					// *dp = uint8_t( (r01 * (1 - a02)) * real(0xff));
+					// ++dp;
+					// *dp = uint8_t( (g01 * (1 - a02)) * real(0xff));
+					// ++dp;
+					// *dp = uint8_t( (b01 * (1 - a02)) * real(0xff));
+					// ++dp;
+					// *dp = uint8_t( (a01 * (1 - a02)) * real(0xff));
+					// ++dp;
 					break;
 				case svgdom::fe_composite_element::operator_::atop:
 					// co = as * Cs * ab + ab * Cb * (1 – as)
 					// ao = as * ab + ab * (1 – as)
-					*dp = uint8_t( (r01 * a02 + r02 * (1 - a01)) * real(0xff));
-					++dp;
-					*dp = uint8_t( (g01 * a02 + g02 * (1 - a01)) * real(0xff));
-					++dp;
-					*dp = uint8_t( (b01 * a02 + b02 * (1 - a01)) * real(0xff));
-					++dp;
-					*dp = uint8_t( (a01 * a02 + a02 * (1 - a01)) * real(0xff));
-					++dp;
+					o = c01 * c02.a() + c02 * (1 - c01.a());
+
+					// *dp = uint8_t( (r01 * a02 + r02 * (1 - a01)) * real(0xff));
+					// ++dp;
+					// *dp = uint8_t( (g01 * a02 + g02 * (1 - a01)) * real(0xff));
+					// ++dp;
+					// *dp = uint8_t( (b01 * a02 + b02 * (1 - a01)) * real(0xff));
+					// ++dp;
+					// *dp = uint8_t( (a01 * a02 + a02 * (1 - a01)) * real(0xff));
+					// ++dp;
 					break;
 				case svgdom::fe_composite_element::operator_::xor_:
 					// co = as * Cs * (1 - ab) + ab * Cb * (1 – as)
 					// ao = as * (1 - ab) + ab * (1 – as)
-					*dp = uint8_t( (r01 * (1 - a02) + r02 * (1 - a01)) * real(0xff));
-					++dp;
-					*dp = uint8_t( (g01 * (1 - a02) + g02 * (1 - a01)) * real(0xff));
-					++dp;
-					*dp = uint8_t( (b01 * (1 - a02) + b02 * (1 - a01)) * real(0xff));
-					++dp;
-					*dp = uint8_t( (a01 * (1 - a02) + a02 * (1 - a01)) * real(0xff));
-					++dp;
+					o = c01 * (1 - c02.a()) + c02 * (1 - c01.a());
+
+					// *dp = uint8_t( (r01 * (1 - a02) + r02 * (1 - a01)) * real(0xff));
+					// ++dp;
+					// *dp = uint8_t( (g01 * (1 - a02) + g02 * (1 - a01)) * real(0xff));
+					// ++dp;
+					// *dp = uint8_t( (b01 * (1 - a02) + b02 * (1 - a01)) * real(0xff));
+					// ++dp;
+					// *dp = uint8_t( (a01 * (1 - a02) + a02 * (1 - a01)) * real(0xff));
+					// ++dp;
 					break;
 				case svgdom::fe_composite_element::operator_::arithmetic:
 					using std::min;
 					// result = k1 * i1 * i2 + k2 * i1 + k3 * i2 + k4
-					*dp = uint8_t( min(e.k1 * r01 * r02 + e.k2 * r01 + e.k3 * r02 + e.k4, real(1)) * real(0xff));
-					++dp;
-					*dp = uint8_t( min(e.k1 * g01 * g02 + e.k2 * g01 + e.k3 * g02 + e.k4, real(1)) * real(0xff));
-					++dp;
-					*dp = uint8_t( min(e.k1 * b01 * b02 + e.k2 * b01 + e.k3 * b02 + e.k4, real(1)) * real(0xff));
-					++dp;
-					*dp = uint8_t( min(e.k1 * a01 * a02 + e.k2 * a01 + e.k3 * a02 + e.k4, real(1)) * real(0xff));
-					++dp;
+					o = min(c01.comp_mul(c02) * real(e.k1) + c01 * real(e.k2) + c02 * real(e.k3) + real(e.k4), 1);
+
+					// *dp = uint8_t( min(e.k1 * r01 * r02 + e.k2 * r01 + e.k3 * r02 + e.k4, real(1)) * real(0xff));
+					// ++dp;
+					// *dp = uint8_t( min(e.k1 * g01 * g02 + e.k2 * g01 + e.k3 * g02 + e.k4, real(1)) * real(0xff));
+					// ++dp;
+					// *dp = uint8_t( min(e.k1 * b01 * b02 + e.k2 * b01 + e.k3 * b02 + e.k4, real(1)) * real(0xff));
+					// ++dp;
+					// *dp = uint8_t( min(e.k1 * a01 * a02 + e.k2 * a01 + e.k3 * a02 + e.k4, real(1)) * real(0xff));
+					// ++dp;
 					break;
 				default:
 					ASSERT(false)
-					dp += 4;
+					// dp += 4;
 					break;
 			}
+
+			*dp = get_uint32_t((o * 0xff).to<unsigned>());
+			++dp;
 		}
 	}
 	

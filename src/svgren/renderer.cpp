@@ -1579,8 +1579,8 @@ void renderer::blit(const surface& s){
 		return;
 	}
 
-	auto dstp = reinterpret_cast<uint32_t*>(dst.span.data()) + s.p.y() * dst.stride + s.p.x();
-	auto srcp = reinterpret_cast<const uint32_t*>(s.span.data());
+	auto dstp = dst.span.data() + s.p.y() * dst.stride + s.p.x();
+	auto srcp = s.span.data();
 	using std::min;
 	auto dp = min(s.d, dst.d - s.p);
 

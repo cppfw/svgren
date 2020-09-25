@@ -219,24 +219,18 @@ PushCairoGroupIfNeeded::~PushCairoGroupIfNeeded()noexcept{
 }
 
 void svgren::appendLuminanceToAlpha(surface s){
-	ASSERT(s.span.size() % 4 == 0)
-	
 	// Luminance is calculated using formula L = 0.2126 * R + 0.7152 * G + 0.0722 * B
 	// For faster calculation it can be simplified to L = (2 * R + 3 * G + B) / 6
 	
 	// TODO: take stride into account, do not append luminance to alpha for data out of the surface width
 	for(auto p = s.span.begin(); p != s.span.end(); ++p){
-		uint32_t l = 2 * uint32_t(*p);
-		++p;
-		l += 3 * uint32_t(*p);
-		++p;
-		l += uint32_t(*p);
-		++p;
-		
-		l /= 6;
+		auto c = get_rgba(*p).to<uint32_t>();
+
+		uint32_t l = (2 * c.r() + 3 * c.g() + c.b()) / 6;
+		ASSERT(l <= 255)
 		
 		// Cairo uses premultiplied alpha, so no need to multiply alpha by liminance.
-		ASSERT(l <= 255)
-		*p = uint8_t(l);
+		*p &= 0xffffff;
+		*p |= (l << 24);
 	}
 }

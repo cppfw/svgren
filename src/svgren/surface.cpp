@@ -19,7 +19,7 @@ surface surface::intersection(const r4::rectangle<unsigned>& r)const{
 	ASSERT(ret.p.x() >= this->p.x())
 	ASSERT(ret.p.y() >= this->p.y())
 	
-	auto delta = ((ret.p.y() - this->p.y()) * ret.stride + (ret.p.x() - this->p.x())) * sizeof(uint32_t);
+	auto delta = (ret.p.y() - this->p.y()) * ret.stride + (ret.p.x() - this->p.x());
 
 	ret.span = utki::make_span(
 			ret.span.data() + delta,

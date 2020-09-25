@@ -7,7 +7,7 @@
 namespace svgren{
 
 struct filter_result{
-	std::vector<uint8_t> data;
+	std::vector<uint32_t> data;
 	svgren::surface surface;
 };
 
