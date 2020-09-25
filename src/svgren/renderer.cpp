@@ -234,7 +234,7 @@ void renderer::set_gradient_properties(svgren::gradient& gradient, const svgdom:
 }
 
 void renderer::applyFilter() {
-	if(auto filter = this->styleStack.get_style_property(svgdom::style_property::filter)){
+	if(auto filter = this->style_stack.get_style_property(svgdom::style_property::filter)){
 		this->applyFilter(filter->get_local_id_from_iri());
 	}
 }
@@ -374,7 +374,7 @@ void renderer::updateCurBoundingBox(){
 void renderer::renderCurrentShape(bool isCairoGroupPushed){
 	this->updateCurBoundingBox();
 
-	if(auto p = this->styleStack.get_style_property(svgdom::style_property::fill_rule)){
+	if(auto p = this->style_stack.get_style_property(svgdom::style_property::fill_rule)){
 		switch (p->fill_rule) {
 			default:
 				ASSERT(false)
@@ -392,13 +392,13 @@ void renderer::renderCurrentShape(bool isCairoGroupPushed){
 
 	svgdom::style_value blackFill;
 
-	auto fill = this->styleStack.get_style_property(svgdom::style_property::fill);
+	auto fill = this->style_stack.get_style_property(svgdom::style_property::fill);
 	if (!fill) {
 		blackFill = svgdom::style_value::parse_paint("black");
 		fill = &blackFill;
 	}
 
-	auto stroke = this->styleStack.get_style_property(svgdom::style_property::stroke);
+	auto stroke = this->style_stack.get_style_property(svgdom::style_property::stroke);
 
 	// OPTIMIZATION: in case there is 'opacity' style property and only one of
 	//               'stroke' or 'fill' is not none and is a solid color (not pattern/gradient),
@@ -406,7 +406,7 @@ void renderer::renderCurrentShape(bool isCairoGroupPushed){
 	//               the 'stroke-opacity' or 'fill-opacity' by 'opacity' value.
 	auto opacity = svgdom::real(1);
 	if(!isCairoGroupPushed){
-		if(auto p = this->styleStack.get_style_property(svgdom::style_property::opacity)){
+		if(auto p = this->style_stack.get_style_property(svgdom::style_property::opacity)){
 			opacity = p->opacity;
 		}
 	}
@@ -417,7 +417,7 @@ void renderer::renderCurrentShape(bool isCairoGroupPushed){
 			this->set_gradient(fill->get_local_id_from_iri());
 		}else{
 			svgdom::real fillOpacity = 1;
-			if(auto p = this->styleStack.get_style_property(svgdom::style_property::fill_opacity)){
+			if(auto p = this->style_stack.get_style_property(svgdom::style_property::fill_opacity)){
 				fillOpacity = p->opacity;
 			}
 
@@ -429,19 +429,19 @@ void renderer::renderCurrentShape(bool isCairoGroupPushed){
 	}
 
 	if(stroke && !stroke->is_none()){
-		if(auto p = this->styleStack.get_style_property(svgdom::style_property::stroke_width)){
+		if(auto p = this->style_stack.get_style_property(svgdom::style_property::stroke_width)){
 			this->canvas.set_line_width(this->length_to_px(p->stroke_width));
 		}else{
 			this->canvas.set_line_width(1);
 		}
 
-		if(auto p = this->styleStack.get_style_property(svgdom::style_property::stroke_linecap)){
+		if(auto p = this->style_stack.get_style_property(svgdom::style_property::stroke_linecap)){
 			this->canvas.set_line_cap(p->stroke_line_cap);
 		}else{
 			this->canvas.set_line_cap(svgdom::stroke_line_cap::butt);
 		}
 
-		if(auto p = this->styleStack.get_style_property(svgdom::style_property::stroke_linejoin)){
+		if(auto p = this->style_stack.get_style_property(svgdom::style_property::stroke_linejoin)){
 			this->canvas.set_line_join(p->stroke_line_join);
 		}else{
 			this->canvas.set_line_join(svgdom::stroke_line_join::miter);
@@ -451,7 +451,7 @@ void renderer::renderCurrentShape(bool isCairoGroupPushed){
 			this->set_gradient(stroke->get_local_id_from_iri());
 		}else{
 			svgdom::real strokeOpacity = 1;
-			if(auto p = this->styleStack.get_style_property(svgdom::style_property::stroke_opacity)){
+			if(auto p = this->style_stack.get_style_property(svgdom::style_property::stroke_opacity)){
 				strokeOpacity = p->opacity;
 			}
 
@@ -479,7 +479,7 @@ void renderer::renderSvgElement(
 		const svgdom::length& height
 	)
 {
-	svgdom::style_stack::push pushStyles(this->styleStack, s);
+	svgdom::style_stack::push pushStyles(this->style_stack, s);
 
 	if(this->is_group_invisible()){
 		return;
@@ -530,7 +530,7 @@ renderer::renderer(
 
 void renderer::visit(const svgdom::g_element& e){
 //	TRACE(<< "rendering GElement: id = " << e.id << std::endl)
-	svgdom::style_stack::push pushStyles(this->styleStack, e);
+	svgdom::style_stack::push pushStyles(this->style_stack, e);
 
 	if(this->is_group_invisible()){
 		return;
@@ -682,7 +682,7 @@ void renderer::visit(const svgdom::svg_element& e){
 }
 
 bool renderer::is_invisible(){
-	if(auto p = this->styleStack.get_style_property(svgdom::style_property::visibility)){
+	if(auto p = this->style_stack.get_style_property(svgdom::style_property::visibility)){
 		if(p->visibility != svgdom::visibility::visible){
 			return true;
 		}
@@ -691,7 +691,7 @@ bool renderer::is_invisible(){
 }
 
 bool renderer::is_group_invisible(){
-	if(auto p = this->styleStack.get_style_property(svgdom::style_property::display)){
+	if(auto p = this->style_stack.get_style_property(svgdom::style_property::display)){
 		if(p->display == svgdom::display::none){
 			return true;
 		}
@@ -701,7 +701,7 @@ bool renderer::is_group_invisible(){
 
 void renderer::visit(const svgdom::path_element& e){
 //	TRACE(<< "rendering PathElement" << std::endl)
-	svgdom::style_stack::push pushStyles(this->styleStack, e);
+	svgdom::style_stack::push pushStyles(this->style_stack, e);
 
 	if(this->is_invisible()){
 		return;
@@ -991,7 +991,7 @@ void renderer::visit(const svgdom::path_element& e){
 
 void renderer::visit(const svgdom::circle_element& e){
 //	TRACE(<< "rendering CircleElement" << std::endl)
-	svgdom::style_stack::push pushStyles(this->styleStack, e);
+	svgdom::style_stack::push pushStyles(this->style_stack, e);
 
 	if(this->is_invisible()){
 		return;
@@ -1017,7 +1017,7 @@ void renderer::visit(const svgdom::circle_element& e){
 
 void renderer::visit(const svgdom::polyline_element& e){
 //	TRACE(<< "rendering PolylineElement" << std::endl)
-	svgdom::style_stack::push pushStyles(this->styleStack, e);
+	svgdom::style_stack::push pushStyles(this->style_stack, e);
 
 	if(this->is_invisible()){
 		return;
@@ -1050,7 +1050,7 @@ void renderer::visit(const svgdom::polyline_element& e){
 
 void renderer::visit(const svgdom::polygon_element& e){
 //	TRACE(<< "rendering PolygonElement" << std::endl)
-	svgdom::style_stack::push pushStyles(this->styleStack, e);
+	svgdom::style_stack::push pushStyles(this->style_stack, e);
 
 	if(this->is_invisible()){
 		return;
@@ -1083,7 +1083,7 @@ void renderer::visit(const svgdom::polygon_element& e){
 
 void renderer::visit(const svgdom::line_element& e){
 //	TRACE(<< "rendering LineElement" << std::endl)
-	svgdom::style_stack::push pushStyles(this->styleStack, e);
+	svgdom::style_stack::push pushStyles(this->style_stack, e);
 
 	if(this->is_invisible()){
 		return;
@@ -1105,7 +1105,7 @@ void renderer::visit(const svgdom::line_element& e){
 
 void renderer::visit(const svgdom::ellipse_element& e){
 //	TRACE(<< "rendering EllipseElement" << std::endl)
-	svgdom::style_stack::push pushStyles(this->styleStack, e);
+	svgdom::style_stack::push pushStyles(this->style_stack, e);
 
 	if(this->is_invisible()){
 		return;
@@ -1133,12 +1133,12 @@ void renderer::visit(const svgdom::ellipse_element& e){
 }
 
 void renderer::visit(const svgdom::style_element& e){
-	this->styleStack.add_css(e.css);
+	this->style_stack.add_css(e.css);
 }
 
 void renderer::visit(const svgdom::rect_element& e){
 //	TRACE(<< "rendering RectElement" << std::endl)
-	svgdom::style_stack::push pushStyles(this->styleStack, e);
+	svgdom::style_stack::push pushStyles(this->style_stack, e);
 
 	if(this->is_invisible()){
 		return;

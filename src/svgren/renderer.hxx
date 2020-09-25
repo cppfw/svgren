@@ -42,7 +42,7 @@ public:
 	// this bounding box is used for filter region calculation.
 	DeviceSpaceBoundingBox device_space_bounding_box;
 	
-	svgdom::style_stack styleStack;
+	svgdom::style_stack style_stack;
 	
 	surface background; // for accessing background image from filter effects
 	

@@ -97,15 +97,15 @@ ViewportPush::~ViewportPush() noexcept{
 PushCairoGroupIfNeeded::PushCairoGroupIfNeeded(svgren::renderer& renderer, bool isContainer) :
 		renderer(renderer)
 {
-	auto backgroundP = this->renderer.styleStack.get_style_property(svgdom::style_property::enable_background);
+	auto backgroundP = this->renderer.style_stack.get_style_property(svgdom::style_property::enable_background);
 	
 	if(backgroundP && backgroundP->enable_background.value == svgdom::enable_background::new_){
 		this->oldBackground = this->renderer.background;
 	}
 	
-	auto filterP = this->renderer.styleStack.get_style_property(svgdom::style_property::filter);
+	auto filterP = this->renderer.style_stack.get_style_property(svgdom::style_property::filter);
 	
-	if(auto maskP = this->renderer.styleStack.get_style_property(svgdom::style_property::mask)){
+	if(auto maskP = this->renderer.style_stack.get_style_property(svgdom::style_property::mask)){
 		if(auto ei = this->renderer.finder.find_by_id(maskP->get_local_id_from_iri())){
 			this->maskElement = &ei->e;
 		}
@@ -115,8 +115,8 @@ PushCairoGroupIfNeeded::PushCairoGroupIfNeeded(svgren::renderer& renderer, bool 
 
 	auto opacity = svgdom::real(1);
 	{
-		auto strokeP = this->renderer.styleStack.get_style_property(svgdom::style_property::stroke);
-		auto fillP = this->renderer.styleStack.get_style_property(svgdom::style_property::fill);
+		auto strokeP = this->renderer.style_stack.get_style_property(svgdom::style_property::stroke);
+		auto fillP = this->renderer.style_stack.get_style_property(svgdom::style_property::fill);
 
 		// OPTIMIZATION: if opacity is set on an element then push cairo group only in case it is a Container element, like 'g' or 'svg',
 		//               or in case the fill or stroke is a non-solid color, like gradient or pattern,
@@ -130,7 +130,7 @@ PushCairoGroupIfNeeded::PushCairoGroupIfNeeded(svgren::renderer& renderer, bool 
 				|| (fillP && strokeP && !fillP->is_none() && !strokeP->is_none())
 			)
 		{
-			if(auto p = this->renderer.styleStack.get_style_property(svgdom::style_property::opacity)){
+			if(auto p = this->renderer.style_stack.get_style_property(svgdom::style_property::opacity)){
 				opacity = p->opacity;
 				this->groupPushed = this->groupPushed || opacity < 1;
 			}
@@ -179,7 +179,7 @@ PushCairoGroupIfNeeded::~PushCairoGroupIfNeeded()noexcept{
 				MaskRenderer(svgren::renderer& r) : r(r){}
 				
 				void visit(const svgdom::mask_element& e)override{
-					svgdom::style_stack::push pushStyles(this->r.styleStack, e);
+					svgdom::style_stack::push pushStyles(this->r.style_stack, e);
 	
 					this->r.relay_accept(e);
 				}
