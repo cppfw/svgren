@@ -29,7 +29,7 @@ class filter_applier : public svgdom::const_visitor{
 	
 public:
 	
-	surface getLastResult();
+	surface get_last_result();
 	
 	filter_applier(renderer& r) : r(r) {}
 	

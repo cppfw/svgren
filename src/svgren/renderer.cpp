@@ -95,7 +95,7 @@ void renderer::apply_transformations(const decltype(svgdom::transformable::trans
 	}
 }
 
-void renderer::applyViewBox(const svgdom::view_boxed& e, const svgdom::aspect_ratioed& ar){
+void renderer::apply_viewbox(const svgdom::view_boxed& e, const svgdom::aspect_ratioed& ar){
 	if (!e.is_view_box_specified()) {
 		return;
 	}
@@ -233,13 +233,13 @@ void renderer::set_gradient_properties(svgren::gradient& gradient, const svgdom:
 	gradient.spread_method = this->gradient_get_spread_method(g);
 }
 
-void renderer::applyFilter() {
+void renderer::apply_filter(){
 	if(auto filter = this->style_stack.get_style_property(svgdom::style_property::filter)){
-		this->applyFilter(filter->get_local_id_from_iri());
+		this->apply_filter(filter->get_local_id_from_iri());
 	}
 }
 
-void renderer::applyFilter(const std::string& id){
+void renderer::apply_filter(const std::string& id){
 	auto f = this->finder.find_by_id(id);
 	if(!f){
 		return;
@@ -250,7 +250,7 @@ void renderer::applyFilter(const std::string& id){
 	ASSERT(f)
 	f->e.accept(visitor);
 
-	this->blit(visitor.getLastResult());
+	this->blit(visitor.get_last_result());
 }
 
 void renderer::set_gradient(const std::string& id){
@@ -342,7 +342,7 @@ void renderer::set_gradient(const std::string& id){
 	g->e.accept(visitor);
 }
 
-void renderer::updateCurBoundingBox(){
+void renderer::update_bounding_box(){
 	this->user_space_bounding_box = this->canvas.get_shape_bounding_box();
 
 	if(this->user_space_bounding_box.d[0] == 0){
@@ -371,8 +371,8 @@ void renderer::updateCurBoundingBox(){
 	}
 }
 
-void renderer::renderCurrentShape(bool isCairoGroupPushed){
-	this->updateCurBoundingBox();
+void renderer::render_shape(bool isCairoGroupPushed){
+	this->update_bounding_box();
 
 	if(auto p = this->style_stack.get_style_property(svgdom::style_property::fill_rule)){
 		switch (p->fill_rule) {
@@ -465,10 +465,10 @@ void renderer::renderCurrentShape(bool isCairoGroupPushed){
 	// clear path if any left
 	this->canvas.clear_path();
 	
-	this->applyFilter();
+	this->apply_filter();
 }
 
-void renderer::renderSvgElement(
+void renderer::render_element(
 		const svgdom::container& e,
 		const svgdom::styleable& s,
 		const svgdom::view_boxed& v,
@@ -497,7 +497,7 @@ void renderer::renderSvgElement(
 
 	ViewportPush viewportPush(*this, this->length_to_px(width, height));
 
-	this->applyViewBox(v, a);
+	this->apply_viewbox(v, a);
 
 	{
 		bool oldOutermostElementFlag = this->is_outermost_element;
@@ -509,7 +509,7 @@ void renderer::renderSvgElement(
 		this->relay_accept(e);
 	}
 
-	this->applyFilter();
+	this->apply_filter();
 }
 
 renderer::renderer(
@@ -546,7 +546,7 @@ void renderer::visit(const svgdom::g_element& e){
 
 	this->relay_accept(e);
 
-	this->applyFilter();
+	this->apply_filter();
 }
 
 void renderer::visit(const svgdom::use_element& e){
@@ -596,7 +596,7 @@ void renderer::visit(const svgdom::use_element& e){
 				void accept(svgdom::const_visitor& visitor) const override{
 					const auto hundredPercent = svgdom::length(100, svgdom::length_unit::percent);
 
-					this->r.renderSvgElement(
+					this->r.render_element(
 							this->se,
 							this->se,
 							this->se,
@@ -628,7 +628,7 @@ void renderer::visit(const svgdom::use_element& e){
 				}
 				void accept(svgdom::const_visitor& visitor) const override{
 					// width and height of <use> element override those of <svg> element.
-					this->r.renderSvgElement(
+					this->r.render_element(
 							this->se,
 							this->se,
 							this->se,
@@ -678,7 +678,7 @@ void renderer::visit(const svgdom::use_element& e){
 
 void renderer::visit(const svgdom::svg_element& e){
 //	TRACE(<< "rendering SvgElement" << std::endl)
-	renderSvgElement(e, e, e, e, e.x, e.y, e.width, e.height);
+	render_element(e, e, e, e, e.x, e.y, e.width, e.height);
 }
 
 bool renderer::is_invisible(){
@@ -986,7 +986,7 @@ void renderer::visit(const svgdom::path_element& e){
 		prevStep = &s;
 	}
 
-	this->renderCurrentShape(cairoGroupPush.isPushed());
+	this->render_shape(cairoGroupPush.isPushed());
 }
 
 void renderer::visit(const svgdom::circle_element& e){
@@ -1012,7 +1012,7 @@ void renderer::visit(const svgdom::circle_element& e){
 			2 * utki::pi<real>()
 		);
 
-	this->renderCurrentShape(cairoGroupPush.isPushed());
+	this->render_shape(cairoGroupPush.isPushed());
 }
 
 void renderer::visit(const svgdom::polyline_element& e){
@@ -1045,7 +1045,7 @@ void renderer::visit(const svgdom::polyline_element& e){
 		this->canvas.line_to_abs(i->to<real>());
 	}
 
-	this->renderCurrentShape(cairoGroupPush.isPushed());
+	this->render_shape(cairoGroupPush.isPushed());
 }
 
 void renderer::visit(const svgdom::polygon_element& e){
@@ -1078,7 +1078,7 @@ void renderer::visit(const svgdom::polygon_element& e){
 
 	this->canvas.close_path();
 
-	this->renderCurrentShape(cairoGroupPush.isPushed());
+	this->render_shape(cairoGroupPush.isPushed());
 }
 
 void renderer::visit(const svgdom::line_element& e){
@@ -1100,7 +1100,7 @@ void renderer::visit(const svgdom::line_element& e){
 	this->canvas.move_to_abs(this->length_to_px(e.x1, e.y1));
 	this->canvas.line_to_abs(this->length_to_px(e.x2, e.y2));
 
-	this->renderCurrentShape(cairoGroupPush.isPushed());
+	this->render_shape(cairoGroupPush.isPushed());
 }
 
 void renderer::visit(const svgdom::ellipse_element& e){
@@ -1129,7 +1129,7 @@ void renderer::visit(const svgdom::ellipse_element& e){
 		this->canvas.close_path();
 	}
 
-	this->renderCurrentShape(cairoGroupPush.isPushed());
+	this->render_shape(cairoGroupPush.isPushed());
 }
 
 void renderer::visit(const svgdom::style_element& e){
@@ -1229,7 +1229,7 @@ void renderer::visit(const svgdom::rect_element& e){
 		this->canvas.close_path();
 	}
 
-	this->renderCurrentShape(cairoGroupPush.isPushed());
+	this->render_shape(cairoGroupPush.isPushed());
 }
 
 const decltype(svgdom::transformable::transformations)& renderer::gradient_get_transformations(const svgdom::gradient& g){

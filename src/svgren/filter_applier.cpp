@@ -241,7 +241,7 @@ surface filter_applier::getSource(const std::string& in){
 	return surface();
 }
 
-surface filter_applier::getLastResult(){
+surface filter_applier::get_last_result(){
 	if (!this->lastResult) {
 		return surface();
 	}

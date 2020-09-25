@@ -60,16 +60,16 @@ public:
 	
 	void set_gradient(const std::string& id);
 	
-	void applyFilter(const std::string& id);
-	void applyFilter();
+	void apply_filter(const std::string& id);
+	void apply_filter();
 	
-	void updateCurBoundingBox();
+	void update_bounding_box();
 	
-	void renderCurrentShape(bool isCairoGroupPushed);
+	void render_shape(bool isCairoGroupPushed);
 	
-	void applyViewBox(const svgdom::view_boxed& e, const svgdom::aspect_ratioed& ar);
+	void apply_viewbox(const svgdom::view_boxed& e, const svgdom::aspect_ratioed& ar);
 	
-	void renderSvgElement(
+	void render_element(
 			const svgdom::container& c,
 			const svgdom::styleable& s,
 			const svgdom::view_boxed& v,
