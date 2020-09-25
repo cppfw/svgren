@@ -518,7 +518,6 @@ svgren::surface canvas::get_sub_surface(const r4::rectangle<unsigned>& region){
 	ASSERT(ret.d.y() <= s_dims.y())
 #endif
 	ASSERT(ret.d.y() == 0 || std::next(ret.span.begin(), ret.stride * (ret.d.y() - 1)) < ret.span.end())
-	// ASSERT(ret.d.y() == 0 || &ret.span[ret.stride * (ret.d.y() - 1) * sizeof(uint32_t)] < ret.span.end()) // TODO: remove
 
 	return ret;
 }
