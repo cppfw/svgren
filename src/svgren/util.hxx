@@ -85,12 +85,12 @@ public:
 	~DeviceSpaceBoundingBoxPush()noexcept;
 };
 
-class ViewportPush{
+class viewport_push{
 	class renderer& r;
 	r4::vector2<real> oldViewport;
 public:
-	ViewportPush(renderer& r, const decltype(oldViewport)& viewport);
-	~ViewportPush()noexcept;
+	viewport_push(renderer& r, const decltype(oldViewport)& viewport);
+	~viewport_push()noexcept;
 };
 
 class PushCairoGroupIfNeeded{
@@ -110,7 +110,7 @@ public:
 	}
 };
 
-struct GradientCaster : public svgdom::const_visitor{
+struct gradient_caster : public svgdom::const_visitor{
 	const svgdom::linear_gradient_element* linear = nullptr;
 	const svgdom::radial_gradient_element* radial = nullptr;
 	const svgdom::gradient* gradient = nullptr;

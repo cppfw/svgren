@@ -263,7 +263,7 @@ void renderer::set_gradient(const std::string& id){
 	struct CommonGradientPush{
 		canvas_matrix_push matrix_push; // here we need to save/restore only matrix!
 
-		std::unique_ptr<ViewportPush> viewportPush;
+		std::unique_ptr<viewport_push> viewportPush;
 
 		CommonGradientPush(renderer& r, const svgdom::gradient& gradient) :
 				matrix_push(r.canvas)
@@ -271,7 +271,7 @@ void renderer::set_gradient(const std::string& id){
 			if(r.gradient_get_units(gradient) == svgdom::coordinate_units::object_bounding_box){
 				r.canvas.translate(r.user_space_bounding_box.p);
 				r.canvas.scale(r.user_space_bounding_box.d);
-				this->viewportPush = std::unique_ptr<ViewportPush>(new ViewportPush(r, {1, 1}));
+				this->viewportPush = std::make_unique<viewport_push>(r, 1);
 			}
 
 			r.apply_transformations(r.gradient_get_transformations(gradient));
@@ -495,7 +495,7 @@ void renderer::render_element(
 		this->canvas.translate(this->length_to_px(x, y));
 	}
 
-	ViewportPush viewportPush(*this, this->length_to_px(width, height));
+	viewport_push viewportPush(*this, this->length_to_px(width, height));
 
 	this->apply_viewbox(v, a);
 
@@ -1242,7 +1242,7 @@ const decltype(svgdom::transformable::transformations)& renderer::gradient_get_t
 		auto ref = this->finder.find_by_id(refId);
 
 		if(ref){
-			GradientCaster caster;
+			gradient_caster caster;
 			ref->e.accept(caster);
 			if(caster.gradient){
 				return this->gradient_get_transformations(*caster.gradient);
@@ -1262,7 +1262,7 @@ svgdom::coordinate_units renderer::gradient_get_units(const svgdom::gradient& g)
 		auto ref = this->finder.find_by_id(refId);
 
 		if(ref){
-			GradientCaster caster;
+			gradient_caster caster;
 			ref->e.accept(caster);
 			if(caster.gradient){
 				return this->gradient_get_units(*caster.gradient);
@@ -1282,7 +1282,7 @@ svgdom::length renderer::gradient_get_x1(const svgdom::linear_gradient_element& 
 		auto ref = this->finder.find_by_id(refId);
 
 		if(ref){
-			GradientCaster caster;
+			gradient_caster caster;
 			ref->e.accept(caster);
 			if(caster.linear){
 				return this->gradient_get_x1(*caster.linear);
@@ -1302,7 +1302,7 @@ svgdom::length renderer::gradient_get_y1(const svgdom::linear_gradient_element& 
 		auto ref = this->finder.find_by_id(refId);
 
 		if(ref){
-			GradientCaster caster;
+			gradient_caster caster;
 			ref->e.accept(caster);
 			if(caster.linear){
 				return this->gradient_get_y1(*caster.linear);
@@ -1322,7 +1322,7 @@ svgdom::length renderer::gradient_get_x2(const svgdom::linear_gradient_element& 
 		auto ref = this->finder.find_by_id(refId);
 
 		if(ref){
-			GradientCaster caster;
+			gradient_caster caster;
 			ref->e.accept(caster);
 			if(caster.linear){
 				return this->gradient_get_x2(*caster.linear);
@@ -1342,7 +1342,7 @@ svgdom::length renderer::gradient_get_y2(const svgdom::linear_gradient_element& 
 		auto ref = this->finder.find_by_id(refId);
 
 		if(ref){
-			GradientCaster caster;
+			gradient_caster caster;
 			ref->e.accept(caster);
 			if(caster.linear){
 				return this->gradient_get_y2(*caster.linear);
@@ -1362,7 +1362,7 @@ svgdom::length renderer::gradient_get_cx(const svgdom::radial_gradient_element& 
 		auto ref = this->finder.find_by_id(refId);
 
 		if(ref){
-			GradientCaster caster;
+			gradient_caster caster;
 			ref->e.accept(caster);
 			if(caster.radial){
 				return this->gradient_get_cx(*caster.radial);
@@ -1382,7 +1382,7 @@ svgdom::length renderer::gradient_get_cy(const svgdom::radial_gradient_element& 
 		auto ref = this->finder.find_by_id(refId);
 
 		if(ref){
-			GradientCaster caster;
+			gradient_caster caster;
 			ref->e.accept(caster);
 			if(caster.radial){
 				return this->gradient_get_cy(*caster.radial);
@@ -1402,7 +1402,7 @@ svgdom::length renderer::gradient_get_r(const svgdom::radial_gradient_element& g
 		auto ref = this->finder.find_by_id(refId);
 
 		if(ref){
-			GradientCaster caster;
+			gradient_caster caster;
 			ref->e.accept(caster);
 			if(caster.radial){
 				return this->gradient_get_r(*caster.radial);
@@ -1422,7 +1422,7 @@ svgdom::length renderer::gradient_get_fx(const svgdom::radial_gradient_element& 
 		auto ref = this->finder.find_by_id(refId);
 
 		if(ref){
-			GradientCaster caster;
+			gradient_caster caster;
 			ref->e.accept(caster);
 			if(caster.radial){
 				return this->gradient_get_fx(*caster.radial);
@@ -1442,7 +1442,7 @@ svgdom::length renderer::gradient_get_fy(const svgdom::radial_gradient_element& 
 		auto ref = this->finder.find_by_id(refId);
 
 		if(ref){
-			GradientCaster caster;
+			gradient_caster caster;
 			ref->e.accept(caster);
 			if(caster.radial){
 				return this->gradient_get_fy(*caster.radial);
@@ -1462,7 +1462,7 @@ const decltype(svgdom::container::children)& renderer::gradient_get_stops(const 
 		auto ref = this->finder.find_by_id(refId);
 
 		if(ref){
-			GradientCaster caster;
+			gradient_caster caster;
 			ref->e.accept(caster);
 			if(caster.gradient){
 				return this->gradient_get_stops(*caster.gradient);
@@ -1483,7 +1483,7 @@ const decltype(svgdom::styleable::styles)& renderer::gradient_get_styles(const s
 		auto ref = this->finder.find_by_id(refId);
 
 		if(ref){
-			GradientCaster caster;
+			gradient_caster caster;
 			ref->e.accept(caster);
 			if(caster.gradient){
 				return this->gradient_get_styles(*caster.gradient);
@@ -1504,7 +1504,7 @@ const decltype(svgdom::styleable::classes)& renderer::gradient_get_classes(const
 		auto ref = this->finder.find_by_id(refId);
 
 		if(ref){
-			GradientCaster caster;
+			gradient_caster caster;
 			ref->e.accept(caster);
 			if(caster.gradient){
 				return this->gradient_get_classes(*caster.gradient);
@@ -1527,7 +1527,7 @@ svgdom::gradient::spread_method renderer::gradient_get_spread_method(const svgdo
 		auto ref = this->finder.find_by_id(refId);
 
 		if(ref){
-			GradientCaster caster;
+			gradient_caster caster;
 			ref->e.accept(caster);
 			if(caster.gradient){
 				return this->gradient_get_spread_method(*caster.gradient);
@@ -1548,7 +1548,7 @@ decltype(svgdom::styleable::presentation_attributes) renderer::gradient_get_pres
 		auto ref = this->finder.find_by_id(refId);
 
 		if(ref){
-			GradientCaster caster;
+			gradient_caster caster;
 			ref->e.accept(caster);
 			if(caster.gradient){
 				ref_attrs = this->gradient_get_presentation_attributes(*caster.gradient);
