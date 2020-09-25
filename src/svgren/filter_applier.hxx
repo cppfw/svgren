@@ -22,10 +22,10 @@ class filter_applier : public svgdom::const_visitor{
 	
 	filter_result* lastResult = nullptr;
 	
-	surface getSource(const std::string& in);
-	void setResult(const std::string& name, filter_result&& result);
+	surface get_source(const std::string& in);
+	void set_result(const std::string& name, filter_result&& result);
 	
-	surface getSourceGraphic();
+	surface get_source_graphic();
 	
 public:
 	
