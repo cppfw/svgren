@@ -8,6 +8,7 @@
 
 #include <svgdom/length.hpp>
 #include <svgdom/elements/element.hpp>
+#include <svgdom/visitor.hpp>
 
 #if M_OS == M_OS_WINDOWS || M_OS_NAME == M_OS_NAME_IOS
 #	include <cairo.h>
@@ -109,30 +110,20 @@ public:
 	}
 };
 
-struct gradient{
-	struct stop{
-		r4::vector4<real> rgba;
-		real offset;
-	};
-	std::vector<stop> stops;
+struct GradientCaster : public svgdom::const_visitor{
+	const svgdom::linear_gradient_element* linear = nullptr;
+	const svgdom::radial_gradient_element* radial = nullptr;
+	const svgdom::gradient* gradient = nullptr;
 
-	enum class spread_method{
-		pad,
-		reflect,
-		repeat
-	} spread;
-};
+	void visit(const svgdom::linear_gradient_element& e)override{
+		this->gradient = &e;
+		this->linear = &e;
+	}
 
-struct linear_gradient : public gradient{
-	r4::vector2<real> p0;
-	r4::vector2<real> p1;
-};
-
-struct radial_gradient : public gradient{
-	r4::vector2<real> c0;
-	r4::vector2<real> c1;
-	real r0;
-	real r1;
+	void visit(const svgdom::radial_gradient_element& e)override{
+		this->gradient = &e;
+		this->radial = &e;
+	}
 };
 
 }

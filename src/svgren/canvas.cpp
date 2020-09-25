@@ -126,6 +126,79 @@ void canvas::set_source(const r4::vector4<real>& rgba){
 #endif
 }
 
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+namespace{
+void set_cairo_pattern_properties(cairo_pattern_t* pat, const gradient& g){
+	for(auto& s : g.stops){
+		cairo_pattern_add_color_stop_rgba(pat, s.offset, s.rgba.r(), s.rgba.g(), s.rgba.b(), s.rgba.a());
+		ASSERT(cairo_pattern_status(pat) == CAIRO_STATUS_SUCCESS)
+	}
+
+	cairo_extend_t extend;
+
+	switch(g.spread_method){
+		default:
+		case svgdom::gradient::spread_method::default_:
+			ASSERT(false)
+		case svgdom::gradient::spread_method::pad:
+			extend = CAIRO_EXTEND_PAD;
+			break;
+		case svgdom::gradient::spread_method::reflect:
+			extend = CAIRO_EXTEND_REFLECT;
+			break;
+		case svgdom::gradient::spread_method::repeat:
+			extend = CAIRO_EXTEND_REPEAT;
+			break;
+	}
+
+	cairo_pattern_set_extend(pat, extend);
+	ASSERT(cairo_pattern_status(pat) == CAIRO_STATUS_SUCCESS)
+}
+}
+#endif
+
+void canvas::set_source(const linear_gradient& g){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	auto pat = cairo_pattern_create_linear(
+			double(g.p0.x()),
+			double(g.p0.y()),
+			double(g.p1.x()),
+			double(g.p1.y())
+		);
+	if(!pat){
+		throw std::runtime_error("cairo_pattern_create_linear() failed");
+	}
+	utki::scope_exit pat_scope_exit([&pat](){cairo_pattern_destroy(pat);});
+
+	set_cairo_pattern_properties(pat, g);
+
+	cairo_set_source(this->cr, pat);
+	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+#endif
+}
+
+void canvas::set_source(const radial_gradient& g){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	auto pat = cairo_pattern_create_radial(
+			double(g.c0.x()),
+			double(g.c0.y()),
+			double(g.r0),
+			double(g.c1.x()),
+			double(g.c1.y()),
+			double(g.r1)
+		);
+	if(!pat){
+		throw std::runtime_error("cairo_pattern_create_radial() failed");
+	}
+	utki::scope_exit pat_scope_exit([&pat](){cairo_pattern_destroy(pat);});
+
+	set_cairo_pattern_properties(pat, g);
+
+	cairo_set_source(this->cr, pat);
+	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+#endif
+}
+
 r4::vector2<real> canvas::matrix_mul(const r4::vector2<real>& v){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	double x = v.x();

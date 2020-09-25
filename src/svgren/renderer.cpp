@@ -165,7 +165,7 @@ void renderer::applyViewBox(const svgdom::view_boxed& e, const svgdom::aspect_ra
 	this->canvas.translate(-e.view_box[0], -e.view_box[1]);
 }
 
-void renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::gradient& g, const svgdom::style_stack& ss){
+void renderer::set_gradient_properties(svgren::gradient& gradient, const svgdom::gradient& g, const svgdom::style_stack& ss){
 	// Gradient inherits all attributes from other gradients it refers via href.
 	// Here we need to make sure that the gradient inherits 'styles', 'class' and all possible presentation attributes.
 	// For that we need to replace the gradient element in the style stack with the one which has those inherited
@@ -196,13 +196,16 @@ void renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::gradien
 	gradient_ss.stack.push_back(effective_gradient_styleable);
 
 	struct ColorStopAdder : public svgdom::const_visitor{
-		cairo_pattern_t& pat;
+		svgren::gradient& gradient;
 		svgdom::style_stack& ss;
 
-		ColorStopAdder(cairo_pattern_t& pat, svgdom::style_stack& ss) : pat(pat), ss(ss) {}
+		ColorStopAdder(svgren::gradient& gradient, svgdom::style_stack& ss) :
+				gradient(gradient),
+				ss(ss)
+		{}
 
-		void visit(const svgdom::gradient::stop_element& s)override{
-			svgdom::style_stack::push stylePush(this->ss, s);
+		void visit(const svgdom::gradient::stop_element& stop)override{
+			svgdom::style_stack::push stylePush(this->ss, stop);
 
 			r4::vector3<real> rgb;
 			if(auto p = this->ss.get_style_property(svgdom::style_property::stop_color)){
@@ -217,35 +220,18 @@ void renderer::setCairoPatternSource(cairo_pattern_t& pat, const svgdom::gradien
 			}else{
 				opacity = 1;
 			}
-			cairo_pattern_add_color_stop_rgba(&this->pat, s.offset, rgb.r(), rgb.g(), rgb.b(), opacity);
-			ASSERT(cairo_pattern_status(&this->pat) == CAIRO_STATUS_SUCCESS)
+			this->gradient.stops.push_back(gradient::stop{
+					rgba: {rgb, opacity},
+					offset: real(stop.offset)
+				});
 		}
-	} visitor(pat, gradient_ss);
+	} visitor(gradient, gradient_ss);
 
-	for(auto& stop : this->gradientGetStops(g)){
+	for(auto& stop : this->gradient_get_stops(g)){
 		stop->accept(visitor);
 	}
 
-	switch(this->gradientGetSpreadMethod(g)){
-		default:
-		case svgdom::gradient::spread_method::default_:
-			ASSERT(false)
-			break;
-		case svgdom::gradient::spread_method::pad:
-			cairo_pattern_set_extend(&pat, CAIRO_EXTEND_PAD);
-			ASSERT(cairo_pattern_status(&pat) == CAIRO_STATUS_SUCCESS)
-			break;
-		case svgdom::gradient::spread_method::reflect:
-			cairo_pattern_set_extend(&pat, CAIRO_EXTEND_REFLECT);
-			ASSERT(cairo_pattern_status(&pat) == CAIRO_STATUS_SUCCESS)
-			break;
-		case svgdom::gradient::spread_method::repeat:
-			cairo_pattern_set_extend(&pat, CAIRO_EXTEND_REPEAT);
-			ASSERT(cairo_pattern_status(&pat) == CAIRO_STATUS_SUCCESS)
-			break;
-	}
-	cairo_set_source(this->cr, &pat);
-	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+	gradient.spread_method = this->gradient_get_spread_method(g);
 }
 
 void renderer::applyFilter() {
@@ -283,7 +269,7 @@ void renderer::set_gradient(const std::string& id){
 		CommonGradientPush(renderer& r, const svgdom::gradient& gradient) :
 				matrix_push(r.canvas)
 		{
-			if (r.gradientGetUnits(gradient) == svgdom::coordinate_units::object_bounding_box) {
+			if(r.gradient_get_units(gradient) == svgdom::coordinate_units::object_bounding_box){
 				r.canvas.translate(r.userSpaceShapeBoundingBox.p);
 				r.canvas.scale(r.userSpaceShapeBoundingBox.d);
 				this->viewportPush = std::unique_ptr<ViewportPush>(new ViewportPush(r, {1, 1}));
@@ -305,29 +291,30 @@ void renderer::set_gradient(const std::string& id){
 		void visit(const svgdom::linear_gradient_element& gradient)override{
 			CommonGradientPush commonPush(this->r, gradient);
 
-			auto pat = cairo_pattern_create_linear(
-					this->r.length_to_px(this->r.gradientGetX1(gradient), 0),
-					this->r.length_to_px(this->r.gradientGetY1(gradient), 1),
-					this->r.length_to_px(this->r.gradientGetX2(gradient), 0),
-					this->r.length_to_px(this->r.gradientGetY2(gradient), 1)
+			linear_gradient g;
+
+			g.p0 = this->r.length_to_px(
+					this->r.gradient_get_x1(gradient),
+					this->r.gradient_get_y1(gradient)
+				);
+			g.p1 = this->r.length_to_px(
+					this->r.gradient_get_x2(gradient),
+					this->r.gradient_get_y2(gradient)
 				);
 			
-			if(!pat){
-				throw std::runtime_error("cairo_pattern_create_linear() failed");
-			}
+			this->r.set_gradient_properties(g, gradient, this->ss);
 
-			utki::scope_exit pat_scope_exit([&pat](){cairo_pattern_destroy(pat);});
-			this->r.setCairoPatternSource(*pat, gradient, this->ss);
+			this->r.canvas.set_source(g);
 		}
 
 		void visit(const svgdom::radial_gradient_element& gradient)override{
 			CommonGradientPush commonPush(this->r, gradient);
 
-			auto cx = this->r.gradientGetCx(gradient);
-			auto cy = this->r.gradientGetCy(gradient);
-			auto radius = this->r.gradientGetR(gradient);
-			auto fx = this->r.gradientGetFx(gradient);
-			auto fy = this->r.gradientGetFy(gradient);
+			auto cx = this->r.gradient_get_cx(gradient);
+			auto cy = this->r.gradient_get_cy(gradient);
+			auto radius = this->r.gradient_get_r(gradient);
+			auto fx = this->r.gradient_get_fx(gradient);
+			auto fy = this->r.gradient_get_fy(gradient);
 
 			if(!fx.is_valid()){
 				fx = cx;
@@ -336,21 +323,16 @@ void renderer::set_gradient(const std::string& id){
 				fy = cy;
 			}
 
-			auto pat = cairo_pattern_create_radial(
-					this->r.length_to_px(fx, 0),
-					this->r.length_to_px(fy, 1),
-					0,
-					this->r.length_to_px(cx, 0),
-					this->r.length_to_px(cy, 1),
-					this->r.length_to_px(radius, 0)
-				);
-			
-			if(!pat){
-				throw std::runtime_error("cairo_pattern_create_radial(): failed");
-			}
+			radial_gradient g;
 
-			utki::scope_exit pat_scope_exit([&pat](){cairo_pattern_destroy(pat);});
-			this->r.setCairoPatternSource(*pat, gradient, this->ss);
+			g.c0 = this->r.length_to_px(fx, fy);
+			g.c1 = this->r.length_to_px(cx, cy);
+			g.r0 = 0;
+			g.r1 = this->r.length_to_px(radius, 0);
+
+			this->r.set_gradient_properties(g, gradient, this->ss);
+
+			this->r.canvas.set_source(g);
 		}
 
 		void default_visit(const svgdom::element&)override{
@@ -1251,24 +1233,6 @@ void renderer::visit(const svgdom::rect_element& e){
 	this->renderCurrentShape(cairoGroupPush.isPushed());
 }
 
-namespace{
-struct GradientCaster : public svgdom::const_visitor{
-	const svgdom::linear_gradient_element* linear = nullptr;
-	const svgdom::radial_gradient_element* radial = nullptr;
-	const svgdom::gradient* gradient = nullptr;
-
-	void visit(const svgdom::linear_gradient_element& e)override{
-		this->gradient = &e;
-		this->linear = &e;
-	}
-
-	void visit(const svgdom::radial_gradient_element& e)override{
-		this->gradient = &e;
-		this->radial = &e;
-	}
-};
-}
-
 const decltype(svgdom::transformable::transformations)& renderer::gradient_get_transformations(const svgdom::gradient& g){
 	if(g.transformations.size() != 0){
 		return g.transformations;
@@ -1289,7 +1253,7 @@ const decltype(svgdom::transformable::transformations)& renderer::gradient_get_t
 	return g.transformations;
 }
 
-svgdom::coordinate_units renderer::gradientGetUnits(const svgdom::gradient& g){
+svgdom::coordinate_units renderer::gradient_get_units(const svgdom::gradient& g){
 	if(g.units != svgdom::coordinate_units::unknown){
 		return g.units;
 	}
@@ -1302,14 +1266,14 @@ svgdom::coordinate_units renderer::gradientGetUnits(const svgdom::gradient& g){
 			GradientCaster caster;
 			ref->e.accept(caster);
 			if(caster.gradient){
-				return this->gradientGetUnits(*caster.gradient);
+				return this->gradient_get_units(*caster.gradient);
 			}
 		}
 	}
-	return svgdom::coordinate_units::object_bounding_box; // bounding box is default
+	return svgdom::coordinate_units::object_bounding_box; // object bounding box is default
 }
 
-svgdom::length renderer::gradientGetX1(const svgdom::linear_gradient_element& g){
+svgdom::length renderer::gradient_get_x1(const svgdom::linear_gradient_element& g){
 	if(g.x1.is_valid()){
 		return g.x1;
 	}
@@ -1322,14 +1286,14 @@ svgdom::length renderer::gradientGetX1(const svgdom::linear_gradient_element& g)
 			GradientCaster caster;
 			ref->e.accept(caster);
 			if(caster.linear){
-				return this->gradientGetX1(*caster.linear);
+				return this->gradient_get_x1(*caster.linear);
 			}
 		}
 	}
 	return svgdom::length(0, svgdom::length_unit::percent);
 }
 
-svgdom::length renderer::gradientGetY1(const svgdom::linear_gradient_element& g){
+svgdom::length renderer::gradient_get_y1(const svgdom::linear_gradient_element& g){
 	if(g.y1.is_valid()){
 		return g.y1;
 	}
@@ -1342,14 +1306,14 @@ svgdom::length renderer::gradientGetY1(const svgdom::linear_gradient_element& g)
 			GradientCaster caster;
 			ref->e.accept(caster);
 			if(caster.linear){
-				return this->gradientGetY1(*caster.linear);
+				return this->gradient_get_y1(*caster.linear);
 			}
 		}
 	}
 	return svgdom::length(0, svgdom::length_unit::percent);
 }
 
-svgdom::length renderer::gradientGetX2(const svgdom::linear_gradient_element& g) {
+svgdom::length renderer::gradient_get_x2(const svgdom::linear_gradient_element& g) {
 	if(g.x2.is_valid()){
 		return g.x2;
 	}
@@ -1362,14 +1326,14 @@ svgdom::length renderer::gradientGetX2(const svgdom::linear_gradient_element& g)
 			GradientCaster caster;
 			ref->e.accept(caster);
 			if(caster.linear){
-				return this->gradientGetX2(*caster.linear);
+				return this->gradient_get_x2(*caster.linear);
 			}
 		}
 	}
 	return svgdom::length(100, svgdom::length_unit::percent);
 }
 
-svgdom::length renderer::gradientGetY2(const svgdom::linear_gradient_element& g) {
+svgdom::length renderer::gradient_get_y2(const svgdom::linear_gradient_element& g) {
 	if(g.y2.is_valid()){
 		return g.y2;
 	}
@@ -1382,14 +1346,14 @@ svgdom::length renderer::gradientGetY2(const svgdom::linear_gradient_element& g)
 			GradientCaster caster;
 			ref->e.accept(caster);
 			if(caster.linear){
-				return this->gradientGetY2(*caster.linear);
+				return this->gradient_get_y2(*caster.linear);
 			}
 		}
 	}
 	return svgdom::length(0, svgdom::length_unit::percent);
 }
 
-svgdom::length renderer::gradientGetCx(const svgdom::radial_gradient_element& g){
+svgdom::length renderer::gradient_get_cx(const svgdom::radial_gradient_element& g){
 	if(g.cx.is_valid()){
 		return g.cx;
 	}
@@ -1402,14 +1366,14 @@ svgdom::length renderer::gradientGetCx(const svgdom::radial_gradient_element& g)
 			GradientCaster caster;
 			ref->e.accept(caster);
 			if(caster.radial){
-				return this->gradientGetCx(*caster.radial);
+				return this->gradient_get_cx(*caster.radial);
 			}
 		}
 	}
 	return svgdom::length(50, svgdom::length_unit::percent);
 }
 
-svgdom::length renderer::gradientGetCy(const svgdom::radial_gradient_element& g){
+svgdom::length renderer::gradient_get_cy(const svgdom::radial_gradient_element& g){
 	if(g.cy.is_valid()){
 		return g.cy;
 	}
@@ -1422,14 +1386,14 @@ svgdom::length renderer::gradientGetCy(const svgdom::radial_gradient_element& g)
 			GradientCaster caster;
 			ref->e.accept(caster);
 			if(caster.radial){
-				return this->gradientGetCy(*caster.radial);
+				return this->gradient_get_cy(*caster.radial);
 			}
 		}
 	}
 	return svgdom::length(50, svgdom::length_unit::percent);
 }
 
-svgdom::length renderer::gradientGetR(const svgdom::radial_gradient_element& g) {
+svgdom::length renderer::gradient_get_r(const svgdom::radial_gradient_element& g) {
 	if(g.r.is_valid()){
 		return g.r;
 	}
@@ -1442,14 +1406,14 @@ svgdom::length renderer::gradientGetR(const svgdom::radial_gradient_element& g) 
 			GradientCaster caster;
 			ref->e.accept(caster);
 			if(caster.radial){
-				return this->gradientGetR(*caster.radial);
+				return this->gradient_get_r(*caster.radial);
 			}
 		}
 	}
 	return svgdom::length(50, svgdom::length_unit::percent);
 }
 
-svgdom::length renderer::gradientGetFx(const svgdom::radial_gradient_element& g) {
+svgdom::length renderer::gradient_get_fx(const svgdom::radial_gradient_element& g) {
 	if(g.fx.is_valid()){
 		return g.fx;
 	}
@@ -1462,14 +1426,14 @@ svgdom::length renderer::gradientGetFx(const svgdom::radial_gradient_element& g)
 			GradientCaster caster;
 			ref->e.accept(caster);
 			if(caster.radial){
-				return this->gradientGetFx(*caster.radial);
+				return this->gradient_get_fx(*caster.radial);
 			}
 		}
 	}
 	return svgdom::length(0, svgdom::length_unit::unknown);
 }
 
-svgdom::length renderer::gradientGetFy(const svgdom::radial_gradient_element& g) {
+svgdom::length renderer::gradient_get_fy(const svgdom::radial_gradient_element& g) {
 	if(g.fy.is_valid()){
 		return g.fy;
 	}
@@ -1482,14 +1446,14 @@ svgdom::length renderer::gradientGetFy(const svgdom::radial_gradient_element& g)
 			GradientCaster caster;
 			ref->e.accept(caster);
 			if(caster.radial){
-				return this->gradientGetFy(*caster.radial);
+				return this->gradient_get_fy(*caster.radial);
 			}
 		}
 	}
 	return svgdom::length(0, svgdom::length_unit::unknown);
 }
 
-const decltype(svgdom::container::children)& renderer::gradientGetStops(const svgdom::gradient& g) {
+const decltype(svgdom::container::children)& renderer::gradient_get_stops(const svgdom::gradient& g) {
 	if(g.children.size() != 0){
 		return g.children;
 	}
@@ -1502,7 +1466,7 @@ const decltype(svgdom::container::children)& renderer::gradientGetStops(const sv
 			GradientCaster caster;
 			ref->e.accept(caster);
 			if(caster.gradient){
-				return this->gradientGetStops(*caster.gradient);
+				return this->gradient_get_stops(*caster.gradient);
 			}
 		}
 	}
@@ -1552,7 +1516,7 @@ const decltype(svgdom::styleable::classes)& renderer::gradient_get_classes(const
 	return g.classes;
 }
 
-svgdom::gradient::spread_method renderer::gradientGetSpreadMethod(const svgdom::gradient& g){
+svgdom::gradient::spread_method renderer::gradient_get_spread_method(const svgdom::gradient& g){
 	if(g.spread_method_ != svgdom::gradient::spread_method::default_){
 		return g.spread_method_;
 	}
@@ -1567,7 +1531,7 @@ svgdom::gradient::spread_method renderer::gradientGetSpreadMethod(const svgdom::
 			GradientCaster caster;
 			ref->e.accept(caster);
 			if(caster.gradient){
-				return this->gradientGetSpreadMethod(*caster.gradient);
+				return this->gradient_get_spread_method(*caster.gradient);
 			}
 		}
 	}

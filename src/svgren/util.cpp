@@ -240,3 +240,5 @@ void svgren::appendLuminanceToAlpha(surface s){
 		*p = uint8_t(l);
 	}
 }
+
+

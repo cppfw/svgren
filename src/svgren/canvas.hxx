@@ -14,6 +14,7 @@
 
 #include "config.hxx"
 #include "surface.hxx"
+#include "gradient.hxx"
 
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 #	if M_OS == M_OS_WINDOWS || M_OS_NAME == M_OS_NAME_IOS
@@ -79,6 +80,8 @@ public:
 	void set_fill_rule(fill_rule fr);
 
 	void set_source(const r4::vector4<real>& rgba);
+	void set_source(const linear_gradient& g);
+	void set_source(const radial_gradient& g);
 
 	r4::vector2<real> matrix_mul(const r4::vector2<real>& v);
 

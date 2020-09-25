@@ -56,7 +56,7 @@ public:
 	
 	void apply_transformations(const decltype(svgdom::transformable::transformations)& transformations);
 	
-	void setCairoPatternSource(cairo_pattern_t& pat, const svgdom::gradient& g, const svgdom::style_stack& ss);
+	void set_gradient_properties(svgren::gradient& gradient, const svgdom::gradient& g, const svgdom::style_stack& ss);
 	
 	void set_gradient(const std::string& id);
 	
@@ -81,23 +81,23 @@ public:
 		);
 	
 	const decltype(svgdom::transformable::transformations)& gradient_get_transformations(const svgdom::gradient& g);
-	svgdom::coordinate_units gradientGetUnits(const svgdom::gradient& g);
+	svgdom::coordinate_units gradient_get_units(const svgdom::gradient& g);
 	
-	svgdom::length gradientGetX1(const svgdom::linear_gradient_element& g);
-	svgdom::length gradientGetY1(const svgdom::linear_gradient_element& g);
-	svgdom::length gradientGetX2(const svgdom::linear_gradient_element& g);
-	svgdom::length gradientGetY2(const svgdom::linear_gradient_element& g);
+	svgdom::length gradient_get_x1(const svgdom::linear_gradient_element& g);
+	svgdom::length gradient_get_y1(const svgdom::linear_gradient_element& g);
+	svgdom::length gradient_get_x2(const svgdom::linear_gradient_element& g);
+	svgdom::length gradient_get_y2(const svgdom::linear_gradient_element& g);
 	
-	svgdom::length gradientGetCx(const svgdom::radial_gradient_element& g);
-	svgdom::length gradientGetCy(const svgdom::radial_gradient_element& g);
-	svgdom::length gradientGetR(const svgdom::radial_gradient_element& g);
-	svgdom::length gradientGetFx(const svgdom::radial_gradient_element& g);
-	svgdom::length gradientGetFy(const svgdom::radial_gradient_element& g);
+	svgdom::length gradient_get_cx(const svgdom::radial_gradient_element& g);
+	svgdom::length gradient_get_cy(const svgdom::radial_gradient_element& g);
+	svgdom::length gradient_get_r(const svgdom::radial_gradient_element& g);
+	svgdom::length gradient_get_fx(const svgdom::radial_gradient_element& g);
+	svgdom::length gradient_get_fy(const svgdom::radial_gradient_element& g);
 	
-	const decltype(svgdom::container::children)& gradientGetStops(const svgdom::gradient& g);
+	const decltype(svgdom::container::children)& gradient_get_stops(const svgdom::gradient& g);
 	const decltype(svgdom::styleable::styles)& gradient_get_styles(const svgdom::gradient& g);
 	const decltype(svgdom::styleable::classes)& gradient_get_classes(const svgdom::gradient& g);
-	svgdom::gradient::spread_method gradientGetSpreadMethod(const svgdom::gradient& g);
+	svgdom::gradient::spread_method gradient_get_spread_method(const svgdom::gradient& g);
 	decltype(svgdom::styleable::presentation_attributes) gradient_get_presentation_attributes(const svgdom::gradient& g);
 	
 	bool is_invisible();
