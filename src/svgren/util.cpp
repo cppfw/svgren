@@ -94,67 +94,67 @@ viewport_push::~viewport_push() noexcept{
 	this->r.viewport = this->oldViewport;
 }
 
-PushCairoGroupIfNeeded::PushCairoGroupIfNeeded(svgren::renderer& renderer, bool isContainer) :
+canvas_group_push::canvas_group_push(svgren::renderer& renderer, bool is_container) :
 		renderer(renderer)
 {
-	auto backgroundP = this->renderer.style_stack.get_style_property(svgdom::style_property::enable_background);
+	auto background_prop = this->renderer.style_stack.get_style_property(svgdom::style_property::enable_background);
 	
-	if(backgroundP && backgroundP->enable_background.value == svgdom::enable_background::new_){
-		this->oldBackground = this->renderer.background;
+	if(background_prop && background_prop->enable_background.value == svgdom::enable_background::new_){
+		this->old_background = this->renderer.background;
 	}
 	
-	auto filterP = this->renderer.style_stack.get_style_property(svgdom::style_property::filter);
+	auto filter_prop = this->renderer.style_stack.get_style_property(svgdom::style_property::filter);
 	
-	if(auto maskP = this->renderer.style_stack.get_style_property(svgdom::style_property::mask)){
-		if(auto ei = this->renderer.finder.find_by_id(maskP->get_local_id_from_iri())){
-			this->maskElement = &ei->e;
+	if(auto mask_prop = this->renderer.style_stack.get_style_property(svgdom::style_property::mask)){
+		if(auto ei = this->renderer.finder.find_by_id(mask_prop->get_local_id_from_iri())){
+			this->mask_element = &ei->e;
 		}
 	}
 	
-	this->groupPushed = filterP || this->maskElement || !this->oldBackground.span.empty();
+	this->group_pushed = filter_prop || this->mask_element || !this->old_background.span.empty();
 
 	auto opacity = svgdom::real(1);
 	{
-		auto strokeP = this->renderer.style_stack.get_style_property(svgdom::style_property::stroke);
-		auto fillP = this->renderer.style_stack.get_style_property(svgdom::style_property::fill);
+		auto stroke_prop = this->renderer.style_stack.get_style_property(svgdom::style_property::stroke);
+		auto fill_prop = this->renderer.style_stack.get_style_property(svgdom::style_property::fill);
 
 		// OPTIMIZATION: if opacity is set on an element then push cairo group only in case it is a Container element, like 'g' or 'svg',
 		//               or in case the fill or stroke is a non-solid color, like gradient or pattern,
 		//               or both fill and stroke are non-none.
 		//               If element is non-container and one of stroke or fill is solid color and other one is none,
 		//               then opacity will be applied later without pushing cairo group.
-		if(this->groupPushed
-				|| isContainer
-				|| (strokeP && strokeP->is_url())
-				|| (fillP && fillP->is_url())
-				|| (fillP && strokeP && !fillP->is_none() && !strokeP->is_none())
+		if(this->group_pushed
+				|| is_container
+				|| (stroke_prop && stroke_prop->is_url())
+				|| (fill_prop && fill_prop->is_url())
+				|| (fill_prop && stroke_prop && !fill_prop->is_none() && !stroke_prop->is_none())
 			)
 		{
 			if(auto p = this->renderer.style_stack.get_style_property(svgdom::style_property::opacity)){
 				opacity = p->opacity;
-				this->groupPushed = this->groupPushed || opacity < 1;
+				this->group_pushed = this->group_pushed || opacity < 1;
 			}
 		}
 	}
 	
-	if(this->groupPushed){
+	if(this->group_pushed){
 //		TRACE(<< "setting temp context" << std::endl)
 		this->renderer.canvas.push_group();
 		
 		this->opacity = opacity;
 	}
 	
-	if(!this->oldBackground.span.empty()){
+	if(!this->old_background.span.empty()){
 		this->renderer.background = this->renderer.canvas.get_sub_surface();
 	}
 }
 
-PushCairoGroupIfNeeded::~PushCairoGroupIfNeeded()noexcept{
-	if(!this->groupPushed){
+canvas_group_push::~canvas_group_push()noexcept{
+	if(!this->group_pushed){
 		return;
 	}
 	
-	if(this->maskElement){
+	if(this->mask_element){
 		// render mask
 		try{
 			this->renderer.canvas.push_group();
@@ -166,19 +166,19 @@ PushCairoGroupIfNeeded::~PushCairoGroupIfNeeded()noexcept{
 			// TODO: setup the correct coordinate system based on maskContentUnits value (userSpaceOnUse/objectBoundingBox)
 			//       Currently nothing on that is done which is equivalent to userSpaceOnUse
 			
-			class MaskRenderer : public svgdom::const_visitor{
+			class mask_renderer : public svgdom::const_visitor{
 				svgren::renderer& r;
 			public:
-				MaskRenderer(svgren::renderer& r) : r(r){}
+				mask_renderer(svgren::renderer& r) : r(r){}
 				
 				void visit(const svgdom::mask_element& e)override{
 					svgdom::style_stack::push pushStyles(this->r.style_stack, e);
 	
 					this->r.relay_accept(e);
 				}
-			} maskRenderer(this->renderer);
+			} mr(this->renderer);
 			
-			this->maskElement->accept(maskRenderer);
+			this->mask_element->accept(mr);
 			
 			scope_exit.reset();
 
@@ -191,7 +191,7 @@ PushCairoGroupIfNeeded::~PushCairoGroupIfNeeded()noexcept{
 	}
 	
 	// restore background if it was pushed
-	if(!this->oldBackground.span.empty()){
-		this->renderer.background = this->oldBackground;
+	if(!this->old_background.span.empty()){
+		this->renderer.background = this->old_background;
 	}
 }

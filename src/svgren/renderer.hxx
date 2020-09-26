@@ -25,8 +25,6 @@ namespace svgren{
 class renderer : public svgdom::const_visitor{
 public:
 	svgren::canvas& canvas;
-
-	cairo_t* cr;
 	
 	svgdom::finder finder;
 	

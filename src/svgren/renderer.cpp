@@ -73,19 +73,14 @@ void renderer::apply_transformation(const svgdom::transformable::transformation&
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	// WORKAROUND: Due to cairo/pixman bug https://bugs.freedesktop.org/show_bug.cgi?id=102966
 	//             we have to limit the maximum value of matrix element by 16 bit integer (+-0x7fff).
-	using std::min;
-	using std::max;
-	const double maxValue = double(0x7fff);
-
-	cairo_matrix_t matrix;
-	cairo_get_matrix(this->canvas.cr, &matrix);
-	matrix.xx = max(-maxValue, min(matrix.xx, maxValue));
-	matrix.yx = max(-maxValue, min(matrix.yx, maxValue));
-	matrix.xy = max(-maxValue, min(matrix.xy, maxValue));
-	matrix.yy = max(-maxValue, min(matrix.yy, maxValue));
-	matrix.x0 = max(-maxValue, min(matrix.x0, maxValue));
-	matrix.y0 = max(-maxValue, min(matrix.y0, maxValue));
-	cairo_set_matrix(this->canvas.cr, &matrix);
+	auto m = this->canvas.get_matrix();
+	for(auto& r : m){
+		using std::min;
+		using std::max;
+		const real max_value = 0x7fff;
+		r = max(-max_value, min(r, max_value));
+	}
+	this->canvas.set_matrix(m);
 #endif
 }
 
@@ -485,7 +480,7 @@ void renderer::render_element(
 		return;
 	}
 
-	PushCairoGroupIfNeeded cairoTempContext(*this, true);
+	canvas_group_push group_push(*this, true);
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
@@ -519,7 +514,6 @@ renderer::renderer(
 		const svgdom::svg_element& root
 	) :
 		canvas(canvas),
-		cr(canvas.cr),
 		finder(root),
 		dpi(real(dpi)),
 		viewport(canvasSize)
@@ -536,7 +530,7 @@ void renderer::visit(const svgdom::g_element& e){
 		return;
 	}
 
-	PushCairoGroupIfNeeded cairoTempContext(*this, true);
+	canvas_group_push group_push(*this, true);
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
@@ -707,7 +701,7 @@ void renderer::visit(const svgdom::path_element& e){
 		return;
 	}
 
-	PushCairoGroupIfNeeded cairoGroupPush(*this, false);
+	canvas_group_push group_push(*this, false);
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
@@ -986,7 +980,7 @@ void renderer::visit(const svgdom::path_element& e){
 		prevStep = &s;
 	}
 
-	this->render_shape(cairoGroupPush.isPushed());
+	this->render_shape(group_push.is_pushed());
 }
 
 void renderer::visit(const svgdom::circle_element& e){
@@ -997,7 +991,7 @@ void renderer::visit(const svgdom::circle_element& e){
 		return;
 	}
 
-	PushCairoGroupIfNeeded cairoGroupPush(*this, false);
+	canvas_group_push group_push(*this, false);
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
@@ -1012,7 +1006,7 @@ void renderer::visit(const svgdom::circle_element& e){
 			2 * utki::pi<real>()
 		);
 
-	this->render_shape(cairoGroupPush.isPushed());
+	this->render_shape(group_push.is_pushed());
 }
 
 void renderer::visit(const svgdom::polyline_element& e){
@@ -1025,7 +1019,7 @@ void renderer::visit(const svgdom::polyline_element& e){
 
 	// TODO: make a common push class for shapes
 
-	PushCairoGroupIfNeeded cairoGroupPush(*this, false);
+	canvas_group_push group_push(*this, false);
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
@@ -1045,7 +1039,7 @@ void renderer::visit(const svgdom::polyline_element& e){
 		this->canvas.line_to_abs(i->to<real>());
 	}
 
-	this->render_shape(cairoGroupPush.isPushed());
+	this->render_shape(group_push.is_pushed());
 }
 
 void renderer::visit(const svgdom::polygon_element& e){
@@ -1056,7 +1050,7 @@ void renderer::visit(const svgdom::polygon_element& e){
 		return;
 	}
 
-	PushCairoGroupIfNeeded cairoGroupPush(*this, false);
+	canvas_group_push group_push(*this, false);
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
@@ -1078,7 +1072,7 @@ void renderer::visit(const svgdom::polygon_element& e){
 
 	this->canvas.close_path();
 
-	this->render_shape(cairoGroupPush.isPushed());
+	this->render_shape(group_push.is_pushed());
 }
 
 void renderer::visit(const svgdom::line_element& e){
@@ -1089,7 +1083,7 @@ void renderer::visit(const svgdom::line_element& e){
 		return;
 	}
 
-	PushCairoGroupIfNeeded cairoGroupPush(*this, false);
+	canvas_group_push group_push(*this, false);
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
@@ -1100,7 +1094,7 @@ void renderer::visit(const svgdom::line_element& e){
 	this->canvas.move_to_abs(this->length_to_px(e.x1, e.y1));
 	this->canvas.line_to_abs(this->length_to_px(e.x2, e.y2));
 
-	this->render_shape(cairoGroupPush.isPushed());
+	this->render_shape(group_push.is_pushed());
 }
 
 void renderer::visit(const svgdom::ellipse_element& e){
@@ -1111,7 +1105,7 @@ void renderer::visit(const svgdom::ellipse_element& e){
 		return;
 	}
 
-	PushCairoGroupIfNeeded cairoGroupPush(*this, false);
+	canvas_group_push group_push(*this, false);
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
@@ -1129,7 +1123,7 @@ void renderer::visit(const svgdom::ellipse_element& e){
 		this->canvas.close_path();
 	}
 
-	this->render_shape(cairoGroupPush.isPushed());
+	this->render_shape(group_push.is_pushed());
 }
 
 void renderer::visit(const svgdom::style_element& e){
@@ -1144,7 +1138,7 @@ void renderer::visit(const svgdom::rect_element& e){
 		return;
 	}
 
-	PushCairoGroupIfNeeded cairoGroupPush(*this, false);
+	canvas_group_push group_push(*this, false);
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
@@ -1229,7 +1223,7 @@ void renderer::visit(const svgdom::rect_element& e){
 		this->canvas.close_path();
 	}
 
-	this->render_shape(cairoGroupPush.isPushed());
+	this->render_shape(group_push.is_pushed());
 }
 
 const decltype(svgdom::transformable::transformations)& renderer::gradient_get_transformations(const svgdom::gradient& g){

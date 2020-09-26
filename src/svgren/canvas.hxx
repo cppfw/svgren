@@ -47,7 +47,6 @@ inline uint32_t get_uint32_t(const r4::vector4<unsigned>& rgba){
 
 class canvas{
 	std::vector<uint32_t> data;
-public:
 
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	struct cairo_surface_wrapper{
@@ -76,6 +75,8 @@ public:
 
 	cairo_t* cr;
 #endif
+
+public:
 
 	canvas(unsigned width, unsigned height);
 	~canvas();

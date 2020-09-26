@@ -91,20 +91,20 @@ public:
 	~viewport_push()noexcept;
 };
 
-class PushCairoGroupIfNeeded{
-	bool groupPushed;
-	surface oldBackground;
+class canvas_group_push{
+	bool group_pushed;
+	surface old_background;
 	class svgren::renderer& renderer;
 
 	real opacity = real(1);
 	
-	const svgdom::element* maskElement = nullptr;
+	const svgdom::element* mask_element = nullptr;
 public:
-	PushCairoGroupIfNeeded(svgren::renderer& renderer, bool isContainer);
-	~PushCairoGroupIfNeeded()noexcept;
+	canvas_group_push(svgren::renderer& renderer, bool is_container);
+	~canvas_group_push()noexcept;
 	
-	bool isPushed()const noexcept{
-		return this->groupPushed;
+	bool is_pushed()const noexcept{
+		return this->group_pushed;
 	}
 };
 
