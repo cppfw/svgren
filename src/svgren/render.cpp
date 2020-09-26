@@ -5,7 +5,7 @@
 #include <utki/config.hpp>
 #include <utki/util.hpp>
 
-#include "Renderer.hxx"
+#include "renderer.hxx"
 #include "config.hxx"
 #include "canvas.hxx"
 
@@ -57,7 +57,7 @@ result svgren::render(const svgdom::svg_element& svg, const parameters& p){
 	
 	canvas.scale(real(ret.width) / svg_width[0], real(ret.height) / svg_width[1]);
 	
-	Renderer r(canvas, p.dpi, {{svg_width[0], svg_width[1]}}, svg);
+	renderer r(canvas, p.dpi, {{svg_width[0], svg_width[1]}}, svg);
 	
 	svg.accept(r);
 	

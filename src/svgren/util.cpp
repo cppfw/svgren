@@ -9,57 +9,28 @@
 
 #include <svgdom/length.hpp>
 
-#include "Renderer.hxx"
+#include "renderer.hxx"
 
 using namespace svgren;
 
-CairoContextSaveRestore::CairoContextSaveRestore(cairo_t* cr) :
-		cr(cr)
+canvas_context_push::canvas_context_push(canvas& c) :
+		c(c)
 {
-	ASSERT(this->cr)
-	cairo_save(this->cr);
+	this->c.push_context();
 }
 
-CairoContextSaveRestore::~CairoContextSaveRestore()noexcept{
-	cairo_restore(this->cr);
+canvas_context_push::~canvas_context_push()noexcept{
+	this->c.pop_context();
 }
 
-CairoMatrixSaveRestore::CairoMatrixSaveRestore(cairo_t* cr) :
-		cr(cr)
+canvas_matrix_push::canvas_matrix_push(canvas& c) :
+		c(c)
 {
-	ASSERT(this->cr)
-	cairo_get_matrix(this->cr, &this->m);
+	this->m = this->c.get_matrix();
 }
 
-CairoMatrixSaveRestore::~CairoMatrixSaveRestore()noexcept{
-	cairo_set_matrix(this->cr, &this->m);
-}
-
-
-Surface svgren::getSubSurface(cairo_t* cr, const r4::rectangle<unsigned>& region){
-//	TRACE(<< "region = (" << region[0] << ", " << region[1] << ") (" << region[2] << ", " << region[3] << ")" << std::endl)
-	
-	Surface ret;
-	auto s = cairo_get_group_target(cr);
-	ASSERT(s)
-	
-	ret.stride = cairo_image_surface_get_stride(s) / sizeof(uint32_t); // stride is returned in bytes
-	
-	r4::vector2<unsigned> s_dims{
-		unsigned(cairo_image_surface_get_width(s)),
-		unsigned(cairo_image_surface_get_height(s))
-	};
-
-	using std::min;
-	ret.d = min(region.d, s_dims - region.p);
-	ret.data = cairo_image_surface_get_data(s) + 4 * (region.p.y() * ret.stride + region.p.x());
-	ret.end = cairo_image_surface_get_data(s) + cairo_image_surface_get_stride(s) * cairo_image_surface_get_height(s);
-	ret.p = region.p;
-	
-	ASSERT(ret.d.y() <= s_dims.y())
-	ASSERT(&ret.data[ret.stride * (ret.d.y() - 1) * sizeof(uint32_t)] < ret.end || ret.d.y() == 0)
-
-	return ret;
+canvas_matrix_push::~canvas_matrix_push()noexcept{
+	this->c.set_matrix(this->m);
 }
 
 real svgren::percentLengthToFraction(const svgdom::length& l){
@@ -100,173 +71,127 @@ real DeviceSpaceBoundingBox::height() const noexcept{
 	return max(h, decltype(h)(0));
 }
 
-DeviceSpaceBoundingBoxPush::DeviceSpaceBoundingBoxPush(Renderer& r) :
+DeviceSpaceBoundingBoxPush::DeviceSpaceBoundingBoxPush(renderer& r) :
 		r(r),
-		oldBb(r.deviceSpaceBoundingBox)
+		oldBb(r.device_space_bounding_box)
 {
-	this->r.deviceSpaceBoundingBox.set_empty();
+	this->r.device_space_bounding_box.set_empty();
 }
 
 DeviceSpaceBoundingBoxPush::~DeviceSpaceBoundingBoxPush() noexcept{
-	this->oldBb.unite(this->r.deviceSpaceBoundingBox);
-	this->r.deviceSpaceBoundingBox = this->oldBb;
+	this->oldBb.unite(this->r.device_space_bounding_box);
+	this->r.device_space_bounding_box = this->oldBb;
 }
 
-ViewportPush::ViewportPush(Renderer& r, const decltype(oldViewport)& viewport) :
+viewport_push::viewport_push(renderer& r, const decltype(oldViewport)& viewport) :
 		r(r),
 		oldViewport(r.viewport)
 {
 	this->r.viewport = viewport;
 }
 
-ViewportPush::~ViewportPush() noexcept{
+viewport_push::~viewport_push() noexcept{
 	this->r.viewport = this->oldViewport;
 }
 
-PushCairoGroupIfNeeded::PushCairoGroupIfNeeded(Renderer& renderer, bool isContainer) :
+canvas_group_push::canvas_group_push(svgren::renderer& renderer, bool is_container) :
 		renderer(renderer)
 {
-	auto backgroundP = this->renderer.styleStack.get_style_property(svgdom::style_property::enable_background);
+	auto background_prop = this->renderer.style_stack.get_style_property(svgdom::style_property::enable_background);
 	
-	if(backgroundP && backgroundP->enable_background.value == svgdom::enable_background::new_){
-		this->oldBackground = this->renderer.background;
+	if(background_prop && background_prop->enable_background.value == svgdom::enable_background::new_){
+		this->old_background = this->renderer.background;
 	}
 	
-	auto filterP = this->renderer.styleStack.get_style_property(svgdom::style_property::filter);
+	auto filter_prop = this->renderer.style_stack.get_style_property(svgdom::style_property::filter);
 	
-	if(auto maskP = this->renderer.styleStack.get_style_property(svgdom::style_property::mask)){
-		if(auto ei = this->renderer.finder.find_by_id(maskP->get_local_id_from_iri())){
-			this->maskElement = &ei->e;
+	if(auto mask_prop = this->renderer.style_stack.get_style_property(svgdom::style_property::mask)){
+		if(auto ei = this->renderer.finder.find_by_id(mask_prop->get_local_id_from_iri())){
+			this->mask_element = &ei->e;
 		}
 	}
 	
-	this->groupPushed = filterP || this->maskElement || this->oldBackground.data;
+	this->group_pushed = filter_prop || this->mask_element || !this->old_background.span.empty();
 
 	auto opacity = svgdom::real(1);
 	{
-		auto strokeP = this->renderer.styleStack.get_style_property(svgdom::style_property::stroke);
-		auto fillP = this->renderer.styleStack.get_style_property(svgdom::style_property::fill);
+		auto stroke_prop = this->renderer.style_stack.get_style_property(svgdom::style_property::stroke);
+		auto fill_prop = this->renderer.style_stack.get_style_property(svgdom::style_property::fill);
 
 		// OPTIMIZATION: if opacity is set on an element then push cairo group only in case it is a Container element, like 'g' or 'svg',
 		//               or in case the fill or stroke is a non-solid color, like gradient or pattern,
 		//               or both fill and stroke are non-none.
 		//               If element is non-container and one of stroke or fill is solid color and other one is none,
 		//               then opacity will be applied later without pushing cairo group.
-		if(this->groupPushed
-				|| isContainer
-				|| (strokeP && strokeP->is_url())
-				|| (fillP && fillP->is_url())
-				|| (fillP && strokeP && !fillP->is_none() && !strokeP->is_none())
+		if(this->group_pushed
+				|| is_container
+				|| (stroke_prop && stroke_prop->is_url())
+				|| (fill_prop && fill_prop->is_url())
+				|| (fill_prop && stroke_prop && !fill_prop->is_none() && !stroke_prop->is_none())
 			)
 		{
-			if(auto p = this->renderer.styleStack.get_style_property(svgdom::style_property::opacity)){
+			if(auto p = this->renderer.style_stack.get_style_property(svgdom::style_property::opacity)){
 				opacity = p->opacity;
-				this->groupPushed = this->groupPushed || opacity < 1;
+				this->group_pushed = this->group_pushed || opacity < 1;
 			}
 		}
 	}
 	
-	if(this->groupPushed){
+	if(this->group_pushed){
 //		TRACE(<< "setting temp context" << std::endl)
-		cairo_push_group(this->renderer.cr);
-		if(cairo_status(this->renderer.cr) != CAIRO_STATUS_SUCCESS){
-			throw std::runtime_error("cairo_push_group() failed");
-		}
+		this->renderer.canvas.push_group();
 		
 		this->opacity = opacity;
 	}
 	
-	if(this->oldBackground.data){
-		this->renderer.background = getSubSurface(this->renderer.cr);
+	if(!this->old_background.span.empty()){
+		this->renderer.background = this->renderer.canvas.get_sub_surface();
 	}
 }
 
-PushCairoGroupIfNeeded::~PushCairoGroupIfNeeded()noexcept{
-	if(!this->groupPushed){
+canvas_group_push::~canvas_group_push()noexcept{
+	if(!this->group_pushed){
 		return;
 	}
 	
-	// render mask
-	cairo_pattern_t* mask = nullptr;
-	try{
-		if(this->maskElement){
-			cairo_push_group(this->renderer.cr);
-			if(cairo_status(this->renderer.cr) != CAIRO_STATUS_SUCCESS){
-				throw std::runtime_error("cairo_push_group() failed");
-			}
+	if(this->mask_element){
+		// render mask
+		try{
+			this->renderer.canvas.push_group();
 			
-			utki::scope_exit scope_exit([&mask, this](){
-				mask = cairo_pop_group(this->renderer.cr);
+			utki::scope_exit scope_exit([this](){
+				this->renderer.canvas.pop_group(1);
 			});
 			
 			// TODO: setup the correct coordinate system based on maskContentUnits value (userSpaceOnUse/objectBoundingBox)
 			//       Currently nothing on that is done which is equivalent to userSpaceOnUse
 			
-			class MaskRenderer : public svgdom::const_visitor{
-				Renderer& r;
+			class mask_renderer : public svgdom::const_visitor{
+				svgren::renderer& r;
 			public:
-				MaskRenderer(Renderer& r) : r(r){}
+				mask_renderer(svgren::renderer& r) : r(r){}
 				
 				void visit(const svgdom::mask_element& e)override{
-					svgdom::style_stack::push pushStyles(this->r.styleStack, e);
+					svgdom::style_stack::push pushStyles(this->r.style_stack, e);
 	
-					this->r.relayAccept(e);
+					this->r.relay_accept(e);
 				}
-			} maskRenderer(this->renderer);
+			} mr(this->renderer);
 			
-			this->maskElement->accept(maskRenderer);
+			this->mask_element->accept(mr);
 			
-			appendLuminanceToAlpha(getSubSurface(this->renderer.cr));
+			scope_exit.reset();
+
+			this->renderer.canvas.pop_mask_and_group();
+		}catch(...){
+			// rendering mask failed, just ignore it
 		}
-	}catch(...){
-		// rendering mask failed, just ignore it
-	}
-	
-	utki::scope_exit scope_exit([mask](){
-		if(mask){
-			cairo_pattern_destroy(mask);
-		}
-	});
-	
-	cairo_pop_group_to_source(this->renderer.cr);
-	
-	if(mask){
-		cairo_mask(this->renderer.cr, mask);
 	}else{
-		ASSERT(0 <= this->opacity && this->opacity <= 1)
-		if(this->opacity < svgdom::real(1)){
-			cairo_paint_with_alpha(this->renderer.cr, this->opacity);
-		}else{
-			cairo_paint(this->renderer.cr);
-		}
+		this->renderer.canvas.pop_group(this->opacity);
 	}
 	
 	// restore background if it was pushed
-	if(this->oldBackground.data){
-		this->renderer.background = this->oldBackground;
-	}
-}
-
-
-
-void svgren::appendLuminanceToAlpha(Surface s){
-	ASSERT((s.end - s.data) % 4 == 0)
-	
-	//Luminance is calculated using formula L = 0.2126 * R + 0.7152 * G + 0.0722 * B
-	//For faster calculation it can be simplified to L = (2 * R + 3 * G + B) / 6
-		
-	for(auto p = s.data; p != s.end; ++p){
-		uint32_t l = 2 * uint32_t(*p);
-		++p;
-		l += 3 * uint32_t(*p);
-		++p;
-		l += uint32_t(*p);
-		++p;
-		
-		l /= 6;
-		
-		//Cairo uses premultiplied alpha, so no need to multiply alpha by liminance.
-		ASSERT(l <= 255)
-		*p = uint8_t(l);
+	if(!this->old_background.span.empty()){
+		this->renderer.background = this->old_background;
 	}
 }

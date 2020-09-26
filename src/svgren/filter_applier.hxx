@@ -2,36 +2,36 @@
 
 #include <svgdom/visitor.hpp>
 
-#include "Renderer.hxx"
+#include "renderer.hxx"
 
 namespace svgren{
 
-struct FilterResult{
-	std::vector<uint8_t> data;
-	Surface surface;
+struct filter_result{
+	std::vector<uint32_t> data;
+	svgren::surface surface;
 };
 
-class FilterApplier : public svgdom::const_visitor{
-	Renderer& r;
+class filter_applier : public svgdom::const_visitor{
+	renderer& r;
 
 	decltype(svgdom::filter_element::primitive_units) primitiveUnits;
 	
 	r4::rectangle<unsigned> filterRegion = {0, std::numeric_limits<unsigned>::max()};
 	
-	std::map<std::string, FilterResult> results;
+	std::map<std::string, filter_result> results;
 	
-	FilterResult* lastResult = nullptr;
+	filter_result* lastResult = nullptr;
 	
-	Surface getSource(const std::string& in);
-	void setResult(const std::string& name, FilterResult&& result);
+	surface get_source(const std::string& in);
+	void set_result(const std::string& name, filter_result&& result);
 	
-	Surface getSourceGraphic();
+	surface get_source_graphic();
 	
 public:
 	
-	Surface getLastResult();
+	surface get_last_result();
 	
-	FilterApplier(Renderer& r) : r(r) {}
+	filter_applier(renderer& r) : r(r) {}
 	
 	void visit(const svgdom::filter_element& e)override;
 	

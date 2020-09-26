@@ -1,4 +1,4 @@
-#include "FilterApplier.hxx"
+#include "filter_applier.hxx"
 
 #include <cmath>
 #include <stdexcept>
@@ -14,15 +14,14 @@ using namespace svgren;
 
 namespace{
 void boxBlurHorizontal(
-		uint8_t* dst,
-		const uint8_t* src,
+		uint32_t* dst,
+		const uint32_t* src,
 		unsigned dstStride,
 		unsigned srcStride,
 		unsigned width,
 		unsigned height,
 		unsigned boxSize,
-		unsigned boxOffset,
-		unsigned channel
+		unsigned boxOffset
 	)
 {
 	if(boxSize == 0){
@@ -32,22 +31,21 @@ void boxBlurHorizontal(
 		using std::min;
 		using std::max;
 
-		unsigned sum = 0;
+		r4::vector4<unsigned> sum{0};
 		for(unsigned i = 0; i != boxSize; ++i){
 			int pos = i - boxOffset;
 			pos = max(pos, 0);
 			pos = min(pos, int(width - 1));
-			sum += src[(srcStride * y + pos) * sizeof(uint32_t) + channel];
+			sum += get_rgba(src[srcStride * y + pos]);
 		}
 		for(unsigned x = 0; x != width; ++x){
 			int tmp = x - boxOffset;
 			int last = max(tmp, 0);
 			int next = min(tmp + boxSize, width - 1);
 
-			dst[(dstStride * y + x) * sizeof(uint32_t) + channel] = sum / boxSize;
+			dst[dstStride * y + x] = get_uint32_t((sum / boxSize));
 
-			sum += src[(srcStride * y + next) * sizeof(uint32_t) + channel]
-					- src[(srcStride * y + last) * sizeof(uint32_t) + channel];
+			sum += get_rgba(src[srcStride * y + next]) - get_rgba(src[srcStride * y + last]);
 		}
 	}
 }
@@ -55,15 +53,14 @@ void boxBlurHorizontal(
 
 namespace{
 void boxBlurVertical(
-		uint8_t* dst,
-		const uint8_t* src,
+		uint32_t* dst,
+		const uint32_t* src,
 		unsigned dstStride,
 		unsigned srcStride,
 		unsigned width,
 		unsigned height,
 		unsigned boxSize,
-		unsigned boxOffset,
-		unsigned channel
+		unsigned boxOffset
 	)
 {
 	if(boxSize == 0){
@@ -72,43 +69,42 @@ void boxBlurVertical(
 	for(unsigned x = 0; x != width; ++x){
 		using std::min;
 		using std::max;
-		unsigned sum = 0;
+
+		r4::vector4<unsigned> sum{0};
 		for(unsigned i = 0; i != boxSize; ++i){
 			int pos = i - boxOffset;
 			pos = max(pos, 0);
 			pos = min(pos, int(height - 1));
-			sum += src[(srcStride * pos + x) * sizeof(uint32_t) + channel];
+
+			sum += get_rgba(src[srcStride * pos + x]);
 		}
 		for(unsigned y = 0; y != height; ++y){
 			int tmp = y - boxOffset;
 			int last = max(tmp, 0);
 			int next = min(tmp + boxSize, height - 1);
 
-			dst[(dstStride * y + x) * sizeof(uint32_t) + channel] = sum / boxSize;
+			dst[dstStride * y + x] = get_uint32_t(sum / boxSize);
 
-			sum += src[(x + srcStride * next) * sizeof(uint32_t) + channel]
-					- src[(x + srcStride * last) * sizeof(uint32_t) + channel];
+			sum += get_rgba(src[srcStride * next + x]) - get_rgba(src[srcStride * last + x]);
 		}
 	}
 }
 }
 
 namespace{
-FilterResult allocateResult(const Surface& src){
-	FilterResult ret;
+filter_result allocateResult(const surface& src){
+	filter_result ret;
 	ret.surface = src;
-	auto dataSize = src.d.x() * src.d.y() * sizeof(uint32_t);
+	auto dataSize = src.d.x() * src.d.y();
 	if (dataSize != 0) {
 		ret.data.resize(dataSize);
 		ASSERT_INFO(ret.data.size() != 0, "src.d = " << src.d)
-		ret.surface.data = ret.data.data();
+		ret.surface.span = utki::make_span(ret.data);
 		ret.surface.stride = ret.surface.d.x();
-		ret.surface.end = ret.data.data() + ret.data.size();
 	}else{
 		ret.data.clear();
-		ret.surface.data = nullptr;
+		ret.surface.span = nullptr;
 		ret.surface.stride = 0;
-		ret.surface.end = nullptr;
 	}
 	
 	return ret;
@@ -116,7 +112,7 @@ FilterResult allocateResult(const Surface& src){
 }
 
 namespace{
-FilterResult cairoImageSurfaceBlur(const Surface& src, r4::vector2<real> stdDeviation){
+filter_result blur_surface(const surface& src, r4::vector2<real> stdDeviation){
 	// see https://www.w3.org/TR/SVG/filters.html#feGaussianBlurElement for Gaussian Blur approximation algorithm
 	
 	ASSERT(src.d.x() <= src.stride)
@@ -126,9 +122,9 @@ FilterResult cairoImageSurfaceBlur(const Surface& src, r4::vector2<real> stdDevi
 	
 //	TRACE(<< "d = " << d[0] << ", " << d[1] << std::endl)
 	
-	FilterResult ret = allocateResult(src);
+	filter_result ret = allocateResult(src);
 	
-	std::vector<uint8_t> tmp(ret.data.size());
+	std::vector<uint32_t> tmp(ret.data.size());
 	
 	std::array<unsigned, 3> hBoxSize;
 	std::array<unsigned, 3> hOffset;
@@ -166,43 +162,32 @@ FilterResult cairoImageSurfaceBlur(const Surface& src, r4::vector2<real> stdDevi
 		vBoxSize[2] = d[1];
 	}
 	
-	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurHorizontal(tmp.data(), src.data, src.d.x(), src.stride, src.d.x(), src.d.y(), hBoxSize[0], hOffset[0], channel);
-	}
-	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurHorizontal(ret.surface.data, tmp.data(), ret.surface.stride, src.d.x(), src.d.x(), src.d.y(), hBoxSize[1], hOffset[1], channel);
-	}
-	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurHorizontal(tmp.data(), ret.surface.data, src.d.x(), ret.surface.stride, src.d.x(), src.d.y(), hBoxSize[2], hOffset[2], channel);
-	}
-	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurVertical(ret.surface.data, tmp.data(), ret.surface.stride, src.d.x(), src.d.x(), src.d.y(), vBoxSize[0], vOffset[0], channel);
-	}
-	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurVertical(tmp.data(), ret.surface.data, src.d.x(), ret.surface.stride, src.d.x(), src.d.y(), vBoxSize[1], vOffset[1], channel);
-	}
-	for(auto channel = 0; channel != 4; ++channel){
-		boxBlurVertical(ret.surface.data, tmp.data(), ret.surface.stride, src.d.x(), src.d.x(), src.d.y(), vBoxSize[2], vOffset[2], channel);
-	}
+	boxBlurHorizontal(tmp.data(), src.span.data(), src.d.x(), src.stride, src.d.x(), src.d.y(), hBoxSize[0], hOffset[0]);
+	boxBlurHorizontal(ret.surface.span.data(), tmp.data(), ret.surface.stride, src.d.x(), src.d.x(), src.d.y(), hBoxSize[1], hOffset[1]);
+	boxBlurHorizontal(tmp.data(), ret.surface.span.data(), src.d.x(), ret.surface.stride, src.d.x(), src.d.y(), hBoxSize[2], hOffset[2]);
+
+	boxBlurVertical(ret.surface.span.data(), tmp.data(), ret.surface.stride, src.d.x(), src.d.x(), src.d.y(), vBoxSize[0], vOffset[0]);
+	boxBlurVertical(tmp.data(), ret.surface.span.data(), src.d.x(), ret.surface.stride, src.d.x(), src.d.y(), vBoxSize[1], vOffset[1]);
+	boxBlurVertical(ret.surface.span.data(), tmp.data(), ret.surface.stride, src.d.x(), src.d.x(), src.d.y(), vBoxSize[2], vOffset[2]);
 	
 	return ret;
 }
 }
 
-Surface FilterApplier::getSourceGraphic(){
-	return getSubSurface(this->r.cr, this->filterRegion);
+surface filter_applier::get_source_graphic(){
+	return this->r.canvas.get_sub_surface(this->filterRegion);
 }
 
-void FilterApplier::setResult(const std::string& name, FilterResult&& result){
+void filter_applier::set_result(const std::string& name, filter_result&& result){
 	this->results[name] = std::move(result);
 	this->lastResult = &this->results[name];
-	ASSERT(this->lastResult->data.size() == 0 || this->lastResult->surface.data == &*this->lastResult->data.begin())
+	ASSERT(this->lastResult->data.size() == 0 || this->lastResult->surface.span.data() == this->lastResult->data.data())
 }
 
-Surface FilterApplier::getSource(const std::string& in){
+surface filter_applier::get_source(const std::string& in){
 	if(in == "SourceGraphic"){
 		// TRACE(<< "source graphic" << std::endl)
-		return this->getSourceGraphic();
+		return this->get_source_graphic();
 	}
 	if(in == "SourceAlpha"){
 		// TODO: implement
@@ -233,22 +218,22 @@ Surface FilterApplier::getSource(const std::string& in){
 	
 	if(in.length() == 0){
 		// TRACE(<< "length = 0" << std::endl)
-		return this->getSourceGraphic();
+		return this->get_source_graphic();
 	}
 	
 	// return empty surface
 	// TRACE(<< "empty surface" << std::endl)
-	return Surface();
+	return surface();
 }
 
-Surface FilterApplier::getLastResult(){
+surface filter_applier::get_last_result(){
 	if (!this->lastResult) {
-		return Surface();
+		return surface();
 	}
 	return this->lastResult->surface;
 }
 
-void FilterApplier::visit(const svgdom::filter_element& e){
+void filter_applier::visit(const svgdom::filter_element& e){
 	this->primitiveUnits = e.primitive_units;
 	
 	// set filter region
@@ -270,22 +255,20 @@ void FilterApplier::visit(const svgdom::filter_element& e){
 						percentLengthToFraction(e.height)
 					};
 
-					fr.p = this->r.deviceSpaceBoundingBox.pos() + fe_pos.comp_mul(this->r.deviceSpaceBoundingBox.dims());
-					fr.d = fe_dims.comp_mul(this->r.deviceSpaceBoundingBox.dims());
+					fr.p = this->r.device_space_bounding_box.pos() + fe_pos.comp_mul(this->r.device_space_bounding_box.dims());
+					fr.d = fe_dims.comp_mul(this->r.device_space_bounding_box.dims());
 				}
 				break;
 			case svgdom::coordinate_units::user_space_on_use:
 				{
-					auto x1 = this->r.length_to_px(e.x, 0);
-					auto y1 = this->r.length_to_px(e.y, 1);
-					auto x2 = x1 + this->r.length_to_px(e.width, 0);
-					auto y2 = y1 + this->r.length_to_px(e.height, 1);
+					auto p1 = this->r.length_to_px(e.x, e.y);
+					auto p2 = p1 + this->r.length_to_px(e.width, e.height);
 
 					std::array<r4::vector2<real>, 4> rectVertices = {{
-						r4::vector2<real>{x1, y1},
-						r4::vector2<real>{x2, y2},
-						r4::vector2<real>{x1, y2},
-						r4::vector2<real>{x2, y1}
+						p1,
+						p2,
+						{p1.x(), p2.y()},
+						{p2.x(), p1.y()}
 					}};
 
 					DeviceSpaceBoundingBox frBb;
@@ -319,7 +302,7 @@ void FilterApplier::visit(const svgdom::filter_element& e){
 	this->relay_accept(e);
 }
 
-void FilterApplier::visit(const svgdom::fe_gaussian_blur_element& e){
+void filter_applier::visit(const svgdom::fe_gaussian_blur_element& e){
 	if (!e.is_std_deviation_specified()) {
 		return;
 	}
@@ -332,58 +315,50 @@ void FilterApplier::visit(const svgdom::fe_gaussian_blur_element& e){
 			break;
 		case svgdom::coordinate_units::object_bounding_box:
 			sd = this->r.canvas.matrix_mul_distance(
-					this->r.userSpaceShapeBoundingBox.d.comp_mul(sd)
+					this->r.user_space_bounding_box.d.comp_mul(sd)
 				);
 			break;
 	}
 
-	auto s = this->getSource(e.in).intersectionSurface(this->filterRegion);
+	auto s = this->get_source(e.in).intersection(this->filterRegion);
 	
 	// TODO: set filter sub-region
 
-	this->setResult(e.result, cairoImageSurfaceBlur(s, sd));
+	this->set_result(e.result, blur_surface(s, sd));
 }
 
 namespace{
-FilterResult color_matrix(const Surface& s, const r4::matrix4<real>& m, const r4::vector4<real>& mc5){
+filter_result color_matrix(const surface& s, const r4::matrix4<real>& m, const r4::vector4<real>& mc5){
 //	TRACE(<< "colorMatrix(): s.width = " << s.width << " s.height = " << s.height << std::endl)
-	ASSERT(s.data || s.d.is_zero())
-	FilterResult ret = allocateResult(s);
+	ASSERT(!s.span.empty() || s.d.is_zero())
+	filter_result ret = allocateResult(s);
 	
-	ASSERT(s.data || s.d.is_zero())
+	ASSERT(!s.span.empty() || s.d.is_zero())
 	
 	for(unsigned y = 0; y != s.d.y(); ++y){
-		auto sp = &s.data[(y * s.stride) * sizeof(uint32_t)];
-		ASSERT_INFO(sp < s.end, "sp = " << std::hex << static_cast<void*>(sp) << " s.end = " << static_cast<void*>(s.end))
-		auto dp = &ret.surface.data[(y * ret.surface.stride) * sizeof(uint32_t)];
+		auto sp = &s.span[y * s.stride];
+		ASSERT_INFO(sp < s.span.end(), "sp = " << std::hex << static_cast<const void*>(sp) << " s.end = " << static_cast<const void*>(s.span.end()))
+		auto dp = &ret.surface.span[y * ret.surface.stride];
 		for(unsigned x = 0; x != s.d.x(); ++x){
-			auto bb = *sp;
+			auto cc = get_rgba(*sp);
 			++sp;
-			auto gg = *sp;
-			++sp;
-			auto rr = *sp;
-			++sp;
-			auto aa = *sp;
-			++sp;
-			
-			if(aa != 0xff && aa != 0){
+
+			if(cc.a() != 0xff && cc.a() != 0){
 				// unpremultiply alpha
-				rr = uint32_t(rr) * uint32_t(0xff) / uint32_t(aa);
-				gg = uint32_t(gg) * uint32_t(0xff) / uint32_t(aa);
-				bb = uint32_t(bb) * uint32_t(0xff) / uint32_t(aa);
+				
+				r4::vector3<unsigned> rgb{cc};
+				rgb *= 0xff; // first multiply
+				rgb /= cc.a(); // then divide
+				cc = decltype(cc){rgb, cc.a()};
 			}
 			
-			r4::vector4<real> c;
-			c.r() = real(rr) / real(0xff);
-			c.g() = real(gg) / real(0xff);
-			c.b() = real(bb) / real(0xff);
-			c.a() = real(aa) / real(0xff);
-			
-			ASSERT_INFO(real(0) <= c.r() && c.r() <= real(1), "r = " << c.r() << ", rr = " << rr)
-			ASSERT_INFO(real(0) <= c.g() && c.g() <= real(1), "g = " << c.g() << ", gg = " << gg)
-			ASSERT_INFO(real(0) <= c.b() && c.b() <= real(1), "b = " << c.b() << ", bb = " << bb)
-			ASSERT_INFO(real(0) <= c.a() && c.a() <= real(1), "a = " << c.a() << ", aa = " << aa)
-			
+			auto c = min(cc.to<real>() / 0xff, 1); // clamp top
+
+			ASSERT_INFO(real(0) <= c.r() && c.r() <= real(1), "c = " << c << ", cc = " << cc)
+			ASSERT_INFO(real(0) <= c.g() && c.g() <= real(1), "c = " << c << ", cc = " << cc)
+			ASSERT_INFO(real(0) <= c.b() && c.b() <= real(1), "c = " << c << ", cc = " << cc)
+			ASSERT_INFO(real(0) <= c.a() && c.a() <= real(1), "c = " << c << ", cc = " << cc)
+
 			auto c1 = m * c + mc5;
 
 			// alpha can change, so always premultiply alpha back
@@ -391,13 +366,7 @@ FilterResult color_matrix(const Surface& s, const r4::matrix4<real>& m, const r4
 			c1.g() *= c1.a();
 			c1.b() *= c1.a();
 			
-			*dp = uint8_t(c1.b() * real(0xff));
-			++dp;
-			*dp = uint8_t(c1.g() * real(0xff));
-			++dp;
-			*dp = uint8_t(c1.r() * real(0xff));
-			++dp;
-			*dp = uint8_t(c1.a() * real(0xff));
+			*dp = get_uint32_t(min((c1 * 0xff).to<unsigned>(), 0xff)); // clamp top
 			++dp;
 		}
 	}
@@ -406,7 +375,7 @@ FilterResult color_matrix(const Surface& s, const r4::matrix4<real>& m, const r4
 }
 }
 
-void FilterApplier::visit(const svgdom::fe_color_matrix_element& e){
+void filter_applier::visit(const svgdom::fe_color_matrix_element& e){
 	r4::matrix4<real> m; // 1st to 4th columns of the 5x4 matrix
 	r4::vector4<real> mc5; // fifth column of the 5x4 matrix
 	
@@ -500,20 +469,20 @@ void FilterApplier::visit(const svgdom::fe_color_matrix_element& e){
 	}
 	
 	// TRACE(<< "color matrix getSource()" << std::endl)
-	auto src = this->getSource(e.in);
-	ASSERT(src.data || src.d.is_zero())
-	auto s = src.intersectionSurface(this->filterRegion);	
+	auto src = this->get_source(e.in);
+	ASSERT(!src.span.empty() || src.d.is_zero())
+	auto s = src.intersection(this->filterRegion);	
 	
 	// TODO: set filter sub-region
 	
-	this->setResult(e.result, color_matrix(s, m, mc5));
+	this->set_result(e.result, color_matrix(s, m, mc5));
 }
 
 namespace{
-FilterResult blend(const Surface& in, const Surface& in2, svgdom::fe_blend_element::mode mode){
+filter_result blend(const surface& in, const surface& in2, svgdom::fe_blend_element::mode mode){
 //	TRACE(<< "in.width = " << in.width << " in2.width = " << in2.width << std::endl)
-	auto s1 = in.intersectionSurface(in2);
-	auto s2 = in2.intersectionSurface(in);
+	auto s1 = in.intersection(in2);
+	auto s2 = in2.intersection(in);
 	
 	ASSERT_INFO(s1.d.x() == s2.d.x(), "s1.d.x() = " << s1.d.x() << " s2.d.x() = " << s2.d.x())
 	ASSERT(s1.d.y() == s2.d.y())
@@ -522,91 +491,56 @@ FilterResult blend(const Surface& in, const Surface& in2, svgdom::fe_blend_eleme
 	auto ret = allocateResult(s1);
 	
 	for(unsigned y = 0; y != ret.surface.d.y(); ++y){
-		auto sp1 = &s1.data[(y * s1.stride) * sizeof(uint32_t)];
-		auto sp2 = &s2.data[(y * s2.stride) * sizeof(uint32_t)];
-		auto dp = &ret.surface.data[(y * ret.surface.stride) * sizeof(uint32_t)];
+		auto sp1 = &s1.span[y * s1.stride];
+		auto sp2 = &s2.span[y * s2.stride];
+		auto dp = &ret.surface.span[y * ret.surface.stride];
 		for(unsigned x = 0; x != ret.surface.d.x(); ++x){
 			// TODO: optimize by using integer arithmetics instead of floating point
-			auto b01 = real(*sp1) / real(0xff);
-			auto b02 = real(*sp2) / real(0xff);
+			auto c01 = get_rgba(*sp1).to<real>() / 0xff;
 			++sp1;
-			++sp2;
-			auto g01 = real(*sp1) / real(0xff);
-			auto g02 = real(*sp2) / real(0xff);
-			++sp1;
-			++sp2;
-			auto r01 = real(*sp1) / real(0xff);
-			auto r02 = real(*sp2) / real(0xff);
-			++sp1;
-			++sp2;
-			auto a01 = real(*sp1) / real(0xff);
-			auto a02 = real(*sp2) / real(0xff);
-			++sp1;
+			auto c02 = get_rgba(*sp2).to<real>() / 0xff;
 			++sp2;
 
 			/*
 				cr = Result color (RGB) - premultiplied 
+				qr = Result opacity
 				qa = Opacity value at a given pixel for image A 
 				qb = Opacity value at a given pixel for image B 
 				ca = Color (RGB) at a given pixel for image A - premultiplied 
 				cb = Color (RGB) at a given pixel for image B - premultiplied 
 			*/
+			r4::vector3<real> cr;
 			switch(mode){
 				case svgdom::fe_blend_element::mode::normal:
 					// cr = (1 - qa) * cb + ca
-					*dp = uint8_t( ((1 - a01) * b02 + b01) * real(0xff));
-					++dp;
-					*dp = uint8_t( ((1 - a01) * g02 + g01) * real(0xff));
-					++dp;
-					*dp = uint8_t( ((1 - a01) * r02 + r01) * real(0xff));
-					++dp;
+					cr = c02 * (real(1) - c01.a()) + c01;
 					break;
 				case svgdom::fe_blend_element::mode::multiply:
 					// cr = (1 - qa) * cb + (1 - qb) * ca + ca * cb
-					*dp = uint8_t( ((1 - a01) * b02 + (1 - a02) * b01 + b01 * b02) * real(0xff));
-					++dp;
-					*dp = uint8_t( ((1 - a01) * g02 + (1 - a02) * g01 + g01 * g02) * real(0xff));
-					++dp;
-					*dp = uint8_t( ((1 - a01) * r02 + (1 - a02) * r01 + r01 * r02) * real(0xff));
-					++dp;
+					cr = c02 * (1 - c01.a()) + c01 * (1 - c02.a()) + c01.comp_mul(c02);
 					break;
 				case svgdom::fe_blend_element::mode::screen:
 					// cr = cb + ca - ca * cb
-					*dp = uint8_t( (b02 + b01 - b01 * b02) * real(0xff));
-					++dp;
-					*dp = uint8_t( (g02 + g01 - g01 * g02) * real(0xff));
-					++dp;
-					*dp = uint8_t( (r02 + r01 - r01 * r02) * real(0xff));
-					++dp;
+					cr = c02 + c01 - c01.comp_mul(c02);
 					break;
 				case svgdom::fe_blend_element::mode::darken:
 					using std::min;
-					// cr = Min ((1 - qa) * cb + ca, (1 - qb) * ca + cb)
-					*dp = uint8_t( min((1 - a01) * b02 + b01, (1 - a02) * b01 + b02) * real(0xff));
-					++dp;
-					*dp = uint8_t( min((1 - a01) * g02 + g01, (1 - a02) * g01 + g02) * real(0xff));
-					++dp;
-					*dp = uint8_t( min((1 - a01) * r02 + r01, (1 - a02) * r01 + r02) * real(0xff));
-					++dp;
+					// cr = min((1 - qa) * cb + ca, (1 - qb) * ca + cb)
+					cr = min(c02 * (1 - c01.a()) + c01, c01 * (1 - c02.a()) + c02);
 					break;
 				case svgdom::fe_blend_element::mode::lighten:
 					using std::max;
-					// cr = Max ((1 - qa) * cb + ca, (1 - qb) * ca + cb)
-					*dp = uint8_t( max((1 - a01) * b02 + b01, (1 - a02) * b01 + b02) * real(0xff));
-					++dp;
-					*dp = uint8_t( max((1 - a01) * g02 + g01, (1 - a02) * g01 + g02) * real(0xff));
-					++dp;
-					*dp = uint8_t( max((1 - a01) * r02 + r01, (1 - a02) * r01 + r02) * real(0xff));
-					++dp;
+					// cr = max((1 - qa) * cb + ca, (1 - qb) * ca + cb)
+					cr = max(c02 * (1 - c01.a()) + c01, c01 * (1 - c02.a()) + c02);
 					break;
 				default:
 					ASSERT(false)
-					dp += 3;
 					break;
 			}
-			
 			// qr = 1 - (1 - qa) * (1 - qb)
-			*dp = uint8_t((1 - (1 - a01)* (1 - a02)) * real(0xff));
+			auto qr = 1 - (1 - c01.a()) * (1 - c02.a());
+
+			*dp = get_uint32_t((r4::vector4<real>{cr, qr} * 0xff).to<unsigned>());
 			++dp;
 		}
 	}
@@ -615,27 +549,27 @@ FilterResult blend(const Surface& in, const Surface& in2, svgdom::fe_blend_eleme
 }
 }
 
-void FilterApplier::visit(const svgdom::fe_blend_element& e){
-	auto s1 = this->getSource(e.in).intersectionSurface(this->filterRegion);
-	if(!s1.data){
+void filter_applier::visit(const svgdom::fe_blend_element& e){
+	auto s1 = this->get_source(e.in).intersection(this->filterRegion);
+	if(s1.span.empty()){
 		return;
 	}
 	
-	auto s2 = this->getSource(e.in2).intersectionSurface(this->filterRegion);
-	if(!s2.data){
+	auto s2 = this->get_source(e.in2).intersection(this->filterRegion);
+	if(s2.span.empty()){
 		return;
 	}
 	
 	// TODO: set filter sub-region
 	
-	this->setResult(e.result, blend(s1, s2, e.mode_));
+	this->set_result(e.result, blend(s1, s2, e.mode_));
 }
 
 namespace{
-FilterResult composite(const Surface& in, const Surface& in2, const svgdom::fe_composite_element& e){
+filter_result composite(const surface& in, const surface& in2, const svgdom::fe_composite_element& e){
 //	TRACE(<< "in.width = " << in.width << " in2.width = " << in2.width << std::endl)
-	auto s1 = in.intersectionSurface(in2);
-	auto s2 = in2.intersectionSurface(in);
+	auto s1 = in.intersection(in2);
+	auto s2 = in2.intersection(in);
 	
 	ASSERT_INFO(s1.d.x() == s2.d.x(), "s1.d.x() = " << s1.d.x() << " s2.d.x()) = " << s2.d.x())
 	ASSERT(s1.d.y() == s2.d.y())
@@ -644,106 +578,55 @@ FilterResult composite(const Surface& in, const Surface& in2, const svgdom::fe_c
 	auto ret = allocateResult(s1);
 	
 	for(unsigned y = 0; y != ret.surface.d.y(); ++y){
-		auto sp1 = &s1.data[(y * s1.stride) * sizeof(uint32_t)];
-		auto sp2 = &s2.data[(y * s2.stride) * sizeof(uint32_t)];
-		auto dp = &ret.surface.data[(y * ret.surface.stride) * sizeof(uint32_t)];
+		auto sp1 = &s1.span[y * s1.stride];
+		auto sp2 = &s2.span[y * s2.stride];
+		auto dp = &ret.surface.span[y * ret.surface.stride];
 		for(unsigned x = 0; x != ret.surface.d.x(); ++x){
 			// TODO: optimize by using integer arithmetics instead of floating point
-			auto r01 = real(*sp1) / real(0xff);
-			auto r02 = real(*sp2) / real(0xff);
+			auto c01 = get_rgba(*sp1).to<real>() / 0xff;
 			++sp1;
-			++sp2;
-			auto g01 = real(*sp1) / real(0xff);
-			auto g02 = real(*sp2) / real(0xff);
-			++sp1;
-			++sp2;
-			auto b01 = real(*sp1) / real(0xff);
-			auto b02 = real(*sp2) / real(0xff);
-			++sp1;
-			++sp2;
-			auto a01 = real(*sp1) / real(0xff);
-			auto a02 = real(*sp2) / real(0xff);
-			++sp1;
+			auto c02 = get_rgba(*sp2).to<real>() / 0xff;
 			++sp2;
 			
+			r4::vector4<real> o;
 			switch(e.operator__){
 				case svgdom::fe_composite_element::operator_::over:
 					// co = as * Cs + ab * Cb * (1 – as)
 					// ao = as + ab * (1 – as)
-					*dp = uint8_t( (r01 + r02 * (1 - a01)) * real(0xff));
-					++dp;
-					*dp = uint8_t( (g01 + g02 * (1 - a01)) * real(0xff));
-					++dp;
-					*dp = uint8_t( (b01 + b02 * (1 - a01)) * real(0xff));
-					++dp;
-					*dp = uint8_t( (a01 + a02 * (1 - a01)) * real(0xff));
-					++dp;
+					o = c01 + c02 * (1 - c01.a());
 					break;
 				case svgdom::fe_composite_element::operator_::in:
 					// co = as * Cs * ab
 					// ao = as x ab
-					*dp = uint8_t( (r01 * a02) * real(0xff));
-					++dp;
-					*dp = uint8_t( (g01 * a02) * real(0xff));
-					++dp;
-					*dp = uint8_t( (b01 * a02) * real(0xff));
-					++dp;
-					*dp = uint8_t( (a01 * a02) * real(0xff));
-					++dp;
+					o = c01 * c02.a();
 					break;
 				case svgdom::fe_composite_element::operator_::out:
 					// co = as * Cs * (1 – ab)
 					// ao = as * (1 – ab)
-					*dp = uint8_t( (r01 * (1 - a02)) * real(0xff));
-					++dp;
-					*dp = uint8_t( (g01 * (1 - a02)) * real(0xff));
-					++dp;
-					*dp = uint8_t( (b01 * (1 - a02)) * real(0xff));
-					++dp;
-					*dp = uint8_t( (a01 * (1 - a02)) * real(0xff));
-					++dp;
+					o = c01 * (1 - c02.a());
 					break;
 				case svgdom::fe_composite_element::operator_::atop:
 					// co = as * Cs * ab + ab * Cb * (1 – as)
 					// ao = as * ab + ab * (1 – as)
-					*dp = uint8_t( (r01 * a02 + r02 * (1 - a01)) * real(0xff));
-					++dp;
-					*dp = uint8_t( (g01 * a02 + g02 * (1 - a01)) * real(0xff));
-					++dp;
-					*dp = uint8_t( (b01 * a02 + b02 * (1 - a01)) * real(0xff));
-					++dp;
-					*dp = uint8_t( (a01 * a02 + a02 * (1 - a01)) * real(0xff));
-					++dp;
+					o = c01 * c02.a() + c02 * (1 - c01.a());
 					break;
 				case svgdom::fe_composite_element::operator_::xor_:
 					// co = as * Cs * (1 - ab) + ab * Cb * (1 – as)
 					// ao = as * (1 - ab) + ab * (1 – as)
-					*dp = uint8_t( (r01 * (1 - a02) + r02 * (1 - a01)) * real(0xff));
-					++dp;
-					*dp = uint8_t( (g01 * (1 - a02) + g02 * (1 - a01)) * real(0xff));
-					++dp;
-					*dp = uint8_t( (b01 * (1 - a02) + b02 * (1 - a01)) * real(0xff));
-					++dp;
-					*dp = uint8_t( (a01 * (1 - a02) + a02 * (1 - a01)) * real(0xff));
-					++dp;
+					o = c01 * (1 - c02.a()) + c02 * (1 - c01.a());
 					break;
 				case svgdom::fe_composite_element::operator_::arithmetic:
 					using std::min;
 					// result = k1 * i1 * i2 + k2 * i1 + k3 * i2 + k4
-					*dp = uint8_t( min(e.k1 * r01 * r02 + e.k2 * r01 + e.k3 * r02 + e.k4, real(1)) * real(0xff));
-					++dp;
-					*dp = uint8_t( min(e.k1 * g01 * g02 + e.k2 * g01 + e.k3 * g02 + e.k4, real(1)) * real(0xff));
-					++dp;
-					*dp = uint8_t( min(e.k1 * b01 * b02 + e.k2 * b01 + e.k3 * b02 + e.k4, real(1)) * real(0xff));
-					++dp;
-					*dp = uint8_t( min(e.k1 * a01 * a02 + e.k2 * a01 + e.k3 * a02 + e.k4, real(1)) * real(0xff));
-					++dp;
+					o = min(c01.comp_mul(c02) * real(e.k1) + c01 * real(e.k2) + c02 * real(e.k3) + real(e.k4), 1);
 					break;
 				default:
 					ASSERT(false)
-					dp += 4;
 					break;
 			}
+
+			*dp = get_uint32_t((o * 0xff).to<unsigned>());
+			++dp;
 		}
 	}
 	
@@ -751,18 +634,18 @@ FilterResult composite(const Surface& in, const Surface& in2, const svgdom::fe_c
 }
 }
 
-void FilterApplier::visit(const svgdom::fe_composite_element& e){
-	auto s1 = this->getSource(e.in).intersectionSurface(this->filterRegion);
-	if(!s1.data){
+void filter_applier::visit(const svgdom::fe_composite_element& e){
+	auto s1 = this->get_source(e.in).intersection(this->filterRegion);
+	if(s1.span.empty()){
 		return;
 	}
 	
-	auto s2 = this->getSource(e.in2).intersectionSurface(this->filterRegion);
-	if(!s2.data){
+	auto s2 = this->get_source(e.in2).intersection(this->filterRegion);
+	if(s2.span.empty()){
 		return;
 	}
 	
 	// TODO: set filter sub-region
 	
-	this->setResult(e.result, composite(s1, s2, e));
+	this->set_result(e.result, composite(s1, s2, e));
 }

@@ -10,7 +10,11 @@
 #include <r4/matrix2.hpp>
 #include <r4/rectangle.hpp>
 
+#include <svgdom/elements/styleable.hpp>
+
 #include "config.hxx"
+#include "surface.hxx"
+#include "gradient.hxx"
 
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 #	if M_OS == M_OS_WINDOWS || M_OS_NAME == M_OS_NAME_IOS
@@ -22,9 +26,27 @@
 
 namespace svgren{
 
+inline r4::vector4<unsigned> get_rgba(uint32_t c){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	// cairo uses BGRA format
+	return {
+		unsigned((c >> 16) & 0xff),
+		unsigned((c >> 8) & 0xff),
+		unsigned((c >> 0) & 0xff),
+		unsigned((c >> 24) & 0xff)
+	};
+#endif
+}
+
+inline uint32_t get_uint32_t(const r4::vector4<unsigned>& rgba){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	// cairo uses BGRA format
+	return rgba.b() | (rgba.g() << 8) | (rgba.r() << 16) | (rgba.a() << 24);
+#endif
+}
+
 class canvas{
 	std::vector<uint32_t> data;
-public:
 
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	struct cairo_surface_wrapper{
@@ -32,7 +54,7 @@ public:
 
 		cairo_surface_wrapper(unsigned width, unsigned height, uint32_t* buffer){
 			if(width == 0 || height == 0){
-				throw std::logic_error("svgren::canvas::canvas(): width or height argument is zero");
+				throw std::invalid_argument("svgren::canvas::canvas(): width or height argument is zero");
 			}
 			int stride = width * sizeof(uint32_t);
 			this->surface = cairo_image_surface_create_for_data(
@@ -53,6 +75,8 @@ public:
 
 	cairo_t* cr;
 #endif
+
+public:
 
 	canvas(unsigned width, unsigned height);
 	~canvas();
@@ -75,7 +99,9 @@ public:
 
 	void set_fill_rule(fill_rule fr);
 
-	void set_source(real r, real g, real b, real a);
+	void set_source(const r4::vector4<real>& rgba);
+	void set_source(const linear_gradient& g);
+	void set_source(const radial_gradient& g);
 
 	r4::vector2<real> matrix_mul(const r4::vector2<real>& v);
 
@@ -99,7 +125,33 @@ public:
 	void cubic_curve_to_abs(const r4::vector2<real>& cp1, const r4::vector2<real>& cp2, const r4::vector2<real>& ep);
 	void cubic_curve_to_rel(const r4::vector2<real>& cp1, const r4::vector2<real>& cp2, const r4::vector2<real>& ep);
 
+	// draw arc from angle1 to angle2
+	void arc_abs(const r4::vector2<real>& center, real radius, real angle1, real angle2);
+
 	void close_path();
+
+	void clear_path();
+
+	void fill();
+	void stroke();
+
+	void set_line_width(real width);
+	void set_line_cap(svgdom::stroke_line_cap lc);
+	void set_line_join(svgdom::stroke_line_join lj);
+
+	void rectangle(const r4::rectangle<real>& rect);
+
+	void push_context();
+	void pop_context();
+
+	r4::matrix2<real> get_matrix();
+	void set_matrix(const r4::matrix2<real>& m);
+
+	void push_group();
+	void pop_group(real opacity);
+	void pop_mask_and_group();
+
+	svgren::surface get_sub_surface(const r4::rectangle<unsigned>& region = {0, std::numeric_limits<unsigned>::max()});
 
 	std::vector<uint32_t> release();
 };
