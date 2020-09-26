@@ -21,6 +21,8 @@ canvas::canvas(unsigned width, unsigned height) :
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 		, rendering_buffer(reinterpret_cast<agg::int8u*>(pixels.data()), width, height, width * sizeof(decltype(this->pixels)::value_type))
 		, pixel_format(this->rendering_buffer)
+		, renderer_base(this->pixel_format)
+		, renderer(renderer_base)
 #endif
 {
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO

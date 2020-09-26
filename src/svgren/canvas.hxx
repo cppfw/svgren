@@ -25,6 +25,8 @@
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 #	include <agg2/agg_rendering_buffer.h>
 #	include <agg2/agg_pixfmt_rgba.h>
+#	include <agg2/agg_renderer_base.h>
+#	include <agg2/agg_renderer_scanline.h>
 #endif
 
 namespace svgren{
@@ -91,6 +93,8 @@ class canvas{
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	agg::rendering_buffer rendering_buffer;
 	agg::pixfmt_rgba32 pixel_format;
+	agg::renderer_base<decltype(pixel_format)> renderer_base;
+	agg::renderer_scanline_aa_solid<decltype(renderer_base)> renderer;
 #endif
 
 public:
