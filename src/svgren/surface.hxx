@@ -17,6 +17,8 @@ struct surface : public r4::rectangle<unsigned>{
 	{}
 
 	surface intersection(const r4::rectangle<unsigned>& r)const;
+
+	void append_luminance_to_alpha();
 };
 
 }

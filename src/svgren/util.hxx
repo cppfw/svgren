@@ -50,8 +50,6 @@ public:
 
 real percentLengthToFraction(const svgdom::length& l);
 
-void appendLuminanceToAlpha(surface s);
-
 struct DeviceSpaceBoundingBox{
 	real left, top, right, bottom;
 	

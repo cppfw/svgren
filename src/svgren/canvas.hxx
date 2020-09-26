@@ -124,7 +124,7 @@ public:
 	void cubic_curve_to_abs(const r4::vector2<real>& cp1, const r4::vector2<real>& cp2, const r4::vector2<real>& ep);
 	void cubic_curve_to_rel(const r4::vector2<real>& cp1, const r4::vector2<real>& cp2, const r4::vector2<real>& ep);
 
-	// draw arc from smaller angle to larger angle
+	// draw arc from angle1 to angle2
 	void arc_abs(const r4::vector2<real>& center, real radius, real angle1, real angle2);
 
 	void close_path();
@@ -145,6 +145,10 @@ public:
 
 	r4::matrix2<real> get_matrix();
 	void set_matrix(const r4::matrix2<real>& m);
+
+	void push_group();
+	void pop_group(real opacity);
+	void pop_mask_and_group();
 
 	svgren::surface get_sub_surface(const r4::rectangle<unsigned>& region = {0, std::numeric_limits<unsigned>::max()});
 

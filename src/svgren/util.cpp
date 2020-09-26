@@ -139,10 +139,7 @@ PushCairoGroupIfNeeded::PushCairoGroupIfNeeded(svgren::renderer& renderer, bool 
 	
 	if(this->groupPushed){
 //		TRACE(<< "setting temp context" << std::endl)
-		cairo_push_group(this->renderer.cr);
-		if(cairo_status(this->renderer.cr) != CAIRO_STATUS_SUCCESS){
-			throw std::runtime_error("cairo_push_group() failed");
-		}
+		this->renderer.canvas.push_group();
 		
 		this->opacity = opacity;
 	}
@@ -157,17 +154,13 @@ PushCairoGroupIfNeeded::~PushCairoGroupIfNeeded()noexcept{
 		return;
 	}
 	
-	// render mask
-	cairo_pattern_t* mask = nullptr;
-	try{
-		if(this->maskElement){
-			cairo_push_group(this->renderer.cr);
-			if(cairo_status(this->renderer.cr) != CAIRO_STATUS_SUCCESS){
-				throw std::runtime_error("cairo_push_group() failed");
-			}
+	if(this->maskElement){
+		// render mask
+		try{
+			this->renderer.canvas.push_group();
 			
-			utki::scope_exit scope_exit([&mask, this](){
-				mask = cairo_pop_group(this->renderer.cr);
+			utki::scope_exit scope_exit([this](){
+				this->renderer.canvas.pop_group(1);
 			});
 			
 			// TODO: setup the correct coordinate system based on maskContentUnits value (userSpaceOnUse/objectBoundingBox)
@@ -187,50 +180,18 @@ PushCairoGroupIfNeeded::~PushCairoGroupIfNeeded()noexcept{
 			
 			this->maskElement->accept(maskRenderer);
 			
-			appendLuminanceToAlpha(this->renderer.canvas.get_sub_surface());
+			scope_exit.reset();
+
+			this->renderer.canvas.pop_mask_and_group();
+		}catch(...){
+			// rendering mask failed, just ignore it
 		}
-	}catch(...){
-		// rendering mask failed, just ignore it
-	}
-	
-	utki::scope_exit scope_exit([mask](){
-		if(mask){
-			cairo_pattern_destroy(mask);
-		}
-	});
-	
-	cairo_pop_group_to_source(this->renderer.cr);
-	
-	if(mask){
-		cairo_mask(this->renderer.cr, mask);
 	}else{
-		ASSERT(0 <= this->opacity && this->opacity <= 1)
-		if(this->opacity < real(1)){
-			cairo_paint_with_alpha(this->renderer.cr, this->opacity);
-		}else{
-			cairo_paint(this->renderer.cr);
-		}
+		this->renderer.canvas.pop_group(this->opacity);
 	}
 	
 	// restore background if it was pushed
 	if(!this->oldBackground.span.empty()){
 		this->renderer.background = this->oldBackground;
-	}
-}
-
-void svgren::appendLuminanceToAlpha(surface s){
-	// Luminance is calculated using formula L = 0.2126 * R + 0.7152 * G + 0.0722 * B
-	// For faster calculation it can be simplified to L = (2 * R + 3 * G + B) / 6
-	
-	// TODO: take stride into account, do not append luminance to alpha for data out of the surface width
-	for(auto p = s.span.begin(); p != s.span.end(); ++p){
-		auto c = get_rgba(*p).to<uint32_t>();
-
-		uint32_t l = (2 * c.r() + 3 * c.g() + c.b()) / 6;
-		ASSERT(l <= 255)
-		
-		// Cairo uses premultiplied alpha, so no need to multiply alpha by liminance.
-		*p &= 0xffffff;
-		*p |= (l << 24);
 	}
 }

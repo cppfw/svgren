@@ -521,3 +521,45 @@ svgren::surface canvas::get_sub_surface(const r4::rectangle<unsigned>& region){
 
 	return ret;
 }
+
+void canvas::push_group(){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	cairo_push_group(this->cr);
+	if(cairo_status(this->cr) != CAIRO_STATUS_SUCCESS){
+		throw std::runtime_error("cairo_push_group() failed");
+	}
+#endif
+}
+
+void canvas::pop_group(real opacity){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	cairo_pop_group_to_source(this->cr);
+	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
+
+	if(opacity < 1){
+		cairo_paint_with_alpha(this->cr, opacity);
+	}else{
+		cairo_paint(this->cr);
+	}
+	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
+#endif
+}
+
+void canvas::pop_mask_and_group(){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	this->get_sub_surface().append_luminance_to_alpha();
+
+	cairo_pattern_t* mask = cairo_pop_group(this->cr);
+	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
+
+	utki::scope_exit scope_exit([mask](){
+		cairo_pattern_destroy(mask);
+	});
+
+	cairo_pop_group_to_source(this->cr);
+	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
+
+	cairo_mask(this->cr, mask);
+	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
+#endif
+}
