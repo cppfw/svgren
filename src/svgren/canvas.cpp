@@ -7,7 +7,7 @@
 using namespace svgren;
 
 canvas::canvas(unsigned width, unsigned height) :
-		data(
+		pixels(
 				width * height,
 #ifdef M_SVGREN_BACKGROUND
 				M_SVGREN_BACKGROUND
@@ -16,8 +16,11 @@ canvas::canvas(unsigned width, unsigned height) :
 #endif
 			)
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-		, surface(width, height, this->data.data())
+		, surface(width, height, this->pixels.data())
 		, cr(cairo_create(this->surface.surface))
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+		, rendering_buffer(reinterpret_cast<agg::int8u*>(pixels.data()), width, height, width * sizeof(decltype(this->pixels)::value_type))
+		, pixel_format(this->rendering_buffer)
 #endif
 {
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
@@ -35,7 +38,7 @@ canvas::~canvas(){
 
 std::vector<uint32_t> canvas::release(){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	for(auto &c : this->data){
+	for(auto &c : this->pixels){
 		// swap red and blue channels, as cairo works in BGRA format, while we need to return RGBA
 		c = (c & 0xff00ff00) | ((c << 16) & 0xff0000) | ((c >> 16) & 0xff);
 
@@ -59,7 +62,7 @@ std::vector<uint32_t> canvas::release(){
 	}
 #endif
 
-	return std::move(this->data);
+	return std::move(this->pixels);
 }
 
 void canvas::transform(const r4::matrix2<real>& matrix){
@@ -513,32 +516,46 @@ void canvas::set_matrix(const r4::matrix2<real>& m){
 }
 
 svgren::surface canvas::get_sub_surface(const r4::rectangle<unsigned>& region){
-	svgren::surface ret;
+	r4::vector2<unsigned> dims;
+	uint32_t* buffer;
+	unsigned stride;
+
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	auto s = cairo_get_group_target(cr);
-	ASSERT(s)
-	
-	ret.stride = cairo_image_surface_get_stride(s) / sizeof(uint32_t); // stride is returned in bytes
-	
-	r4::vector2<unsigned> s_dims{
-		unsigned(cairo_image_surface_get_width(s)),
-		unsigned(cairo_image_surface_get_height(s))
-	};
+	{
+		auto s = cairo_get_group_target(cr);
+		ASSERT(s)
+		
+		stride = cairo_image_surface_get_stride(s); // stride is returned in bytes
+		
+		dims = decltype(dims){
+			unsigned(cairo_image_surface_get_width(s)),
+			unsigned(cairo_image_surface_get_height(s))
+		};
+
+		buffer = reinterpret_cast<uint32_t*>(cairo_image_surface_get_data(s));
+	}
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	dims = decltype(dims){this->rendering_buffer.width(), this->rendering_buffer.height()};
+	stride = this->rendering_buffer.stride_abs();
+	buffer = reinterpret_cast<uint32_t*>(this->rendering_buffer.buf());
+#endif
+
+	ASSERT(buffer)
+	ASSERT(stride % sizeof(uint32_t) == 0)
+
+	svgren::surface ret;
+	ret.stride = stride / sizeof(uint32_t);
 
 	using std::min;
-	ret.d = min(region.d, s_dims - region.p);
+	ret.d = min(region.d, dims - region.p);
 	ret.span = utki::make_span(
-			reinterpret_cast<uint32_t*>(cairo_image_surface_get_data(s)) + (region.p.y() * ret.stride + region.p.x()),
+			buffer + region.p.y() * ret.stride + region.p.x(),
 			ret.stride * ret.d.y() - (ret.stride - ret.d.x()) // subtract 'tail' from last pixels row
 		);
 	ret.p = region.p;
 	
-	ASSERT(ret.d.y() <= s_dims.y())
-#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	// TODO:
-#endif
-	// TODO: uncomment this assert
-	// ASSERT(ret.d.y() == 0 || std::next(ret.span.begin(), ret.stride * (ret.d.y() - 1)) < ret.span.end())
+	ASSERT(ret.d.y() <= dims.y())
+	ASSERT(ret.d.y() == 0 || std::next(ret.span.begin(), ret.stride * (ret.d.y() - 1)) < ret.span.end())
 
 	return ret;
 }

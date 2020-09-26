@@ -22,6 +22,9 @@
 #	else
 #		include <cairo/cairo.h>
 #	endif
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+#	include <agg2/agg_rendering_buffer.h>
+#	include <agg2/agg_pixfmt_rgba.h>
 #endif
 
 namespace svgren{
@@ -57,7 +60,7 @@ inline uint32_t get_uint32_t(const r4::vector4<unsigned>& rgba){
 }
 
 class canvas{
-	std::vector<uint32_t> data;
+	std::vector<uint32_t> pixels;
 
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	struct cairo_surface_wrapper{
@@ -85,10 +88,12 @@ class canvas{
 	} surface;
 
 	cairo_t* cr;
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	agg::rendering_buffer rendering_buffer;
+	agg::pixfmt_rgba32 pixel_format;
 #endif
 
 public:
-
 	canvas(unsigned width, unsigned height);
 	~canvas();
 
