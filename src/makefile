@@ -19,7 +19,7 @@ this_cxxflags += -fstrict-aliasing # in order to comply with the c++ standard mo
 this_cxxflags += -std=c++14
 this_cxxflags += -g
 
-this_cxxflags += -D SVGREN_BACKEND=SVGREN_BACKEND_CAIRO
+this_cxxflags += -D SVGREN_BACKEND=SVGREN_BACKEND_AGG
 
 ifeq ($(debug),true)
     this_cxxflags += -DDEBUG

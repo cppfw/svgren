@@ -206,6 +206,9 @@ r4::vector2<real> canvas::matrix_mul(const r4::vector2<real>& v){
 	cairo_user_to_device(this->cr, &x, &y);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	return r4::vector2<real>(real(x), real(y));
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	// TODO:
+	return 0;
 #endif
 }
 
@@ -216,6 +219,9 @@ r4::vector2<real> canvas::matrix_mul_distance(const r4::vector2<real>& v){
 	cairo_user_to_device_distance(this->cr, &x, &y);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	return r4::vector2<real>(real(x), real(y));
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	// TODO:
+	return 0;
 #endif
 }
 
@@ -238,6 +244,9 @@ r4::rectangle<real> canvas::get_shape_bounding_box()const{
 			{real(x1), real(y1)},
 			{real(x2 - x1), real(y2 - y1)}
 		};
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	// TODO:
+	return {0, 0};
 #endif
 }
 
@@ -246,6 +255,9 @@ bool canvas::has_current_point()const{
 	auto cp = cairo_has_current_point(this->cr);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	return bool(cp != 0);
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	// TODO:
+	return true;
 #endif
 }
 
@@ -262,6 +274,9 @@ r4::vector2<real> canvas::get_current_point()const{
 	cairo_move_to(this->cr, 0, 0);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	return real(0);
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	// TODO:
+	return 0;
 #endif
 }
 
@@ -482,6 +497,9 @@ r4::matrix2<real> canvas::get_matrix(){
 		{real(cm.xx), real(cm.xy), real(cm.x0)},
 		{real(cm.yx), real(cm.yy), real(cm.y0)}
 	};
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	// TODO:
+	return {0, 0};
 #endif
 }
 
@@ -516,8 +534,11 @@ svgren::surface canvas::get_sub_surface(const r4::rectangle<unsigned>& region){
 	ret.p = region.p;
 	
 	ASSERT(ret.d.y() <= s_dims.y())
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	// TODO:
 #endif
-	ASSERT(ret.d.y() == 0 || std::next(ret.span.begin(), ret.stride * (ret.d.y() - 1)) < ret.span.end())
+	// TODO: uncomment this assert
+	// ASSERT(ret.d.y() == 0 || std::next(ret.span.begin(), ret.stride * (ret.d.y() - 1)) < ret.span.end())
 
 	return ret;
 }
