@@ -27,6 +27,9 @@
 #	include <agg2/agg_pixfmt_rgba.h>
 #	include <agg2/agg_renderer_base.h>
 #	include <agg2/agg_renderer_scanline.h>
+#	include <agg2/agg_path_storage.h>
+#	include <agg2/agg_scanline_u.h>
+#	include <agg2/agg_rasterizer_scanline_aa.h>
 #endif
 
 namespace svgren{
@@ -95,6 +98,17 @@ class canvas{
 	agg::pixfmt_rgba32 pixel_format;
 	agg::renderer_base<decltype(pixel_format)> renderer_base;
 	agg::renderer_scanline_aa_solid<decltype(renderer_base)> renderer;
+	agg::rasterizer_scanline_aa<> rasterizer;
+	agg::scanline_u8 scanline;
+
+	struct context_type{
+		agg::trans_affine matrix; // right after construction it is set to identity matrix
+		agg::path_storage path;
+		agg::rgba color;
+		real line_width;
+	} context;
+
+	std::vector<context_type> context_stack;
 #endif
 
 public:

@@ -19,7 +19,15 @@ this_cxxflags += -fstrict-aliasing # in order to comply with the c++ standard mo
 this_cxxflags += -std=c++14
 this_cxxflags += -g
 
-this_cxxflags += -D SVGREN_BACKEND=SVGREN_BACKEND_AGG
+svgren_backend := agg
+
+ifeq ($(svgren_backend),agg)
+    this_cxxflags += -D SVGREN_BACKEND=SVGREN_BACKEND_AGG
+    this_ldlibs += -lagg
+else ifeq ($(svgren_backend),cairo)
+    this_cxxflags += -D SVGREN_BACKEND=SVGREN_BACKEND_CAIRO
+    this_ldlibs += `pkg-config --libs cairo`
+endif
 
 ifeq ($(debug),true)
     this_cxxflags += -DDEBUG
@@ -32,7 +40,7 @@ ifeq ($(gprof), true)
     this_ldflags += -pg
 endif
 
-this_ldlibs += `pkg-config --libs cairo` -lsvgdom -lstdc++ -lm
+this_ldlibs += -lsvgdom -lstdc++ -lm
 
 ifeq ($(os),linux)
     this_cxxflags += -fPIC # since we are building shared library, we need Position-Independend Code
