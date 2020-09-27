@@ -399,7 +399,7 @@ void canvas::quadratic_curve_to_abs(const r4::vector2<real>& cp1, const r4::vect
 			ep.x(), ep.y()
 		);
 
-	this->context.path.concat_path(curve);
+	this->context.path.join_path(curve);
 #endif
 }
 
@@ -449,7 +449,7 @@ void canvas::cubic_curve_to_abs(const r4::vector2<real>& cp1, const r4::vector2<
 			ep.x(), ep.y()
 		);
 
-	this->context.path.concat_path(curve);
+	this->context.path.join_path(curve);
 #endif
 }
 
@@ -501,6 +501,8 @@ void canvas::arc_abs(const r4::vector2<real>& center, real radius, real angle1, 
 		cairo_arc_negative(this->cr, double(center.x()), double(center.y()), double(radius), double(angle1), double(angle2));
 	}
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	// TODO:
 #endif
 }
 
