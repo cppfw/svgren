@@ -906,12 +906,10 @@ void renderer::visit(const svgdom::path_element& e){
 						break;
 					}
 
-					r4::vector2<real> end_p; // end point
+					r4::vector2<real> end_p = p; // end point
 					
 					if(s.type_ == svgdom::path_element::step::type::arc_abs){
-						end_p = p - cur_p;
-					}else{
-						end_p = p;
+						end_p -= cur_p;
 					}
 
 					// cancel rotation of end point
