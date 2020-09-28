@@ -301,7 +301,7 @@ bool canvas::has_current_point()const{
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	return bool(cp != 0);
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	return this->context.path.total_vertices() != 0;
+	return this->path.total_vertices() != 0;
 #endif
 }
 
@@ -320,8 +320,8 @@ r4::vector2<real> canvas::get_current_point()const{
 	return real(0);
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	return {
-			real(this->context.path.last_x()),
-			real(this->context.path.last_y())
+			real(this->path.last_x()),
+			real(this->path.last_y())
 		};
 #endif
 }
@@ -331,7 +331,7 @@ void canvas::move_to_abs(const r4::vector2<real>& p){
 	cairo_move_to(this->cr, double(p.x()), double(p.y()));
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	this->context.path.move_to(p.x(), p.y());
+	this->path.move_to(p.x(), p.y());
 #endif
 }
 
@@ -340,7 +340,7 @@ void canvas::move_to_rel(const r4::vector2<real>& p){
 	cairo_rel_move_to(this->cr, double(p.x()), double(p.y()));
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	this->context.path.move_rel(p.x(), p.y());
+	this->path.move_rel(p.x(), p.y());
 #endif
 }
 
@@ -349,7 +349,7 @@ void canvas::line_to_abs(const r4::vector2<real>& p){
 	cairo_line_to(this->cr, double(p.x()), double(p.y()));
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	this->context.path.line_to(p.x(), p.y());
+	this->path.line_to(p.x(), p.y());
 #endif
 }
 
@@ -358,7 +358,7 @@ void canvas::line_to_rel(const r4::vector2<real>& p){
 	cairo_rel_line_to(this->cr, double(p.x()), double(p.y()));
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	this->context.path.line_rel(p.x(), p.y());
+	this->path.line_rel(p.x(), p.y());
 #endif
 }
 
@@ -394,12 +394,12 @@ void canvas::quadratic_curve_to_abs(const r4::vector2<real>& cp1, const r4::vect
 	curve.angle_tolerance(agg::deg2rad(22));
 	curve.cusp_limit(agg::deg2rad(0));
 	curve.init(
-			this->context.path.last_x(), this->context.path.last_y(),
+			this->path.last_x(), this->path.last_y(),
 			cp1.x(), cp1.y(),
 			ep.x(), ep.y()
 		);
 
-	this->context.path.join_path(curve);
+	this->path.join_path(curve);
 #endif
 }
 
@@ -417,8 +417,8 @@ void canvas::quadratic_curve_to_rel(const r4::vector2<real>& cp1, const r4::vect
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	r4::vector2<real> d{
-			real(this->context.path.last_x()),
-			real(this->context.path.last_y())
+			real(this->path.last_x()),
+			real(this->path.last_y())
 		};
 	this->quadratic_curve_to_abs(cp1 + d, ep + d);
 #endif
@@ -443,13 +443,13 @@ void canvas::cubic_curve_to_abs(const r4::vector2<real>& cp1, const r4::vector2<
 	curve.angle_tolerance(agg::deg2rad(22));
 	curve.cusp_limit(agg::deg2rad(0));
 	curve.init(
-			this->context.path.last_x(), this->context.path.last_y(),
+			this->path.last_x(), this->path.last_y(),
 			cp1.x(), cp1.y(),
 			cp2.x(), cp2.y(),
 			ep.x(), ep.y()
 		);
 
-	this->context.path.join_path(curve);
+	this->path.join_path(curve);
 #endif
 }
 
@@ -467,8 +467,8 @@ void canvas::cubic_curve_to_rel(const r4::vector2<real>& cp1, const r4::vector2<
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	r4::vector2<real> d{
-			real(this->context.path.last_x()),
-			real(this->context.path.last_y())
+			real(this->path.last_x()),
+			real(this->path.last_y())
 		};
 
 	this->cubic_curve_to_abs(cp1 + d, cp2 + d, ep + d);
@@ -480,7 +480,7 @@ void canvas::close_path(){
 	cairo_close_path(this->cr);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	this->context.path.close_polygon();
+	this->path.close_polygon();
 #endif
 }
 
@@ -489,7 +489,7 @@ void canvas::clear_path(){
 	cairo_new_path(this->cr);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	this->context.path.remove_all();
+	this->path.remove_all();
 #endif
 }
 
@@ -511,7 +511,7 @@ void canvas::fill(){
 	cairo_fill_preserve(this->cr);
 	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	agg::conv_transform<agg::path_storage, agg::trans_affine> transformed_path(this->context.path, this->context.matrix);
+	agg::conv_transform<agg::path_storage, agg::trans_affine> transformed_path(this->path, this->context.matrix);
 
 	this->rasterizer.add_path(transformed_path);
 
@@ -525,7 +525,7 @@ void canvas::stroke(){
 	cairo_stroke_preserve(this->cr);
 	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	agg::conv_stroke<decltype(this->context.path)> stroke_path(this->context.path);
+	agg::conv_stroke<decltype(this->path)> stroke_path(this->path);
 	stroke_path.width(this->context.line_width);
 	// stroke_path.line_join(agg::line_join_e(m_line_join.cur_item()));
 	// stroke_path.line_cap(agg::line_cap_e(m_line_cap.cur_item()));

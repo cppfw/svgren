@@ -101,9 +101,10 @@ class canvas{
 	agg::rasterizer_scanline_aa<> rasterizer;
 	agg::scanline_u8 scanline;
 
+	agg::path_storage path;
+	
 	struct context_type{
 		agg::trans_affine matrix; // right after construction it is set to identity matrix
-		agg::path_storage path;
 		agg::rgba color;
 		real line_width;
 	} context;
