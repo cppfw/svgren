@@ -890,86 +890,22 @@ void renderer::visit(const svgdom::path_element& e){
 				}
 				break;
 			case svgdom::path_element::step::type::arc_abs:
+				this->canvas.arc_abs(
+						{real(s.x), real(s.y)},
+						{real(s.rx), real(s.ry)},
+						real(s.x_axis_rotation),
+						s.flags.large_arc,
+						s.flags.sweep
+					);
+				break;
 			case svgdom::path_element::step::type::arc_rel:
-				{
-					auto cur_p = this->canvas.get_current_point();
-					auto r = r4::vector2<real>{real(s.rx), real(s.ry)};
-					auto p = r4::vector2<real>{real(s.x), real(s.y)};
-
-					if(r.x() <= 0){
-						break;
-					}
-					ASSERT(r.x() > 0)
-					auto radii_ratio = r.y() / r.x();
-
-					if(radii_ratio <= 0){
-						break;
-					}
-
-					r4::vector2<real> end_p = p; // end point
-					
-					if(s.type_ == svgdom::path_element::step::type::arc_abs){
-						end_p -= cur_p;
-					}
-
-					// cancel rotation of end point
-					end_p.rotate(deg_to_rad(-real(s.x_axis_rotation)));
-				
-					ASSERT(radii_ratio > 0)
-					end_p.y() /= radii_ratio;
-
-					// find the angle between the end point and the x axis
-					auto angle = point_angle(real(0), end_p);
-
-					using std::sqrt;
-
-					// put the end point onto the x axis
-					end_p.x() = end_p.norm();
-					end_p.y() = 0;
-
-					using std::max;
-
-					// update the x radius if it is too small
-					r.x() = max(r.x(), end_p.x() / real(2));
-
-					// find one circle center
-					r4::vector2<real> center = {
-						end_p.x() / real(2),
-						sqrt(utki::pow2(r.x()) - utki::pow2(end_p.x() / real(2)))
-					};
-
-					// choose between the two circles according to flags
-					if(!(s.flags.large_arc ^ s.flags.sweep)){
-						center.y() = -center.y();
-					}
-
-					// put the second point and the center back to their positions
-					end_p = r4::vector2<real>{end_p.x(), real(0)}.rot(angle);
-					center.rotate(angle);
-
-					auto angle1 = point_angle(center, real(0));
-					auto angle2 = point_angle(center, end_p);
-
-					canvas_context_push context_push_1(this->canvas);
-
-					this->canvas.translate(cur_p);
-					this->canvas.rotate(deg_to_rad(real(s.x_axis_rotation)));
-					this->canvas.scale(1, radii_ratio);
-
-					if(s.flags.sweep){
-						// make sure angle1 is smaller than angle2
-						if(angle1 > angle2){
-							angle1 -= 2 * utki::pi<real>();
-						}
-						this->canvas.arc_abs(center, r.x(), angle1, angle2);
-					}else{
-						// make sure angle2 is smaller than angle1
-						if(angle2 > angle1){
-							angle2 -= 2 * utki::pi<real>();
-						}
-						this->canvas.arc_abs(center, r.x(), angle1, angle2);
-					}
-				}
+				this->canvas.arc_rel(
+						{real(s.x), real(s.y)},
+						{real(s.rx), real(s.ry)},
+						real(s.x_axis_rotation),
+						s.flags.large_arc,
+						s.flags.sweep
+					);
 				break;
 			default:
 				ASSERT_INFO(false, "unknown path step type: " << unsigned(s.type_))

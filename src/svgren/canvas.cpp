@@ -4,7 +4,9 @@
 
 #include <utki/debug.hpp>
 
-#if SVGREN_BACKEND == SVGREN_BACKEND_AGG
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+#	include "util.hxx"
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 #	include <agg2/agg_conv_stroke.h>
 #	include <agg2/agg_curves.h>
 #endif
@@ -305,19 +307,16 @@ bool canvas::has_current_point()const{
 #endif
 }
 
-r4::vector2<real> canvas::get_current_point()const{
-#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	auto has_cur_p = cairo_has_current_point(this->cr);
-	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-	if(has_cur_p){
-		double xx, yy;
-		cairo_get_current_point(this->cr, &xx, &yy);
-		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-		return {real(xx), real(yy)};
+r4::vector2<real> canvas::get_current_point(){
+	if(!this->has_current_point()){
+		this->move_to_abs(0);
+		return 0;
 	}
-	cairo_move_to(this->cr, 0, 0);
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	double xx, yy;
+	cairo_get_current_point(this->cr, &xx, &yy);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-	return real(0);
+	return {real(xx), real(yy)};
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	return {
 			real(this->path.last_x()),
@@ -504,6 +503,88 @@ void canvas::arc_abs(const r4::vector2<real>& center, real radius, real angle1, 
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	// TODO:
 #endif
+}
+
+void canvas::arc_abs(const r4::vector2<real>& end_point, const r4::vector2<real>& radius, real x_axis_rotation, bool large_arc, bool sweep){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	auto cur_p = this->get_current_point();
+
+	if(radius.x() <= 0){
+		return;
+	}
+	ASSERT(radius.x() > 0)
+	auto radii_ratio = radius.y() / radius.x();
+
+	if(radii_ratio <= 0){
+		return;
+	}
+
+	r4::vector2<real> end_p = end_point - cur_p; // relative end point
+	
+	// cancel rotation of end point
+	end_p.rotate(deg_to_rad(-x_axis_rotation));
+
+	ASSERT(radii_ratio > 0)
+	end_p.y() /= radii_ratio;
+
+	// find the angle between the end point and the x axis
+	auto angle = point_angle(real(0), end_p);
+
+	using std::sqrt;
+
+	// put the end point onto the x axis
+	end_p.x() = end_p.norm();
+	end_p.y() = 0;
+
+	using std::max;
+
+	// update the x radius if it is too small
+	auto rx = max(radius.x(), end_p.x() / real(2));
+
+	// find one circle center
+	r4::vector2<real> center = {
+		end_p.x() / real(2),
+		sqrt(utki::pow2(rx) - utki::pow2(end_p.x() / real(2)))
+	};
+
+	// choose between the two circles according to flags
+	if(!(large_arc ^ sweep)){
+		center.y() = -center.y();
+	}
+
+	// put the second point and the center back to their positions
+	end_p = r4::vector2<real>{end_p.x(), real(0)}.rot(angle);
+	center.rotate(angle);
+
+	auto angle1 = point_angle(center, real(0));
+	auto angle2 = point_angle(center, end_p);
+
+	canvas_context_push context_push_1(*this); // TODO: push matrix only
+
+	this->translate(cur_p);
+	this->rotate(deg_to_rad(x_axis_rotation));
+	this->scale(1, radii_ratio);
+
+	if(sweep){
+		// make sure angle1 is smaller than angle2
+		if(angle1 > angle2){
+			angle1 -= 2 * utki::pi<real>();
+		}
+		this->arc_abs(center, rx, angle1, angle2);
+	}else{
+		// make sure angle2 is smaller than angle1
+		if(angle2 > angle1){
+			angle2 -= 2 * utki::pi<real>();
+		}
+		this->arc_abs(center, rx, angle1, angle2);
+	}
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	// TODO:
+#endif
+}
+
+void canvas::arc_rel(const r4::vector2<real>& end_point, const r4::vector2<real>& radius, real x_axis_rotation, bool large_arc, bool sweep){
+	this->arc_abs(end_point + this->get_current_point(), radius, x_axis_rotation, large_arc, sweep);
 }
 
 void canvas::fill(){
