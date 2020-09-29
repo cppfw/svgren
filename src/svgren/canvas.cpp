@@ -232,6 +232,8 @@ void canvas::set_source(const linear_gradient& g){
 
 	cairo_set_source(this->cr, pat);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	// TODO:
 #endif
 }
 
@@ -254,6 +256,8 @@ void canvas::set_source(const radial_gradient& g){
 
 	cairo_set_source(this->cr, pat);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	// TODO:
 #endif
 }
 
@@ -839,6 +843,8 @@ void canvas::push_group(){
 	if(cairo_status(this->cr) != CAIRO_STATUS_SUCCESS){
 		throw std::runtime_error("cairo_push_group() failed");
 	}
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	// TODO:
 #endif
 }
 
@@ -853,6 +859,8 @@ void canvas::pop_group(real opacity){
 		cairo_paint(this->cr);
 	}
 	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	// TODO:
 #endif
 }
 
@@ -872,5 +880,7 @@ void canvas::pop_mask_and_group(){
 
 	cairo_mask(this->cr, mask);
 	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	// TODO:
 #endif
 }
