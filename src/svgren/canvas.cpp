@@ -465,7 +465,9 @@ void canvas::close_path(){
 	cairo_close_path(this->cr);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	auto cp = this->get_current_point();
 	this->path.close_polygon();
+	this->move_to_abs(cp);
 #endif
 }
 
