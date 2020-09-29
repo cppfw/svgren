@@ -4,8 +4,9 @@
 
 #include <utki/debug.hpp>
 
+#include "util.hxx"
+
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-#	include "util.hxx"
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 #	include <agg2/agg_conv_stroke.h>
 #	include <agg2/agg_conv_curve.h>
@@ -516,7 +517,7 @@ void canvas::arc_abs(const r4::vector2<real>& end_point, const r4::vector2<real>
 	r4::vector2<real> end_p = end_point - cur_p; // relative end point
 	
 	// cancel rotation of end point
-	end_p.rotate(deg_to_rad(-x_axis_rotation));
+	end_p.rotate(-x_axis_rotation);
 
 	ASSERT(radii_ratio > 0)
 	end_p.y() /= radii_ratio;
@@ -553,12 +554,6 @@ void canvas::arc_abs(const r4::vector2<real>& end_point, const r4::vector2<real>
 	auto angle1 = point_angle(center, real(0));
 	auto angle2 = point_angle(center, end_p);
 
-	canvas_matrix_push matrix_push(*this);
-
-	this->translate(cur_p);
-	this->rotate(deg_to_rad(x_axis_rotation));
-	this->scale(1, radii_ratio);
-
 	if(sweep){
 		// make sure angle1 is smaller than angle2
 		if(angle1 > angle2){
@@ -570,6 +565,12 @@ void canvas::arc_abs(const r4::vector2<real>& end_point, const r4::vector2<real>
 			angle2 -= 2 * utki::pi<real>();
 		}
 	}
+
+	canvas_matrix_push matrix_push(*this);
+	this->translate(cur_p);
+	this->rotate(x_axis_rotation);
+	this->scale(1, radii_ratio);
+
 	this->arc_abs(center, rx, angle1, angle2 - angle1);
 
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG

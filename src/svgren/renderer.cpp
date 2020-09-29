@@ -890,7 +890,7 @@ void renderer::visit(const svgdom::path_element& e){
 				this->canvas.arc_abs(
 						{real(s.x), real(s.y)},
 						{real(s.rx), real(s.ry)},
-						real(s.x_axis_rotation),
+						deg_to_rad(real(s.x_axis_rotation)),
 						s.flags.large_arc,
 						s.flags.sweep
 					);
@@ -899,7 +899,7 @@ void renderer::visit(const svgdom::path_element& e){
 				this->canvas.arc_rel(
 						{real(s.x), real(s.y)},
 						{real(s.rx), real(s.ry)},
-						real(s.x_axis_rotation),
+						deg_to_rad(real(s.x_axis_rotation)),
 						s.flags.large_arc,
 						s.flags.sweep
 					);
