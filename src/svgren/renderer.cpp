@@ -189,11 +189,11 @@ void renderer::set_gradient_properties(svgren::gradient& gradient, const svgdom:
 	gradient_ss.stack.pop_back();
 	gradient_ss.stack.push_back(effective_gradient_styleable);
 
-	struct ColorStopAdder : public svgdom::const_visitor{
+	struct gradient_stops_adder : public svgdom::const_visitor{
 		svgren::gradient& gradient;
 		svgdom::style_stack& ss;
 
-		ColorStopAdder(svgren::gradient& gradient, svgdom::style_stack& ss) :
+		gradient_stops_adder(svgren::gradient& gradient, svgdom::style_stack& ss) :
 				gradient(gradient),
 				ss(ss)
 		{}
