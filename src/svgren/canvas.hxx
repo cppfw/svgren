@@ -145,8 +145,7 @@ public:
 
 	r4::rectangle<real> get_shape_bounding_box()const;
 
-	bool has_current_point()const;
-	r4::vector2<real> get_current_point();
+	r4::vector2<real> get_current_point()const;
 
 	void move_to_abs(const r4::vector2<real>& p);
 	void move_to_rel(const r4::vector2<real>& p);
@@ -160,8 +159,7 @@ public:
 	void cubic_curve_to_abs(const r4::vector2<real>& cp1, const r4::vector2<real>& cp2, const r4::vector2<real>& ep);
 	void cubic_curve_to_rel(const r4::vector2<real>& cp1, const r4::vector2<real>& cp2, const r4::vector2<real>& ep);
 
-	// draw arc from angle1 to angle2
-	void arc_abs(const r4::vector2<real>& center, real radius, real angle1, real angle2);
+	void arc_abs(const r4::vector2<real>& center, const r4::vector2<real>& radius, real start_angle, real sweep_angle);
 
 	void arc_abs(const r4::vector2<real>& end_point, const r4::vector2<real>& radius, real x_axis_rotation, bool large_arc, bool sweep);
 	void arc_rel(const r4::vector2<real>& end_point, const r4::vector2<real>& radius, real x_axis_rotation, bool large_arc, bool sweep);

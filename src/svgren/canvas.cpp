@@ -37,6 +37,7 @@ canvas::canvas(unsigned width, unsigned height) :
 		throw std::runtime_error("svgren::canvas::canvas(): could not create cairo context");
 	}
 #endif
+	this->clear_path();
 }
 
 canvas::~canvas(){
@@ -297,21 +298,7 @@ r4::rectangle<real> canvas::get_shape_bounding_box()const{
 #endif
 }
 
-bool canvas::has_current_point()const{
-#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	auto cp = cairo_has_current_point(this->cr);
-	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-	return bool(cp != 0);
-#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	return this->path.total_vertices() != 0;
-#endif
-}
-
-r4::vector2<real> canvas::get_current_point(){
-	if(!this->has_current_point()){
-		this->move_to_abs(0);
-		return 0;
-	}
+r4::vector2<real> canvas::get_current_point()const{
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	double xx, yy;
 	cairo_get_current_point(this->cr, &xx, &yy);
@@ -490,14 +477,20 @@ void canvas::clear_path(){
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->path.remove_all();
 #endif
+	this->move_to_abs(0); // make sure there is current point
 }
 
-void canvas::arc_abs(const r4::vector2<real>& center, real radius, real angle1, real angle2){
+void canvas::arc_abs(const r4::vector2<real>& center, const r4::vector2<real>& radius, real start_angle, real sweep_angle){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	if(angle2 > angle1){
-		cairo_arc(this->cr, double(center.x()), double(center.y()), double(radius), double(angle1), double(angle2));
+	canvas_matrix_push matrix_push(*this);
+
+	this->translate(center);
+	this->scale(radius);
+
+	if(sweep_angle >= 0){
+		cairo_arc(this->cr, 0, 0, 1, double(start_angle), double(start_angle + sweep_angle));
 	}else{
-		cairo_arc_negative(this->cr, double(center.x()), double(center.y()), double(radius), double(angle1), double(angle2));
+		cairo_arc_negative(this->cr, 0, 0, 1, double(start_angle), double(start_angle + sweep_angle));
 	}
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
@@ -559,7 +552,7 @@ void canvas::arc_abs(const r4::vector2<real>& end_point, const r4::vector2<real>
 	auto angle1 = point_angle(center, real(0));
 	auto angle2 = point_angle(center, end_p);
 
-	canvas_context_push context_push_1(*this); // TODO: push matrix only
+	canvas_matrix_push matrix_push(*this);
 
 	this->translate(cur_p);
 	this->rotate(deg_to_rad(x_axis_rotation));
@@ -570,14 +563,14 @@ void canvas::arc_abs(const r4::vector2<real>& end_point, const r4::vector2<real>
 		if(angle1 > angle2){
 			angle1 -= 2 * utki::pi<real>();
 		}
-		this->arc_abs(center, rx, angle1, angle2);
 	}else{
 		// make sure angle2 is smaller than angle1
 		if(angle2 > angle1){
 			angle2 -= 2 * utki::pi<real>();
 		}
-		this->arc_abs(center, rx, angle1, angle2);
 	}
+	this->arc_abs(center, rx, angle1, angle2 - angle1);
+
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	// TODO:
 #endif

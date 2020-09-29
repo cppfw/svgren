@@ -719,9 +719,6 @@ void renderer::visit(const svgdom::path_element& e){
 				this->canvas.move_to_abs({real(s.x), real(s.y)});
 				break;
 			case svgdom::path_element::step::type::move_rel:
-				if(!this->canvas.has_current_point()){
-					this->canvas.move_to_abs(0);
-				}
 				this->canvas.move_to_rel({real(s.x), real(s.y)});
 				break;
 			case svgdom::path_element::step::type::line_abs:
@@ -933,12 +930,12 @@ void renderer::visit(const svgdom::circle_element& e){
 
 	this->apply_transformations(e.transformations);
 
-	this->canvas.arc_abs(
-			this->length_to_px(e.cx, e.cy),
-			this->length_to_px(e.r),
-			0,
-			2 * utki::pi<real>()
-		);
+	auto c = this->length_to_px(e.cx, e.cy);
+	auto r = this->length_to_px(e.r);
+
+	this->canvas.move_to_abs(c + r4::vector2<real>{r, 0}); // move to start point
+	this->canvas.arc_abs(c,	r, 0, 2 * utki::pi<real>());
+	this->canvas.close_path();
 
 	this->render_shape(group_push.is_pushed());
 }
@@ -1047,15 +1044,11 @@ void renderer::visit(const svgdom::ellipse_element& e){
 
 	this->apply_transformations(e.transformations);
 
-	{
-		canvas_context_push context_push_1(this->canvas);
-
-		this->canvas.translate(this->length_to_px(e.cx, e.cy));
-		this->canvas.scale(this->length_to_px(e.rx, e.ry));
-
-		this->canvas.arc_abs(0, 1, 0, real(2) * utki::pi<real>());
-		this->canvas.close_path();
-	}
+	auto c = this->length_to_px(e.cx, e.cy);
+	auto r = this->length_to_px(e.rx, e.ry);
+	this->canvas.move_to_abs(c + r4::vector2<real>{r.x(), 0}); // move to start point
+	this->canvas.arc_abs(c, r, 0, real(2) * utki::pi<real>());
+	this->canvas.close_path();
 
 	this->render_shape(group_push.is_pushed());
 }
@@ -1120,39 +1113,39 @@ void renderer::visit(const svgdom::rect_element& e){
 		this->canvas.move_to_abs(p + r4::vector2<real>{r.x(), 0});
 		this->canvas.line_to_abs(p + r4::vector2<real>{dims.x() - r.x(), 0});
 
-		{
-			canvas_context_push context_push(this->canvas);
-			this->canvas.translate(p + r4::vector2<real>{dims.x() - r.x(), r.y()});
-			this->canvas.scale(r);
-			this->canvas.arc_abs(0, 1, -utki::pi<real>() / 2, 0);
-		}
+		this->canvas.arc_abs(
+				p + r4::vector2<real>{dims.x() - r.x(), r.y()},
+				r,
+				-utki::pi<real>() / 2,
+				utki::pi<real>() / 2
+			);
 
 		this->canvas.line_to_abs(p + dims - r4::vector2<real>{0, r.y()});
 
-		{
-			canvas_context_push context_push(this->canvas);
-			this->canvas.translate(p + dims - r);
-			this->canvas.scale(r);
-			this->canvas.arc_abs(0, 1, 0, utki::pi<real>() / 2);
-		}
+		this->canvas.arc_abs(
+				p + dims - r,
+				r,
+				0,
+				utki::pi<real>() / 2
+			);
 
 		this->canvas.line_to_abs(p + r4::vector2<real>{r.x(), dims.y()});
 
-		{
-			canvas_context_push context_push(this->canvas);
-			this->canvas.translate(p + r4::vector2<real>{r.x(), dims.y() - r.y()});
-			this->canvas.scale(r);
-			this->canvas.arc_abs(0, 1, utki::pi<real>() / 2, utki::pi<real>());
-		}
+		this->canvas.arc_abs(
+				p + r4::vector2<real>{r.x(), dims.y() - r.y()},
+				r,
+				utki::pi<real>() / 2,
+				utki::pi<real>() / 2
+			);
 
 		this->canvas.line_to_abs(p + r4::vector2<real>{0, r.y()});
-		
-		{
-			canvas_context_push context_push(this->canvas);
-			this->canvas.translate(p + r);
-			this->canvas.scale(r);
-			this->canvas.arc_abs(0, 1, utki::pi<real>(), utki::pi<real>() * 3 / 2);
-		}
+
+		this->canvas.arc_abs(
+				p + r,
+				r,
+				utki::pi<real>(),
+				utki::pi<real>() / 2
+			);
 
 		this->canvas.close_path();
 	}
