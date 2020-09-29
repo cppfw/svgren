@@ -20,7 +20,7 @@ this_cxxflags += -std=c++14
 this_cxxflags += -g
 
 svgren_backend := agg
-svgren_backend := cairo
+# svgren_backend := cairo
 
 this_cxxflags += -D M_SVGREN_BACKGROUND=0xffffffff
 
