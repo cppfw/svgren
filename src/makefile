@@ -20,6 +20,7 @@ this_cxxflags += -std=c++14
 this_cxxflags += -g
 
 svgren_backend := agg
+# svgren_backend := cairo
 
 ifeq ($(svgren_backend),agg)
     this_cxxflags += -D SVGREN_BACKEND=SVGREN_BACKEND_AGG
