@@ -30,6 +30,7 @@
 #	include <agg2/agg_path_storage.h>
 #	include <agg2/agg_scanline_u.h>
 #	include <agg2/agg_rasterizer_scanline_aa.h>
+#	include <agg2/agg_curves.h>
 #endif
 
 namespace svgren{
@@ -94,6 +95,11 @@ class canvas{
 
 	cairo_t* cr;
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	typedef agg::curve3_div agg_curve3_type;
+	typedef agg::curve4_div agg_curve4_type;
+
+	const real approximation_scale = 5;
+
 	agg::rendering_buffer rendering_buffer;
 	agg::pixfmt_rgba32 pixel_format;
 	agg::renderer_base<decltype(pixel_format)> renderer_base;

@@ -8,7 +8,7 @@
 #	include "util.hxx"
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 #	include <agg2/agg_conv_stroke.h>
-#	include <agg2/agg_curves.h>
+#	include <agg2/agg_conv_curve.h>
 #endif
 
 using namespace svgren;
@@ -374,9 +374,8 @@ void canvas::quadratic_curve_to_abs(const r4::vector2<real>& cp1, const r4::vect
 		);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	agg::curve3 curve;
-	curve.approximation_method(agg::curve_approximation_method_e::curve_div);
-	curve.approximation_scale(1);
+	agg_curve3_type curve;
+	curve.approximation_scale(this->approximation_scale);
 	curve.angle_tolerance(agg::deg2rad(22));
 	curve.cusp_limit(agg::deg2rad(0));
 	curve.init(
@@ -423,9 +422,8 @@ void canvas::cubic_curve_to_abs(const r4::vector2<real>& cp1, const r4::vector2<
 		);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	agg::curve4 curve;
-	curve.approximation_method(agg::curve_approximation_method_e::curve_div);
-	curve.approximation_scale(1);
+	agg_curve4_type curve;
+	curve.approximation_scale(this->approximation_scale);
 	curve.angle_tolerance(agg::deg2rad(22));
 	curve.cusp_limit(agg::deg2rad(0));
 	curve.init(
@@ -494,7 +492,10 @@ void canvas::arc_abs(const r4::vector2<real>& center, const r4::vector2<real>& r
 	}
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	// TODO:
+	agg::bezier_arc shape(center.x(), center.y(), radius.x(), radius.y(), start_angle, sweep_angle);
+	agg::conv_curve<decltype(shape), agg_curve3_type, agg_curve4_type> curve(shape);
+	curve.approximation_scale(this->approximation_scale);
+	this->path.join_path(curve);
 #endif
 }
 
@@ -572,7 +573,20 @@ void canvas::arc_abs(const r4::vector2<real>& end_point, const r4::vector2<real>
 	this->arc_abs(center, rx, angle1, angle2 - angle1);
 
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	// TODO:
+	agg::bezier_arc_svg shape(
+			this->path.last_x(),
+			this->path.last_y(),
+			radius.x(),
+			radius.y(),
+			x_axis_rotation,
+			large_arc,
+			sweep,
+			end_point.x(),
+			end_point.y()
+		);
+	agg::conv_curve<decltype(shape), agg_curve3_type, agg_curve4_type> curve(shape);
+	curve.approximation_scale(this->approximation_scale);
+	this->path.join_path(curve);
 #endif
 }
 
@@ -619,6 +633,12 @@ void canvas::rectangle(const r4::rectangle<real>& rect){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	cairo_rectangle(this->cr, double(rect.p.x()), double(rect.p.y()), double(rect.d.x()), double(rect.d.y()));
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	this->move_to_abs(rect.p);
+	this->line_to_abs(rect.pdx_y());
+	this->line_to_abs(rect.pdx_pdy());
+	this->line_to_abs(rect.x_pdy());
+	this->close_path();
 #endif
 }
 
