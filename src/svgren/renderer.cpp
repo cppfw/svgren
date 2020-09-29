@@ -370,19 +370,9 @@ void renderer::render_shape(bool isCairoGroupPushed){
 	this->update_bounding_box();
 
 	if(auto p = this->style_stack.get_style_property(svgdom::style_property::fill_rule)){
-		switch (p->fill_rule) {
-			default:
-				ASSERT(false)
-				break;
-			case svgdom::fill_rule::evenodd:
-				this->canvas.set_fill_rule(canvas::fill_rule::even_odd);
-				break;
-			case svgdom::fill_rule::nonzero:
-				this->canvas.set_fill_rule(canvas::fill_rule::winding);
-				break;
-		}
+		this->canvas.set_fill_rule(p->fill_rule);
 	}else{
-		this->canvas.set_fill_rule(canvas::fill_rule::winding);
+		this->canvas.set_fill_rule(svgdom::fill_rule::nonzero);
 	}
 
 	svgdom::style_value blackFill;

@@ -8,7 +8,6 @@
 
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-#	include <agg2/agg_conv_stroke.h>
 #	include <agg2/agg_conv_curve.h>
 #endif
 
@@ -143,21 +142,32 @@ void canvas::scale(real x, real y){
 #endif
 }
 
-void canvas::set_fill_rule(canvas::fill_rule fr){
+void canvas::set_fill_rule(svgdom::fill_rule fr){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	cairo_fill_rule_t cfr;
 	switch (fr){
 		default:
 			ASSERT(false);
-		case fill_rule::even_odd:
+		case svgdom::fill_rule::evenodd:
 			cfr = CAIRO_FILL_RULE_EVEN_ODD;
 			break;
-		case fill_rule::winding:
+		case svgdom::fill_rule::nonzero:
 			cfr = CAIRO_FILL_RULE_WINDING;
 			break;
 	}
 	cairo_set_fill_rule(this->cr, cfr);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	switch(fr){
+		default:
+			ASSERT(false)
+		case svgdom::fill_rule::evenodd:
+			this->context.fill_rule = agg::filling_rule_e::fill_even_odd;
+			break;
+		case svgdom::fill_rule::nonzero:
+			this->context.fill_rule = agg::filling_rule_e::fill_non_zero;
+			break;
+	}
 #endif
 }
 
@@ -604,6 +614,7 @@ void canvas::fill(){
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	agg::conv_transform<agg::path_storage, agg::trans_affine> transformed_path(this->path, this->context.matrix);
 
+	this->rasterizer.filling_rule(this->context.fill_rule);
 	this->rasterizer.add_path(transformed_path);
 
     this->renderer.color(this->context.color);
@@ -618,10 +629,8 @@ void canvas::stroke(){
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	agg::conv_stroke<decltype(this->path)> stroke_path(this->path);
 	stroke_path.width(this->context.line_width);
-	// stroke_path.line_join(agg::line_join_e(m_line_join.cur_item()));
-	// stroke_path.line_cap(agg::line_cap_e(m_line_cap.cur_item()));
-	// stroke_path.inner_join(agg::inner_join_e(m_inner_join.cur_item()));
-	// stroke_path.inner_miter_limit(1.01);
+	stroke_path.line_join(this->context.line_join);
+	stroke_path.line_cap(this->context.line_cap);
 
 	agg::conv_transform<decltype(stroke_path), agg::trans_affine> transformed_path(stroke_path, this->context.matrix);
 
@@ -671,6 +680,20 @@ void canvas::set_line_cap(svgdom::stroke_line_cap lc){
 	}
 	cairo_set_line_cap(this->cr, clc);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	switch(lc){
+		default:
+			ASSERT(false)
+		case svgdom::stroke_line_cap::butt:
+			this->context.line_cap = agg::line_cap_e::butt_cap;
+			break;
+		case svgdom::stroke_line_cap::round:
+			this->context.line_cap = agg::line_cap_e::round_cap;
+			break;
+		case svgdom::stroke_line_cap::square:
+			this->context.line_cap = agg::line_cap_e::square_cap;
+			break;
+	}
 #endif
 }
 
@@ -691,6 +714,20 @@ void canvas::set_line_join(svgdom::stroke_line_join lj){
 	}
 	cairo_set_line_join(this->cr, clj);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	switch(lj){
+		default:
+			ASSERT(false)
+		case svgdom::stroke_line_join::miter:
+			this->context.line_join = agg::line_join_e::miter_join;
+			break;
+		case svgdom::stroke_line_join::bevel:
+			this->context.line_join = agg::line_join_e::bevel_join;
+			break;
+		case svgdom::stroke_line_join::round:
+			this->context.line_join = agg::line_join_e::round_join;
+			break;
+	}
 #endif
 }
 

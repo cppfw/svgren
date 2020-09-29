@@ -31,6 +31,7 @@
 #	include <agg2/agg_scanline_u.h>
 #	include <agg2/agg_rasterizer_scanline_aa.h>
 #	include <agg2/agg_curves.h>
+#	include <agg2/agg_conv_stroke.h>
 #endif
 
 namespace svgren{
@@ -111,8 +112,11 @@ class canvas{
 	
 	struct context_type{
 		agg::trans_affine matrix; // right after construction it is set to identity matrix
-		agg::rgba color;
-		real line_width;
+		agg::rgba color = agg::rgba(0);
+		real line_width = 1;
+		agg::filling_rule_e fill_rule = agg::filling_rule_e::fill_even_odd;
+		agg::line_cap_e line_cap = agg::line_cap_e::butt_cap;
+		agg::line_join_e line_join = agg::line_join_e::miter_join;
 	} context;
 
 	std::vector<context_type> context_stack;
@@ -133,12 +137,7 @@ public:
 		this->scale(v.x(), v.y());
 	}
 
-	enum class fill_rule{
-		even_odd,
-		winding
-	};
-
-	void set_fill_rule(fill_rule fr);
+	void set_fill_rule(svgdom::fill_rule fr);
 
 	void set_source(const r4::vector4<real>& rgba);
 	void set_source(const linear_gradient& g);
