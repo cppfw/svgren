@@ -9,6 +9,7 @@
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 #	include <agg2/agg_conv_curve.h>
+#	include <agg2/agg_bounding_rect.h>
 #endif
 
 using namespace svgren;
@@ -285,11 +286,12 @@ r4::vector2<real> canvas::matrix_mul_distance(const r4::vector2<real>& v){
 }
 
 r4::rectangle<real> canvas::get_shape_bounding_box()const{
+	// According to SVG spec https://www.w3.org/TR/SVG/coords.html#ObjectBoundingBox
+	// "The bounding box is computed exclusive of any values for clipping, masking, filter effects, opacity and stroke-width"
+
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	double x1, y1, x2, y2;
 
-	// According to SVG spec https://www.w3.org/TR/SVG/coords.html#ObjectBoundingBox
-	// "The bounding box is computed exclusive of any values for clipping, masking, filter effects, opacity and stroke-width"
 	cairo_path_extents(
 			this->cr,
 			&x1,
@@ -304,8 +306,16 @@ r4::rectangle<real> canvas::get_shape_bounding_box()const{
 			{real(x2 - x1), real(y2 - y1)}
 		};
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	// TODO:
-	return {0, 0};
+	real x1, x2, y1, y2;
+	agg::bounding_rect_single(
+			const_cast<std::remove_const<std::remove_pointer<decltype(this)>::type>::type*>(this)->path,
+			1, // 0th vertex is always 0 point, ignore it, start from 1st vertex
+			&x1,
+			&y1,
+			&x2,
+			&y2
+		);
+	return {{x1, y1}, {x2 - x1, y2 - y1}};
 #endif
 }
 

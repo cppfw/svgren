@@ -26,7 +26,7 @@ this_cxxflags += -D M_SVGREN_BACKGROUND=0xffffffff
 
 ifeq ($(svgren_backend),agg)
     this_cxxflags += -D SVGREN_BACKEND=SVGREN_BACKEND_AGG
-    this_ldlibs += -lagg
+    this_ldlibs += `pkg-config --libs libagg`
 else ifeq ($(svgren_backend),cairo)
     this_cxxflags += -D SVGREN_BACKEND=SVGREN_BACKEND_CAIRO
     this_ldlibs += `pkg-config --libs cairo`
@@ -38,7 +38,7 @@ else
     this_cxxflags += -O3
 endif
 
-ifeq ($(gprof), true)
+ifeq ($(gprof),true)
     this_cxxflags += -pg
     this_ldflags += -pg
 endif

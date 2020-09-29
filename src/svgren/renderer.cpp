@@ -340,6 +340,8 @@ void renderer::set_gradient(const std::string& id){
 void renderer::update_bounding_box(){
 	this->user_space_bounding_box = this->canvas.get_shape_bounding_box();
 
+	// TRACE(<< "bb = " << this->user_space_bounding_box << std::endl)
+
 	if(this->user_space_bounding_box.d[0] == 0){
 		// empty path
 		return;
