@@ -661,9 +661,9 @@ void canvas::rectangle(const r4::rectangle<real>& rect){
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->move_to_abs(rect.p);
-	this->line_to_abs(rect.pdx_y());
-	this->line_to_abs(rect.pdx_pdy());
-	this->line_to_abs(rect.x_pdy());
+	this->line_to_abs(rect.x2_y1());
+	this->line_to_abs(rect.x2_y2());
+	this->line_to_abs(rect.x1_y2());
 	this->close_path();
 #endif
 }
