@@ -348,9 +348,9 @@ void renderer::update_bounding_box(){
 	// set device space bounding box
 	std::array<r4::vector2<real>, 4> rectVertices = {{
 		this->user_space_bounding_box.p,
-		this->user_space_bounding_box.pdx_pdy(),
-		this->user_space_bounding_box.x_pdy(),
-		this->user_space_bounding_box.pdx_y()
+		this->user_space_bounding_box.x2_y2(),
+		this->user_space_bounding_box.x1_y2(),
+		this->user_space_bounding_box.x2_y1()
 	}};
 
 	for(auto& vertex : rectVertices){
