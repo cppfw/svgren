@@ -10,6 +10,7 @@
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 #	include <agg2/agg_conv_curve.h>
 #	include <agg2/agg_bounding_rect.h>
+#	include <agg2/agg_span_interpolator_linear.h>
 #endif
 
 using namespace svgren;
@@ -233,6 +234,7 @@ void canvas::set_gradient_stops(const svgren::gradient& g){
 					)
 			);
 	}
+	this->gradient_lut.build_lut();
 }
 #endif
 
@@ -658,8 +660,33 @@ void canvas::fill(){
 	this->rasterizer.filling_rule(this->context.fill_rule);
 	this->rasterizer.add_path(transformed_path);
 
-    this->renderer.color(this->context.color);
-    agg::render_scanlines(this->rasterizer, this->scanline, this->renderer);
+	if(!this->cur_gradient){
+		this->renderer.color(this->context.color);
+		agg::render_scanlines(this->rasterizer, this->scanline, this->renderer);
+	}else{
+		agg::trans_affine gradient_matrix;
+        
+        // gradient_mtx.translate();
+        // gradient_mtx *= trans_affine_resizing();
+        gradient_matrix.invert(); // gradients and patterns assume inverse matrix
+
+		agg::span_interpolator_linear<> span_interpolator(gradient_matrix);
+
+		agg::span_gradient<
+				decltype(this->pixel_format)::color_type,
+                decltype(span_interpolator),
+				gradient_wrapper_base,
+				decltype(this->gradient_lut)
+			> span_gradient(
+				span_interpolator, 
+                *this->cur_gradient,
+                this->gradient_lut, 
+                0,
+				100
+			);
+
+		agg::render_scanlines_aa(this->rasterizer, this->scanline, this->renderer_base, this->span_allocator, span_gradient);
+	}
 #endif
 }
 

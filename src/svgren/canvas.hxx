@@ -34,6 +34,7 @@
 #	include <agg2/agg_conv_stroke.h>
 #	include <agg2/agg_gradient_lut.h>
 #	include <agg2/agg_span_gradient.h>
+#	include <agg2/agg_span_allocator.h>
 #endif
 
 namespace svgren{
@@ -131,6 +132,8 @@ class canvas{
 	gradient_wrapper<agg::gradient_radial_focus> radial_gradient;
 	gradient_wrapper_base* cur_gradient = nullptr;
 	agg::gradient_lut<agg::color_interpolator<agg::rgba>, 1024> gradient_lut;
+
+	agg::span_allocator<decltype(pixel_format)::color_type> span_allocator;
 
 	struct context_type{
 		agg::trans_affine matrix; // right after construction it is set to identity matrix
