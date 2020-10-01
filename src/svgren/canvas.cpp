@@ -179,13 +179,14 @@ void canvas::set_fill_rule(svgdom::fill_rule fr){
 
 void canvas::set_source(const r4::vector4<real>& rgba){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	cairo_set_source_rgba(this->cr, double(rgba.r()), double(rgba.g()), double(rgba.b()), double(rgba.a()));
+	cairo_set_source_rgba(this->cr, backend_real(rgba.r()), backend_real(rgba.g()), backend_real(rgba.b()), backend_real(rgba.a()));
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->context.color.r = rgba.r();
 	this->context.color.g = rgba.g();
 	this->context.color.b = rgba.b();
 	this->context.color.a = rgba.a();
+	this->cur_gradient = nullptr;
 #endif
 }
 
@@ -207,10 +208,10 @@ void set_cairo_pattern_properties(cairo_pattern_t* pat, const gradient& g){
 			extend = CAIRO_EXTEND_PAD;
 			break;
 		case svgdom::gradient::spread_method::reflect:
-			extend = CAIRO_EXTEND_REFLECT;
+			extend = CAIRO_EXTEND_REPEAT; // For some reason, REPEAT works as reflect in cairo, possibly a bug in cairo?
 			break;
 		case svgdom::gradient::spread_method::repeat:
-			extend = CAIRO_EXTEND_REPEAT;
+			extend = CAIRO_EXTEND_REFLECT; // REFLECT works same way as PAD in cairo, possibly a bug in cairo?
 			break;
 	}
 
@@ -218,15 +219,30 @@ void set_cairo_pattern_properties(cairo_pattern_t* pat, const gradient& g){
 	ASSERT(cairo_pattern_status(pat) == CAIRO_STATUS_SUCCESS)
 }
 }
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+void canvas::set_gradient_stops(const svgren::gradient& g){
+	this->gradient_lut.remove_all();
+	for(auto& s : g.stops){
+		this->gradient_lut.add_color(
+				backend_real(s.offset),
+				agg::rgba(
+						backend_real(s.rgba.r()),
+						backend_real(s.rgba.g()),
+						backend_real(s.rgba.b()),
+						backend_real(s.rgba.a())
+					)
+			);
+	}
+}
 #endif
 
-void canvas::set_source(const linear_gradient& g){
+void canvas::set_source(const svgren::linear_gradient& g){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	auto pat = cairo_pattern_create_linear(
-			double(g.p0.x()),
-			double(g.p0.y()),
-			double(g.p1.x()),
-			double(g.p1.y())
+			backend_real(g.p0.x()),
+			backend_real(g.p0.y()),
+			backend_real(g.p1.x()),
+			backend_real(g.p1.y())
 		);
 	if(!pat){
 		throw std::runtime_error("cairo_pattern_create_linear() failed");
@@ -238,19 +254,21 @@ void canvas::set_source(const linear_gradient& g){
 	cairo_set_source(this->cr, pat);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	this->set_gradient_stops(g);
+	this->cur_gradient = &this->linear_gradient;
 	// TODO:
 #endif
 }
 
-void canvas::set_source(const radial_gradient& g){
+void canvas::set_source(const svgren::radial_gradient& g){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	auto pat = cairo_pattern_create_radial(
-			double(g.c0.x()),
-			double(g.c0.y()),
-			double(g.r0),
-			double(g.c1.x()),
-			double(g.c1.y()),
-			double(g.r1)
+			backend_real(g.f.x()),
+			backend_real(g.f.y()),
+			backend_real(0),
+			backend_real(g.c.x()),
+			backend_real(g.c.y()),
+			backend_real(g.r)
 		);
 	if(!pat){
 		throw std::runtime_error("cairo_pattern_create_radial() failed");
@@ -262,14 +280,18 @@ void canvas::set_source(const radial_gradient& g){
 	cairo_set_source(this->cr, pat);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	this->set_gradient_stops(g);
+	this->radial_gradient.gradient.init(g.r, g.f.x(), g.f.y());
+	// TODO: set gradient center point
+	this->cur_gradient = &this->radial_gradient;
 	// TODO:
 #endif
 }
 
 r4::vector2<real> canvas::matrix_mul(const r4::vector2<real>& v){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	double x = v.x();
-	double y = v.y();
+	backend_real x = v.x();
+	backend_real y = v.y();
 	cairo_user_to_device(this->cr, &x, &y);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	return r4::vector2<real>(real(x), real(y));
@@ -282,8 +304,8 @@ r4::vector2<real> canvas::matrix_mul(const r4::vector2<real>& v){
 
 r4::vector2<real> canvas::matrix_mul_distance(const r4::vector2<real>& v){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	double x = v.x();
-	double y = v.y();
+	backend_real x = v.x();
+	backend_real y = v.y();
 	cairo_user_to_device_distance(this->cr, &x, &y);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	return r4::vector2<real>(real(x), real(y));
@@ -299,7 +321,7 @@ r4::rectangle<real> canvas::get_shape_bounding_box()const{
 	// "The bounding box is computed exclusive of any values for clipping, masking, filter effects, opacity and stroke-width"
 
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	double x1, y1, x2, y2;
+	backend_real x1, y1, x2, y2;
 
 	cairo_path_extents(
 			this->cr,
@@ -330,7 +352,7 @@ r4::rectangle<real> canvas::get_shape_bounding_box()const{
 
 r4::vector2<real> canvas::get_current_point()const{
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	double xx, yy;
+	backend_real xx, yy;
 	cairo_get_current_point(this->cr, &xx, &yy);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	return {real(xx), real(yy)};
@@ -344,7 +366,7 @@ r4::vector2<real> canvas::get_current_point()const{
 
 void canvas::move_to_abs(const r4::vector2<real>& p){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	cairo_move_to(this->cr, double(p.x()), double(p.y()));
+	cairo_move_to(this->cr, backend_real(p.x()), backend_real(p.y()));
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->path.move_to(p.x(), p.y());
@@ -353,7 +375,7 @@ void canvas::move_to_abs(const r4::vector2<real>& p){
 
 void canvas::move_to_rel(const r4::vector2<real>& p){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	cairo_rel_move_to(this->cr, double(p.x()), double(p.y()));
+	cairo_rel_move_to(this->cr, backend_real(p.x()), backend_real(p.y()));
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->path.move_rel(p.x(), p.y());
@@ -362,7 +384,7 @@ void canvas::move_to_rel(const r4::vector2<real>& p){
 
 void canvas::line_to_abs(const r4::vector2<real>& p){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	cairo_line_to(this->cr, double(p.x()), double(p.y()));
+	cairo_line_to(this->cr, backend_real(p.x()), backend_real(p.y()));
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->path.line_to(p.x(), p.y());
@@ -371,7 +393,7 @@ void canvas::line_to_abs(const r4::vector2<real>& p){
 
 void canvas::line_to_rel(const r4::vector2<real>& p){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	cairo_rel_line_to(this->cr, double(p.x()), double(p.y()));
+	cairo_rel_line_to(this->cr, backend_real(p.x()), backend_real(p.y()));
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->path.line_rel(p.x(), p.y());
@@ -380,7 +402,7 @@ void canvas::line_to_rel(const r4::vector2<real>& p){
 
 void canvas::quadratic_curve_to_abs(const r4::vector2<real>& cp1, const r4::vector2<real>& ep){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	double x0, y0; // current point, absolute coordinates
+	backend_real x0, y0; // current point, absolute coordinates
 	if (cairo_has_current_point(this->cr)) {
 		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 		cairo_get_current_point(this->cr, &x0, &y0);
@@ -395,12 +417,12 @@ void canvas::quadratic_curve_to_abs(const r4::vector2<real>& cp1, const r4::vect
 	}
 	cairo_curve_to(
 			this->cr,
-			2.0 / 3.0 * double(cp1.x()) + 1.0 / 3.0 * x0,
-			2.0 / 3.0 * double(cp1.y()) + 1.0 / 3.0 * y0,
-			2.0 / 3.0 * double(cp1.x()) + 1.0 / 3.0 * double(ep.x()),
-			2.0 / 3.0 * double(cp1.y()) + 1.0 / 3.0 * double(ep.y()),
-			double(ep.x()),
-			double(ep.y())
+			2.0 / 3.0 * backend_real(cp1.x()) + 1.0 / 3.0 * x0,
+			2.0 / 3.0 * backend_real(cp1.y()) + 1.0 / 3.0 * y0,
+			2.0 / 3.0 * backend_real(cp1.x()) + 1.0 / 3.0 * backend_real(ep.x()),
+			2.0 / 3.0 * backend_real(cp1.y()) + 1.0 / 3.0 * backend_real(ep.y()),
+			backend_real(ep.x()),
+			backend_real(ep.y())
 		);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
@@ -422,12 +444,12 @@ void canvas::quadratic_curve_to_rel(const r4::vector2<real>& cp1, const r4::vect
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	cairo_rel_curve_to(
 			this->cr,
-			2.0 / 3.0 * double(cp1.x()),
-			2.0 / 3.0 * double(cp1.y()),
-			2.0 / 3.0 * double(cp1.x()) + 1.0 / 3.0 * double(ep.x()),
-			2.0 / 3.0 * double(cp1.y()) + 1.0 / 3.0 * double(ep.y()),
-			double(ep.x()),
-			double(ep.y())
+			2.0 / 3.0 * backend_real(cp1.x()),
+			2.0 / 3.0 * backend_real(cp1.y()),
+			2.0 / 3.0 * backend_real(cp1.x()) + 1.0 / 3.0 * backend_real(ep.x()),
+			2.0 / 3.0 * backend_real(cp1.y()) + 1.0 / 3.0 * backend_real(ep.y()),
+			backend_real(ep.x()),
+			backend_real(ep.y())
 		);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
@@ -443,12 +465,12 @@ void canvas::cubic_curve_to_abs(const r4::vector2<real>& cp1, const r4::vector2<
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	cairo_curve_to(
 			this->cr,
-			double(cp1.x()),
-			double(cp1.y()),
-			double(cp2.x()),
-			double(cp2.y()),
-			double(ep.x()),
-			double(ep.y())
+			backend_real(cp1.x()),
+			backend_real(cp1.y()),
+			backend_real(cp2.x()),
+			backend_real(cp2.y()),
+			backend_real(ep.x()),
+			backend_real(ep.y())
 		);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
@@ -471,12 +493,12 @@ void canvas::cubic_curve_to_rel(const r4::vector2<real>& cp1, const r4::vector2<
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	cairo_rel_curve_to(
 			this->cr,
-			double(cp1.x()),
-			double(cp1.y()),
-			double(cp2.x()),
-			double(cp2.y()),
-			double(ep.x()),
-			double(ep.y())
+			backend_real(cp1.x()),
+			backend_real(cp1.y()),
+			backend_real(cp2.x()),
+			backend_real(cp2.y()),
+			backend_real(ep.x()),
+			backend_real(ep.y())
 		);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
@@ -518,9 +540,9 @@ void canvas::arc_abs(const r4::vector2<real>& center, const r4::vector2<real>& r
 	this->scale(radius);
 
 	if(sweep_angle >= 0){
-		cairo_arc(this->cr, 0, 0, 1, double(start_angle), double(start_angle + sweep_angle));
+		cairo_arc(this->cr, 0, 0, 1, backend_real(start_angle), backend_real(start_angle + sweep_angle));
 	}else{
-		cairo_arc_negative(this->cr, 0, 0, 1, double(start_angle), double(start_angle + sweep_angle));
+		cairo_arc_negative(this->cr, 0, 0, 1, backend_real(start_angle), backend_real(start_angle + sweep_angle));
 	}
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
@@ -662,7 +684,7 @@ void canvas::stroke(){
 
 void canvas::rectangle(const r4::rectangle<real>& rect){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	cairo_rectangle(this->cr, double(rect.p.x()), double(rect.p.y()), double(rect.d.x()), double(rect.d.y()));
+	cairo_rectangle(this->cr, backend_real(rect.p.x()), backend_real(rect.p.y()), backend_real(rect.d.x()), backend_real(rect.d.y()));
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->move_to_abs(rect.p);
@@ -675,7 +697,7 @@ void canvas::rectangle(const r4::rectangle<real>& rect){
 
 void canvas::set_line_width(real width){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	cairo_set_line_width(this->cr, double(width));
+	cairo_set_line_width(this->cr, backend_real(width));
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->context.line_width = width;
@@ -789,8 +811,8 @@ r4::matrix2<real> canvas::get_matrix(){
 void canvas::set_matrix(const r4::matrix2<real>& m){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	cairo_matrix_t cm;
-	cm.xx = double(m[0][0]); cm.xy = double(m[0][1]); cm.x0 = double(m[0][2]);
-	cm.yx = double(m[1][0]); cm.yy = double(m[1][1]); cm.y0 = double(m[1][2]);
+	cm.xx = backend_real(m[0][0]); cm.xy = backend_real(m[0][1]); cm.x0 = backend_real(m[0][2]);
+	cm.yx = backend_real(m[1][0]); cm.yy = backend_real(m[1][1]); cm.y0 = backend_real(m[1][2]);
 	cairo_set_matrix(this->cr, &cm);
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->context.matrix = to_agg_matrix(m);

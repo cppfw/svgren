@@ -32,6 +32,8 @@
 #	include <agg2/agg_rasterizer_scanline_aa.h>
 #	include <agg2/agg_curves.h>
 #	include <agg2/agg_conv_stroke.h>
+#	include <agg2/agg_gradient_lut.h>
+#	include <agg2/agg_span_gradient.h>
 #endif
 
 namespace svgren{
@@ -70,6 +72,8 @@ class canvas{
 	std::vector<uint32_t> pixels;
 
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	typedef double backend_real;
+
 	struct cairo_surface_wrapper{
 		cairo_surface_t* surface;
 
@@ -96,6 +100,8 @@ class canvas{
 
 	cairo_t* cr;
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	typedef double backend_real;
+
 	typedef agg::curve3_div agg_curve3_type;
 	typedef agg::curve4_div agg_curve4_type;
 
@@ -110,6 +116,22 @@ class canvas{
 
 	agg::path_storage path;
 	
+	struct gradient_wrapper_base{
+    	virtual int calculate(int x, int y, int) const = 0;
+		virtual ~gradient_wrapper_base(){}
+	};
+	template<class T> struct gradient_wrapper : public gradient_wrapper_base{
+		T gradient;
+		int calculate(int x, int y, int d)const override{
+			return this->gradient.calculate(x, y, d);
+		}
+	};
+
+	gradient_wrapper<agg::gradient_x> linear_gradient;
+	gradient_wrapper<agg::gradient_radial_focus> radial_gradient;
+	gradient_wrapper_base* cur_gradient = nullptr;
+	agg::gradient_lut<agg::color_interpolator<agg::rgba>, 1024> gradient_lut;
+
 	struct context_type{
 		agg::trans_affine matrix; // right after construction it is set to identity matrix
 		agg::rgba color = agg::rgba(0);
@@ -120,6 +142,8 @@ class canvas{
 	} context;
 
 	std::vector<context_type> context_stack;
+
+	void set_gradient_stops(const svgren::gradient& g);
 #endif
 
 public:
@@ -140,8 +164,8 @@ public:
 	void set_fill_rule(svgdom::fill_rule fr);
 
 	void set_source(const r4::vector4<real>& rgba);
-	void set_source(const linear_gradient& g);
-	void set_source(const radial_gradient& g);
+	void set_source(const svgren::linear_gradient& g);
+	void set_source(const svgren::radial_gradient& g);
 
 	r4::vector2<real> matrix_mul(const r4::vector2<real>& v);
 

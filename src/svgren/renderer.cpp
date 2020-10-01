@@ -319,10 +319,9 @@ void renderer::set_gradient(const std::string& id){
 
 			radial_gradient g;
 
-			g.c0 = this->r.length_to_px(fx, fy);
-			g.c1 = this->r.length_to_px(cx, cy);
-			g.r0 = 0;
-			g.r1 = this->r.length_to_px(radius);
+			g.f = this->r.length_to_px(fx, fy);
+			g.c = this->r.length_to_px(cx, cy);
+			g.r = this->r.length_to_px(radius);
 
 			this->r.set_gradient_properties(g, gradient, this->ss);
 

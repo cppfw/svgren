@@ -26,10 +26,9 @@ struct linear_gradient : public gradient{
 };
 
 struct radial_gradient : public gradient{
-	r4::vector2<real> c0;
-	r4::vector2<real> c1;
-	real r0;
-	real r1;
+	r4::vector2<real> f;
+	r4::vector2<real> c;
+	real r;
 };
 
 }
