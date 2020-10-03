@@ -553,10 +553,10 @@ void canvas::arc_abs(const r4::vector2<real>& center, const r4::vector2<real>& r
 	agg::conv_curve<decltype(shape), agg_curve3_type, agg_curve4_type> curve(shape);
 
 	// WORKAROUND: set last path point to coincide with first curve point to avoid drawing artifacts
-	curve.rewind(0);
-	double x, y;
-	curve.vertex(&x, &y);
-	this->path.modify_vertex(this->path.total_vertices() - 1, x, y);
+	// curve.rewind(0);
+	// double x, y;
+	// curve.vertex(&x, &y);
+	// this->path.modify_vertex(this->path.total_vertices() - 1, x, y);
 
 	curve.approximation_scale(this->approximation_scale);
 	this->path.join_path(curve);

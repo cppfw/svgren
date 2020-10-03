@@ -10,12 +10,6 @@
 #include <svgdom/elements/element.hpp>
 #include <svgdom/visitor.hpp>
 
-#if M_OS == M_OS_WINDOWS || M_OS_NAME == M_OS_NAME_IOS
-#	include <cairo.h>
-#else
-#	include <cairo/cairo.h>
-#endif
-
 #include "config.hxx"
 #include "surface.hxx"
 #include "canvas.hxx"
