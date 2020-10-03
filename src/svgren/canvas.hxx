@@ -131,7 +131,7 @@ class canvas{
 	gradient_wrapper<agg::gradient_x> linear_gradient;
 	gradient_wrapper<agg::gradient_radial_focus> radial_gradient;
 	gradient_wrapper_base* cur_gradient = nullptr;
-	agg::gradient_lut<agg::color_interpolator<agg::rgba>, 1024> gradient_lut;
+	agg::gradient_lut<agg::color_interpolator<agg::rgba8>, 1024> gradient_lut;
 
 	agg::span_allocator<decltype(pixel_format)::color_type> span_allocator;
 
