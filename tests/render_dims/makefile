@@ -12,7 +12,7 @@ this_cxxflags += -std=c++14
 
 this_srcs += main.cpp
 
-this_ldlibs += -lsvgdom $(d)../../src/build/libsvgren$(dot_so) -lpapki `pkg-config --libs cairo` -lstdc++
+this_ldlibs += -lsvgdom $(d)../../src/build/libsvgren$(dot_so) -lpapki -lstdc++
 this_ldflags += -L$(d)../../src
 
 ifeq ($(os), macosx)

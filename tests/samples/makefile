@@ -12,7 +12,7 @@ this_cxxflags += -std=c++14
 
 this_srcs += $(call prorab-src-dir, .)
 
-this_ldlibs += -lsvgdom $(d)../../src/build/libsvgren$(dot_so) -lpapki -lclargs `pkg-config --libs cairo` -lpng -lstdc++
+this_ldlibs += -lsvgdom $(d)../../src/build/libsvgren$(dot_so) -lpapki -lclargs -lpng -lstdc++
 
 ifeq ($(os), macosx)
     this_cxxflags += -stdlib=libc++ # this is needed to be able to use c++11 std lib
