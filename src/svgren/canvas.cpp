@@ -188,7 +188,7 @@ void canvas::set_source(const r4::vector4<real>& rgba){
 	this->context.color.g = rgba.g();
 	this->context.color.b = rgba.b();
 	this->context.color.a = rgba.a();
-	this->cur_gradient = nullptr;
+	this->context.grad.reset();
 #endif
 }
 
@@ -204,6 +204,7 @@ canvas::linear_gradient::linear_gradient(const r4::vector2<real>& p0, const r4::
 		throw std::runtime_error("cairo_pattern_create_linear() failed");
 	}
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	this->grad = &this->linear_grad;
 	// TODO:
 #endif
 }
@@ -222,6 +223,7 @@ canvas::radial_gradient::radial_gradient(const r4::vector2<real>& f, const r4::v
 		throw std::runtime_error("cairo_pattern_create_radial() failed");
 	}
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	this->grad = &this->radial_grad;
 	// TODO:
 #endif
 }
@@ -252,23 +254,24 @@ void canvas::gradient::set_spread_method(svgdom::gradient::spread_method spread_
 #endif
 }
 
-void canvas::gradient::add_stop(real offset, const r4::vector4<real>& rgba){
+void canvas::gradient::set_stops(utki::span<const stop> stops){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	cairo_pattern_add_color_stop_rgba(this->pattern, offset, rgba.r(), rgba.g(), rgba.b(), rgba.a());
-	ASSERT_INFO(cairo_pattern_status(this->pattern) == CAIRO_STATUS_SUCCESS,
-			"status = " << cairo_status_to_string(cairo_pattern_status(this->pattern)) << " offset = " << offset << " rgba = " << rgba
-		)
+	for(auto& s : stops){
+		cairo_pattern_add_color_stop_rgba(
+				this->pattern,
+				s.offset,
+				s.rgba.r(),
+				s.rgba.g(),
+				s.rgba.b(),
+				s.rgba.a()
+			);
+		ASSERT_INFO(cairo_pattern_status(this->pattern) == CAIRO_STATUS_SUCCESS,
+				"status = " << cairo_status_to_string(cairo_pattern_status(this->pattern)) << " offset = " << s.offset << " rgba = " << s.rgba
+			)
+	}
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	// TODO:
-#endif
-}
-
-#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-void canvas::set_gradient_stops(const gradient& g){
-	this->gradient_lut.remove_all();
-	for(auto& s : g.stops){
-		this->gradient_lut.add_color(
+	for(auto& s : stops){
+		this->lut.add_color(
 				backend_real(s.offset),
 				agg::rgba(
 						backend_real(s.rgba.r()),
@@ -278,30 +281,30 @@ void canvas::set_gradient_stops(const gradient& g){
 					)
 			);
 	}
-	this->gradient_lut.build_lut();
-}
+	this->lut.build_lut();
 #endif
+}
 
-void canvas::set_source(const linear_gradient& g){
+void canvas::set_source(std::shared_ptr<const linear_gradient> g){
+	ASSERT(g)
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	cairo_set_source(this->cr, g.pattern);
+	cairo_set_source(this->cr, g->pattern);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	this->set_gradient_stops(g);
-	this->cur_gradient = &this->linear_grad;
+	this->context.grad = std::move(g);
 	// TODO:
 #endif
 }
 
-void canvas::set_source(const radial_gradient& g){
+void canvas::set_source(std::shared_ptr<const radial_gradient> g){
+	ASSERT(g)
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	cairo_set_source(this->cr, g.pattern);
+	cairo_set_source(this->cr, g->pattern);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	this->set_gradient_stops(g);
-	this->radial_grad.gradient.init(g.r, g.f.x(), g.f.y());
+	// this->radial_grad.gradient.init(g.r, g.f.x(), g.f.y());
 	// TODO: set gradient center point
-	this->cur_gradient = &this->radial_grad;
+	this->context.grad = std::move(g);
 	// TODO:
 #endif
 }
@@ -683,7 +686,7 @@ void canvas::fill(){
 	this->rasterizer.filling_rule(this->context.fill_rule);
 	this->rasterizer.add_path(transformed_path);
 
-	if(!this->cur_gradient){
+	if(!this->context.grad){
 		this->renderer.color(this->context.color);
 		agg::render_scanlines(this->rasterizer, this->scanline, this->renderer);
 	}else{
@@ -698,12 +701,12 @@ void canvas::fill(){
 		agg::span_gradient<
 				decltype(this->pixel_format)::color_type,
                 decltype(span_interpolator),
-				gradient_wrapper_base,
-				decltype(this->gradient_lut)
+				gradient::gradient_wrapper_base,
+				const decltype(this->context.grad->lut)
 			> span_gradient(
 				span_interpolator, 
-                *this->cur_gradient,
-                this->gradient_lut, 
+                *this->context.grad->grad,
+                this->context.grad->lut, 
                 0,
 				100
 			);

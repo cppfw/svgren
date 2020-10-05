@@ -190,11 +190,10 @@ void renderer::set_gradient_properties(canvas::gradient& gradient, const svgdom:
 	gradient_ss.stack.push_back(effective_gradient_styleable);
 
 	struct gradient_stops_adder : public svgdom::const_visitor{
-		canvas::gradient& gradient;
+		std::vector<canvas::gradient::stop> stops;
 		svgdom::style_stack& ss;
 
-		gradient_stops_adder(canvas::gradient& gradient, svgdom::style_stack& ss) :
-				gradient(gradient),
+		gradient_stops_adder(svgdom::style_stack& ss) :
 				ss(ss)
 		{}
 
@@ -214,19 +213,18 @@ void renderer::set_gradient_properties(canvas::gradient& gradient, const svgdom:
 			}else{
 				opacity = 1;
 			}
-			this->gradient.add_stop(stop.offset, {rgb, opacity});
-			this->gradient.stops.push_back(canvas::gradient::stop{
+			this->stops.push_back(canvas::gradient::stop{
 					{rgb, opacity},
 					real(stop.offset)
 				});
 		}
-	} visitor(gradient, gradient_ss);
+	} visitor(gradient_ss);
 
 	for(auto& stop : this->gradient_get_stops(g)){
 		stop->accept(visitor);
 	}
 
-	gradient.spread_method = this->gradient_get_spread_method(g);
+	gradient.set_stops(utki::make_span(visitor.stops));
 	gradient.set_spread_method(this->gradient_get_spread_method(g));
 }
 
@@ -253,7 +251,7 @@ void renderer::apply_filter(const std::string& id){
 void renderer::set_gradient(const std::string& id){
 	auto g = this->finder.find_by_id(id);
 	if(!g){
-		this->canvas.set_source(0);
+		this->canvas.set_source(r4::vector4<real>{0});
 		return;
 	}
 
@@ -287,7 +285,7 @@ void renderer::set_gradient(const std::string& id){
 		void visit(const svgdom::linear_gradient_element& gradient)override{
 			CommonGradientPush commonPush(this->r, gradient);
 
-			canvas::linear_gradient g(
+			auto g = std::make_shared<canvas::linear_gradient>(
 					this->r.length_to_px(
 							this->r.gradient_get_x1(gradient),
 							this->r.gradient_get_y1(gradient)
@@ -298,7 +296,7 @@ void renderer::set_gradient(const std::string& id){
 						)
 				);
 			
-			this->r.set_gradient_properties(g, gradient, this->ss);
+			this->r.set_gradient_properties(*g, gradient, this->ss);
 
 			this->r.canvas.set_source(g);
 		}
@@ -319,23 +317,19 @@ void renderer::set_gradient(const std::string& id){
 				fy = cy;
 			}
 
-			canvas::radial_gradient g(
+			auto g = std::make_shared<canvas::radial_gradient>(
 					this->r.length_to_px(fx, fy),
 					this->r.length_to_px(cx, cy),
 					this->r.length_to_px(radius)
 				);
 
-			g.f = this->r.length_to_px(fx, fy);
-			g.c = this->r.length_to_px(cx, cy);
-			g.r = this->r.length_to_px(radius);
-
-			this->r.set_gradient_properties(g, gradient, this->ss);
+			this->r.set_gradient_properties(*g, gradient, this->ss);
 
 			this->r.canvas.set_source(g);
 		}
 
 		void default_visit(const svgdom::element&)override{
-			this->r.canvas.set_source(0);
+			this->r.canvas.set_source(r4::vector4<real>{0});
 		}
 	} visitor(*this, g->ss);
 

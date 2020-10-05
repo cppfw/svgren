@@ -79,7 +79,20 @@ public:
 	protected:
 		cairo_pattern_t* pattern;
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+		struct gradient_wrapper_base{
+			virtual int calculate(int x, int y, int) const = 0;
+			virtual ~gradient_wrapper_base(){}
+		};
+		template<class T> struct gradient_wrapper : public gradient_wrapper_base{
+			T g;
+			int calculate(int x, int y, int d)const override{
+				return this->g.calculate(x, y, d);
+			}
+		};
 
+		gradient_wrapper_base* grad;
+
+		agg::gradient_lut<agg::color_interpolator<agg::rgba8>, 1024> lut;
 #endif
 	public:
 
@@ -87,26 +100,27 @@ public:
 			r4::vector4<real> rgba;
 			real offset;
 		};
-		std::vector<stop> stops;
-
-		svgdom::gradient::spread_method spread_method;
 
 		void set_spread_method(svgdom::gradient::spread_method spread_method);
-		void add_stop(real offset, const r4::vector4<real>& rgba);
+		void set_stops(utki::span<const stop> stops);
 	};
 
-	struct linear_gradient : public gradient{
+	class linear_gradient : public gradient{
+#if SVGREN_BACKEND == SVGREN_BACKEND_AGG
+		gradient_wrapper<agg::gradient_x> linear_grad;
+#endif
+	public:
 		linear_gradient(
 				const r4::vector2<real>& p0,
 				const r4::vector2<real>& p1
 			);
 	};
 
-	struct radial_gradient : public gradient{
-		r4::vector2<real> f;
-		r4::vector2<real> c;
-		real r;
-
+	class radial_gradient : public gradient{
+#if SVGREN_BACKEND == SVGREN_BACKEND_AGG
+		gradient_wrapper<agg::gradient_radial_focus> radial_grad;
+#endif
+	public:
 		radial_gradient(const r4::vector2<real>& f, const r4::vector2<real>& c, real r);
 	};
 
@@ -155,28 +169,13 @@ private:
 	agg::scanline_u8 scanline;
 
 	agg::path_storage path;
-	
-	struct gradient_wrapper_base{
-    	virtual int calculate(int x, int y, int) const = 0;
-		virtual ~gradient_wrapper_base(){}
-	};
-	template<class T> struct gradient_wrapper : public gradient_wrapper_base{
-		T gradient;
-		int calculate(int x, int y, int d)const override{
-			return this->gradient.calculate(x, y, d);
-		}
-	};
-
-	gradient_wrapper<agg::gradient_x> linear_grad;
-	gradient_wrapper<agg::gradient_radial_focus> radial_grad;
-	gradient_wrapper_base* cur_gradient = nullptr;
-	agg::gradient_lut<agg::color_interpolator<agg::rgba8>, 1024> gradient_lut;
 
 	agg::span_allocator<decltype(pixel_format)::color_type> span_allocator;
 
 	struct context_type{
 		agg::trans_affine matrix; // right after construction it is set to identity matrix
 		agg::rgba color = agg::rgba(0);
+		std::shared_ptr<const gradient> grad;
 		real line_width = 1;
 		agg::filling_rule_e fill_rule = agg::filling_rule_e::fill_even_odd;
 		agg::line_cap_e line_cap = agg::line_cap_e::butt_cap;
@@ -184,8 +183,6 @@ private:
 	} context;
 
 	std::vector<context_type> context_stack;
-
-	void set_gradient_stops(const gradient& g);
 #endif
 
 public:
@@ -207,8 +204,8 @@ public:
 	void set_fill_rule(svgdom::fill_rule fr);
 
 	void set_source(const r4::vector4<real>& rgba);
-	void set_source(const linear_gradient& g);
-	void set_source(const radial_gradient& g);
+	void set_source(std::shared_ptr<const linear_gradient> g);
+	void set_source(std::shared_ptr<const radial_gradient> g);
 
 	r4::vector2<real> matrix_mul(const r4::vector2<real>& v);
 
