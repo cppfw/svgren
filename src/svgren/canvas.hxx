@@ -35,6 +35,7 @@
 #	include <agg2/agg_gradient_lut.h>
 #	include <agg2/agg_span_gradient.h>
 #	include <agg2/agg_span_allocator.h>
+#	include <agg2/agg_span_interpolator_linear.h>
 #endif
 
 namespace svgren{
@@ -93,6 +94,8 @@ public:
 		gradient_wrapper_base* grad;
 
 		agg::gradient_lut<agg::color_interpolator<agg::rgba8>, 1024> lut;
+
+		agg::trans_affine matrix;
 #endif
 	public:
 

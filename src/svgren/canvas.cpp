@@ -11,7 +11,6 @@
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 #	include <agg2/agg_conv_curve.h>
 #	include <agg2/agg_bounding_rect.h>
-#	include <agg2/agg_span_interpolator_linear.h>
 #endif
 
 using namespace svgren;
@@ -205,6 +204,10 @@ canvas::linear_gradient::linear_gradient(const r4::vector2<real>& p0, const r4::
 	}
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->grad = &this->linear_grad;
+
+	
+	this->matrix.invert(); // gradients and patterns assume inverse matrix
+
 	// TODO:
 #endif
 }
@@ -690,13 +693,9 @@ void canvas::fill(){
 		this->renderer.color(this->context.color);
 		agg::render_scanlines(this->rasterizer, this->scanline, this->renderer);
 	}else{
-		agg::trans_affine gradient_matrix;
-        
-        // gradient_mtx.translate();
-        // gradient_mtx *= trans_affine_resizing();
-        gradient_matrix.invert(); // gradients and patterns assume inverse matrix
-
-		agg::span_interpolator_linear<> span_interpolator(gradient_matrix);
+		agg::span_interpolator_linear<
+				const decltype(this->context.grad->matrix)
+			> span_interpolator{this->context.grad->matrix};
 
 		agg::span_gradient<
 				decltype(this->pixel_format)::color_type,
@@ -708,7 +707,7 @@ void canvas::fill(){
                 *this->context.grad->grad,
                 this->context.grad->lut, 
                 0,
-				100
+				300
 			);
 
 		agg::render_scanlines_aa(this->rasterizer, this->scanline, this->renderer_base, this->span_allocator, span_gradient);
