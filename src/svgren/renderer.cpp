@@ -214,6 +214,7 @@ void renderer::set_gradient_properties(canvas::gradient& gradient, const svgdom:
 			}else{
 				opacity = 1;
 			}
+			this->gradient.add_stop(stop.offset, {rgb, opacity});
 			this->gradient.stops.push_back(canvas::gradient::stop{
 					{rgb, opacity},
 					real(stop.offset)
@@ -226,6 +227,7 @@ void renderer::set_gradient_properties(canvas::gradient& gradient, const svgdom:
 	}
 
 	gradient.spread_method = this->gradient_get_spread_method(g);
+	gradient.set_spread_method(this->gradient_get_spread_method(g));
 }
 
 void renderer::apply_filter(){
@@ -285,15 +287,15 @@ void renderer::set_gradient(const std::string& id){
 		void visit(const svgdom::linear_gradient_element& gradient)override{
 			CommonGradientPush commonPush(this->r, gradient);
 
-			canvas::linear_gradient g;
-
-			g.p0 = this->r.length_to_px(
-					this->r.gradient_get_x1(gradient),
-					this->r.gradient_get_y1(gradient)
-				);
-			g.p1 = this->r.length_to_px(
-					this->r.gradient_get_x2(gradient),
-					this->r.gradient_get_y2(gradient)
+			canvas::linear_gradient g(
+					this->r.length_to_px(
+							this->r.gradient_get_x1(gradient),
+							this->r.gradient_get_y1(gradient)
+						),
+					this->r.length_to_px(
+							this->r.gradient_get_x2(gradient),
+							this->r.gradient_get_y2(gradient)
+						)
 				);
 			
 			this->r.set_gradient_properties(g, gradient, this->ss);
@@ -408,7 +410,7 @@ void renderer::render_shape(bool isCairoGroupPushed){
 			}
 
 			auto fillRgb = fill->get_rgb().to<real>();
-			this->canvas.set_source({fillRgb, fillOpacity * opacity});
+			this->canvas.set_source(r4::vector4<real>{fillRgb, fillOpacity * opacity});
 		}
 
 		this->canvas.fill();
@@ -442,7 +444,7 @@ void renderer::render_shape(bool isCairoGroupPushed){
 			}
 
 			auto rgb = stroke->get_rgb().to<real>();
-			this->canvas.set_source({rgb, strokeOpacity * opacity});
+			this->canvas.set_source(r4::vector4<real>{rgb, strokeOpacity * opacity});
 		}
 
 		this->canvas.stroke();

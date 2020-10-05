@@ -73,7 +73,16 @@ class canvas{
 	std::vector<uint32_t> pixels;
 
 public:
-	struct gradient{
+	class gradient{
+		friend class canvas;
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	protected:
+		cairo_pattern_t* pattern;
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+
+#endif
+	public:
+
 		struct stop{
 			r4::vector4<real> rgba;
 			real offset;
@@ -81,17 +90,24 @@ public:
 		std::vector<stop> stops;
 
 		svgdom::gradient::spread_method spread_method;
+
+		void set_spread_method(svgdom::gradient::spread_method spread_method);
+		void add_stop(real offset, const r4::vector4<real>& rgba);
 	};
 
 	struct linear_gradient : public gradient{
-		r4::vector2<real> p0;
-		r4::vector2<real> p1;
+		linear_gradient(
+				const r4::vector2<real>& p0,
+				const r4::vector2<real>& p1
+			);
 	};
 
 	struct radial_gradient : public gradient{
 		r4::vector2<real> f;
 		r4::vector2<real> c;
 		real r;
+
+		// radial_gradient();
 	};
 
 private:

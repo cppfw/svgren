@@ -192,9 +192,60 @@ void canvas::set_source(const r4::vector4<real>& rgba){
 #endif
 }
 
+canvas::linear_gradient::linear_gradient(const r4::vector2<real>& p0, const r4::vector2<real>& p1){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	this->pattern = cairo_pattern_create_linear(
+			backend_real(p0.x()),
+			backend_real(p0.y()),
+			backend_real(p1.x()),
+			backend_real(p1.y())
+		);
+	if(!this->pattern){
+		throw std::runtime_error("cairo_pattern_create_linear() failed");
+	}
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	// TODO:
+#endif
+}
+
+void canvas::gradient::set_spread_method(svgdom::gradient::spread_method spread_method){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	cairo_extend_t extend;
+
+	switch(spread_method){
+		default:
+		case svgdom::gradient::spread_method::default_:
+			ASSERT(false)
+		case svgdom::gradient::spread_method::pad:
+			extend = CAIRO_EXTEND_PAD;
+			break;
+		case svgdom::gradient::spread_method::reflect:
+			extend = CAIRO_EXTEND_REPEAT; // For some reason, REPEAT works as reflect in cairo, possibly a bug in cairo?
+			break;
+		case svgdom::gradient::spread_method::repeat:
+			extend = CAIRO_EXTEND_REFLECT; // REFLECT works same way as PAD in cairo, possibly a bug in cairo?
+			break;
+	}
+
+	cairo_pattern_set_extend(this->pattern, extend);
+	ASSERT(cairo_pattern_status(this->pattern) == CAIRO_STATUS_SUCCESS)
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	// TODO:
+#endif
+}
+
+void canvas::gradient::add_stop(real offset, const r4::vector4<real>& rgba){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	cairo_pattern_add_color_stop_rgba(this->pattern, offset, rgba.r(), rgba.g(), rgba.b(), rgba.a());
+	ASSERT(cairo_pattern_status(this->pattern) == CAIRO_STATUS_SUCCESS)
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	// TODO:
+#endif
+}
+
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 namespace{
-void set_cairo_pattern_properties(cairo_pattern_t* pat, const gradient& g){
+void set_cairo_pattern_properties(cairo_pattern_t* pat, const canvas::gradient& g){
 	for(auto& s : g.stops){
 		cairo_pattern_add_color_stop_rgba(pat, s.offset, s.rgba.r(), s.rgba.g(), s.rgba.b(), s.rgba.a());
 		ASSERT(cairo_pattern_status(pat) == CAIRO_STATUS_SUCCESS)
@@ -241,20 +292,22 @@ void canvas::set_gradient_stops(const gradient& g){
 
 void canvas::set_source(const linear_gradient& g){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	auto pat = cairo_pattern_create_linear(
-			backend_real(g.p0.x()),
-			backend_real(g.p0.y()),
-			backend_real(g.p1.x()),
-			backend_real(g.p1.y())
-		);
-	if(!pat){
-		throw std::runtime_error("cairo_pattern_create_linear() failed");
-	}
-	utki::scope_exit pat_scope_exit([&pat](){cairo_pattern_destroy(pat);});
+	// auto pat = cairo_pattern_create_linear(
+	// 		backend_real(g.p0.x()),
+	// 		backend_real(g.p0.y()),
+	// 		backend_real(g.p1.x()),
+	// 		backend_real(g.p1.y())
+	// 	);
+	// if(!pat){
+	// 	throw std::runtime_error("cairo_pattern_create_linear() failed");
+	// }
+	// utki::scope_exit pat_scope_exit([&pat](){cairo_pattern_destroy(pat);});
 
-	set_cairo_pattern_properties(pat, g);
+	// set_cairo_pattern_properties(pat, g);
 
-	cairo_set_source(this->cr, pat);
+	// cairo_set_source(this->cr, pat);
+	// ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+	cairo_set_source(this->cr, g.pattern);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->set_gradient_stops(g);
