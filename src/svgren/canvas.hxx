@@ -107,7 +107,7 @@ public:
 		r4::vector2<real> c;
 		real r;
 
-		// radial_gradient();
+		radial_gradient(const r4::vector2<real>& f, const r4::vector2<real>& c, real r);
 	};
 
 private:

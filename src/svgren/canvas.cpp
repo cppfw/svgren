@@ -208,6 +208,24 @@ canvas::linear_gradient::linear_gradient(const r4::vector2<real>& p0, const r4::
 #endif
 }
 
+canvas::radial_gradient::radial_gradient(const r4::vector2<real>& f, const r4::vector2<real>& c, real r){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	this->pattern = cairo_pattern_create_radial(
+			backend_real(f.x()),
+			backend_real(f.y()),
+			backend_real(0),
+			backend_real(c.x()),
+			backend_real(c.y()),
+			backend_real(r)
+		);
+	if(!this->pattern){
+		throw std::runtime_error("cairo_pattern_create_radial() failed");
+	}
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	// TODO:
+#endif
+}
+
 void canvas::gradient::set_spread_method(svgdom::gradient::spread_method spread_method){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	cairo_extend_t extend;
@@ -237,41 +255,15 @@ void canvas::gradient::set_spread_method(svgdom::gradient::spread_method spread_
 void canvas::gradient::add_stop(real offset, const r4::vector4<real>& rgba){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	cairo_pattern_add_color_stop_rgba(this->pattern, offset, rgba.r(), rgba.g(), rgba.b(), rgba.a());
-	ASSERT(cairo_pattern_status(this->pattern) == CAIRO_STATUS_SUCCESS)
+	ASSERT_INFO(cairo_pattern_status(this->pattern) == CAIRO_STATUS_SUCCESS,
+			"status = " << cairo_status_to_string(cairo_pattern_status(this->pattern)) << " offset = " << offset << " rgba = " << rgba
+		)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	// TODO:
 #endif
 }
 
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-namespace{
-void set_cairo_pattern_properties(cairo_pattern_t* pat, const canvas::gradient& g){
-	for(auto& s : g.stops){
-		cairo_pattern_add_color_stop_rgba(pat, s.offset, s.rgba.r(), s.rgba.g(), s.rgba.b(), s.rgba.a());
-		ASSERT(cairo_pattern_status(pat) == CAIRO_STATUS_SUCCESS)
-	}
-
-	cairo_extend_t extend;
-
-	switch(g.spread_method){
-		default:
-		case svgdom::gradient::spread_method::default_:
-			ASSERT(false)
-		case svgdom::gradient::spread_method::pad:
-			extend = CAIRO_EXTEND_PAD;
-			break;
-		case svgdom::gradient::spread_method::reflect:
-			extend = CAIRO_EXTEND_REPEAT; // For some reason, REPEAT works as reflect in cairo, possibly a bug in cairo?
-			break;
-		case svgdom::gradient::spread_method::repeat:
-			extend = CAIRO_EXTEND_REFLECT; // REFLECT works same way as PAD in cairo, possibly a bug in cairo?
-			break;
-	}
-
-	cairo_pattern_set_extend(pat, extend);
-	ASSERT(cairo_pattern_status(pat) == CAIRO_STATUS_SUCCESS)
-}
-}
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 void canvas::set_gradient_stops(const gradient& g){
 	this->gradient_lut.remove_all();
@@ -292,21 +284,6 @@ void canvas::set_gradient_stops(const gradient& g){
 
 void canvas::set_source(const linear_gradient& g){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	// auto pat = cairo_pattern_create_linear(
-	// 		backend_real(g.p0.x()),
-	// 		backend_real(g.p0.y()),
-	// 		backend_real(g.p1.x()),
-	// 		backend_real(g.p1.y())
-	// 	);
-	// if(!pat){
-	// 	throw std::runtime_error("cairo_pattern_create_linear() failed");
-	// }
-	// utki::scope_exit pat_scope_exit([&pat](){cairo_pattern_destroy(pat);});
-
-	// set_cairo_pattern_properties(pat, g);
-
-	// cairo_set_source(this->cr, pat);
-	// ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	cairo_set_source(this->cr, g.pattern);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
@@ -318,22 +295,7 @@ void canvas::set_source(const linear_gradient& g){
 
 void canvas::set_source(const radial_gradient& g){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	auto pat = cairo_pattern_create_radial(
-			backend_real(g.f.x()),
-			backend_real(g.f.y()),
-			backend_real(0),
-			backend_real(g.c.x()),
-			backend_real(g.c.y()),
-			backend_real(g.r)
-		);
-	if(!pat){
-		throw std::runtime_error("cairo_pattern_create_radial() failed");
-	}
-	utki::scope_exit pat_scope_exit([&pat](){cairo_pattern_destroy(pat);});
-
-	set_cairo_pattern_properties(pat, g);
-
-	cairo_set_source(this->cr, pat);
+	cairo_set_source(this->cr, g.pattern);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->set_gradient_stops(g);
