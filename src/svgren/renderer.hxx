@@ -54,7 +54,7 @@ public:
 	
 	void apply_transformations(const decltype(svgdom::transformable::transformations)& transformations);
 	
-	void set_gradient_properties(svgren::gradient& gradient, const svgdom::gradient& g, const svgdom::style_stack& ss);
+	void set_gradient_properties(canvas::gradient& gradient, const svgdom::gradient& g, const svgdom::style_stack& ss);
 	
 	void set_gradient(const std::string& id);
 	

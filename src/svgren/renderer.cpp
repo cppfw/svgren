@@ -159,7 +159,7 @@ void renderer::apply_viewbox(const svgdom::view_boxed& e, const svgdom::aspect_r
 	this->canvas.translate(-e.view_box[0], -e.view_box[1]);
 }
 
-void renderer::set_gradient_properties(svgren::gradient& gradient, const svgdom::gradient& g, const svgdom::style_stack& ss){
+void renderer::set_gradient_properties(canvas::gradient& gradient, const svgdom::gradient& g, const svgdom::style_stack& ss){
 	// Gradient inherits all attributes from other gradients it refers via href.
 	// Here we need to make sure that the gradient inherits 'styles', 'class' and all possible presentation attributes.
 	// For that we need to replace the gradient element in the style stack with the one which has those inherited
@@ -190,10 +190,10 @@ void renderer::set_gradient_properties(svgren::gradient& gradient, const svgdom:
 	gradient_ss.stack.push_back(effective_gradient_styleable);
 
 	struct gradient_stops_adder : public svgdom::const_visitor{
-		svgren::gradient& gradient;
+		canvas::gradient& gradient;
 		svgdom::style_stack& ss;
 
-		gradient_stops_adder(svgren::gradient& gradient, svgdom::style_stack& ss) :
+		gradient_stops_adder(canvas::gradient& gradient, svgdom::style_stack& ss) :
 				gradient(gradient),
 				ss(ss)
 		{}
@@ -214,7 +214,7 @@ void renderer::set_gradient_properties(svgren::gradient& gradient, const svgdom:
 			}else{
 				opacity = 1;
 			}
-			this->gradient.stops.push_back(gradient::stop{
+			this->gradient.stops.push_back(canvas::gradient::stop{
 					{rgb, opacity},
 					real(stop.offset)
 				});
@@ -285,7 +285,7 @@ void renderer::set_gradient(const std::string& id){
 		void visit(const svgdom::linear_gradient_element& gradient)override{
 			CommonGradientPush commonPush(this->r, gradient);
 
-			linear_gradient g;
+			canvas::linear_gradient g;
 
 			g.p0 = this->r.length_to_px(
 					this->r.gradient_get_x1(gradient),
@@ -317,7 +317,7 @@ void renderer::set_gradient(const std::string& id){
 				fy = cy;
 			}
 
-			radial_gradient g;
+			canvas::radial_gradient g;
 
 			g.f = this->r.length_to_px(fx, fy);
 			g.c = this->r.length_to_px(cx, cy);

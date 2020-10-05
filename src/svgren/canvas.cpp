@@ -222,7 +222,7 @@ void set_cairo_pattern_properties(cairo_pattern_t* pat, const gradient& g){
 }
 }
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-void canvas::set_gradient_stops(const svgren::gradient& g){
+void canvas::set_gradient_stops(const gradient& g){
 	this->gradient_lut.remove_all();
 	for(auto& s : g.stops){
 		this->gradient_lut.add_color(
@@ -239,7 +239,7 @@ void canvas::set_gradient_stops(const svgren::gradient& g){
 }
 #endif
 
-void canvas::set_source(const svgren::linear_gradient& g){
+void canvas::set_source(const linear_gradient& g){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	auto pat = cairo_pattern_create_linear(
 			backend_real(g.p0.x()),
@@ -258,12 +258,12 @@ void canvas::set_source(const svgren::linear_gradient& g){
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->set_gradient_stops(g);
-	this->cur_gradient = &this->linear_gradient;
+	this->cur_gradient = &this->linear_grad;
 	// TODO:
 #endif
 }
 
-void canvas::set_source(const svgren::radial_gradient& g){
+void canvas::set_source(const radial_gradient& g){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	auto pat = cairo_pattern_create_radial(
 			backend_real(g.f.x()),
@@ -284,9 +284,9 @@ void canvas::set_source(const svgren::radial_gradient& g){
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->set_gradient_stops(g);
-	this->radial_gradient.gradient.init(g.r, g.f.x(), g.f.y());
+	this->radial_grad.gradient.init(g.r, g.f.x(), g.f.y());
 	// TODO: set gradient center point
-	this->cur_gradient = &this->radial_gradient;
+	this->cur_gradient = &this->radial_grad;
 	// TODO:
 #endif
 }

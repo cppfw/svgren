@@ -11,10 +11,10 @@
 #include <r4/rectangle.hpp>
 
 #include <svgdom/elements/styleable.hpp>
+#include <svgdom/elements/gradients.hpp>
 
 #include "config.hxx"
 #include "surface.hxx"
-#include "gradient.hxx"
 
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 #	if M_OS == M_OS_WINDOWS || M_OS_NAME == M_OS_NAME_IOS
@@ -72,6 +72,29 @@ inline uint32_t get_uint32_t(const r4::vector4<unsigned>& rgba){
 class canvas{
 	std::vector<uint32_t> pixels;
 
+public:
+	struct gradient{
+		struct stop{
+			r4::vector4<real> rgba;
+			real offset;
+		};
+		std::vector<stop> stops;
+
+		svgdom::gradient::spread_method spread_method;
+	};
+
+	struct linear_gradient : public gradient{
+		r4::vector2<real> p0;
+		r4::vector2<real> p1;
+	};
+
+	struct radial_gradient : public gradient{
+		r4::vector2<real> f;
+		r4::vector2<real> c;
+		real r;
+	};
+
+private:
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	typedef double backend_real;
 
@@ -128,8 +151,8 @@ class canvas{
 		}
 	};
 
-	gradient_wrapper<agg::gradient_x> linear_gradient;
-	gradient_wrapper<agg::gradient_radial_focus> radial_gradient;
+	gradient_wrapper<agg::gradient_x> linear_grad;
+	gradient_wrapper<agg::gradient_radial_focus> radial_grad;
 	gradient_wrapper_base* cur_gradient = nullptr;
 	agg::gradient_lut<agg::color_interpolator<agg::rgba8>, 1024> gradient_lut;
 
@@ -146,10 +169,11 @@ class canvas{
 
 	std::vector<context_type> context_stack;
 
-	void set_gradient_stops(const svgren::gradient& g);
+	void set_gradient_stops(const gradient& g);
 #endif
 
 public:
+
 	canvas(unsigned width, unsigned height);
 	~canvas();
 
@@ -167,8 +191,8 @@ public:
 	void set_fill_rule(svgdom::fill_rule fr);
 
 	void set_source(const r4::vector4<real>& rgba);
-	void set_source(const svgren::linear_gradient& g);
-	void set_source(const svgren::radial_gradient& g);
+	void set_source(const linear_gradient& g);
+	void set_source(const radial_gradient& g);
 
 	r4::vector2<real> matrix_mul(const r4::vector2<real>& v);
 
