@@ -91,29 +91,30 @@ void renderer::apply_transformations(const decltype(svgdom::transformable::trans
 }
 
 void renderer::apply_viewbox(const svgdom::view_boxed& e, const svgdom::aspect_ratioed& ar){
-	if (!e.is_view_box_specified()) {
+	TRACE(<< "vb = " << e.view_box[0] << ", " << e.view_box[1] << ", " << e.view_box[2] << ", " << e.view_box[3] << std::endl)
+	if(!e.is_view_box_specified()){
 		return;
 	}
 
-	if (ar.preserve_aspect_ratio.preserve != svgdom::aspect_ratioed::aspect_ratio_preservation::none) {
-		if (e.view_box[3] >= 0 && this->viewport[1] >= 0) { // if viewBox width and viewport width are not 0
+	if(ar.preserve_aspect_ratio.preserve != svgdom::aspect_ratioed::aspect_ratio_preservation::none){
+		if(e.view_box[3] >= 0 && this->viewport[1] >= 0){ // if viewBox width and viewport width are not 0
 			real scaleFactor, dx, dy;
 
 			real viewBoxAspect = e.view_box[2] / e.view_box[3];
 			real viewportAspect = this->viewport[0] / this->viewport[1];
 
-			if ((viewBoxAspect >= viewportAspect && ar.preserve_aspect_ratio.slice) || (viewBoxAspect < viewportAspect && !ar.preserve_aspect_ratio.slice)) {
+			if((viewBoxAspect >= viewportAspect && ar.preserve_aspect_ratio.slice) || (viewBoxAspect < viewportAspect && !ar.preserve_aspect_ratio.slice)){
 				// fit by Y
 				scaleFactor = this->viewport[1] / e.view_box[3];
 				dx = e.view_box[2] - this->viewport[0];
 				dy = 0;
-			} else { // viewBoxAspect < viewportAspect
+			}else{ // viewBoxAspect < viewportAspect
 				// fit by X
 				scaleFactor = this->viewport[0] / e.view_box[2];
 				dx = 0;
 				dy = e.view_box[3] - this->viewport[1];
 			}
-			switch (ar.preserve_aspect_ratio.preserve) {
+			switch(ar.preserve_aspect_ratio.preserve){
 				case svgdom::aspect_ratioed::aspect_ratio_preservation::none:
 					ASSERT(false)
 				default:
@@ -149,11 +150,8 @@ void renderer::apply_viewbox(const svgdom::view_boxed& e, const svgdom::aspect_r
 			this->canvas.scale(scaleFactor, scaleFactor);
 		}
 	}else{ // if no preserveAspectRatio enforced
-		if (e.view_box[2] != 0 && e.view_box[3] != 0) { // if viewBox width and height are not 0
-			this->canvas.scale(
-					this->viewport[0] / e.view_box[2],
-					this->viewport[1] / e.view_box[3]
-				);
+		if(e.view_box[2] != 0 && e.view_box[3] != 0){ // if viewBox width and height are not 0
+			this->canvas.scale(this->viewport.comp_div({e.view_box[2], e.view_box[3]}));
 		}
 	}
 	this->canvas.translate(-e.view_box[0], -e.view_box[1]);
