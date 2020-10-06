@@ -106,6 +106,8 @@ public:
 
 		void set_spread_method(svgdom::gradient::spread_method spread_method);
 		void set_stops(utki::span<const stop> stops);
+
+		virtual ~gradient();
 	};
 
 	class linear_gradient : public gradient{
@@ -207,8 +209,7 @@ public:
 	void set_fill_rule(svgdom::fill_rule fr);
 
 	void set_source(const r4::vector4<real>& rgba);
-	void set_source(std::shared_ptr<const linear_gradient> g);
-	void set_source(std::shared_ptr<const radial_gradient> g);
+	void set_source(std::shared_ptr<const gradient> g);
 
 	r4::vector2<real> matrix_mul(const r4::vector2<real>& v);
 

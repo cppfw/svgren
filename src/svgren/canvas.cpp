@@ -191,6 +191,14 @@ void canvas::set_source(const r4::vector4<real>& rgba){
 #endif
 }
 
+canvas::gradient::~gradient(){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO	
+	ASSERT(this->pattern)
+	cairo_pattern_destroy(this->pattern);
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+#endif
+}
+
 canvas::linear_gradient::linear_gradient(const r4::vector2<real>& p0, const r4::vector2<real>& p1){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	this->pattern = cairo_pattern_create_linear(
@@ -288,26 +296,13 @@ void canvas::gradient::set_stops(utki::span<const stop> stops){
 #endif
 }
 
-void canvas::set_source(std::shared_ptr<const linear_gradient> g){
+void canvas::set_source(std::shared_ptr<const gradient> g){
 	ASSERT(g)
+	this->context.grad = std::move(g);
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	cairo_set_source(this->cr, g->pattern);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	this->context.grad = std::move(g);
-	// TODO:
-#endif
-}
-
-void canvas::set_source(std::shared_ptr<const radial_gradient> g){
-	ASSERT(g)
-#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	cairo_set_source(this->cr, g->pattern);
-	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	// this->radial_grad.gradient.init(g.r, g.f.x(), g.f.y());
-	// TODO: set gradient center point
-	this->context.grad = std::move(g);
 	// TODO:
 #endif
 }
