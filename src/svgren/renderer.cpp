@@ -85,7 +85,7 @@ void renderer::apply_transformation(const svgdom::transformable::transformation&
 }
 
 void renderer::apply_transformations(const decltype(svgdom::transformable::transformations)& transformations){
-	for (auto& t : transformations) {
+	for(auto& t : transformations){
 		this->apply_transformation(t);
 	}
 }
