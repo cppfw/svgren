@@ -179,6 +179,7 @@ void canvas::set_fill_rule(svgdom::fill_rule fr){
 }
 
 void canvas::set_source(const r4::vector4<real>& rgba){
+	this->context.grad.reset();
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	cairo_set_source_rgba(this->cr, backend_real(rgba.r()), backend_real(rgba.g()), backend_real(rgba.b()), backend_real(rgba.a()));
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
@@ -187,7 +188,6 @@ void canvas::set_source(const r4::vector4<real>& rgba){
 	this->context.color.g = rgba.g();
 	this->context.color.b = rgba.b();
 	this->context.color.a = rgba.a();
-	this->context.grad.reset();
 #endif
 }
 
