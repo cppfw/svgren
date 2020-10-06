@@ -18,8 +18,8 @@ using namespace svgren;
 canvas::canvas(unsigned width, unsigned height) :
 		pixels(
 				width * height,
-#ifdef M_SVGREN_BACKGROUND
-				M_SVGREN_BACKGROUND
+#ifdef SVGREN_BACKGROUND
+				SVGREN_BACKGROUND
 #else
 				0
 #endif
