@@ -359,7 +359,7 @@ r4::rectangle<real> canvas::get_shape_bounding_box()const{
 	real x1, x2, y1, y2;
 	agg::bounding_rect_single(
 			const_cast<std::remove_const<std::remove_pointer<decltype(this)>::type>::type*>(this)->path,
-			1, // 0th vertex is always 0 point, ignore it, start from 1st vertex
+			0,
 			&x1,
 			&y1,
 			&x2,
