@@ -176,19 +176,22 @@ private:
 	agg::path_storage path;
 
 	agg::span_allocator<decltype(pixel_format)::color_type> span_allocator;
+#endif
 
 	struct context_type{
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 		agg::trans_affine matrix; // right after construction it is set to identity matrix
 		agg::rgba color = agg::rgba(0);
-		std::shared_ptr<const gradient> grad;
 		real line_width = 1;
 		agg::filling_rule_e fill_rule = agg::filling_rule_e::fill_even_odd;
 		agg::line_cap_e line_cap = agg::line_cap_e::butt_cap;
 		agg::line_join_e line_join = agg::line_join_e::miter_join;
+#endif
+		std::shared_ptr<const gradient> grad;
 	} context;
 
 	std::vector<context_type> context_stack;
-#endif
 
 public:
 

@@ -298,13 +298,13 @@ void canvas::gradient::set_stops(utki::span<const stop> stops){
 
 void canvas::set_source(std::shared_ptr<const gradient> g){
 	ASSERT(g)
-	this->context.grad = std::move(g);
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	cairo_set_source(this->cr, g->pattern);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	// TODO:
 #endif
+	this->context.grad = std::move(g);
 }
 
 r4::vector2<real> canvas::matrix_mul(const r4::vector2<real>& v){
@@ -820,24 +820,24 @@ void canvas::set_line_join(svgdom::stroke_line_join lj){
 }
 
 void canvas::push_context(){
+	this->context_stack.push_back(this->context);
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	cairo_save(this->cr);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	this->context_stack.push_back(this->context);
 #endif
 }
 
 void canvas::pop_context(){
-#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	cairo_restore(this->cr);
-	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	if(this->context_stack.empty()){
 		throw std::logic_error("canvas::pop_contex(): context stack is empty");
 	}
 	this->context = this->context_stack.back();
 	this->context_stack.pop_back();
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	cairo_restore(this->cr);
+	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 #endif
 }
 
