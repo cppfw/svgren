@@ -251,10 +251,10 @@ void canvas::gradient::set_spread_method(svgdom::gradient::spread_method spread_
 			extend = CAIRO_EXTEND_PAD;
 			break;
 		case svgdom::gradient::spread_method::reflect:
-			extend = CAIRO_EXTEND_REPEAT; // For some reason, REPEAT works as reflect in cairo, possibly a bug in cairo?
+			extend = CAIRO_EXTEND_REFLECT;
 			break;
 		case svgdom::gradient::spread_method::repeat:
-			extend = CAIRO_EXTEND_REFLECT; // REFLECT works same way as PAD in cairo, possibly a bug in cairo?
+			extend = CAIRO_EXTEND_REPEAT;
 			break;
 	}
 
