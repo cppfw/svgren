@@ -67,7 +67,7 @@ public:
 	
 	void apply_viewbox(const svgdom::view_boxed& e, const svgdom::aspect_ratioed& ar);
 	
-	void render_element(
+	void render_svg_element(
 			const svgdom::container& c,
 			const svgdom::styleable& s,
 			const svgdom::view_boxed& v,

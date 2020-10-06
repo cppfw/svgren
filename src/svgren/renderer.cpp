@@ -454,7 +454,7 @@ void renderer::render_shape(bool isCairoGroupPushed){
 	this->apply_filter();
 }
 
-void renderer::render_element(
+void renderer::render_svg_element(
 		const svgdom::container& e,
 		const svgdom::styleable& s,
 		const svgdom::view_boxed& v,
@@ -581,7 +581,7 @@ void renderer::visit(const svgdom::use_element& e){
 				void accept(svgdom::const_visitor& visitor) const override{
 					const auto hundredPercent = svgdom::length(100, svgdom::length_unit::percent);
 
-					this->r.render_element(
+					this->r.render_svg_element(
 							this->se,
 							this->se,
 							this->se,
@@ -613,7 +613,7 @@ void renderer::visit(const svgdom::use_element& e){
 				}
 				void accept(svgdom::const_visitor& visitor) const override{
 					// width and height of <use> element override those of <svg> element.
-					this->r.render_element(
+					this->r.render_svg_element(
 							this->se,
 							this->se,
 							this->se,
@@ -663,7 +663,7 @@ void renderer::visit(const svgdom::use_element& e){
 
 void renderer::visit(const svgdom::svg_element& e){
 //	TRACE(<< "rendering SvgElement" << std::endl)
-	render_element(e, e, e, e, e.x, e.y, e.width, e.height);
+	render_svg_element(e, e, e, e, e.x, e.y, e.width, e.height);
 }
 
 bool renderer::is_invisible(){
