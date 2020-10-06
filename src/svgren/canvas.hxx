@@ -193,6 +193,7 @@ private:
 
 	std::vector<context_type> context_stack;
 
+	bool has_current_point()const;
 public:
 
 	canvas(unsigned width, unsigned height);
