@@ -213,9 +213,16 @@ canvas::linear_gradient::linear_gradient(const r4::vector2<real>& p0, const r4::
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->grad = &this->linear_grad;
 
-	// this->matrix.translate(p0.x(), p0.y());
+	// for gradient transformations go in reverse order
+
 	// auto len = p1 - p0;
 	// this->matrix.scale(len.x(), len.y());
+	// this->matrix.scale(1.0 / decltype(gradient::lut)::color_lut_size);
+	// this->matrix.translate(p0.x(), p0.y());
+
+	this->matrix.scale(600.0);
+	this->matrix.scale(1.0 / decltype(gradient::lut)::color_lut_size);
+	this->matrix.translate(100, 0);
 	
 	this->matrix.invert(); // gradients and patterns assume inverse matrix
 
@@ -737,7 +744,7 @@ void canvas::fill(){
                 *this->context.grad->grad,
                 this->context.grad->lut, 
                 0,
-				300
+				decltype(gradient::lut)::color_lut_size
 			);
 
 		agg::render_scanlines_aa(this->rasterizer, this->scanline, this->renderer_base, this->span_allocator, span_gradient);
