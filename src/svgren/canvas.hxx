@@ -91,7 +91,7 @@ public:
 			}
 		};
 
-		gradient_wrapper_base* grad;
+		virtual const gradient_wrapper_base& get_agg_gradient()const = 0;
 
 		agg::gradient_lut<agg::color_interpolator<agg::rgba8>, 1024> lut;
 
@@ -113,6 +113,10 @@ public:
 	class linear_gradient : public gradient{
 #if SVGREN_BACKEND == SVGREN_BACKEND_AGG
 		gradient_wrapper<agg::gradient_x> linear_grad;
+
+		const gradient_wrapper_base& get_agg_gradient()const override{
+			return this->linear_grad;
+		}
 #endif
 	public:
 		linear_gradient(
@@ -124,6 +128,10 @@ public:
 	class radial_gradient : public gradient{
 #if SVGREN_BACKEND == SVGREN_BACKEND_AGG
 		gradient_wrapper<agg::gradient_radial_focus> radial_grad;
+
+		const gradient_wrapper_base& get_agg_gradient()const override{
+			return this->radial_grad;
+		}
 #endif
 	public:
 		radial_gradient(const r4::vector2<real>& f, const r4::vector2<real>& c, real r);

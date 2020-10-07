@@ -211,8 +211,6 @@ canvas::linear_gradient::linear_gradient(const r4::vector2<real>& p0, const r4::
 		throw std::runtime_error("cairo_pattern_create_linear() failed");
 	}
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	this->grad = &this->linear_grad;
-
 	// for gradient transformations go in reverse order
 
 	// auto len = p1 - p0;
@@ -244,7 +242,6 @@ canvas::radial_gradient::radial_gradient(const r4::vector2<real>& f, const r4::v
 		throw std::runtime_error("cairo_pattern_create_radial() failed");
 	}
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	this->grad = &this->radial_grad;
 	// TODO:
 #endif
 }
@@ -737,11 +734,11 @@ void canvas::fill(){
 		agg::span_gradient<
 				decltype(this->pixel_format)::color_type,
                 decltype(span_interpolator),
-				gradient::gradient_wrapper_base,
+				const gradient::gradient_wrapper_base,
 				const decltype(this->context.grad->lut)
 			> span_gradient(
 				span_interpolator, 
-                *this->context.grad->grad,
+                this->context.grad->get_agg_gradient(),
                 this->context.grad->lut, 
                 0,
 				decltype(gradient::lut)::color_lut_size
