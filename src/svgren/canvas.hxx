@@ -95,7 +95,7 @@ public:
 
 		agg::gradient_lut<agg::color_interpolator<agg::rgba8>, 1024> lut;
 
-		agg::trans_affine matrix;
+		virtual agg::trans_affine get_matrix(const canvas& c)const = 0;
 #endif
 	public:
 
@@ -117,6 +117,11 @@ public:
 		const gradient_wrapper_base& get_agg_gradient()const override{
 			return this->linear_grad;
 		}
+
+		agg::trans_affine get_matrix(const canvas& c)const override;
+
+		const r4::vector2<real>& p0;
+		const r4::vector2<real>& p1;
 #endif
 	public:
 		linear_gradient(
@@ -132,6 +137,8 @@ public:
 		const gradient_wrapper_base& get_agg_gradient()const override{
 			return this->radial_grad;
 		}
+
+		agg::trans_affine get_matrix(const canvas& c)const override;
 #endif
 	public:
 		radial_gradient(const r4::vector2<real>& f, const r4::vector2<real>& c, real r);
@@ -195,6 +202,7 @@ private:
 		agg::filling_rule_e fill_rule = agg::filling_rule_e::fill_even_odd;
 		agg::line_cap_e line_cap = agg::line_cap_e::butt_cap;
 		agg::line_join_e line_join = agg::line_join_e::miter_join;
+		agg::trans_affine gradient_matrix;
 #endif
 		std::shared_ptr<const gradient> grad;
 	} context;
@@ -223,7 +231,7 @@ public:
 	void set_source(const r4::vector4<real>& rgba);
 	void set_source(std::shared_ptr<const gradient> g);
 
-	r4::vector2<real> matrix_mul(const r4::vector2<real>& v);
+	r4::vector2<real> matrix_mul(const r4::vector2<real>& v)const;
 
 	// multiply by current matrix without translation part
 	r4::vector2<real> matrix_mul_distance(const r4::vector2<real>& v);
@@ -265,7 +273,7 @@ public:
 	void push_context();
 	void pop_context();
 
-	r4::matrix2<real> get_matrix();
+	r4::matrix2<real> get_matrix()const;
 	void set_matrix(const r4::matrix2<real>& m);
 
 	void push_group();

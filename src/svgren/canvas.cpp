@@ -114,7 +114,7 @@ void canvas::transform(const r4::matrix2<real>& matrix){
 	cairo_transform(this->cr, &m);
 	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo status = " << cairo_status_to_string(cairo_status(this->cr)))
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	this->context.matrix *= to_agg_matrix(matrix);
+	this->context.matrix.premultiply(to_agg_matrix(matrix));
 #endif
 }
 
@@ -123,7 +123,7 @@ void canvas::translate(real x, real y){
 	cairo_translate(this->cr, x, y);
 	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo status = " << cairo_status_to_string(cairo_status(this->cr)))
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	this->context.matrix *= agg::trans_affine_translation(x, y);
+	this->context.matrix.premultiply(agg::trans_affine_translation(x, y));
 #endif
 }
 
@@ -132,7 +132,7 @@ void canvas::rotate(real radians){
 	cairo_rotate(this->cr, radians);
 	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo status = " << cairo_status_to_string(cairo_status(this->cr)))
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	this->context.matrix *= agg::trans_affine_rotation(radians);
+	this->context.matrix.premultiply(agg::trans_affine_rotation(radians));
 #endif
 }
 
@@ -145,7 +145,7 @@ void canvas::scale(real x, real y){
 		TRACE(<< "WARNING: non-invertible scaling encountered" << std::endl)
 	}
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	this->context.matrix *= agg::trans_affine_scaling(x, y);
+	this->context.matrix.premultiply(agg::trans_affine_scaling(x, y));
 #endif
 }
 
@@ -199,7 +199,11 @@ canvas::gradient::~gradient(){
 #endif
 }
 
-canvas::linear_gradient::linear_gradient(const r4::vector2<real>& p0, const r4::vector2<real>& p1){
+canvas::linear_gradient::linear_gradient(const r4::vector2<real>& p0, const r4::vector2<real>& p1)
+#if SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	: p0(p0), p1(p1)
+#endif
+{
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	this->pattern = cairo_pattern_create_linear(
 			backend_real(p0.x()),
@@ -211,22 +215,29 @@ canvas::linear_gradient::linear_gradient(const r4::vector2<real>& p0, const r4::
 		throw std::runtime_error("cairo_pattern_create_linear() failed");
 	}
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	// for gradient transformations go in reverse order
-
-	// auto len = p1 - p0;
-	// this->matrix.scale(len.x(), len.y());
-	// this->matrix.scale(1.0 / decltype(gradient::lut)::color_lut_size);
-	// this->matrix.translate(p0.x(), p0.y());
-
-	this->matrix.scale(600.0);
-	this->matrix.scale(1.0 / decltype(gradient::lut)::color_lut_size);
-	this->matrix.translate(100, 0);
-	
-	this->matrix.invert(); // gradients and patterns assume inverse matrix
-
-	// TODO:
 #endif
 }
+
+#if SVGREN_BACKEND == SVGREN_BACKEND_AGG
+agg::trans_affine canvas::linear_gradient::get_matrix(const canvas& c)const{
+	auto p0 = c.matrix_mul(this->p0);
+	auto p1 = c.matrix_mul(this->p1);
+
+	auto len = (p1 - p0).norm();
+
+	r4::matrix2<real> m;
+	m.set_identity();
+	m.translate(p0);	
+	m.scale(real(1) / decltype(gradient::lut)::color_lut_size);
+	m.scale(len, 1);
+
+	auto ret = to_agg_matrix(m);
+
+	ret.invert(); // gradients and patterns assume inverse matrix
+
+	return ret;
+}
+#endif
 
 canvas::radial_gradient::radial_gradient(const r4::vector2<real>& f, const r4::vector2<real>& c, real r){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
@@ -245,6 +256,29 @@ canvas::radial_gradient::radial_gradient(const r4::vector2<real>& f, const r4::v
 	// TODO:
 #endif
 }
+
+#if SVGREN_BACKEND == SVGREN_BACKEND_AGG
+agg::trans_affine canvas::radial_gradient::get_matrix(const canvas& c)const{
+	agg::trans_affine ret;
+
+	// for gradient transformations go in reverse order
+
+	// auto len = (p1 - p0).norm();
+	// TRACE(<< "len = " << len << std::endl)
+	// this->matrix.scale(len, 1);
+	// this->matrix.scale(1.0 / decltype(gradient::lut)::color_lut_size);
+	// this->matrix.translate(p0.x(), p0.y());
+
+	// ret.scale(600.0);
+	// ret.scale(1.0 / decltype(gradient::lut)::color_lut_size);
+	// ret.translate(100, 0);
+	ret.invert(); // gradients and patterns assume inverse matrix
+
+	// TODO:
+
+	return ret;
+}
+#endif
 
 void canvas::gradient::set_spread_method(svgdom::gradient::spread_method spread_method){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
@@ -309,12 +343,13 @@ void canvas::set_source(std::shared_ptr<const gradient> g){
 	cairo_set_source(this->cr, g->pattern);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	this->context.gradient_matrix = g->get_matrix(*this);
 	// TODO:
 #endif
 	this->context.grad = std::move(g);
 }
 
-r4::vector2<real> canvas::matrix_mul(const r4::vector2<real>& v){
+r4::vector2<real> canvas::matrix_mul(const r4::vector2<real>& v)const{
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	backend_real x = v.x();
 	backend_real y = v.y();
@@ -728,8 +763,8 @@ void canvas::fill(){
 		agg::render_scanlines(this->rasterizer, this->scanline, this->renderer);
 	}else{
 		agg::span_interpolator_linear<
-				const decltype(this->context.grad->matrix)
-			> span_interpolator{this->context.grad->matrix};
+				const decltype(this->context.gradient_matrix)
+			> span_interpolator{this->context.gradient_matrix};
 
 		agg::span_gradient<
 				decltype(this->pixel_format)::color_type,
@@ -880,7 +915,7 @@ void canvas::pop_context(){
 #endif
 }
 
-r4::matrix2<real> canvas::get_matrix(){
+r4::matrix2<real> canvas::get_matrix()const{
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	cairo_matrix_t cm;
 	cairo_get_matrix(this->cr, &cm);
