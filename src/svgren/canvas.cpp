@@ -223,12 +223,14 @@ agg::trans_affine canvas::linear_gradient::get_matrix(const canvas& c)const{
 	auto p0 = c.matrix_mul(this->p0);
 	auto p1 = c.matrix_mul(this->p1);
 
-	auto len = (p1 - p0).norm();
+	auto v = p1 - p0;
+	auto len = v.norm();
 
 	r4::matrix2<real> m;
 	m.set_identity();
-	m.translate(p0);	
-	m.scale(real(1) / decltype(gradient::lut)::color_lut_size);
+	m.translate(p0);
+	m.rotate(get_angle(v));
+	m.scale(real(1) / decltype(gradient::lut)::color_lut_size, 1);
 	m.scale(len, 1);
 
 	auto ret = to_agg_matrix(m);
@@ -672,7 +674,7 @@ void canvas::arc_abs(const r4::vector2<real>& end_point, const r4::vector2<real>
 	end_p.y() /= radii_ratio;
 
 	// find the angle between the end point and the x axis
-	auto angle = point_angle(real(0), end_p);
+	auto angle = get_angle(end_p);
 
 	using std::sqrt;
 
@@ -700,8 +702,8 @@ void canvas::arc_abs(const r4::vector2<real>& end_point, const r4::vector2<real>
 	end_p = r4::vector2<real>{end_p.x(), real(0)}.rot(angle);
 	center.rotate(angle);
 
-	auto angle1 = point_angle(center, real(0));
-	auto angle2 = point_angle(center, end_p);
+	auto angle1 = get_angle(-center);
+	auto angle2 = get_angle(end_p - center);
 
 	if(sweep){
 		// make sure angle1 is smaller than angle2

@@ -21,10 +21,10 @@ inline real deg_to_rad(real deg){
 	return deg * utki::pi<real>() / real(180);
 }
 
-// Return angle between x axis and point knowing given center.
-inline real point_angle(const r4::vector2<real>& c, const r4::vector2<real>& p){
+// return angle between x axis and vector
+inline real get_angle(const r4::vector2<real>& v){
 	using std::atan2;
-    return atan2(p.y() - c.y(), p.x() - c.x());
+    return atan2(v.y(), v.x());
 }
 
 class canvas_matrix_push{
