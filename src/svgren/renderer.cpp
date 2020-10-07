@@ -91,7 +91,7 @@ void renderer::apply_transformations(const decltype(svgdom::transformable::trans
 }
 
 void renderer::apply_viewbox(const svgdom::view_boxed& e, const svgdom::aspect_ratioed& ar){
-	TRACE(<< "vb = " << e.view_box[0] << ", " << e.view_box[1] << ", " << e.view_box[2] << ", " << e.view_box[3] << std::endl)
+	// TRACE(<< "vb = " << e.view_box[0] << ", " << e.view_box[1] << ", " << e.view_box[2] << ", " << e.view_box[3] << std::endl)
 	if(!e.is_view_box_specified()){
 		return;
 	}
@@ -475,7 +475,7 @@ void renderer::render_svg_element(
 
 	canvas_context_push context_push(this->canvas);
 
-	if(this->is_outermost_element){
+	if(!this->is_outermost_element){
 		this->canvas.translate(this->length_to_px(x, y));
 	}
 
