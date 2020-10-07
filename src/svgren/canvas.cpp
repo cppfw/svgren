@@ -213,6 +213,9 @@ canvas::linear_gradient::linear_gradient(const r4::vector2<real>& p0, const r4::
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->grad = &this->linear_grad;
 
+	// this->matrix.translate(p0.x(), p0.y());
+	// auto len = p1 - p0;
+	// this->matrix.scale(len.x(), len.y());
 	
 	this->matrix.invert(); // gradients and patterns assume inverse matrix
 
