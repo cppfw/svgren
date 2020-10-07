@@ -220,22 +220,29 @@ canvas::linear_gradient::linear_gradient(const r4::vector2<real>& p0, const r4::
 
 #if SVGREN_BACKEND == SVGREN_BACKEND_AGG
 agg::trans_affine canvas::linear_gradient::get_matrix(const canvas& c)const{
-	auto p0 = c.matrix_mul(this->p0);
-	auto p1 = c.matrix_mul(this->p1);
-
-	auto v = p1 - p0;
+	auto v = this->p1 - this->p0;
 	auto len = v.norm();
 
 	r4::matrix2<real> m;
 	m.set_identity();
-	m.translate(p0);
-	m.rotate(get_angle(v));
-	m.scale(real(1) / decltype(gradient::lut)::color_lut_size, 1);
-	m.scale(len, 1);
+
+	// gradient needs inverse matrix, i.e. matrix which transforms screen coordinates to gradient coordiantes
+
+	// we need to transform the [p0, p1] line segment to [0, 1] segment on X-axis
+	// and then stretch it to color_lut_size length
+
+	m.scale(decltype(gradient::lut)::color_lut_size, 1);
+	m.scale(real(1) / len, 1);
+	m.rotate(-get_angle(v));
+	m.translate(-p0);
+
+	// switch from screen coordinates to local coordinates
+	// TODO: implement matrix invert in r4
+	auto mi = to_agg_matrix(c.get_matrix());
+	mi.invert();
+	m *= to_r4_matrix(mi);
 
 	auto ret = to_agg_matrix(m);
-
-	ret.invert(); // gradients and patterns assume inverse matrix
 
 	return ret;
 }
@@ -365,7 +372,7 @@ r4::vector2<real> canvas::matrix_mul(const r4::vector2<real>& v)const{
 #endif
 }
 
-r4::vector2<real> canvas::matrix_mul_distance(const r4::vector2<real>& v){
+r4::vector2<real> canvas::matrix_mul_distance(const r4::vector2<real>& v)const{
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	backend_real x = v.x();
 	backend_real y = v.y();
