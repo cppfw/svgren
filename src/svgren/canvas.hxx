@@ -76,8 +76,9 @@ class canvas{
 public:
 	class gradient{
 		friend class canvas;
-#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+
 	protected:
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 		cairo_pattern_t* pattern;
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 		struct gradient_wrapper_base{
@@ -95,7 +96,9 @@ public:
 
 		agg::gradient_lut<agg::color_interpolator<agg::rgba8>, 1024> lut;
 
-		virtual agg::trans_affine get_matrix(const canvas& c)const = 0;
+		r4::matrix2<real> local_matrix;
+
+		agg::trans_affine get_matrix(const canvas& c)const;
 #endif
 	public:
 
@@ -118,10 +121,6 @@ public:
 			return this->linear_grad;
 		}
 
-		agg::trans_affine get_matrix(const canvas& c)const override;
-
-		const r4::vector2<real>& p0;
-		const r4::vector2<real>& p1;
 #endif
 	public:
 		linear_gradient(
@@ -137,8 +136,6 @@ public:
 		const gradient_wrapper_base& get_agg_gradient()const override{
 			return this->radial_grad;
 		}
-
-		agg::trans_affine get_matrix(const canvas& c)const override;
 #endif
 	public:
 		radial_gradient(const r4::vector2<real>& f, const r4::vector2<real>& c, real r);

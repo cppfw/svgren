@@ -199,11 +199,7 @@ canvas::gradient::~gradient(){
 #endif
 }
 
-canvas::linear_gradient::linear_gradient(const r4::vector2<real>& p0, const r4::vector2<real>& p1)
-#if SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	: p0(p0), p1(p1)
-#endif
-{
+canvas::linear_gradient::linear_gradient(const r4::vector2<real>& p0, const r4::vector2<real>& p1){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	this->pattern = cairo_pattern_create_linear(
 			backend_real(p0.x()),
@@ -215,36 +211,30 @@ canvas::linear_gradient::linear_gradient(const r4::vector2<real>& p0, const r4::
 		throw std::runtime_error("cairo_pattern_create_linear() failed");
 	}
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-#endif
-}
-
-#if SVGREN_BACKEND == SVGREN_BACKEND_AGG
-agg::trans_affine canvas::linear_gradient::get_matrix(const canvas& c)const{
-	auto v = this->p1 - this->p0;
+	auto v = p1 - p0;
 	auto len = v.norm();
 
-	r4::matrix2<real> m;
-	m.set_identity();
+	this->local_matrix.set_identity();
 
 	// gradient needs inverse matrix, i.e. matrix which transforms screen coordinates to gradient coordiantes
 
 	// we need to transform the [p0, p1] line segment to [0, 1] segment on X-axis
 	// and then stretch it to color_lut_size length
 
-	m.scale(decltype(gradient::lut)::color_lut_size, 1);
-	m.scale(real(1) / len, 1);
-	m.rotate(-get_angle(v));
-	m.translate(-p0);
+	this->local_matrix.scale(decltype(gradient::lut)::color_lut_size, 1);
+	this->local_matrix.scale(real(1) / len, 1);
+	this->local_matrix.rotate(-get_angle(v));
+	this->local_matrix.translate(-p0);
+#endif
+}
+
+#if SVGREN_BACKEND == SVGREN_BACKEND_AGG
+agg::trans_affine canvas::gradient::get_matrix(const canvas& c)const{
 
 	// switch from screen coordinates to local coordinates
-	// TODO: implement matrix invert in r4
-	auto mi = to_agg_matrix(c.get_matrix());
-	mi.invert();
-	m *= to_r4_matrix(mi);
-
-	auto ret = to_agg_matrix(m);
-
-	return ret;
+	auto ret = this->local_matrix * c.get_matrix().inv();
+	
+	return to_agg_matrix(ret);
 }
 #endif
 
@@ -265,29 +255,6 @@ canvas::radial_gradient::radial_gradient(const r4::vector2<real>& f, const r4::v
 	// TODO:
 #endif
 }
-
-#if SVGREN_BACKEND == SVGREN_BACKEND_AGG
-agg::trans_affine canvas::radial_gradient::get_matrix(const canvas& c)const{
-	agg::trans_affine ret;
-
-	// for gradient transformations go in reverse order
-
-	// auto len = (p1 - p0).norm();
-	// TRACE(<< "len = " << len << std::endl)
-	// this->matrix.scale(len, 1);
-	// this->matrix.scale(1.0 / decltype(gradient::lut)::color_lut_size);
-	// this->matrix.translate(p0.x(), p0.y());
-
-	// ret.scale(600.0);
-	// ret.scale(1.0 / decltype(gradient::lut)::color_lut_size);
-	// ret.translate(100, 0);
-	ret.invert(); // gradients and patterns assume inverse matrix
-
-	// TODO:
-
-	return ret;
-}
-#endif
 
 void canvas::gradient::set_spread_method(svgdom::gradient::spread_method spread_method){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
