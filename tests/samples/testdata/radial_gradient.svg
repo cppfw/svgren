@@ -19,4 +19,55 @@
     </radialGradient>
   </defs>
   <ellipse cx="300" cy="350" rx="85" ry="55" fill="url(#grad4)" />
+
+
+
+
+
+<defs>
+    <radialGradient id="gradient1" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+    <stop offset="0%" style="stop-color:#FF00FF;" />
+    <stop offset="100%" style="stop-color:#FFBD2E;" />
+    </radialGradient>
+
+    <radialGradient id="gradient2" cx="50%" cy="50%" r="70%" fx="50%" fy="50%">
+    <stop offset="0%" style="stop-color:#FF00FF;" />
+    <stop offset="100%" style="stop-color:#FFBD2E;" />
+    </radialGradient>
+
+    <radialGradient id="gradient3" cx="20%" cy="50%" r="50%" fx="50%" fy="50%">
+    <stop offset="0%" style="stop-color:#FF00FF;" />
+    <stop offset="100%" style="stop-color:#FFBD2E;" />
+    </radialGradient>
+
+    <radialGradient id="gradient4" cx="50%" cy="50%" r="50%" fx="20%" fy="90%">
+    <stop offset="0%" style="stop-color:#FF00FF;" />
+    <stop offset="100%" style="stop-color:#FFBD2E;" />
+    </radialGradient>
+
+    <radialGradient id="gradient5" cx="20%" cy="20%" r="50%" fx="20%" fy="20%">
+    <stop offset="0%" style="stop-color:#FF00FF;" />
+    <stop offset="100%" style="stop-color:#FFBD2E;" />
+    </radialGradient>
+
+    <radialGradient id="gradient6" cx="50%" cy="50%" r="50%" fx="80%" fy="80%">
+    <stop offset="0%" style="stop-color:#FF00FF;" />
+    <stop offset="100%" style="stop-color:#FFBD2E;" />
+    </radialGradient>
+  </defs>
+
+  <!-- top left circle -->
+  <circle cx="40" cy="60" r="30" fill="url(#gradient1)" />
+  <!-- top center circle -->
+  <circle cx="100" cy="60" r="30" fill="url(#gradient2)" />
+  <!-- top right circle -->
+  <circle cx="160" cy="60" r="30" fill="url(#gradient3)" />
+
+  <!-- bottom left circle -->
+  <circle cx="40" cy="140" r="30" fill="url(#gradient4)" />
+  <!-- bottom center circle -->
+  <circle cx="100" cy="140" r="30" fill="url(#gradient5)" />
+  <!-- bottom right circle -->
+  <circle cx="160" cy="140" r="30" fill="url(#gradient6)" />
+
 </svg>
