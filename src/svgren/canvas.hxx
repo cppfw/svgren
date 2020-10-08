@@ -85,20 +85,48 @@ public:
 			virtual int calculate(int x, int y, int) const = 0;
 			virtual ~gradient_wrapper_base(){}
 		};
-		template<class T> struct gradient_wrapper : public gradient_wrapper_base{
+		template <class T> struct gradient_wrapper : public gradient_wrapper_base{
 			T g;
 			int calculate(int x, int y, int d)const override{
 				return this->g.calculate(x, y, d);
 			}
 		};
 
-		virtual const gradient_wrapper_base& get_agg_gradient()const = 0;
+		template <class T, template <class> class Spread> struct spread_gradient_wrapper : public gradient_wrapper_base{
+			T g;
+			Spread<T> sg{this->g};
+			int calculate(int x, int y, int d)const override{
+				return this->sg.calculate(x, y, d);
+			}
+		};
+
+		const gradient_wrapper_base& pad;
+		const gradient_wrapper_base& reflect;
+		const gradient_wrapper_base& repeat;
+
+		const gradient_wrapper_base* cur_grad;
+
+		const gradient_wrapper_base& get_agg_gradient()const{
+			ASSERT(this->cur_grad)
+			return *this->cur_grad;
+		}
 
 		agg::gradient_lut<agg::color_interpolator<agg::rgba8>, 1024> lut;
 
 		r4::matrix2<real> local_matrix;
 
 		agg::trans_affine get_matrix(const canvas& c)const;
+
+		gradient(
+				const gradient_wrapper_base& pad,
+				const gradient_wrapper_base& reflect,
+				const gradient_wrapper_base& repeat
+			) :
+				pad(pad),
+				reflect(reflect),
+				repeat(repeat),
+				cur_grad(&this->pad)
+		{}
 #endif
 	public:
 
@@ -115,12 +143,9 @@ public:
 
 	class linear_gradient : public gradient{
 #if SVGREN_BACKEND == SVGREN_BACKEND_AGG
-		gradient_wrapper<agg::gradient_x> linear_grad;
-
-		const gradient_wrapper_base& get_agg_gradient()const override{
-			return this->linear_grad;
-		}
-
+		gradient_wrapper<agg::gradient_x> linear_pad;
+		spread_gradient_wrapper<agg::gradient_x, agg::gradient_reflect_adaptor> linear_reflect;
+		spread_gradient_wrapper<agg::gradient_x, agg::gradient_repeat_adaptor> linear_repeat;
 #endif
 	public:
 		linear_gradient(
@@ -131,11 +156,9 @@ public:
 
 	class radial_gradient : public gradient{
 #if SVGREN_BACKEND == SVGREN_BACKEND_AGG
-		gradient_wrapper<agg::gradient_radial_focus> radial_grad;
-
-		const gradient_wrapper_base& get_agg_gradient()const override{
-			return this->radial_grad;
-		}
+		gradient_wrapper<agg::gradient_radial_focus> radial_pad;
+		spread_gradient_wrapper<agg::gradient_radial_focus, agg::gradient_reflect_adaptor> radial_reflect;
+		spread_gradient_wrapper<agg::gradient_radial_focus, agg::gradient_repeat_adaptor> radial_repeat;
 #endif
 	public:
 		radial_gradient(const r4::vector2<real>& f, const r4::vector2<real>& c, real r);

@@ -199,7 +199,16 @@ canvas::gradient::~gradient(){
 #endif
 }
 
-canvas::linear_gradient::linear_gradient(const r4::vector2<real>& p0, const r4::vector2<real>& p1){
+canvas::linear_gradient::linear_gradient(const r4::vector2<real>& p0, const r4::vector2<real>& p1)
+#if SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	:
+		gradient(
+				this->linear_pad,
+				this->linear_reflect,
+				this->linear_repeat
+			)
+#endif
+{
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	this->pattern = cairo_pattern_create_linear(
 			backend_real(p0.x()),
@@ -228,17 +237,16 @@ canvas::linear_gradient::linear_gradient(const r4::vector2<real>& p0, const r4::
 #endif
 }
 
+canvas::radial_gradient::radial_gradient(const r4::vector2<real>& f, const r4::vector2<real>& c, real r)
 #if SVGREN_BACKEND == SVGREN_BACKEND_AGG
-agg::trans_affine canvas::gradient::get_matrix(const canvas& c)const{
-
-	// switch from screen coordinates to local coordinates
-	auto ret = this->local_matrix * c.get_matrix().inv();
-	
-	return to_agg_matrix(ret);
-}
+	:
+		gradient(
+				this->radial_pad,
+				this->radial_reflect,
+				this->radial_repeat
+			)
 #endif
-
-canvas::radial_gradient::radial_gradient(const r4::vector2<real>& f, const r4::vector2<real>& c, real r){
+{
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	this->pattern = cairo_pattern_create_radial(
 			backend_real(f.x()),
@@ -256,7 +264,18 @@ canvas::radial_gradient::radial_gradient(const r4::vector2<real>& f, const r4::v
 #endif
 }
 
+#if SVGREN_BACKEND == SVGREN_BACKEND_AGG
+agg::trans_affine canvas::gradient::get_matrix(const canvas& c)const{
+
+	// switch from screen coordinates to local coordinates
+	auto ret = this->local_matrix * c.get_matrix().inv();
+	
+	return to_agg_matrix(ret);
+}
+#endif
+
 void canvas::gradient::set_spread_method(svgdom::gradient::spread_method spread_method){
+	ASSERT(spread_method != svgdom::gradient::spread_method::default_)
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	cairo_extend_t extend;
 
@@ -278,7 +297,20 @@ void canvas::gradient::set_spread_method(svgdom::gradient::spread_method spread_
 	cairo_pattern_set_extend(this->pattern, extend);
 	ASSERT(cairo_pattern_status(this->pattern) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	// TODO:
+	switch(spread_method){
+		default:
+		case svgdom::gradient::spread_method::default_:
+			ASSERT(false)
+		case svgdom::gradient::spread_method::pad:
+			this->cur_grad = &this->pad;
+			break;
+		case svgdom::gradient::spread_method::reflect:
+			this->cur_grad = &this->reflect;
+			break;
+		case svgdom::gradient::spread_method::repeat:
+			this->cur_grad = &this->repeat;
+			break;
+	}
 #endif
 }
 

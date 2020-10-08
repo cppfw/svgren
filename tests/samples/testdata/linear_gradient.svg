@@ -7,7 +7,7 @@
            linear gradient paint server</desc>
   <g>
     <defs>
-      <linearGradient id="MyGradient">
+      <linearGradient id="MyGradient" x1="30%" x2="70%">
         <stop offset="30%" stop-color="#F60" />
         <stop offset="70%" stop-color="#FF6" />
       </linearGradient>
@@ -15,7 +15,7 @@
       <linearGradient id="MyGradient3" href="#MyGradient" spreadMethod="repeat"/>
       <linearGradient id="MyGradient4" href="#MyGradient" spreadMethod="reflect"/>
 
-      <linearGradient id="StrokeGradient">
+      <linearGradient id="StrokeGradient" x1="30%" x2="70%">
         <stop offset="30%" stop-color="blue" />
         <stop offset="70%" stop-color="green" />
       </linearGradient>
@@ -29,9 +29,9 @@
           x="1" y="1" width="798" height="500"/>
 
     <!-- The rectangle is filled using a linear gradient paint server -->
-    <rect fill="url(#MyGradient)" stroke="url(#StrokeGradient)" stroke-width="25"  
+    <rect fill="url(#MyGradient)" stroke="url(#StrokeGradient)" stroke-width="25"
           x="100" y="50" width="600" height="70"/>
-    <rect fill="url(#MyGradient2)" stroke="url(#StrokeGradient2)" stroke-width="25"  
+    <rect fill="url(#MyGradient2)" stroke="url(#StrokeGradient2)" stroke-width="25"
           x="100" y="150" width="600" height="70"/>
     <rect fill="url(#MyGradient3)" stroke="url(#StrokeGradient3)" stroke-width="25"
           x="100" y="250" width="600" height="70"/>
