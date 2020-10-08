@@ -49,8 +49,8 @@
         {
             "label": "run_debug",
             "type": "shell",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/linear_gradient.svg out.png)",
-			"command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/gradient-transform-rotate-compare.svg out.png)",
+			"command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/linear_gradient.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/gradient-transform-rotate-compare.svg out.png)",
             "problemMatcher": [],
             "dependsOn": "build_debug",
             // "dependsOn": "build_debug_grey_bg"

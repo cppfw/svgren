@@ -724,16 +724,8 @@ void canvas::arc_rel(const r4::vector2<real>& end_point, const r4::vector2<real>
 	this->arc_abs(end_point + this->get_current_point(), radius, x_axis_rotation, large_arc, sweep);
 }
 
-void canvas::fill(){
-#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	cairo_fill_preserve(this->cr);
-	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
-#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	agg::conv_transform<agg::path_storage, agg::trans_affine> transformed_path(this->path, this->context.matrix);
-
-	this->rasterizer.filling_rule(this->context.fill_rule);
-	this->rasterizer.add_path(transformed_path);
-
+#if SVGREN_BACKEND == SVGREN_BACKEND_AGG
+void canvas::agg_render(){
 	if(!this->context.grad){
 		this->renderer.color(this->context.color);
 		agg::render_scanlines(this->rasterizer, this->scanline, this->renderer);
@@ -757,6 +749,20 @@ void canvas::fill(){
 
 		agg::render_scanlines_aa(this->rasterizer, this->scanline, this->renderer_base, this->span_allocator, span_gradient);
 	}
+}
+#endif
+
+void canvas::fill(){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	cairo_fill_preserve(this->cr);
+	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	agg::conv_transform<agg::path_storage, agg::trans_affine> transformed_path(this->path, this->context.matrix);
+
+	this->rasterizer.filling_rule(this->context.fill_rule);
+	this->rasterizer.add_path(transformed_path);
+
+	this->agg_render();
 #endif
 }
 
@@ -774,8 +780,7 @@ void canvas::stroke(){
 
 	this->rasterizer.add_path(transformed_path);
 
-    this->renderer.color(this->context.color);
-    agg::render_scanlines(this->rasterizer, this->scanline, this->renderer);
+    this->agg_render();
 #endif
 }
 

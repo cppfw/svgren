@@ -185,6 +185,8 @@ private:
 	agg::rasterizer_scanline_aa<> rasterizer;
 	agg::scanline_u8 scanline;
 
+	void agg_render();
+
 	agg::path_storage path;
 
 	agg::span_allocator<decltype(pixel_format)::color_type> span_allocator;
