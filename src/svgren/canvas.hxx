@@ -80,6 +80,7 @@ public:
 	protected:
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 		cairo_pattern_t* pattern;
+		
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 		struct gradient_wrapper_base{
 			virtual int calculate(int x, int y, int) const = 0;
@@ -114,8 +115,6 @@ public:
 		agg::gradient_lut<agg::color_interpolator<agg::rgba8>, 1024> lut;
 
 		r4::matrix2<real> local_matrix;
-
-		agg::trans_affine get_matrix(const canvas& c)const;
 
 		gradient(
 				const gradient_wrapper_base& pad,
@@ -161,7 +160,11 @@ public:
 		spread_gradient_wrapper<agg::gradient_radial_focus, agg::gradient_repeat_adaptor> radial_repeat;
 #endif
 	public:
-		radial_gradient(const r4::vector2<real>& f, const r4::vector2<real>& c, real r);
+		radial_gradient(
+				const r4::vector2<real>& f,
+				const r4::vector2<real>& c,
+				real r
+			);
 	};
 
 private:

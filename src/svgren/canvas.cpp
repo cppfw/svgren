@@ -237,7 +237,11 @@ canvas::linear_gradient::linear_gradient(const r4::vector2<real>& p0, const r4::
 #endif
 }
 
-canvas::radial_gradient::radial_gradient(const r4::vector2<real>& f, const r4::vector2<real>& c, real r)
+canvas::radial_gradient::radial_gradient(
+		const r4::vector2<real>& f,
+		const r4::vector2<real>& c,
+		real r
+	)
 #if SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	:
 		gradient(
@@ -260,19 +264,24 @@ canvas::radial_gradient::radial_gradient(const r4::vector2<real>& f, const r4::v
 		throw std::runtime_error("cairo_pattern_create_radial() failed");
 	}
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	// TODO:
+	this->radial_pad.g.init(r, f.x(), f.y());
+	this->radial_reflect.g.init(r, f.x(), f.y());
+	this->radial_repeat.g.init(r, f.x(), f.y());
+
+	this->local_matrix.set_identity();
+
+	// gradient needs inverse matrix, i.e. matrix which transforms screen coordinates to gradient coordiantes
+
+	// we need to transform the [p0, p1] line segment to [0, 1] segment on X-axis
+	// and then stretch it to color_lut_size length
+
+	this->local_matrix.scale(decltype(gradient::lut)::color_lut_size, 1);
+	this->local_matrix.scale(real(1) / r);
+	// this->local_matrix.scale(r);
+	// this->local_matrix.rotate(-get_angle(v));
+	this->local_matrix.translate(-c);
 #endif
 }
-
-#if SVGREN_BACKEND == SVGREN_BACKEND_AGG
-agg::trans_affine canvas::gradient::get_matrix(const canvas& c)const{
-
-	// switch from screen coordinates to local coordinates
-	auto ret = this->local_matrix * c.get_matrix().inv();
-	
-	return to_agg_matrix(ret);
-}
-#endif
 
 void canvas::gradient::set_spread_method(svgdom::gradient::spread_method spread_method){
 	ASSERT(spread_method != svgdom::gradient::spread_method::default_)
@@ -351,8 +360,10 @@ void canvas::set_source(std::shared_ptr<const gradient> g){
 	cairo_set_source(this->cr, g->pattern);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	this->context.gradient_matrix = g->get_matrix(*this);
-	// TODO:
+	// switch from screen coordinates to gradeint local coordinates
+	auto gm = g->local_matrix * this->get_matrix().inv();
+
+	this->context.gradient_matrix = to_agg_matrix(gm);
 #endif
 	this->context.grad = std::move(g);
 }
