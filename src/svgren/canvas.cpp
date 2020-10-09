@@ -57,9 +57,18 @@ canvas::~canvas(){
 
 std::vector<uint32_t> canvas::release(){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	for(auto &c : this->pixels){
+	auto& ret = this->pixels;
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	ASSERT(!this->group_stack.empty())
+	auto& ret = this->group_stack.front().pixels;
+#endif
+
+
+	for(auto &c : ret){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 		// swap red and blue channels, as cairo works in BGRA format, while we need to return RGBA
 		c = (c & 0xff00ff00) | ((c << 16) & 0xff0000) | ((c >> 16) & 0xff);
+#endif
 
 		// unpremultiply alpha
 		uint32_t a = (c >> 24);
@@ -79,11 +88,7 @@ std::vector<uint32_t> canvas::release(){
 			c = 0;
 		}
 	}
-	return std::move(this->pixels);
-#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	ASSERT(!this->group_stack.empty())
-	return std::move(this->group_stack.front().pixels);
-#endif
+	return std::move(ret);
 }
 
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
@@ -1019,6 +1024,7 @@ void canvas::push_group(){
 }
 
 void canvas::pop_group(real opacity){
+	ASSERT(0 <= opacity) ASSERT(opacity <= 1)
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	cairo_pop_group_to_source(this->cr);
 	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
@@ -1032,8 +1038,23 @@ void canvas::pop_group(real opacity){
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	ASSERT(this->group_stack.size() >= 2)
 
-	
-	// TODO:
+	auto& sg = this->group_stack.back();
+	auto& dg = this->group_stack[this->group_stack.size() - 2];
+
+	// TODO: remove commented code
+	// typedef agg::comp_op_rgba_src_over<decltype(group::pixel_format)::color_type, decltype(group::pixel_format)::order_type> blender_type;
+	// agg::pixfmt_alpha_blend_rgba<blender_type, decltype(dg.rendering_buffer)> dpf(dg.rendering_buffer);
+	// agg::renderer_base<decltype(dpf)> rb(dpf);
+
+	dg.renderer_base.blend_from(
+			sg.pixel_format,
+			nullptr,
+			0, // x
+			0, // y
+			agg::cover_type(opacity * agg::cover_full)
+		);
+
+	this->group_stack.pop_back();
 #endif
 }
 
