@@ -71,8 +71,6 @@ inline uint32_t get_uint32_t(const r4::vector4<unsigned>& rgba){
 }
 
 class canvas{
-	std::vector<uint32_t> pixels;
-
 public:
 	class gradient{
 		friend class canvas;
@@ -171,6 +169,8 @@ private:
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	typedef double backend_real;
 
+	std::vector<uint32_t> pixels;
+
 	struct cairo_surface_wrapper{
 		cairo_surface_t* surface;
 
@@ -199,11 +199,14 @@ private:
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	typedef double backend_real;
 
+	std::vector<std::vector<uint32_t>> group_stack;
+
 	typedef agg::curve3_div agg_curve3_type;
 	typedef agg::curve4_div agg_curve4_type;
 
 	const real approximation_scale = 5;
 
+	r4::vector2<unsigned> dims;
 	agg::rendering_buffer rendering_buffer;
 	agg::pixfmt_rgba32 pixel_format;
 	agg::renderer_base<decltype(pixel_format)> renderer_base;

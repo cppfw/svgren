@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/tests/render/tests",
-            "args": ["${workspaceFolder}/tests/samples/testdata/linear_gradient.svg"],
+            "args": ["${workspaceFolder}/tests/samples/testdata/camera.svg"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/tests/render",
             "environment": [{"name": "LD_LIBRARY_PATH", "value": "../../src/build"}],

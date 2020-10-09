@@ -16,33 +16,38 @@
 using namespace svgren;
 
 canvas::canvas(unsigned width, unsigned height) :
-		pixels(
-				width * height,
-#ifdef SVGREN_BACKGROUND
-				SVGREN_BACKGROUND
-#else
-				0
-#endif
-			)
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-		, surface(width, height, this->pixels.data())
-		, cr(cairo_create(this->surface.surface))
+		pixels(width * height, 0),
+		surface(width, height, this->pixels.data()),
+		cr(cairo_create(this->surface.surface))
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-		, rendering_buffer(
-				reinterpret_cast<agg::int8u*>(pixels.data()),
-				width,
-				height,
-				width * sizeof(decltype(this->pixels)::value_type)
-			)
-		, pixel_format(this->rendering_buffer)
-		, renderer_base(this->pixel_format)
-		, renderer(renderer_base)
+		dims(width, height),
+		pixel_format(this->rendering_buffer),
+		renderer(renderer_base)
 #endif
 {
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	if(!this->cr){
 		throw std::runtime_error("svgren::canvas::canvas(): could not create cairo context");
 	}
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	// push main drawing surface to group stack
+	this->push_group();
+#endif
+
+#ifdef SVGREN_BACKGROUND
+	this->set_source(
+		r4::vector4<real>{
+			unsigned((SVGREN_BACKGROUND >> 0) & 0xff),
+			unsigned((SVGREN_BACKGROUND >> 8) & 0xff),
+			unsigned((SVGREN_BACKGROUND >> 16) & 0xff),
+			unsigned((SVGREN_BACKGROUND >> 24) & 0xff)
+		} / 0xff
+	);
+	this->rectangle({0, 0, real(width), real(height)});
+	this->fill();
+	this->clear_path();
+	this->set_source({0, 0, 0, 0});
 #endif
 }
 
@@ -76,9 +81,11 @@ std::vector<uint32_t> canvas::release(){
 			c = 0;
 		}
 	}
-#endif
-
 	return std::move(this->pixels);
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	ASSERT(!this->group_stack.empty())
+	return std::move(this->group_stack.front());
+#endif
 }
 
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
@@ -997,7 +1004,18 @@ void canvas::push_group(){
 		throw std::runtime_error("cairo_push_group() failed");
 	}
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	// TODO:
+	this->group_stack.push_back(decltype(this->group_stack)::value_type(
+			this->dims.x() * this->dims.y(),
+			0
+		));
+	
+	this->rendering_buffer.attach(
+			reinterpret_cast<agg::int8u*>(this->group_stack.back().data()),
+			this->dims.x(),
+			this->dims.y(),
+			this->dims.x() * sizeof(decltype(this->group_stack)::value_type::value_type)
+		);
+	this->renderer_base.attach(this->pixel_format); // this is to recalculate the rectangle inside of the renderer_base
 #endif
 }
 
