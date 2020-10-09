@@ -264,21 +264,24 @@ canvas::radial_gradient::radial_gradient(
 		throw std::runtime_error("cairo_pattern_create_radial() failed");
 	}
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	this->radial_pad.g.init(r, f.x(), f.y());
-	this->radial_reflect.g.init(r, f.x(), f.y());
-	this->radial_repeat.g.init(r, f.x(), f.y());
+	// gradient parameters are stretched so that the gradient radius becomes color_lut_size,
+	// this is for optimal color picking from the color_lut
+	real lut_r = decltype(gradient::lut)::color_lut_size;
+	auto rel_f = f - c;
+	auto lut_f = rel_f / r * lut_r;
+	this->radial_pad.g.init(lut_r, lut_f.x(), lut_f.y());
+	this->radial_reflect.g.init(lut_r, lut_f.x(), lut_f.y());
+	this->radial_repeat.g.init(lut_r, lut_f.x(), lut_f.y());
 
 	this->local_matrix.set_identity();
 
 	// gradient needs inverse matrix, i.e. matrix which transforms screen coordinates to gradient coordiantes
 
-	// we need to transform the [p0, p1] line segment to [0, 1] segment on X-axis
-	// and then stretch it to color_lut_size length
+	// we need to transform the gradient center to 0 point and scale it to radius of 1
+	// and then stretch it to color_lut_size
 
-	this->local_matrix.scale(decltype(gradient::lut)::color_lut_size, 1);
+	this->local_matrix.scale(lut_r);
 	this->local_matrix.scale(real(1) / r);
-	// this->local_matrix.scale(r);
-	// this->local_matrix.rotate(-get_angle(v));
 	this->local_matrix.translate(-c);
 #endif
 }
