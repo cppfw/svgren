@@ -42,7 +42,7 @@
         {
             "label": "run",
             "type": "shell",
-            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/gradient-transform-rotate-compare.svg)",
+            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/radial_gradient.svg)",
             "problemMatcher": [],
             "dependsOn": "build"
         },
