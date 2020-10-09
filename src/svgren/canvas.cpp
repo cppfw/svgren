@@ -124,7 +124,8 @@ void canvas::transform(const r4::matrix2<real>& matrix){
 	cairo_transform(this->cr, &m);
 	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo status = " << cairo_status_to_string(cairo_status(this->cr)))
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	this->context.matrix.premultiply(to_agg_matrix(matrix));
+	ASSERT(!this->group_stack.empty())
+	this->group_stack.back().matrix.premultiply(to_agg_matrix(matrix));
 #endif
 }
 
@@ -133,7 +134,8 @@ void canvas::translate(real x, real y){
 	cairo_translate(this->cr, x, y);
 	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo status = " << cairo_status_to_string(cairo_status(this->cr)))
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	this->context.matrix.premultiply(agg::trans_affine_translation(x, y));
+	ASSERT(!this->group_stack.empty())
+	this->group_stack.back().matrix.premultiply(agg::trans_affine_translation(x, y));
 #endif
 }
 
@@ -142,7 +144,8 @@ void canvas::rotate(real radians){
 	cairo_rotate(this->cr, radians);
 	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo status = " << cairo_status_to_string(cairo_status(this->cr)))
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	this->context.matrix.premultiply(agg::trans_affine_rotation(radians));
+	ASSERT(!this->group_stack.empty())
+	this->group_stack.back().matrix.premultiply(agg::trans_affine_rotation(radians));
 #endif
 }
 
@@ -155,7 +158,8 @@ void canvas::scale(real x, real y){
 		TRACE(<< "WARNING: non-invertible scaling encountered" << std::endl)
 	}
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	this->context.matrix.premultiply(agg::trans_affine_scaling(x, y));
+	ASSERT(!this->group_stack.empty())
+	this->group_stack.back().matrix.premultiply(agg::trans_affine_scaling(x, y));
 #endif
 }
 
@@ -389,8 +393,9 @@ r4::vector2<real> canvas::matrix_mul(const r4::vector2<real>& v)const{
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	return r4::vector2<real>(real(x), real(y));
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	auto vec = v.to<decltype(this->context.matrix.sx)>();
-	this->context.matrix.transform(&vec.x(), &vec.y());
+	ASSERT(!this->group_stack.empty())
+	auto vec = v.to<decltype(this->group_stack.back().matrix.sx)>();
+	this->group_stack.back().matrix.transform(&vec.x(), &vec.y());
 	return vec.to<real>();
 #endif
 }
@@ -403,8 +408,9 @@ r4::vector2<real> canvas::matrix_mul_distance(const r4::vector2<real>& v)const{
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	return r4::vector2<real>(real(x), real(y));
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	auto vec = v.to<decltype(this->context.matrix.sx)>();
-	this->context.matrix.transform_2x2(&vec.x(), &vec.y());
+	ASSERT(!this->group_stack.empty())
+	auto vec = v.to<decltype(this->group_stack.back().matrix.sx)>();
+	this->group_stack.back().matrix.transform_2x2(&vec.x(), &vec.y());
 	return vec.to<real>();
 #endif
 }
@@ -781,10 +787,16 @@ void canvas::arc_rel(const r4::vector2<real>& end_point, const r4::vector2<real>
 }
 
 #if SVGREN_BACKEND == SVGREN_BACKEND_AGG
-void canvas::agg_render(){
+void canvas::agg_render(agg::rasterizer_scanline_aa<>& rasterizer){
+	agg::scanline_u8 scanline;
 	if(!this->context.grad){
-		this->renderer.color(this->context.color);
-		agg::render_scanlines(this->rasterizer, this->scanline, this->renderer);
+		agg::renderer_scanline_aa_solid<decltype(group::renderer_base)> renderer(this->group_stack.back().renderer_base);
+		renderer.color(this->context.color);
+		agg::render_scanlines(
+				rasterizer,
+				scanline,
+				renderer
+			);
 	}else{
 		agg::span_interpolator_linear<
 				const decltype(this->context.gradient_matrix)
@@ -803,12 +815,14 @@ void canvas::agg_render(){
 				decltype(gradient::lut)::color_lut_size
 			);
 
+		agg::span_allocator<decltype(group::pixel_format)::color_type> span_allocator;
+
 		ASSERT(!this->group_stack.empty())
 		agg::render_scanlines_aa(
-				this->rasterizer,
-				this->scanline,
+				rasterizer,
+				scanline,
 				this->group_stack.back().renderer_base,
-				this->span_allocator,
+				span_allocator,
 				span_gradient
 			);
 	}
@@ -820,12 +834,14 @@ void canvas::fill(){
 	cairo_fill_preserve(this->cr);
 	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	agg::conv_transform<agg::path_storage, agg::trans_affine> transformed_path(this->path, this->context.matrix);
+	ASSERT(!this->group_stack.empty())
+	agg::conv_transform<agg::path_storage, agg::trans_affine> transformed_path(this->path, this->group_stack.back().matrix);
 
-	this->rasterizer.filling_rule(this->context.fill_rule);
-	this->rasterizer.add_path(transformed_path);
+	agg::rasterizer_scanline_aa<> rasterizer;
+	rasterizer.filling_rule(this->context.fill_rule);
+	rasterizer.add_path(transformed_path);
 
-	this->agg_render();
+	this->agg_render(rasterizer);
 #endif
 }
 
@@ -839,11 +855,13 @@ void canvas::stroke(){
 	stroke_path.line_join(this->context.line_join);
 	stroke_path.line_cap(this->context.line_cap);
 
-	agg::conv_transform<decltype(stroke_path), agg::trans_affine> transformed_path(stroke_path, this->context.matrix);
+	ASSERT(!this->group_stack.empty())
+	agg::conv_transform<decltype(stroke_path), agg::trans_affine> transformed_path(stroke_path, this->group_stack.back().matrix);
 
-	this->rasterizer.add_path(transformed_path);
+	agg::rasterizer_scanline_aa<> rasterizer;
+	rasterizer.add_path(transformed_path);
 
-    this->agg_render();
+    this->agg_render(rasterizer);
 #endif
 }
 
@@ -947,7 +965,8 @@ r4::matrix2<real> canvas::get_matrix()const{
 		{real(cm.yx), real(cm.yy), real(cm.y0)}
 	};
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	return to_r4_matrix(this->context.matrix);
+	ASSERT(!this->group_stack.empty())
+	return to_r4_matrix(this->group_stack.back().matrix);
 #endif
 }
 
@@ -958,7 +977,8 @@ void canvas::set_matrix(const r4::matrix2<real>& m){
 	cm.yx = backend_real(m[1][0]); cm.yy = backend_real(m[1][1]); cm.y0 = backend_real(m[1][2]);
 	cairo_set_matrix(this->cr, &cm);
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	this->context.matrix = to_agg_matrix(m);
+	ASSERT(!this->group_stack.empty())
+	this->group_stack.back().matrix = to_agg_matrix(m);
 #endif
 }
 
@@ -1018,8 +1038,11 @@ void canvas::push_group(){
 		throw std::runtime_error("cairo_push_group() failed");
 	}
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	this->group_stack.emplace_back(this->dims);
-	this->renderer.attach(this->group_stack.back().renderer_base);
+	if(this->group_stack.empty()){
+		this->group_stack.emplace_back(this->dims, agg::trans_affine());
+	}else{
+		this->group_stack.emplace_back(this->dims, this->group_stack.back().matrix);
+	}
 #endif
 }
 
@@ -1041,22 +1064,31 @@ void canvas::pop_group(real opacity){
 	auto& sg = this->group_stack.back();
 	auto& dg = this->group_stack[this->group_stack.size() - 2];
 
-	dg.renderer_base.blend_from(
-			sg.pixel_format,
-			nullptr,
-			0, // x
-			0, // y
-			agg::cover_type(opacity * agg::cover_full)
-		);
+	if(opacity < 1){
+		dg.renderer_base.blend_from(
+				sg.pixel_format,
+				nullptr,
+				0, // x
+				0, // y
+				agg::cover_type(opacity * agg::cover_full)
+			);
+	}else{
+		dg.renderer_base.blend_from(
+				sg.pixel_format,
+				nullptr,
+				0, // x
+				0 // y
+			);
+	}
 
 	this->group_stack.pop_back();
 #endif
 }
 
 void canvas::pop_mask_and_group(){
-#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	this->get_sub_surface().append_luminance_to_alpha();
 
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	cairo_pattern_t* mask = cairo_pop_group(this->cr);
 	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
 
@@ -1070,9 +1102,31 @@ void canvas::pop_mask_and_group(){
 	cairo_mask(this->cr, mask);
 	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	ASSERT(this->group_stack.size() >= 3)
+	ASSERT(this->group_stack.size() >= 2)
 
+	auto& mask = this->group_stack.back().pixels;
+	auto& grp = this->group_stack[this->group_stack.size() - 2].pixels;
 
-	// TODO:
+	// apply mask to the group by multiplying group pixels by mask alpha
+	ASSERT(mask.size() == grp.size())
+	auto mi = mask.begin();
+	auto gi = grp.begin();
+	for(; mi != mask.end(); ++mi, ++gi){
+		// extract group and mask alpha values
+		auto ga = ((*gi) >> 24);
+		auto ma = ((*mi) >> 24);
+
+		// multiply group alpha by mask alpha
+		ga *= ma;
+		ga /= 0xff;
+
+		// store back the masked group alpha
+		*gi &= 0xffffff;
+		*gi |= (ga << 24);
+	}
+
+	this->group_stack.pop_back(); // pop out mask
+
+	this->pop_group(1); // pop masked group
 #endif
 }

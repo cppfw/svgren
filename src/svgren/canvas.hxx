@@ -205,8 +205,10 @@ private:
 		agg::pixfmt_rgba32 pixel_format;
 		agg::renderer_base<decltype(pixel_format)> renderer_base;
 
-		group(const r4::vector2<unsigned>& dims) :
-				pixels(dims.x() * dims.y()),
+		agg::trans_affine matrix;
+
+		group(const r4::vector2<unsigned>& dims, const agg::trans_affine& matrix) :
+				pixels(dims.x() * dims.y(), 0),
 				rendering_buffer(
 						reinterpret_cast<agg::int8u*>(this->pixels.data()),
 						dims.x(),
@@ -214,8 +216,11 @@ private:
 						dims.x() * sizeof(decltype(this->pixels)::value_type)
 					),
 				pixel_format(this->rendering_buffer),
-				renderer_base(this->pixel_format)
-		{}
+				renderer_base(this->pixel_format),
+				matrix(matrix)
+		{
+			TRACE(<< " dims = " << dims << std::endl)
+		}
 	};
 
 	std::vector<group> group_stack;
@@ -223,25 +228,18 @@ private:
 	typedef agg::curve3_div agg_curve3_type;
 	typedef agg::curve4_div agg_curve4_type;
 
-	const real approximation_scale = 5;
+	const real approximation_scale = 10;
 
 	r4::vector2<unsigned> dims;
 
-	agg::renderer_scanline_aa_solid<decltype(group::renderer_base)> renderer;
-	agg::rasterizer_scanline_aa<> rasterizer;
-	agg::scanline_u8 scanline;
-
-	void agg_render();
+	void agg_render(agg::rasterizer_scanline_aa<>& rasterizer);
 
 	agg::path_storage path;
-
-	agg::span_allocator<decltype(group::pixel_format)::color_type> span_allocator;
 #endif
 
 	struct context_type{
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-		agg::trans_affine matrix; // right after construction it is set to identity matrix
 		agg::rgba color = agg::rgba(0);
 		real line_width = 1;
 		agg::filling_rule_e fill_rule = agg::filling_rule_e::fill_even_odd;
