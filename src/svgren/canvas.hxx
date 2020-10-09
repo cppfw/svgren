@@ -199,7 +199,26 @@ private:
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	typedef double backend_real;
 
-	std::vector<std::vector<uint32_t>> group_stack;
+	struct group{
+		std::vector<uint32_t> pixels;
+		agg::rendering_buffer rendering_buffer;
+		agg::pixfmt_rgba32 pixel_format;
+		agg::renderer_base<decltype(pixel_format)> renderer_base;
+
+		group(const r4::vector2<unsigned>& dims) :
+				pixels(dims.x() * dims.y()),
+				rendering_buffer(
+						reinterpret_cast<agg::int8u*>(this->pixels.data()),
+						dims.x(),
+						dims.y(),
+						dims.x() * sizeof(decltype(this->pixels)::value_type)
+					),
+				pixel_format(this->rendering_buffer),
+				renderer_base(this->pixel_format)
+		{}
+	};
+
+	std::vector<group> group_stack;
 
 	typedef agg::curve3_div agg_curve3_type;
 	typedef agg::curve4_div agg_curve4_type;
@@ -207,10 +226,8 @@ private:
 	const real approximation_scale = 5;
 
 	r4::vector2<unsigned> dims;
-	agg::rendering_buffer rendering_buffer;
-	agg::pixfmt_rgba32 pixel_format;
-	agg::renderer_base<decltype(pixel_format)> renderer_base;
-	agg::renderer_scanline_aa_solid<decltype(renderer_base)> renderer;
+
+	agg::renderer_scanline_aa_solid<decltype(group::renderer_base)> renderer;
 	agg::rasterizer_scanline_aa<> rasterizer;
 	agg::scanline_u8 scanline;
 
@@ -218,7 +235,7 @@ private:
 
 	agg::path_storage path;
 
-	agg::span_allocator<decltype(pixel_format)::color_type> span_allocator;
+	agg::span_allocator<decltype(group::pixel_format)::color_type> span_allocator;
 #endif
 
 	struct context_type{

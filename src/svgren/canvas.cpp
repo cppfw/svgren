@@ -21,9 +21,7 @@ canvas::canvas(unsigned width, unsigned height) :
 		surface(width, height, this->pixels.data()),
 		cr(cairo_create(this->surface.surface))
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-		dims(width, height),
-		pixel_format(this->rendering_buffer),
-		renderer(renderer_base)
+		dims(width, height)
 #endif
 {
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
@@ -84,7 +82,7 @@ std::vector<uint32_t> canvas::release(){
 	return std::move(this->pixels);
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	ASSERT(!this->group_stack.empty())
-	return std::move(this->group_stack.front());
+	return std::move(this->group_stack.front().pixels);
 #endif
 }
 
@@ -788,7 +786,7 @@ void canvas::agg_render(){
 			> span_interpolator{this->context.gradient_matrix};
 
 		agg::span_gradient<
-				decltype(this->pixel_format)::color_type,
+				decltype(group::pixel_format)::color_type,
                 decltype(span_interpolator),
 				const gradient::gradient_wrapper_base,
 				const decltype(this->context.grad->lut)
@@ -800,7 +798,14 @@ void canvas::agg_render(){
 				decltype(gradient::lut)::color_lut_size
 			);
 
-		agg::render_scanlines_aa(this->rasterizer, this->scanline, this->renderer_base, this->span_allocator, span_gradient);
+		ASSERT(!this->group_stack.empty())
+		agg::render_scanlines_aa(
+				this->rasterizer,
+				this->scanline,
+				this->group_stack.back().renderer_base,
+				this->span_allocator,
+				span_gradient
+			);
 	}
 }
 #endif
@@ -972,9 +977,13 @@ svgren::surface canvas::get_sub_surface(const r4::rectangle<unsigned>& region){
 		buffer = reinterpret_cast<uint32_t*>(cairo_image_surface_get_data(s));
 	}
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	dims = decltype(dims){this->rendering_buffer.width(), this->rendering_buffer.height()};
-	stride = this->rendering_buffer.stride_abs();
-	buffer = reinterpret_cast<uint32_t*>(this->rendering_buffer.buf());
+	{
+		ASSERT(!this->group_stack.empty())
+		dims = this->dims;
+		auto& cur_group = this->group_stack.back();
+		stride = cur_group.rendering_buffer.stride_abs();
+		buffer = cur_group.pixels.data();
+	}
 #endif
 
 	ASSERT(buffer)
@@ -1004,18 +1013,8 @@ void canvas::push_group(){
 		throw std::runtime_error("cairo_push_group() failed");
 	}
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	this->group_stack.push_back(decltype(this->group_stack)::value_type(
-			this->dims.x() * this->dims.y(),
-			0
-		));
-	
-	this->rendering_buffer.attach(
-			reinterpret_cast<agg::int8u*>(this->group_stack.back().data()),
-			this->dims.x(),
-			this->dims.y(),
-			this->dims.x() * sizeof(decltype(this->group_stack)::value_type::value_type)
-		);
-	this->renderer_base.attach(this->pixel_format); // this is to recalculate the rectangle inside of the renderer_base
+	this->group_stack.emplace_back(this->dims);
+	this->renderer.attach(this->group_stack.back().renderer_base);
 #endif
 }
 
