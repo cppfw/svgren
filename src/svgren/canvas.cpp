@@ -920,28 +920,6 @@ void canvas::set_line_join(svgdom::stroke_line_join lj){
 #endif
 }
 
-void canvas::push_context(){
-	this->context_stack.push_back(this->context);
-#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	cairo_save(this->cr);
-	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-#endif
-}
-
-void canvas::pop_context(){
-	if(this->context_stack.empty()){
-		throw std::logic_error("canvas::pop_contex(): context stack is empty");
-	}
-	this->context = this->context_stack.back();
-	this->context_stack.pop_back();
-#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	cairo_restore(this->cr);
-	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-#endif
-}
-
 r4::matrix2<real> canvas::get_matrix()const{
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	cairo_matrix_t cm;

@@ -13,16 +13,6 @@
 
 using namespace svgren;
 
-canvas_context_push::canvas_context_push(canvas& c) :
-		c(c)
-{
-	this->c.push_context();
-}
-
-canvas_context_push::~canvas_context_push()noexcept{
-	this->c.pop_context();
-}
-
 canvas_matrix_push::canvas_matrix_push(canvas& c) :
 		c(c)
 {
@@ -78,20 +68,20 @@ DeviceSpaceBoundingBoxPush::DeviceSpaceBoundingBoxPush(renderer& r) :
 	this->r.device_space_bounding_box.set_empty();
 }
 
-DeviceSpaceBoundingBoxPush::~DeviceSpaceBoundingBoxPush() noexcept{
+DeviceSpaceBoundingBoxPush::~DeviceSpaceBoundingBoxPush()noexcept{
 	this->oldBb.unite(this->r.device_space_bounding_box);
 	this->r.device_space_bounding_box = this->oldBb;
 }
 
-viewport_push::viewport_push(renderer& r, const decltype(oldViewport)& viewport) :
+renderer_viewport_push::renderer_viewport_push(renderer& r, const decltype(old_viewport)& viewport) :
 		r(r),
-		oldViewport(r.viewport)
+		old_viewport(r.viewport)
 {
 	this->r.viewport = viewport;
 }
 
-viewport_push::~viewport_push() noexcept{
-	this->r.viewport = this->oldViewport;
+renderer_viewport_push::~renderer_viewport_push()noexcept{
+	this->r.viewport = this->old_viewport;
 }
 
 canvas_group_push::canvas_group_push(svgren::renderer& renderer, bool is_container) :

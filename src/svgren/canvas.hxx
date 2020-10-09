@@ -229,10 +229,8 @@ private:
 		agg::line_join_e line_join = agg::line_join_e::miter_join;
 		agg::trans_affine gradient_matrix;
 #endif
-		std::shared_ptr<const gradient> grad;
+		std::shared_ptr<const gradient> grad; // this is needed at least to save shared pointer to gradient object to prevent its deletion
 	} context;
-
-	std::vector<context_type> context_stack;
 
 	bool has_current_point()const;
 public:
@@ -294,9 +292,6 @@ public:
 	void set_line_join(svgdom::stroke_line_join lj);
 
 	void rectangle(const r4::rectangle<real>& rect);
-
-	void push_context();
-	void pop_context();
 
 	r4::matrix2<real> get_matrix()const;
 	void set_matrix(const r4::matrix2<real>& m);

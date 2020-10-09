@@ -35,13 +35,6 @@ public:
 	~canvas_matrix_push()noexcept;
 };
 
-class canvas_context_push{
-	canvas& c;
-public:
-	canvas_context_push(canvas& c);
-	~canvas_context_push()noexcept;
-};
-
 real percentLengthToFraction(const svgdom::length& l);
 
 struct DeviceSpaceBoundingBox{
@@ -77,12 +70,12 @@ public:
 	~DeviceSpaceBoundingBoxPush()noexcept;
 };
 
-class viewport_push{
+class renderer_viewport_push{
 	class renderer& r;
-	r4::vector2<real> oldViewport;
+	r4::vector2<real> old_viewport;
 public:
-	viewport_push(renderer& r, const decltype(oldViewport)& viewport);
-	~viewport_push()noexcept;
+	renderer_viewport_push(renderer& r, const decltype(old_viewport)& viewport);
+	~renderer_viewport_push()noexcept;
 };
 
 class canvas_group_push{

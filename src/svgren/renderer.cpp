@@ -254,9 +254,9 @@ void renderer::set_gradient(const std::string& id){
 	}
 
 	struct CommonGradientPush{
-		canvas_matrix_push matrix_push; // here we need to save/restore only matrix!
+		canvas_matrix_push matrix_push;
 
-		std::unique_ptr<viewport_push> viewportPush;
+		std::unique_ptr<renderer_viewport_push> viewport_push;
 
 		CommonGradientPush(renderer& r, const svgdom::gradient& gradient) :
 				matrix_push(r.canvas)
@@ -264,7 +264,7 @@ void renderer::set_gradient(const std::string& id){
 			if(r.gradient_get_units(gradient) == svgdom::coordinate_units::object_bounding_box){
 				r.canvas.translate(r.user_space_bounding_box.p);
 				r.canvas.scale(r.user_space_bounding_box.d);
-				this->viewportPush = std::make_unique<viewport_push>(r, 1);
+				this->viewport_push = std::make_unique<renderer_viewport_push>(r, 1);
 			}
 
 			r.apply_transformations(r.gradient_get_transformations(gradient));
@@ -473,13 +473,13 @@ void renderer::render_svg_element(
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
-	canvas_context_push context_push(this->canvas);
+	canvas_matrix_push matrix_push(this->canvas);
 
 	if(!this->is_outermost_element){
 		this->canvas.translate(this->length_to_px(x, y));
 	}
 
-	viewport_push viewportPush(*this, this->length_to_px(width, height));
+	renderer_viewport_push viewport_push(*this, this->length_to_px(width, height));
 
 	this->apply_viewbox(v, a);
 
@@ -523,7 +523,7 @@ void renderer::visit(const svgdom::g_element& e){
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
-	canvas_context_push context_push(this->canvas);
+	canvas_matrix_push matrix_push(this->canvas);
 
 	this->apply_transformations(e.transformations);
 
@@ -694,7 +694,7 @@ void renderer::visit(const svgdom::path_element& e){
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
-	canvas_context_push context_push(this->canvas);
+	canvas_matrix_push matrix_push(this->canvas);
 
 	this->apply_transformations(e.transformations);
 
@@ -915,7 +915,7 @@ void renderer::visit(const svgdom::circle_element& e){
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
-	canvas_context_push context_push(this->canvas);
+	canvas_matrix_push matrix_push(this->canvas);
 
 	this->apply_transformations(e.transformations);
 
@@ -943,7 +943,7 @@ void renderer::visit(const svgdom::polyline_element& e){
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
-	canvas_context_push context_push(this->canvas);
+	canvas_matrix_push matrix_push(this->canvas);
 
 	this->apply_transformations(e.transformations);
 
@@ -974,7 +974,7 @@ void renderer::visit(const svgdom::polygon_element& e){
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
-	canvas_context_push context_push(this->canvas);
+	canvas_matrix_push matrix_push(this->canvas);
 
 	this->apply_transformations(e.transformations);
 
@@ -1007,7 +1007,7 @@ void renderer::visit(const svgdom::line_element& e){
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
-	canvas_context_push context_push(this->canvas);
+	canvas_matrix_push matrix_push(this->canvas);
 
 	this->apply_transformations(e.transformations);
 
@@ -1029,7 +1029,7 @@ void renderer::visit(const svgdom::ellipse_element& e){
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
-	canvas_context_push context_push(this->canvas);
+	canvas_matrix_push matrix_push(this->canvas);
 
 	this->apply_transformations(e.transformations);
 
@@ -1058,7 +1058,7 @@ void renderer::visit(const svgdom::rect_element& e){
 
 	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
 
-	canvas_context_push context_push(this->canvas);
+	canvas_matrix_push matrix_push(this->canvas);
 
 	this->apply_transformations(e.transformations);
 
