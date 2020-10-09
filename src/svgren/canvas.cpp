@@ -1041,11 +1041,6 @@ void canvas::pop_group(real opacity){
 	auto& sg = this->group_stack.back();
 	auto& dg = this->group_stack[this->group_stack.size() - 2];
 
-	// TODO: remove commented code
-	// typedef agg::comp_op_rgba_src_over<decltype(group::pixel_format)::color_type, decltype(group::pixel_format)::order_type> blender_type;
-	// agg::pixfmt_alpha_blend_rgba<blender_type, decltype(dg.rendering_buffer)> dpf(dg.rendering_buffer);
-	// agg::renderer_base<decltype(dpf)> rb(dpf);
-
 	dg.renderer_base.blend_from(
 			sg.pixel_format,
 			nullptr,
@@ -1075,6 +1070,9 @@ void canvas::pop_mask_and_group(){
 	cairo_mask(this->cr, mask);
 	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	ASSERT(this->group_stack.size() >= 3)
+
+
 	// TODO:
 #endif
 }
