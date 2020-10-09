@@ -1030,6 +1030,9 @@ void canvas::pop_group(real opacity){
 	}
 	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	ASSERT(this->group_stack.size() >= 2)
+
+	
 	// TODO:
 #endif
 }

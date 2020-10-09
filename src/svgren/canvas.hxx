@@ -110,7 +110,7 @@ public:
 			return *this->cur_grad;
 		}
 
-		agg::gradient_lut<agg::color_interpolator<agg::rgba8>, 1024> lut;
+		agg::gradient_lut<agg::color_interpolator<agg::rgba8>, 0x2ff> lut;
 
 		r4::matrix2<real> local_matrix;
 
