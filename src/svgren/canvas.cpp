@@ -21,8 +21,8 @@ using namespace svgren;
 canvas::canvas(const r4::vector2<unsigned>& dims) :
 		dims(dims)
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-		, pixels(width * height, 0)
-		, surface(width, height, this->pixels.data())
+		, pixels(dims.x() * dims.y(), 0)
+		, surface(dims.x(), dims.y(), this->pixels.data())
 		, cr(cairo_create(this->surface.surface))
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 #endif
