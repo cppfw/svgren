@@ -72,6 +72,8 @@ inline uint32_t get_uint32_t(const r4::vector4<unsigned>& rgba){
 
 class canvas{
 public:
+	const r4::vector2<unsigned> dims;
+
 	class gradient{
 		friend class canvas;
 
@@ -205,9 +207,7 @@ private:
 		agg::pixfmt_rgba32 pixel_format;
 		agg::renderer_base<decltype(pixel_format)> renderer_base;
 
-		agg::trans_affine matrix;
-
-		group(const r4::vector2<unsigned>& dims, const agg::trans_affine& matrix) :
+		group(const r4::vector2<unsigned>& dims) :
 				pixels(dims.x() * dims.y(), 0),
 				rendering_buffer(
 						reinterpret_cast<agg::int8u*>(this->pixels.data()),
@@ -216,25 +216,20 @@ private:
 						dims.x() * sizeof(decltype(this->pixels)::value_type)
 					),
 				pixel_format(this->rendering_buffer),
-				renderer_base(this->pixel_format),
-				matrix(matrix)
-		{
-			TRACE(<< " dims = " << dims << std::endl)
-		}
+				renderer_base(this->pixel_format)
+		{}
 	};
 
-	std::vector<group> group_stack;
-
-	typedef agg::curve3_div agg_curve3_type;
-	typedef agg::curve4_div agg_curve4_type;
+	// NOTE: the groups stack has to be std::list because agg's structures are non-moveable and non-copyable
+	std::list<group> group_stack;
 
 	const real approximation_scale = 10;
-
-	r4::vector2<unsigned> dims;
 
 	void agg_render(agg::rasterizer_scanline_aa<>& rasterizer);
 
 	agg::path_storage path;
+
+	agg::trans_affine matrix;
 #endif
 
 	struct context_type{

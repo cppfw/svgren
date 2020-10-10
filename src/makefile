@@ -17,8 +17,6 @@ this_cxxflags += -fstrict-aliasing # in order to comply with the c++ standard mo
 this_cxxflags += -std=c++14
 this_cxxflags += -g
 
-# this_cxx := clang++
-
 svgren_backend := agg
 # svgren_backend := cairo
 

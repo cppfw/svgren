@@ -509,6 +509,21 @@ renderer::renderer(
 {
 	this->device_space_bounding_box.set_empty();
 	this->background = this->canvas.get_sub_surface();
+
+#ifdef SVGREN_BACKGROUND
+	this->canvas.set_source(
+		r4::vector4<real>{
+			unsigned((SVGREN_BACKGROUND >> 0) & 0xff),
+			unsigned((SVGREN_BACKGROUND >> 8) & 0xff),
+			unsigned((SVGREN_BACKGROUND >> 16) & 0xff),
+			unsigned((SVGREN_BACKGROUND >> 24) & 0xff)
+		} / 0xff
+	);
+	this->canvas.rectangle({0, this->canvas.dims.to<real>()});
+	this->canvas.fill();
+	this->canvas.clear_path();
+	this->canvas.set_source({0, 0, 0, 0});
+#endif
 }
 
 void renderer::visit(const svgdom::g_element& e){
