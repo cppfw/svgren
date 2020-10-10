@@ -40,8 +40,6 @@
 
 namespace svgren{
 
-typedef uint32_t pixel;
-
 inline r4::vector4<unsigned> to_rgba(pixel c){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	// cairo uses BGRA format

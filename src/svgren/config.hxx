@@ -12,4 +12,6 @@ namespace svgren{
 
 typedef float real;
 
+typedef uint32_t pixel;
+
 }
