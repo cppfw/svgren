@@ -16,7 +16,7 @@ result svgren::render(const svgdom::svg_element& svg, const parameters& p){
 	
 	auto svg_dims = svg.get_dimensions(svgdom::real(p.dpi));
 	
-	if(svg_dims.x() <= 0 || svg_dims.y() <= 0){
+	if(!svg_dims.is_positive()){
 		return ret;
 	}
 	
