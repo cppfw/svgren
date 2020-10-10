@@ -40,7 +40,9 @@
 
 namespace svgren{
 
-inline r4::vector4<unsigned> get_rgba(uint32_t c){
+typedef uint32_t pixel;
+
+inline r4::vector4<unsigned> to_rgba(pixel c){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	// cairo uses BGRA format
 	return {
@@ -60,7 +62,7 @@ inline r4::vector4<unsigned> get_rgba(uint32_t c){
 #endif
 }
 
-inline uint32_t get_uint32_t(const r4::vector4<unsigned>& rgba){
+inline pixel to_pixel(const r4::vector4<unsigned>& rgba){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	// cairo uses BGRA format
 	return rgba.b() | (rgba.g() << 8) | (rgba.r() << 16) | (rgba.a() << 24);
@@ -171,16 +173,16 @@ private:
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	typedef double backend_real;
 
-	std::vector<uint32_t> pixels;
+	std::vector<pixel> pixels;
 
 	struct cairo_surface_wrapper{
 		cairo_surface_t* surface;
 
-		cairo_surface_wrapper(unsigned width, unsigned height, uint32_t* buffer){
+		cairo_surface_wrapper(unsigned width, unsigned height, pixel* buffer){
 			if(width == 0 || height == 0){
 				throw std::invalid_argument("svgren::canvas::canvas(): width or height argument is zero");
 			}
-			int stride = width * sizeof(uint32_t);
+			int stride = width * sizeof(pixel);
 			this->surface = cairo_image_surface_create_for_data(
 				reinterpret_cast<unsigned char*>(buffer),
 				CAIRO_FORMAT_ARGB32,
@@ -202,7 +204,7 @@ private:
 	typedef double backend_real;
 
 	struct group{
-		std::vector<uint32_t> pixels;
+		std::vector<pixel> pixels;
 		agg::rendering_buffer rendering_buffer;
 		agg::pixfmt_rgba32_pre pixel_format; // use premultiplied pixel format for faster blending
 		agg::renderer_base<decltype(pixel_format)> renderer_base;
@@ -315,7 +317,7 @@ public:
 
 	svgren::surface get_sub_surface(const r4::rectangle<unsigned>& region = {0, std::numeric_limits<unsigned>::max()});
 
-	std::vector<uint32_t> release();
+	std::vector<pixel> release();
 };
 
 }

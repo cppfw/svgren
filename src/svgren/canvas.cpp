@@ -43,7 +43,7 @@ canvas::~canvas(){
 #endif
 }
 
-std::vector<uint32_t> canvas::release(){
+std::vector<pixel> canvas::release(){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	auto& ret = this->pixels;
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
@@ -58,18 +58,18 @@ std::vector<uint32_t> canvas::release(){
 #endif
 
 		// unpremultiply alpha
-		uint32_t a = (c >> 24);
+		pixel a = (c >> 24);
 		if(a == 0xff){
 			continue;
 		}
 		if(a != 0){
 			using std::min;
-			uint32_t r = (c & 0xff) * 0xff / a;
-			r = min(r, uint32_t(0xff)); // clamp top
-			uint32_t g = ((c >> 8) & 0xff) * 0xff / a;
-			g = min(g, uint32_t(0xff)); // clamp top
-			uint32_t b = ((c >> 16) & 0xff) * 0xff / a;
-			b = min(b, uint32_t(0xff)); // clamp top
+			pixel r = (c & 0xff) * 0xff / a;
+			r = min(r, pixel(0xff)); // clamp top
+			pixel g = ((c >> 8) & 0xff) * 0xff / a;
+			g = min(g, pixel(0xff)); // clamp top
+			pixel b = ((c >> 16) & 0xff) * 0xff / a;
+			b = min(b, pixel(0xff)); // clamp top
 			c = ((a << 24) | (b << 16) | (g << 8) | r);
 		}else{
 			c = 0;
@@ -984,7 +984,7 @@ void canvas::set_matrix(const r4::matrix2<real>& m){
 
 svgren::surface canvas::get_sub_surface(const r4::rectangle<unsigned>& region){
 	r4::vector2<unsigned> dims;
-	uint32_t* buffer;
+	pixel* buffer;
 	unsigned stride;
 
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
@@ -999,7 +999,7 @@ svgren::surface canvas::get_sub_surface(const r4::rectangle<unsigned>& region){
 			unsigned(cairo_image_surface_get_height(s))
 		};
 
-		buffer = reinterpret_cast<uint32_t*>(cairo_image_surface_get_data(s));
+		buffer = reinterpret_cast<pixel*>(cairo_image_surface_get_data(s));
 	}
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	{
@@ -1012,10 +1012,10 @@ svgren::surface canvas::get_sub_surface(const r4::rectangle<unsigned>& region){
 #endif
 
 	ASSERT(buffer)
-	ASSERT(stride % sizeof(uint32_t) == 0)
+	ASSERT(stride % sizeof(pixel) == 0)
 
 	svgren::surface ret;
-	ret.stride = stride / sizeof(uint32_t);
+	ret.stride = stride / sizeof(pixel);
 
 	using std::min;
 	ret.d = min(region.d, dims - region.p);
@@ -1109,7 +1109,7 @@ void canvas::pop_mask_and_group(){
 	auto gi = grp.begin();
 	for(; mi != mask.end(); ++mi, ++gi){
 		// extract group color and mask alpha
-		auto gc = get_rgba(*gi);
+		auto gc = to_rgba(*gi);
 		auto ma = ((*mi) >> 24);
 
 		// multiply group color (since we use pre-multiplied pixel format) by mask alpha
@@ -1117,7 +1117,7 @@ void canvas::pop_mask_and_group(){
 		gc /= 0xff;
 
 		// store back the masked group color
-		*gi = get_uint32_t(gc);
+		*gi = to_pixel(gc);
 	}
 
 	this->group_stack.pop_back(); // pop out mask
