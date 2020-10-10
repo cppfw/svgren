@@ -32,7 +32,7 @@ public:
 	
 	bool is_outermost_element = true;
 	
-	r4::vector2<real> viewport; // width, height
+	r4::vector2<real> viewport;
 	
 	// this bounding box is used for gradients
 	r4::rectangle<real> user_space_bounding_box;
@@ -105,7 +105,7 @@ public:
 	renderer(
 			svgren::canvas& canvas,
 			unsigned dpi,
-			r4::vector2<real> canvasSize,
+			r4::vector2<real> viewport,
 			const svgdom::svg_element& root
 		);
 

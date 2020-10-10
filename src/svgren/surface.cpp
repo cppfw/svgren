@@ -45,7 +45,7 @@ void surface::append_luminance_to_alpha(){
 		uint32_t l = (2 * c.r() + 3 * c.g() + c.b()) / 6;
 		ASSERT(l <= 255)
 		
-		// Cairo uses premultiplied alpha, so no need to multiply alpha by liminance.
+		// we use premultiplied alpha format, so no need to multiply alpha by liminance
 		*p &= 0xffffff;
 		*p |= (l << 24);
 	}

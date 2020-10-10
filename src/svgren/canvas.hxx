@@ -204,7 +204,7 @@ private:
 	struct group{
 		std::vector<uint32_t> pixels;
 		agg::rendering_buffer rendering_buffer;
-		agg::pixfmt_rgba32 pixel_format;
+		agg::pixfmt_rgba32_pre pixel_format; // use premultiplied pixel format for faster blending
 		agg::renderer_base<decltype(pixel_format)> renderer_base;
 
 		group(const r4::vector2<unsigned>& dims) :

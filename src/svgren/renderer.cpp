@@ -499,13 +499,13 @@ void renderer::render_svg_element(
 renderer::renderer(
 		svgren::canvas& canvas,
 		unsigned dpi,
-		r4::vector2<real> canvasSize,
+		r4::vector2<real> viewport,
 		const svgdom::svg_element& root
 	) :
 		canvas(canvas),
 		finder(root),
 		dpi(real(dpi)),
-		viewport(canvasSize)
+		viewport(viewport)
 {
 	this->device_space_bounding_box.set_empty();
 	this->background = this->canvas.get_sub_surface();
@@ -519,7 +519,7 @@ renderer::renderer(
 			unsigned((SVGREN_BACKGROUND >> 24) & 0xff)
 		} / 0xff
 	);
-	this->canvas.rectangle({0, this->canvas.dims.to<real>()});
+	this->canvas.rectangle({0, viewport});
 	this->canvas.fill();
 	this->canvas.clear_path();
 	this->canvas.set_source({0, 0, 0, 0});

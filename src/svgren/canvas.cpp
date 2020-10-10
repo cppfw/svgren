@@ -189,6 +189,7 @@ void canvas::set_source(const r4::vector4<real>& rgba){
 	this->context.color.g = rgba.g();
 	this->context.color.b = rgba.b();
 	this->context.color.a = rgba.a();
+	this->context.color.premultiply(); // since we use premultiplied pixel format
 #endif
 }
 
@@ -351,7 +352,7 @@ void canvas::gradient::set_stops(utki::span<const stop> stops){
 						backend_real(s.rgba.g()),
 						backend_real(s.rgba.b()),
 						backend_real(s.rgba.a())
-					)
+					).premultiply() // since weuse premultiplied pixel format
 			);
 	}
 	this->lut.build_lut();
@@ -1107,17 +1108,16 @@ void canvas::pop_mask_and_group(){
 	auto mi = mask.begin();
 	auto gi = grp.begin();
 	for(; mi != mask.end(); ++mi, ++gi){
-		// extract group and mask alpha values
-		auto ga = ((*gi) >> 24);
+		// extract group color and mask alpha
+		auto gc = get_rgba(*gi);
 		auto ma = ((*mi) >> 24);
 
-		// multiply group alpha by mask alpha
-		ga *= ma;
-		ga /= 0xff;
+		// multiply group color (since we use pre-multiplied pixel format) by mask alpha
+		gc *= ma;
+		gc /= 0xff;
 
-		// store back the masked group alpha
-		*gi &= 0xffffff;
-		*gi |= (ga << 24);
+		// store back the masked group color
+		*gi = get_uint32_t(gc);
 	}
 
 	this->group_stack.pop_back(); // pop out mask
