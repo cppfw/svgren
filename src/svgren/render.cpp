@@ -14,16 +14,16 @@ using namespace svgren;
 result svgren::render(const svgdom::svg_element& svg, const parameters& p){
 	result ret;
 	
-	auto svg_width = svg.get_dimensions(svgdom::real(p.dpi));
+	auto svg_dims = svg.get_dimensions(svgdom::real(p.dpi));
 	
-	if(svg_width[0] <= 0 || svg_width[1] <= 0){
+	if(svg_dims[0] <= 0 || svg_dims[0] <= 0){
 		return ret;
 	}
 	
 	if(p.width_request == 0 && p.height_request == 0){
 		using std::ceil;
-		ret.width = unsigned(ceil(svg_width[0]));
-		ret.height = unsigned(ceil(svg_width[1]));
+		ret.width = unsigned(ceil(svg_dims[0]));
+		ret.height = unsigned(ceil(svg_dims[1]));
 	}else{
 		real aspectRatio = svg.aspect_ratio(svgdom::real(p.dpi));
 		if (aspectRatio == 0){
@@ -50,14 +50,14 @@ result svgren::render(const svgdom::svg_element& svg, const parameters& p){
 	
 	ASSERT(ret.width != 0)
 	ASSERT(ret.height != 0)
-	ASSERT(svg_width[0] > 0)
-	ASSERT(svg_width[1] > 0)
+	ASSERT(svg_dims[0] > 0)
+	ASSERT(svg_dims[1] > 0)
 	
 	svgren::canvas canvas(ret.width, ret.height);
 	
-	canvas.scale(real(ret.width) / svg_width[0], real(ret.height) / svg_width[1]);
+	canvas.scale(real(ret.width) / svg_dims[0], real(ret.height) / svg_dims[1]);
 	
-	renderer r(canvas, p.dpi, {svg_width[0], svg_width[1]}, svg);
+	renderer r(canvas, p.dpi, {svg_dims[0], svg_dims[1]}, svg);
 	
 	svg.accept(r);
 	
