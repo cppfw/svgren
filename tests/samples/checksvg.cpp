@@ -62,7 +62,7 @@ public:
 	 * @brief Get image dimensions.
 	 * @return Image dimensions.
 	 */
-	const r4::vector2<unsigned>& dim()const noexcept{
+	const r4::vector2<unsigned>& dims()const noexcept{
 		return this->dim_v;
 	}
 
@@ -116,7 +116,7 @@ public:
 	void init(r4::vector2<unsigned> dimensions, ColorDepth_e colorDepth){
 		this->dim_v = dimensions;
 		this->colorDepth_v = colorDepth;
-		this->buf_v.resize(this->dim().x() * this->dim().y() * this->numChannels());
+		this->buf_v.resize(this->dims().x() * this->dims().y() * this->numChannels());
 	}
 
 	/**
@@ -252,7 +252,7 @@ public:
 		png_size_t bytesPerRow = png_get_rowbytes(pngPtr, infoPtr);//get bytes per row
 
 		// check that our expectations are correct
-		if(bytesPerRow != this->dim().x() * this->numChannels()){
+		if(bytesPerRow != this->dims().x() * this->numChannels()){
 			throw Image::Exc("Image::LoadPNG(): number of bytes per row does not match expected value");
 		}
 
@@ -260,11 +260,11 @@ public:
 
 //		TRACE(<< "Image::LoadPNG(): going to read in the data" << std::endl)
 		{
-			ASSERT_ALWAYS(this->dim().y() && this->buf_v.size())
-			std::vector<png_bytep> rows(this->dim().y());
+			ASSERT_ALWAYS(this->dims().y() && this->buf_v.size())
+			std::vector<png_bytep> rows(this->dims().y());
 			// initialize row pointers
 //			TRACE(<< "Image::LoadPNG(): this->buf.Buf() = " << std::hex << this->buf.Buf() << std::endl)
-			for(unsigned i = 0; i < this->dim().y(); ++i){
+			for(unsigned i = 0; i < this->dims().y(); ++i){
 				rows[i] = &*this->buf_v.begin() + i * bytesPerRow;
 //				TRACE(<< "Image::LoadPNG(): rows[i] = " << std::hex << rows[i] << std::endl)
 			}
@@ -320,13 +320,8 @@ int main(int argc, char** argv){
 		return 1;
 	}
 
-	if(res.width != png.dim().x()){
-		std::cout << "Error: svg width (" << res.width << ") did not match png width (" << png.dim().x() << ")" << std::endl;
-		return 1;
-	}
-
-	if(res.height != png.dim().y()){
-		std::cout << "Error: svg height (" << res.height << ") did not match png height (" << png.dim().y() << ")" << std::endl;
+	if(res.dims != png.dims()){
+		std::cout << "Error: svg dims " << res.dims << " did not match png dims " << png.dims() << std::endl;
 		return 1;
 	}
 
@@ -357,7 +352,7 @@ int main(int argc, char** argv){
 					(uint32_t(png.buf()[i * png.numChannels() + 3]) << 24)
 				;
 
-				std::cout << "Error: PNG pixel #" << std::dec << i << " [" << (i % res.width) << ", " << (i / res.width) << "] " << " (0x" << std::hex << pixel << ") did not match SVG pixel (0x" << img[i] << ")" << std::endl;
+				std::cout << "Error: PNG pixel #" << std::dec << i << " [" << (i % res.dims.x()) << ", " << (i / res.dims.y()) << "] " << " (0x" << std::hex << pixel << ") did not match SVG pixel (0x" << img[i] << ")" << std::endl;
 				return 1;
 			}
 		}

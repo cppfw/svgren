@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
 		threads.emplace_back(
 				[s](){
 					auto res = svgren::render(*s);
-					TRACE_ALWAYS(<< "rendered, width = " << res.width << std::endl)
+					TRACE_ALWAYS(<< "rendered, width = " << res.dims.x() << std::endl)
 				}
 			);
 	}

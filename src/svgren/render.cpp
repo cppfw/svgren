@@ -16,48 +16,43 @@ result svgren::render(const svgdom::svg_element& svg, const parameters& p){
 	
 	auto svg_dims = svg.get_dimensions(svgdom::real(p.dpi));
 	
-	if(svg_dims[0] <= 0 || svg_dims[0] <= 0){
+	if(svg_dims.x() <= 0 || svg_dims.y() <= 0){
 		return ret;
 	}
 	
-	if(p.width_request == 0 && p.height_request == 0){
+	if(p.dims_request.is_zero()){
 		using std::ceil;
-		ret.width = unsigned(ceil(svg_dims[0]));
-		ret.height = unsigned(ceil(svg_dims[1]));
+		ret.dims = ceil(svg_dims).to<unsigned>();
 	}else{
-		real aspectRatio = svg.aspect_ratio(svgdom::real(p.dpi));
-		if (aspectRatio == 0){
+		real aspect_ratio = svg.aspect_ratio(svgdom::real(p.dpi));
+		if (aspect_ratio == 0){
 			return ret;
 		}
-		ASSERT(aspectRatio > 0)
+		ASSERT(aspect_ratio > 0)
 		using std::round;
 		using std::max;
-		if(p.width_request == 0 && p.height_request != 0){
-			ret.width = unsigned(round(aspectRatio * real(p.height_request)));
-			ret.width = max(ret.width, unsigned(1)); // we don't want zero width
-			ret.height = p.height_request;
-		}else if(p.width_request != 0 && p.height_request == 0){
-			ret.height = unsigned(round(real(p.width_request) / aspectRatio));
-			ret.height = max(ret.height, unsigned(1)); // we don't want zero height
-			ret.width = p.width_request;
+		if(p.dims_request.x() == 0 && p.dims_request.y() != 0){
+			ret.dims.x() = unsigned(round(aspect_ratio * real(p.dims_request.y())));
+			ret.dims.x() = max(ret.dims.x(), unsigned(1)); // we don't want zero width
+			ret.dims.y() = p.dims_request.y();
+		}else if(p.dims_request.x() != 0 && p.dims_request.y() == 0){
+			ret.dims.y() = unsigned(round(real(p.dims_request.x()) / aspect_ratio));
+			ret.dims.y() = max(ret.dims.y(), unsigned(1)); // we don't want zero height
+			ret.dims.x() = p.dims_request.x();
 		}else{
-			ASSERT(p.width_request != 0)
-			ASSERT(p.height_request != 0)
-			ret.width = p.width_request;
-			ret.height = p.height_request;
+			ASSERT(p.dims_request.is_positive())
+			ret.dims = p.dims_request;
 		}
 	}
 	
-	ASSERT(ret.width != 0)
-	ASSERT(ret.height != 0)
-	ASSERT(svg_dims[0] > 0)
-	ASSERT(svg_dims[1] > 0)
+	ASSERT(ret.dims.is_positive())
+	ASSERT(svg_dims.is_positive())
 	
-	svgren::canvas canvas(ret.width, ret.height);
+	svgren::canvas canvas(ret.dims);
 	
-	canvas.scale(real(ret.width) / svg_dims[0], real(ret.height) / svg_dims[1]);
+	canvas.scale(ret.dims.to<real>().comp_div(svg_dims.to<real>()));
 	
-	renderer r(canvas, p.dpi, {svg_dims[0], svg_dims[1]}, svg);
+	renderer r(canvas, p.dpi, svg_dims, svg);
 	
 	svg.accept(r);
 	

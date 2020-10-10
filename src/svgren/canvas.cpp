@@ -18,8 +18,8 @@ typedef agg::curve4_div agg_curve4_type;
 
 using namespace svgren;
 
-canvas::canvas(unsigned width, unsigned height) :
-		dims(width, height)
+canvas::canvas(const r4::vector2<unsigned>& dims) :
+		dims(dims)
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 		, pixels(width * height, 0)
 		, surface(width, height, this->pixels.data())

@@ -248,7 +248,7 @@ private:
 	bool has_current_point()const;
 public:
 
-	canvas(unsigned width, unsigned height);
+	canvas(const r4::vector2<unsigned>& dims);
 	~canvas();
 
 	void transform(const r4::matrix2<real>& matrix);
