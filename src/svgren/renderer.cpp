@@ -936,8 +936,6 @@ void renderer::visit(const svgdom::polyline_element& e){
 		return;
 	}
 
-	// TODO: make a common push class for shapes
-
 	common_element_push group_push(*this, false);
 
 	this->apply_transformations(e.transformations);
