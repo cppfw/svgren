@@ -903,7 +903,7 @@ void renderer::visit(const svgdom::path_element& e){
 		prevStep = &s;
 	}
 
-	this->render_shape(group_push.is_pushed());
+	this->render_shape(group_push.is_group_pushed());
 }
 
 void renderer::visit(const svgdom::circle_element& e){
@@ -925,7 +925,7 @@ void renderer::visit(const svgdom::circle_element& e){
 	this->canvas.arc_abs(c,	r, 0, 2 * utki::pi<real>());
 	this->canvas.close_path();
 
-	this->render_shape(group_push.is_pushed());
+	this->render_shape(group_push.is_group_pushed());
 }
 
 void renderer::visit(const svgdom::polyline_element& e){
@@ -954,7 +954,7 @@ void renderer::visit(const svgdom::polyline_element& e){
 		this->canvas.line_to_abs(i->to<real>());
 	}
 
-	this->render_shape(group_push.is_pushed());
+	this->render_shape(group_push.is_group_pushed());
 }
 
 void renderer::visit(const svgdom::polygon_element& e){
@@ -983,7 +983,7 @@ void renderer::visit(const svgdom::polygon_element& e){
 
 	this->canvas.close_path();
 
-	this->render_shape(group_push.is_pushed());
+	this->render_shape(group_push.is_group_pushed());
 }
 
 void renderer::visit(const svgdom::line_element& e){
@@ -1001,7 +1001,7 @@ void renderer::visit(const svgdom::line_element& e){
 	this->canvas.move_to_abs(this->length_to_px(e.x1, e.y1));
 	this->canvas.line_to_abs(this->length_to_px(e.x2, e.y2));
 
-	this->render_shape(group_push.is_pushed());
+	this->render_shape(group_push.is_group_pushed());
 }
 
 void renderer::visit(const svgdom::ellipse_element& e){
@@ -1022,7 +1022,7 @@ void renderer::visit(const svgdom::ellipse_element& e){
 	this->canvas.arc_abs(c, r, 0, real(2) * utki::pi<real>());
 	this->canvas.close_path();
 
-	this->render_shape(group_push.is_pushed());
+	this->render_shape(group_push.is_group_pushed());
 }
 
 void renderer::visit(const svgdom::style_element& e){
@@ -1118,7 +1118,7 @@ void renderer::visit(const svgdom::rect_element& e){
 		this->canvas.close_path();
 	}
 
-	this->render_shape(group_push.is_pushed());
+	this->render_shape(group_push.is_group_pushed());
 }
 
 const decltype(svgdom::transformable::transformations)& renderer::gradient_get_transformations(const svgdom::gradient& g){

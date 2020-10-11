@@ -63,7 +63,7 @@ public:
 	common_element_push(svgren::renderer& renderer, bool is_container);
 	~common_element_push()noexcept;
 	
-	bool is_pushed()const noexcept{
+	bool is_group_pushed()const noexcept{
 		return this->group_pushed;
 	}
 };
