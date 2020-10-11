@@ -352,10 +352,15 @@ void canvas::gradient::set_stops(utki::span<const stop> stops){
 						backend_real(s.rgba.g()),
 						backend_real(s.rgba.b()),
 						backend_real(s.rgba.a())
-					).premultiply() // since weuse premultiplied pixel format
+					)
 			);
 	}
 	this->lut.build_lut();
+
+	// premultiply alpha since we use premultiplied pixel format
+	for(unsigned i = 0; i != this->lut.color_lut_size; ++i){
+		this->lut[i].premultiply();
+	}
 #endif
 }
 
