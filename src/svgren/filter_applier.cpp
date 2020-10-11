@@ -246,16 +246,16 @@ void filter_applier::visit(const svgdom::filter_element& e){
 			case svgdom::coordinate_units::object_bounding_box:
 				{
 					r4::vector2<real> fe_pos{
-						percentLengthToFraction(e.x),
-						percentLengthToFraction(e.y)
+						percent_to_fraction(e.x),
+						percent_to_fraction(e.y)
 					};
 
 					r4::vector2<real> fe_dims{
-						percentLengthToFraction(e.width),
-						percentLengthToFraction(e.height)
+						percent_to_fraction(e.width),
+						percent_to_fraction(e.height)
 					};
 
-					fr.p = this->r.device_space_bounding_box.pos() + fe_pos.comp_mul(this->r.device_space_bounding_box.dims());
+					fr.p = this->r.device_space_bounding_box.p1 + fe_pos.comp_mul(this->r.device_space_bounding_box.dims());
 					fr.d = fe_dims.comp_mul(this->r.device_space_bounding_box.dims());
 				}
 				break;
@@ -271,21 +271,21 @@ void filter_applier::visit(const svgdom::filter_element& e){
 						{p2.x(), p1.y()}
 					}};
 
-					DeviceSpaceBoundingBox frBb;
-					frBb.set_empty();
+					r4::segment2<real> frBb;
+					frBb.set_empty_bounding_box();
 
 					for(auto& vertex : rectVertices){
 						vertex = this->r.canvas.matrix_mul(vertex);
 
-						DeviceSpaceBoundingBox bb;
-						bb.left = decltype(bb.left)(vertex.x());
-						bb.right = decltype(bb.right)(vertex.x());
-						bb.top = decltype(bb.top)(vertex.y());
-						bb.bottom = decltype(bb.bottom)(vertex.y());
+						r4::segment2<real> bb;
+						bb.p1.x() = decltype(bb.p1.x())(vertex.x());
+						bb.p2.x() = decltype(bb.p2.x())(vertex.x());
+						bb.p1.y() = decltype(bb.p1.y())(vertex.y());
+						bb.p2.y() = decltype(bb.p2.y())(vertex.y());
 
 						frBb.unite(bb);
 					}
-					fr.p = frBb.pos();
+					fr.p = frBb.p1;
 					fr.d = frBb.dims();
 				}
 				break;

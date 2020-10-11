@@ -10,6 +10,8 @@
 #include <svgdom/elements/element.hpp>
 #include <svgdom/visitor.hpp>
 
+#include <r4/segment2.hpp>
+
 #include "config.hxx"
 #include "surface.hxx"
 #include "canvas.hxx"
@@ -35,40 +37,7 @@ public:
 	~canvas_matrix_push()noexcept;
 };
 
-real percentLengthToFraction(const svgdom::length& l);
-
-struct DeviceSpaceBoundingBox{
-	real left, top, right, bottom;
-	
-	void set_empty();
-	
-	void unite(const DeviceSpaceBoundingBox& bb);
-	
-	real width()const noexcept;
-	real height()const noexcept;
-
-	r4::vector2<real> pos()const noexcept{
-		return r4::vector2<real>{
-			this->left,
-			this->top
-		};
-	}
-
-	r4::vector2<real> dims()const noexcept{
-		return r4::vector2<real>{
-			this->width(),
-			this->height()
-		};
-	}
-};
-
-class DeviceSpaceBoundingBoxPush{
-	class renderer& r;
-	DeviceSpaceBoundingBox oldBb;
-public:
-	DeviceSpaceBoundingBoxPush(renderer& r);
-	~DeviceSpaceBoundingBoxPush()noexcept;
-};
+real percent_to_fraction(const svgdom::length& l);
 
 class renderer_viewport_push{
 	class renderer& r;
@@ -78,7 +47,7 @@ public:
 	~renderer_viewport_push()noexcept;
 };
 
-class canvas_group_push{
+class common_element_push{
 	bool group_pushed;
 	surface old_background;
 	class svgren::renderer& renderer;
@@ -86,9 +55,13 @@ class canvas_group_push{
 	real opacity = real(1);
 	
 	const svgdom::element* mask_element = nullptr;
+
+	canvas_matrix_push matrix_push;
+
+	r4::segment2<real> old_device_space_bounding_box;
 public:
-	canvas_group_push(svgren::renderer& renderer, bool is_container);
-	~canvas_group_push()noexcept;
+	common_element_push(svgren::renderer& renderer, bool is_container);
+	~common_element_push()noexcept;
 	
 	bool is_pushed()const noexcept{
 		return this->group_pushed;

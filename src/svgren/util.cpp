@@ -23,7 +23,7 @@ canvas_matrix_push::~canvas_matrix_push()noexcept{
 	this->c.set_matrix(this->m);
 }
 
-real svgren::percentLengthToFraction(const svgdom::length& l){
+real svgren::percent_to_fraction(const svgdom::length& l){
 	if(l.is_percent()){
 		return l.value / real(100);
 	}
@@ -31,46 +31,6 @@ real svgren::percentLengthToFraction(const svgdom::length& l){
 		return l.value;
 	}
 	return 0;
-}
-
-void DeviceSpaceBoundingBox::set_empty(){
-	this->left = std::numeric_limits<decltype(this->left)>::max();
-	this->top = std::numeric_limits<decltype(this->top)>::max();
-	this->right = std::numeric_limits<decltype(this->right)>::min();
-	this->bottom = std::numeric_limits<decltype(this->bottom)>::min();
-}
-
-void DeviceSpaceBoundingBox::unite(const DeviceSpaceBoundingBox& bb){
-	using std::min;
-	using std::max;
-	this->left = min(this->left, bb.left);
-	this->top = min(this->top, bb.top);
-	this->right = max(this->right, bb.right);
-	this->bottom = max(this->bottom, bb.bottom);
-}
-
-real DeviceSpaceBoundingBox::width()const noexcept{
-	using std::max;
-	auto w = this->right - this->left;
-	return max(w, decltype(w)(0));
-}
-
-real DeviceSpaceBoundingBox::height() const noexcept{
-	using std::max;
-	auto h = this->bottom - this->top;
-	return max(h, decltype(h)(0));
-}
-
-DeviceSpaceBoundingBoxPush::DeviceSpaceBoundingBoxPush(renderer& r) :
-		r(r),
-		oldBb(r.device_space_bounding_box)
-{
-	this->r.device_space_bounding_box.set_empty();
-}
-
-DeviceSpaceBoundingBoxPush::~DeviceSpaceBoundingBoxPush()noexcept{
-	this->oldBb.unite(this->r.device_space_bounding_box);
-	this->r.device_space_bounding_box = this->oldBb;
 }
 
 renderer_viewport_push::renderer_viewport_push(renderer& r, const decltype(old_viewport)& viewport) :
@@ -84,9 +44,14 @@ renderer_viewport_push::~renderer_viewport_push()noexcept{
 	this->r.viewport = this->old_viewport;
 }
 
-canvas_group_push::canvas_group_push(svgren::renderer& renderer, bool is_container) :
-		renderer(renderer)
+common_element_push::common_element_push(svgren::renderer& renderer, bool is_container) :
+		renderer(renderer),
+		matrix_push(this->renderer.canvas),
+		old_device_space_bounding_box(renderer.device_space_bounding_box)
 {
+	// old device space bounding box is saved, set current one to empty
+	this->renderer.device_space_bounding_box.set_empty_bounding_box();
+
 	auto background_prop = this->renderer.style_stack.get_style_property(svgdom::style_property::enable_background);
 	
 	if(background_prop && background_prop->enable_background.value == svgdom::enable_background::new_){
@@ -139,7 +104,11 @@ canvas_group_push::canvas_group_push(svgren::renderer& renderer, bool is_contain
 	}
 }
 
-canvas_group_push::~canvas_group_push()noexcept{
+common_element_push::~common_element_push()noexcept{
+	// restore device space bounding box
+	this->old_device_space_bounding_box.unite(this->renderer.device_space_bounding_box);
+	this->renderer.device_space_bounding_box = this->old_device_space_bounding_box;
+
 	if(!this->group_pushed){
 		return;
 	}

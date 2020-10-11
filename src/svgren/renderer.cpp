@@ -253,12 +253,12 @@ void renderer::set_gradient(const std::string& id){
 		return;
 	}
 
-	struct CommonGradientPush{
+	struct common_gradient_push{
 		canvas_matrix_push matrix_push;
 
 		std::unique_ptr<renderer_viewport_push> viewport_push;
 
-		CommonGradientPush(renderer& r, const svgdom::gradient& gradient) :
+		common_gradient_push(renderer& r, const svgdom::gradient& gradient) :
 				matrix_push(r.canvas)
 		{
 			if(r.gradient_get_units(gradient) == svgdom::coordinate_units::object_bounding_box){
@@ -270,7 +270,7 @@ void renderer::set_gradient(const std::string& id){
 			r.apply_transformations(r.gradient_get_transformations(gradient));
 		}
 
-		~CommonGradientPush()noexcept{}
+		~common_gradient_push()noexcept{}
 	};
 
 	struct GradientSetter : public svgdom::const_visitor{
@@ -281,7 +281,7 @@ void renderer::set_gradient(const std::string& id){
 		GradientSetter(renderer& r, const svgdom::style_stack& ss) : r(r), ss(ss) {}
 
 		void visit(const svgdom::linear_gradient_element& gradient)override{
-			CommonGradientPush commonPush(this->r, gradient);
+			common_gradient_push commonPush(this->r, gradient);
 
 			auto g = std::make_shared<canvas::linear_gradient>(
 					this->r.length_to_px(
@@ -300,7 +300,7 @@ void renderer::set_gradient(const std::string& id){
 		}
 
 		void visit(const svgdom::radial_gradient_element& gradient)override{
-			CommonGradientPush commonPush(this->r, gradient);
+			common_gradient_push commonPush(this->r, gradient);
 
 			auto cx = this->r.gradient_get_cx(gradient);
 			auto cy = this->r.gradient_get_cy(gradient);
@@ -345,21 +345,21 @@ void renderer::update_bounding_box(){
 	}
 
 	// set device space bounding box
-	std::array<r4::vector2<real>, 4> rectVertices = {{
+	std::array<r4::vector2<real>, 4> rect_vertices = {{
 		this->user_space_bounding_box.p,
 		this->user_space_bounding_box.x2_y2(),
 		this->user_space_bounding_box.x1_y2(),
 		this->user_space_bounding_box.x2_y1()
 	}};
 
-	for(auto& vertex : rectVertices){
+	for(auto& vertex : rect_vertices){
 		vertex = this->canvas.matrix_mul(vertex);
 
-		DeviceSpaceBoundingBox bb;
-		bb.left = decltype(bb.left)(vertex[0]);
-		bb.right = decltype(bb.right)(vertex[0]);
-		bb.top = decltype(bb.top)(vertex[1]);
-		bb.bottom = decltype(bb.bottom)(vertex[1]);
+		r4::segment2<real> bb;
+		bb.p1.x() = decltype(bb.p1.x())(vertex.x());
+		bb.p2.x() = decltype(bb.p2.x())(vertex.x());
+		bb.p1.y() = decltype(bb.p1.y())(vertex.y());
+		bb.p2.y() = decltype(bb.p2.y())(vertex.y());
 
 		this->device_space_bounding_box.unite(bb);
 	}
@@ -469,11 +469,7 @@ void renderer::render_svg_element(
 		return;
 	}
 
-	canvas_group_push group_push(*this, true);
-
-	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
-
-	canvas_matrix_push matrix_push(this->canvas);
+	common_element_push group_push(*this, true);
 
 	if(!this->is_outermost_element){
 		this->canvas.translate(this->length_to_px(x, y));
@@ -507,7 +503,7 @@ renderer::renderer(
 		dpi(real(dpi)),
 		viewport(viewport)
 {
-	this->device_space_bounding_box.set_empty();
+	this->device_space_bounding_box.set_empty_bounding_box();
 	this->background = this->canvas.get_sub_surface();
 
 #ifdef SVGREN_BACKGROUND
@@ -534,11 +530,7 @@ void renderer::visit(const svgdom::g_element& e){
 		return;
 	}
 
-	canvas_group_push group_push(*this, true);
-
-	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
-
-	canvas_matrix_push matrix_push(this->canvas);
+	common_element_push group_push(*this, true);
 
 	this->apply_transformations(e.transformations);
 
@@ -554,17 +546,17 @@ void renderer::visit(const svgdom::use_element& e){
 		return;
 	}
 
-	struct RefRenderer : public svgdom::const_visitor{
+	struct ref_renderer : public svgdom::const_visitor{
 		renderer& r;
 		const svgdom::use_element& ue;
-		svgdom::g_element fakeGElement;
+		svgdom::g_element fake_g_element;
 
-		RefRenderer(renderer& r, const svgdom::use_element& e) :
+		ref_renderer(renderer& r, const svgdom::use_element& e) :
 				r(r), ue(e)
 		{
-			this->fakeGElement.styles = e.styles;
-			this->fakeGElement.presentation_attributes = e.presentation_attributes;
-			this->fakeGElement.transformations = e.transformations;
+			this->fake_g_element.styles = e.styles;
+			this->fake_g_element.presentation_attributes = e.presentation_attributes;
+			this->fake_g_element.transformations = e.transformations;
 
 			// add x and y transformation
 			{
@@ -574,17 +566,17 @@ void renderer::visit(const svgdom::use_element& e){
 				t.x = p.x();
 				t.y = p.y();
 
-				this->fakeGElement.transformations.push_back(t);
+				this->fake_g_element.transformations.push_back(t);
 			}
 		}
 
 		void visit(const svgdom::symbol_element& symbol)override{
-			struct FakeSvgElement : public svgdom::element{
+			struct fake_svg_element : public svgdom::element{
 				renderer& r;
 				const svgdom::use_element& ue;
 				const svgdom::symbol_element& se;
 
-				FakeSvgElement(renderer& r, const svgdom::use_element& ue, const svgdom::symbol_element& se) :
+				fake_svg_element(renderer& r, const svgdom::use_element& ue, const svgdom::symbol_element& se) :
 						r(r), ue(ue), se(se)
 				{}
 
@@ -592,7 +584,7 @@ void renderer::visit(const svgdom::use_element& e){
 					ASSERT(false)
 				}
 				void accept(svgdom::const_visitor& visitor) const override{
-					const auto hundredPercent = svgdom::length(100, svgdom::length_unit::percent);
+					const auto hundred_percent = svgdom::length(100, svgdom::length_unit::percent);
 
 					this->r.render_svg_element(
 							this->se,
@@ -601,23 +593,23 @@ void renderer::visit(const svgdom::use_element& e){
 							this->se,
 							svgdom::length(0),
 							svgdom::length(0),
-							this->ue.width.is_valid() ? this->ue.width : hundredPercent,
-							this->ue.height.is_valid() ? this->ue.height : hundredPercent
+							this->ue.width.is_valid() ? this->ue.width : hundred_percent,
+							this->ue.height.is_valid() ? this->ue.height : hundred_percent
 						);
 				}
 			};
 
-			this->fakeGElement.children.push_back(std::make_unique<FakeSvgElement>(this->r, this->ue, symbol));
-			this->fakeGElement.accept(this->r);
+			this->fake_g_element.children.push_back(std::make_unique<fake_svg_element>(this->r, this->ue, symbol));
+			this->fake_g_element.accept(this->r);
 		}
 
 		void visit(const svgdom::svg_element& svg)override{
-			struct FakeSvgElement : public svgdom::element{
+			struct fake_svg_element : public svgdom::element{
 				renderer& r;
 				const svgdom::use_element& ue;
 				const svgdom::svg_element& se;
 
-				FakeSvgElement(renderer& r, const svgdom::use_element& ue, const svgdom::svg_element& se) :
+				fake_svg_element(renderer& r, const svgdom::use_element& ue, const svgdom::svg_element& se) :
 						r(r), ue(ue), se(se)
 				{}
 
@@ -639,16 +631,16 @@ void renderer::visit(const svgdom::use_element& e){
 				}
 			};
 
-			this->fakeGElement.children.push_back(std::make_unique<FakeSvgElement>(this->r, this->ue, svg));
-			this->fakeGElement.accept(this->r);
+			this->fake_g_element.children.push_back(std::make_unique<fake_svg_element>(this->r, this->ue, svg));
+			this->fake_g_element.accept(this->r);
 		}
 
 		void default_visit(const svgdom::element& element)override{
-			struct FakeSvgElement : public svgdom::element{
+			struct fake_svg_element : public svgdom::element{
 				renderer& r;
 				const svgdom::element& e;
 
-				FakeSvgElement(renderer& r, const svgdom::element& e) :
+				fake_svg_element(renderer& r, const svgdom::element& e) :
 						r(r), e(e)
 				{}
 
@@ -660,8 +652,8 @@ void renderer::visit(const svgdom::use_element& e){
 				}
 			};
 
-			this->fakeGElement.children.push_back(std::make_unique<FakeSvgElement>(this->r, element));
-			this->fakeGElement.accept(this->r);
+			this->fake_g_element.children.push_back(std::make_unique<fake_svg_element>(this->r, element));
+			this->fake_g_element.accept(this->r);
 		}
 
 		void default_visit(const svgdom::element& element, const svgdom::container& c)override{
@@ -705,11 +697,7 @@ void renderer::visit(const svgdom::path_element& e){
 		return;
 	}
 
-	canvas_group_push group_push(*this, false);
-
-	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
-
-	canvas_matrix_push matrix_push(this->canvas);
+	common_element_push group_push(*this, false);
 
 	this->apply_transformations(e.transformations);
 
@@ -926,11 +914,7 @@ void renderer::visit(const svgdom::circle_element& e){
 		return;
 	}
 
-	canvas_group_push group_push(*this, false);
-
-	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
-
-	canvas_matrix_push matrix_push(this->canvas);
+	common_element_push group_push(*this, false);
 
 	this->apply_transformations(e.transformations);
 
@@ -954,11 +938,7 @@ void renderer::visit(const svgdom::polyline_element& e){
 
 	// TODO: make a common push class for shapes
 
-	canvas_group_push group_push(*this, false);
-
-	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
-
-	canvas_matrix_push matrix_push(this->canvas);
+	common_element_push group_push(*this, false);
 
 	this->apply_transformations(e.transformations);
 
@@ -985,11 +965,7 @@ void renderer::visit(const svgdom::polygon_element& e){
 		return;
 	}
 
-	canvas_group_push group_push(*this, false);
-
-	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
-
-	canvas_matrix_push matrix_push(this->canvas);
+	common_element_push group_push(*this, false);
 
 	this->apply_transformations(e.transformations);
 
@@ -1018,11 +994,7 @@ void renderer::visit(const svgdom::line_element& e){
 		return;
 	}
 
-	canvas_group_push group_push(*this, false);
-
-	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
-
-	canvas_matrix_push matrix_push(this->canvas);
+	common_element_push group_push(*this, false);
 
 	this->apply_transformations(e.transformations);
 
@@ -1040,11 +1012,7 @@ void renderer::visit(const svgdom::ellipse_element& e){
 		return;
 	}
 
-	canvas_group_push group_push(*this, false);
-
-	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
-
-	canvas_matrix_push matrix_push(this->canvas);
+	common_element_push group_push(*this, false);
 
 	this->apply_transformations(e.transformations);
 
@@ -1069,11 +1037,7 @@ void renderer::visit(const svgdom::rect_element& e){
 		return;
 	}
 
-	canvas_group_push group_push(*this, false);
-
-	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
-
-	canvas_matrix_push matrix_push(this->canvas);
+	common_element_push group_push(*this, false);
 
 	this->apply_transformations(e.transformations);
 
