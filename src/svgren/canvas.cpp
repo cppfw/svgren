@@ -97,6 +97,17 @@ r4::matrix2<real> to_r4_matrix(const agg::trans_affine& matrix){
 		};
 }
 }
+
+namespace{
+agg::rgba to_agg_rgba(const r4::vector4<real>& rgba){
+	return agg::rgba(
+			agg::rgba::value_type(rgba.r()),
+			agg::rgba::value_type(rgba.g()),
+			agg::rgba::value_type(rgba.b()),
+			agg::rgba::value_type(rgba.a())
+		);
+}
+}
 #endif
 
 void canvas::transform(const r4::matrix2<real>& matrix){
@@ -344,17 +355,15 @@ void canvas::gradient::set_stops(utki::span<const stop> stops){
 			)
 	}
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	for(auto& s : stops){
-		this->lut.add_color(
-				backend_real(s.offset),
-				agg::rgba(
-						backend_real(s.rgba.r()),
-						backend_real(s.rgba.g()),
-						backend_real(s.rgba.b()),
-						backend_real(s.rgba.a())
-					)
-			);
+	if(stops.size() == 1){
+		this->lut.add_color(backend_real(0), to_agg_rgba(stops.rbegin()->rgba));
+		this->lut.add_color(backend_real(1), to_agg_rgba(stops.rbegin()->rgba));
+	}else{
+		for(auto& s : stops){
+			this->lut.add_color(backend_real(s.offset), to_agg_rgba(s.rgba));
+		}
 	}
+	
 	this->lut.build_lut();
 
 	// premultiply alpha since we use premultiplied pixel format
