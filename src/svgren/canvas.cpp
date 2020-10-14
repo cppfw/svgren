@@ -484,6 +484,7 @@ void canvas::move_to_abs(const r4::vector2<real>& p){
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->path.move_to(p.x(), p.y());
+	this->subpath_start_point = p;
 #endif
 }
 
@@ -496,7 +497,7 @@ void canvas::move_to_rel(const r4::vector2<real>& p){
 	cairo_rel_move_to(this->cr, backend_real(p.x()), backend_real(p.y()));
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	this->path.move_rel(p.x(), p.y());
+	this->move_to_abs(this->get_current_point() + p);
 #endif
 }
 
@@ -579,10 +580,7 @@ void canvas::quadratic_curve_to_rel(const r4::vector2<real>& cp1, const r4::vect
 		);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	r4::vector2<real> d{
-			real(this->path.last_x()),
-			real(this->path.last_y())
-		};
+	auto d = this->get_current_point();
 	this->quadratic_curve_to_abs(cp1 + d, ep + d);
 #endif
 }
@@ -632,11 +630,7 @@ void canvas::cubic_curve_to_rel(const r4::vector2<real>& cp1, const r4::vector2<
 		);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	r4::vector2<real> d{
-			real(this->path.last_x()),
-			real(this->path.last_y())
-		};
-
+	auto d = this->get_current_point();
 	this->cubic_curve_to_abs(cp1 + d, cp2 + d, ep + d);
 #endif
 }
@@ -646,9 +640,8 @@ void canvas::close_path(){
 	cairo_close_path(this->cr);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	auto cp = this->get_current_point();
 	this->path.close_polygon();
-	this->move_to_abs(cp);
+	this->move_to_abs(this->subpath_start_point);
 #endif
 }
 
@@ -658,6 +651,7 @@ void canvas::clear_path(){
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->path.remove_all();
+	this->subpath_start_point.set(0);
 #endif
 }
 
@@ -781,10 +775,6 @@ void canvas::arc_abs(const r4::vector2<real>& end_point, const r4::vector2<real>
 }
 
 void canvas::arc_rel(const r4::vector2<real>& end_point, const r4::vector2<real>& radius, real x_axis_rotation, bool large_arc, bool sweep){
-	if(!this->has_current_point()){
-		this->arc_abs(end_point, radius, x_axis_rotation, large_arc, sweep);
-		return;
-	}
 	this->arc_abs(end_point + this->get_current_point(), radius, x_axis_rotation, large_arc, sweep);
 }
 

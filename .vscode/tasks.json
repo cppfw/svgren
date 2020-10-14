@@ -42,14 +42,14 @@
         {
             "label": "run",
             "type": "shell",
-            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/radial_gradient.svg)",
+            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/lines.svg)",
             "problemMatcher": [],
             "dependsOn": "build"
         },
         {
             "label": "run_debug",
 			"type": "shell",
-			"command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/six_ball.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/six_ball.svg out.png)",
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/dropshadowfilter.svg out.png)",
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/rectangle.svg out.png)",
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/test2.svg out.png)",
@@ -74,7 +74,7 @@
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/percentage_dimensions_and_viewbox.svg out.png)",
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/mouse.svg out.png)",
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/menue-cut.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/lines.svg out.png)",
+			"command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/lines.svg out.png)",
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/linear_gradient.svg out.png)",
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/invisible_rect.svg out.png)",
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/interface-ethernet.svg out.png)",

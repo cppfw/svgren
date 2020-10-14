@@ -228,6 +228,7 @@ private:
 	void agg_render(agg::rasterizer_scanline_aa<>& rasterizer);
 
 	agg::path_storage path;
+	r4::vector2<real> subpath_start_point{0};
 
 	agg::trans_affine matrix;
 #endif
