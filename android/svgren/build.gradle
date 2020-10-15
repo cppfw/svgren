@@ -52,7 +52,7 @@ repositories {
 dependencies {
     implementation 'io.github.igagis:utki:+'
     implementation 'io.github.igagis:svgdom:+'
-    implementation 'io.github.igagis:cairo:+'
+    implementation 'io.github.igagis:agg:+'
 }
 
 // copy and rename release AAR to unified name
