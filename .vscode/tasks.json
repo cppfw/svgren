@@ -49,8 +49,8 @@
         {
             "label": "run_debug",
 			"type": "shell",
-			"command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/dropshadowfilter.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/rectangle.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/dropshadowfilter.svg out.png)",
+			"command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/rectangle.svg out.png)",
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/test2.svg out.png)",
 
             // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/six_ball.svg out.png)",
