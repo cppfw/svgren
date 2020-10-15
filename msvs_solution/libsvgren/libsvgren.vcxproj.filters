@@ -33,9 +33,21 @@
     <ClCompile Include="..\..\src\svgren\render.cpp" />
     <ClCompile Include="..\..\src\svgren\Renderer.cpp" />
     <ClCompile Include="..\..\src\svgren\util.cpp" />
-    <ClCompile Include="..\..\src\svgren\render.cpp" />
-    <ClCompile Include="..\..\src\svgren\Renderer.cpp" />
-    <ClCompile Include="..\..\src\svgren\util.cpp" />
+    <ClCompile Include="..\..\src\**\*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\**\*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\**\*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\**\*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\**\*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\**\*.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
