@@ -9,8 +9,8 @@
 
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-#	include <agg2/agg_conv_curve.h>
-#	include <agg2/agg_bounding_rect.h>
+#	include <agg/agg_conv_curve.h>
+#	include <agg/agg_bounding_rect.h>
 
 typedef agg::curve3_div agg_curve3_type;
 typedef agg::curve4_div agg_curve4_type;
@@ -367,9 +367,7 @@ void canvas::gradient::set_stops(utki::span<const stop> stops){
 	this->lut.build_lut();
 
 	// premultiply alpha since we use premultiplied pixel format
-	for(unsigned i = 0; i != this->lut.color_lut_size; ++i){
-		this->lut[i].premultiply();
-	}
+	this->lut.premultiply();
 #endif
 }
 

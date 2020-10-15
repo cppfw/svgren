@@ -6,7 +6,7 @@
 #define SVGREN_BACKEND_SKIA 3
 
 #ifndef SVGREN_BACKEND
-#   define SVGREN_BACKEND SVGREN_BACKEND_CAIRO
+#   define SVGREN_BACKEND SVGREN_BACKEND_AGG
 #endif
 
 namespace svgren{
