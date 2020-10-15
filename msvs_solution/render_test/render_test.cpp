@@ -38,6 +38,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	svgren::parameters params;
 	auto res = svgren::render(*dom, params);
 
+    for(auto& c : res.pixels){
+        // swap red and blue channels, as cairo works in BGRA format, while we need to return RGBA
+        c = (c & 0xff00ff00) | ((c << 16) & 0xff0000) | ((c >> 16) & 0xff);
+    }
+
 	bmp = CreateBitmap(res.dims.x(), res.dims.y(), 1, 32, res.pixels.data());
 	ASSERT_ALWAYS(bmp != NULL)
 
