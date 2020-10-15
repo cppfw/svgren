@@ -1,0 +1,24 @@
+= svgren
+
+|====
+| link:https://github.com/igagis/svgren/releases[image:https://badge.fury.io/gh/igagis%2Fsvgren.svg[releases]] | link:https://travis-ci.org/igagis/svgren[image:https://travis-ci.org/igagis/svgren.svg?branch=master[Travis CI status]] | link:https://ci.appveyor.com/project/igagis/svgren/branch/master[image:https://ci.appveyor.com/api/projects/status/6ilonof8aqcjryoi/branch/master?svg=true[Appveyor status]] | link:https://www.patreon.com/bePatron?u=2662824[image:https://img.shields.io/badge/become-patron-red.svg[patreon]]
+|====
+
+SVG renderer library in C++.
+
+image:wiki/camera.png[image sample]
+
+- full gradient support
+- group opacity
+- all shapes support
+- all path elements support
+- render to memory
+- gaussian blur effect support
+
+**svgren** uses **link:https://github.com/igagis/svgdom[svgdom]** to read the SVG file and **link:http://github.com/igagis/agg[AGG]** to render graphics.
+
+= Installation and Tutorials
+Read link:wiki/Main.adoc[WiKi] for installation instructions and tutorials.
+
+= Questions
+In case of questions, please submit those as link:https://github.com/igagis/svgren/issues[Issue].
