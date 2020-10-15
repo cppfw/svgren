@@ -85,35 +85,36 @@ void renderer::apply_transformation(const svgdom::transformable::transformation&
 }
 
 void renderer::apply_transformations(const decltype(svgdom::transformable::transformations)& transformations){
-	for (auto& t : transformations) {
+	for(auto& t : transformations){
 		this->apply_transformation(t);
 	}
 }
 
 void renderer::apply_viewbox(const svgdom::view_boxed& e, const svgdom::aspect_ratioed& ar){
-	if (!e.is_view_box_specified()) {
+	// TRACE(<< "vb = " << e.view_box[0] << ", " << e.view_box[1] << ", " << e.view_box[2] << ", " << e.view_box[3] << std::endl)
+	if(!e.is_view_box_specified()){
 		return;
 	}
 
-	if (ar.preserve_aspect_ratio.preserve != svgdom::aspect_ratioed::aspect_ratio_preservation::none) {
-		if (e.view_box[3] >= 0 && this->viewport[1] >= 0) { // if viewBox width and viewport width are not 0
+	if(ar.preserve_aspect_ratio.preserve != svgdom::aspect_ratioed::aspect_ratio_preservation::none){
+		if(e.view_box[3] >= 0 && this->viewport[1] >= 0){ // if viewBox width and viewport width are not 0
 			real scaleFactor, dx, dy;
 
 			real viewBoxAspect = e.view_box[2] / e.view_box[3];
 			real viewportAspect = this->viewport[0] / this->viewport[1];
 
-			if ((viewBoxAspect >= viewportAspect && ar.preserve_aspect_ratio.slice) || (viewBoxAspect < viewportAspect && !ar.preserve_aspect_ratio.slice)) {
+			if((viewBoxAspect >= viewportAspect && ar.preserve_aspect_ratio.slice) || (viewBoxAspect < viewportAspect && !ar.preserve_aspect_ratio.slice)){
 				// fit by Y
 				scaleFactor = this->viewport[1] / e.view_box[3];
 				dx = e.view_box[2] - this->viewport[0];
 				dy = 0;
-			} else { // viewBoxAspect < viewportAspect
+			}else{ // viewBoxAspect < viewportAspect
 				// fit by X
 				scaleFactor = this->viewport[0] / e.view_box[2];
 				dx = 0;
 				dy = e.view_box[3] - this->viewport[1];
 			}
-			switch (ar.preserve_aspect_ratio.preserve) {
+			switch(ar.preserve_aspect_ratio.preserve){
 				case svgdom::aspect_ratioed::aspect_ratio_preservation::none:
 					ASSERT(false)
 				default:
@@ -149,17 +150,14 @@ void renderer::apply_viewbox(const svgdom::view_boxed& e, const svgdom::aspect_r
 			this->canvas.scale(scaleFactor, scaleFactor);
 		}
 	}else{ // if no preserveAspectRatio enforced
-		if (e.view_box[2] != 0 && e.view_box[3] != 0) { // if viewBox width and height are not 0
-			this->canvas.scale(
-					this->viewport[0] / e.view_box[2],
-					this->viewport[1] / e.view_box[3]
-				);
+		if(e.view_box[2] != 0 && e.view_box[3] != 0){ // if viewBox width and height are not 0
+			this->canvas.scale(this->viewport.comp_div({e.view_box[2], e.view_box[3]}));
 		}
 	}
 	this->canvas.translate(-e.view_box[0], -e.view_box[1]);
 }
 
-void renderer::set_gradient_properties(svgren::gradient& gradient, const svgdom::gradient& g, const svgdom::style_stack& ss){
+void renderer::set_gradient_properties(canvas::gradient& gradient, const svgdom::gradient& g, const svgdom::style_stack& ss){
 	// Gradient inherits all attributes from other gradients it refers via href.
 	// Here we need to make sure that the gradient inherits 'styles', 'class' and all possible presentation attributes.
 	// For that we need to replace the gradient element in the style stack with the one which has those inherited
@@ -189,12 +187,11 @@ void renderer::set_gradient_properties(svgren::gradient& gradient, const svgdom:
 	gradient_ss.stack.pop_back();
 	gradient_ss.stack.push_back(effective_gradient_styleable);
 
-	struct ColorStopAdder : public svgdom::const_visitor{
-		svgren::gradient& gradient;
+	struct gradient_stops_adder : public svgdom::const_visitor{
+		std::vector<canvas::gradient::stop> stops;
 		svgdom::style_stack& ss;
 
-		ColorStopAdder(svgren::gradient& gradient, svgdom::style_stack& ss) :
-				gradient(gradient),
+		gradient_stops_adder(svgdom::style_stack& ss) :
 				ss(ss)
 		{}
 
@@ -214,18 +211,19 @@ void renderer::set_gradient_properties(svgren::gradient& gradient, const svgdom:
 			}else{
 				opacity = 1;
 			}
-			this->gradient.stops.push_back(gradient::stop{
+			this->stops.push_back(canvas::gradient::stop{
 					{rgb, opacity},
 					real(stop.offset)
 				});
 		}
-	} visitor(gradient, gradient_ss);
+	} visitor(gradient_ss);
 
 	for(auto& stop : this->gradient_get_stops(g)){
 		stop->accept(visitor);
 	}
 
-	gradient.spread_method = this->gradient_get_spread_method(g);
+	gradient.set_stops(utki::make_span(visitor.stops));
+	gradient.set_spread_method(this->gradient_get_spread_method(g));
 }
 
 void renderer::apply_filter(){
@@ -251,28 +249,28 @@ void renderer::apply_filter(const std::string& id){
 void renderer::set_gradient(const std::string& id){
 	auto g = this->finder.find_by_id(id);
 	if(!g){
-		this->canvas.set_source(0);
+		this->canvas.set_source(r4::vector4<real>{0});
 		return;
 	}
 
-	struct CommonGradientPush{
-		canvas_matrix_push matrix_push; // here we need to save/restore only matrix!
+	struct common_gradient_push{
+		canvas_matrix_push matrix_push;
 
-		std::unique_ptr<viewport_push> viewportPush;
+		std::unique_ptr<renderer_viewport_push> viewport_push;
 
-		CommonGradientPush(renderer& r, const svgdom::gradient& gradient) :
+		common_gradient_push(renderer& r, const svgdom::gradient& gradient) :
 				matrix_push(r.canvas)
 		{
 			if(r.gradient_get_units(gradient) == svgdom::coordinate_units::object_bounding_box){
 				r.canvas.translate(r.user_space_bounding_box.p);
 				r.canvas.scale(r.user_space_bounding_box.d);
-				this->viewportPush = std::make_unique<viewport_push>(r, 1);
+				this->viewport_push = std::make_unique<renderer_viewport_push>(r, real(1));
 			}
 
 			r.apply_transformations(r.gradient_get_transformations(gradient));
 		}
 
-		~CommonGradientPush()noexcept{}
+		~common_gradient_push()noexcept{}
 	};
 
 	struct GradientSetter : public svgdom::const_visitor{
@@ -283,26 +281,26 @@ void renderer::set_gradient(const std::string& id){
 		GradientSetter(renderer& r, const svgdom::style_stack& ss) : r(r), ss(ss) {}
 
 		void visit(const svgdom::linear_gradient_element& gradient)override{
-			CommonGradientPush commonPush(this->r, gradient);
+			common_gradient_push commonPush(this->r, gradient);
 
-			linear_gradient g;
-
-			g.p0 = this->r.length_to_px(
-					this->r.gradient_get_x1(gradient),
-					this->r.gradient_get_y1(gradient)
-				);
-			g.p1 = this->r.length_to_px(
-					this->r.gradient_get_x2(gradient),
-					this->r.gradient_get_y2(gradient)
+			auto g = std::make_shared<canvas::linear_gradient>(
+					this->r.length_to_px(
+							this->r.gradient_get_x1(gradient),
+							this->r.gradient_get_y1(gradient)
+						),
+					this->r.length_to_px(
+							this->r.gradient_get_x2(gradient),
+							this->r.gradient_get_y2(gradient)
+						)
 				);
 			
-			this->r.set_gradient_properties(g, gradient, this->ss);
+			this->r.set_gradient_properties(*g, gradient, this->ss);
 
 			this->r.canvas.set_source(g);
 		}
 
 		void visit(const svgdom::radial_gradient_element& gradient)override{
-			CommonGradientPush commonPush(this->r, gradient);
+			common_gradient_push commonPush(this->r, gradient);
 
 			auto cx = this->r.gradient_get_cx(gradient);
 			auto cy = this->r.gradient_get_cy(gradient);
@@ -317,20 +315,19 @@ void renderer::set_gradient(const std::string& id){
 				fy = cy;
 			}
 
-			radial_gradient g;
+			auto g = std::make_shared<canvas::radial_gradient>(
+					this->r.length_to_px(fx, fy),
+					this->r.length_to_px(cx, cy),
+					this->r.length_to_px(radius)
+				);
 
-			g.c0 = this->r.length_to_px(fx, fy);
-			g.c1 = this->r.length_to_px(cx, cy);
-			g.r0 = 0;
-			g.r1 = this->r.length_to_px(radius);
-
-			this->r.set_gradient_properties(g, gradient, this->ss);
+			this->r.set_gradient_properties(*g, gradient, this->ss);
 
 			this->r.canvas.set_source(g);
 		}
 
 		void default_visit(const svgdom::element&)override{
-			this->r.canvas.set_source(0);
+			this->r.canvas.set_source(r4::vector4<real>{0});
 		}
 	} visitor(*this, g->ss);
 
@@ -340,27 +337,29 @@ void renderer::set_gradient(const std::string& id){
 void renderer::update_bounding_box(){
 	this->user_space_bounding_box = this->canvas.get_shape_bounding_box();
 
+	// TRACE(<< "bb = " << this->user_space_bounding_box << std::endl)
+
 	if(this->user_space_bounding_box.d[0] == 0){
 		// empty path
 		return;
 	}
 
 	// set device space bounding box
-	std::array<r4::vector2<real>, 4> rectVertices = {{
+	std::array<r4::vector2<real>, 4> rect_vertices = {{
 		this->user_space_bounding_box.p,
 		this->user_space_bounding_box.x2_y2(),
 		this->user_space_bounding_box.x1_y2(),
 		this->user_space_bounding_box.x2_y1()
 	}};
 
-	for(auto& vertex : rectVertices){
+	for(auto& vertex : rect_vertices){
 		vertex = this->canvas.matrix_mul(vertex);
 
-		DeviceSpaceBoundingBox bb;
-		bb.left = decltype(bb.left)(vertex[0]);
-		bb.right = decltype(bb.right)(vertex[0]);
-		bb.top = decltype(bb.top)(vertex[1]);
-		bb.bottom = decltype(bb.bottom)(vertex[1]);
+		r4::segment2<real> bb;
+		bb.p1.x() = decltype(bb.p1.x())(vertex.x());
+		bb.p2.x() = decltype(bb.p2.x())(vertex.x());
+		bb.p1.y() = decltype(bb.p1.y())(vertex.y());
+		bb.p2.y() = decltype(bb.p2.y())(vertex.y());
 
 		this->device_space_bounding_box.unite(bb);
 	}
@@ -370,19 +369,9 @@ void renderer::render_shape(bool isCairoGroupPushed){
 	this->update_bounding_box();
 
 	if(auto p = this->style_stack.get_style_property(svgdom::style_property::fill_rule)){
-		switch (p->fill_rule) {
-			default:
-				ASSERT(false)
-				break;
-			case svgdom::fill_rule::evenodd:
-				this->canvas.set_fill_rule(canvas::fill_rule::even_odd);
-				break;
-			case svgdom::fill_rule::nonzero:
-				this->canvas.set_fill_rule(canvas::fill_rule::winding);
-				break;
-		}
+		this->canvas.set_fill_rule(p->fill_rule);
 	}else{
-		this->canvas.set_fill_rule(canvas::fill_rule::winding);
+		this->canvas.set_fill_rule(svgdom::fill_rule::nonzero);
 	}
 
 	svgdom::style_value blackFill;
@@ -417,7 +406,7 @@ void renderer::render_shape(bool isCairoGroupPushed){
 			}
 
 			auto fillRgb = fill->get_rgb().to<real>();
-			this->canvas.set_source({fillRgb, fillOpacity * opacity});
+			this->canvas.set_source(r4::vector4<real>{fillRgb, fillOpacity * opacity});
 		}
 
 		this->canvas.fill();
@@ -451,7 +440,7 @@ void renderer::render_shape(bool isCairoGroupPushed){
 			}
 
 			auto rgb = stroke->get_rgb().to<real>();
-			this->canvas.set_source({rgb, strokeOpacity * opacity});
+			this->canvas.set_source(r4::vector4<real>{rgb, strokeOpacity * opacity});
 		}
 
 		this->canvas.stroke();
@@ -463,7 +452,7 @@ void renderer::render_shape(bool isCairoGroupPushed){
 	this->apply_filter();
 }
 
-void renderer::render_element(
+void renderer::render_svg_element(
 		const svgdom::container& e,
 		const svgdom::styleable& s,
 		const svgdom::view_boxed& v,
@@ -480,17 +469,13 @@ void renderer::render_element(
 		return;
 	}
 
-	canvas_group_push group_push(*this, true);
+	common_element_push group_push(*this, true);
 
-	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
-
-	canvas_context_push context_push(this->canvas);
-
-	if(this->is_outermost_element){
+	if(!this->is_outermost_element){
 		this->canvas.translate(this->length_to_px(x, y));
 	}
 
-	viewport_push viewportPush(*this, this->length_to_px(width, height));
+	renderer_viewport_push viewport_push(*this, this->length_to_px(width, height));
 
 	this->apply_viewbox(v, a);
 
@@ -510,16 +495,31 @@ void renderer::render_element(
 renderer::renderer(
 		svgren::canvas& canvas,
 		unsigned dpi,
-		r4::vector2<real> canvasSize,
+		r4::vector2<real> viewport,
 		const svgdom::svg_element& root
 	) :
 		canvas(canvas),
 		finder(root),
 		dpi(real(dpi)),
-		viewport(canvasSize)
+		viewport(viewport)
 {
-	this->device_space_bounding_box.set_empty();
+	this->device_space_bounding_box.set_empty_bounding_box();
 	this->background = this->canvas.get_sub_surface();
+
+#ifdef SVGREN_BACKGROUND
+	this->canvas.set_source(
+		r4::vector4<real>{
+			unsigned((SVGREN_BACKGROUND >> 0) & 0xff),
+			unsigned((SVGREN_BACKGROUND >> 8) & 0xff),
+			unsigned((SVGREN_BACKGROUND >> 16) & 0xff),
+			unsigned((SVGREN_BACKGROUND >> 24) & 0xff)
+		} / 0xff
+	);
+	this->canvas.rectangle({0, viewport});
+	this->canvas.fill();
+	this->canvas.clear_path();
+	this->canvas.set_source({0, 0, 0, 0});
+#endif
 }
 
 void renderer::visit(const svgdom::g_element& e){
@@ -530,11 +530,7 @@ void renderer::visit(const svgdom::g_element& e){
 		return;
 	}
 
-	canvas_group_push group_push(*this, true);
-
-	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
-
-	canvas_context_push context_push(this->canvas);
+	common_element_push group_push(*this, true);
 
 	this->apply_transformations(e.transformations);
 
@@ -550,17 +546,17 @@ void renderer::visit(const svgdom::use_element& e){
 		return;
 	}
 
-	struct RefRenderer : public svgdom::const_visitor{
+	struct ref_renderer : public svgdom::const_visitor{
 		renderer& r;
 		const svgdom::use_element& ue;
-		svgdom::g_element fakeGElement;
+		svgdom::g_element fake_g_element;
 
-		RefRenderer(renderer& r, const svgdom::use_element& e) :
+		ref_renderer(renderer& r, const svgdom::use_element& e) :
 				r(r), ue(e)
 		{
-			this->fakeGElement.styles = e.styles;
-			this->fakeGElement.presentation_attributes = e.presentation_attributes;
-			this->fakeGElement.transformations = e.transformations;
+			this->fake_g_element.styles = e.styles;
+			this->fake_g_element.presentation_attributes = e.presentation_attributes;
+			this->fake_g_element.transformations = e.transformations;
 
 			// add x and y transformation
 			{
@@ -570,17 +566,17 @@ void renderer::visit(const svgdom::use_element& e){
 				t.x = p.x();
 				t.y = p.y();
 
-				this->fakeGElement.transformations.push_back(t);
+				this->fake_g_element.transformations.push_back(t);
 			}
 		}
 
 		void visit(const svgdom::symbol_element& symbol)override{
-			struct FakeSvgElement : public svgdom::element{
+			struct fake_svg_element : public svgdom::element{
 				renderer& r;
 				const svgdom::use_element& ue;
 				const svgdom::symbol_element& se;
 
-				FakeSvgElement(renderer& r, const svgdom::use_element& ue, const svgdom::symbol_element& se) :
+				fake_svg_element(renderer& r, const svgdom::use_element& ue, const svgdom::symbol_element& se) :
 						r(r), ue(ue), se(se)
 				{}
 
@@ -588,32 +584,32 @@ void renderer::visit(const svgdom::use_element& e){
 					ASSERT(false)
 				}
 				void accept(svgdom::const_visitor& visitor) const override{
-					const auto hundredPercent = svgdom::length(100, svgdom::length_unit::percent);
+					const auto hundred_percent = svgdom::length(100, svgdom::length_unit::percent);
 
-					this->r.render_element(
+					this->r.render_svg_element(
 							this->se,
 							this->se,
 							this->se,
 							this->se,
 							svgdom::length(0),
 							svgdom::length(0),
-							this->ue.width.is_valid() ? this->ue.width : hundredPercent,
-							this->ue.height.is_valid() ? this->ue.height : hundredPercent
+							this->ue.width.is_valid() ? this->ue.width : hundred_percent,
+							this->ue.height.is_valid() ? this->ue.height : hundred_percent
 						);
 				}
 			};
 
-			this->fakeGElement.children.push_back(std::make_unique<FakeSvgElement>(this->r, this->ue, symbol));
-			this->fakeGElement.accept(this->r);
+			this->fake_g_element.children.push_back(std::make_unique<fake_svg_element>(this->r, this->ue, symbol));
+			this->fake_g_element.accept(this->r);
 		}
 
 		void visit(const svgdom::svg_element& svg)override{
-			struct FakeSvgElement : public svgdom::element{
+			struct fake_svg_element : public svgdom::element{
 				renderer& r;
 				const svgdom::use_element& ue;
 				const svgdom::svg_element& se;
 
-				FakeSvgElement(renderer& r, const svgdom::use_element& ue, const svgdom::svg_element& se) :
+				fake_svg_element(renderer& r, const svgdom::use_element& ue, const svgdom::svg_element& se) :
 						r(r), ue(ue), se(se)
 				{}
 
@@ -622,7 +618,7 @@ void renderer::visit(const svgdom::use_element& e){
 				}
 				void accept(svgdom::const_visitor& visitor) const override{
 					// width and height of <use> element override those of <svg> element.
-					this->r.render_element(
+					this->r.render_svg_element(
 							this->se,
 							this->se,
 							this->se,
@@ -635,16 +631,16 @@ void renderer::visit(const svgdom::use_element& e){
 				}
 			};
 
-			this->fakeGElement.children.push_back(std::make_unique<FakeSvgElement>(this->r, this->ue, svg));
-			this->fakeGElement.accept(this->r);
+			this->fake_g_element.children.push_back(std::make_unique<fake_svg_element>(this->r, this->ue, svg));
+			this->fake_g_element.accept(this->r);
 		}
 
 		void default_visit(const svgdom::element& element)override{
-			struct FakeSvgElement : public svgdom::element{
+			struct fake_svg_element : public svgdom::element{
 				renderer& r;
 				const svgdom::element& e;
 
-				FakeSvgElement(renderer& r, const svgdom::element& e) :
+				fake_svg_element(renderer& r, const svgdom::element& e) :
 						r(r), e(e)
 				{}
 
@@ -656,8 +652,8 @@ void renderer::visit(const svgdom::use_element& e){
 				}
 			};
 
-			this->fakeGElement.children.push_back(std::make_unique<FakeSvgElement>(this->r, element));
-			this->fakeGElement.accept(this->r);
+			this->fake_g_element.children.push_back(std::make_unique<fake_svg_element>(this->r, element));
+			this->fake_g_element.accept(this->r);
 		}
 
 		void default_visit(const svgdom::element& element, const svgdom::container& c)override{
@@ -672,7 +668,7 @@ void renderer::visit(const svgdom::use_element& e){
 
 void renderer::visit(const svgdom::svg_element& e){
 //	TRACE(<< "rendering SvgElement" << std::endl)
-	render_element(e, e, e, e, e.x, e.y, e.width, e.height);
+	render_svg_element(e, e, e, e, e.x, e.y, e.width, e.height);
 }
 
 bool renderer::is_invisible(){
@@ -701,11 +697,7 @@ void renderer::visit(const svgdom::path_element& e){
 		return;
 	}
 
-	canvas_group_push group_push(*this, false);
-
-	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
-
-	canvas_context_push context_push(this->canvas);
+	common_element_push group_push(*this, false);
 
 	this->apply_transformations(e.transformations);
 
@@ -719,9 +711,6 @@ void renderer::visit(const svgdom::path_element& e){
 				this->canvas.move_to_abs({real(s.x), real(s.y)});
 				break;
 			case svgdom::path_element::step::type::move_rel:
-				if(!this->canvas.has_current_point()){
-					this->canvas.move_to_abs(0);
-				}
 				this->canvas.move_to_rel({real(s.x), real(s.y)});
 				break;
 			case svgdom::path_element::step::type::line_abs:
@@ -890,88 +879,22 @@ void renderer::visit(const svgdom::path_element& e){
 				}
 				break;
 			case svgdom::path_element::step::type::arc_abs:
+				this->canvas.arc_abs(
+						{real(s.x), real(s.y)},
+						{real(s.rx), real(s.ry)},
+						deg_to_rad(real(s.x_axis_rotation)),
+						s.flags.large_arc,
+						s.flags.sweep
+					);
+				break;
 			case svgdom::path_element::step::type::arc_rel:
-				{
-					auto cur_p = this->canvas.get_current_point();
-					auto r = r4::vector2<real>{real(s.rx), real(s.ry)};
-					auto p = r4::vector2<real>{real(s.x), real(s.y)};
-
-					if(r.x() <= 0){
-						break;
-					}
-					ASSERT(r.x() > 0)
-					auto radii_ratio = r.y() / r.x();
-
-					if(radii_ratio <= 0){
-						break;
-					}
-
-					r4::vector2<real> end_p; // end point
-					
-					if(s.type_ == svgdom::path_element::step::type::arc_abs){
-						end_p = p - cur_p;
-					}else{
-						end_p = p;
-					}
-
-					// cancel rotation of end point
-					end_p.rotate(deg_to_rad(-real(s.x_axis_rotation)));
-				
-					ASSERT(radii_ratio > 0)
-					end_p.y() /= radii_ratio;
-
-					// find the angle between the end point and the x axis
-					auto angle = point_angle(real(0), end_p);
-
-					using std::sqrt;
-
-					// put the end point onto the x axis
-					end_p.x() = end_p.norm();
-					end_p.y() = 0;
-
-					using std::max;
-
-					// update the x radius if it is too small
-					r.x() = max(r.x(), end_p.x() / real(2));
-
-					// find one circle center
-					r4::vector2<real> center = {
-						end_p.x() / real(2),
-						sqrt(utki::pow2(r.x()) - utki::pow2(end_p.x() / real(2)))
-					};
-
-					// choose between the two circles according to flags
-					if(!(s.flags.large_arc ^ s.flags.sweep)){
-						center.y() = -center.y();
-					}
-
-					// put the second point and the center back to their positions
-					end_p = r4::vector2<real>{end_p.x(), real(0)}.rot(angle);
-					center.rotate(angle);
-
-					auto angle1 = point_angle(center, real(0));
-					auto angle2 = point_angle(center, end_p);
-
-					canvas_context_push context_push_1(this->canvas);
-
-					this->canvas.translate(cur_p);
-					this->canvas.rotate(deg_to_rad(real(s.x_axis_rotation)));
-					this->canvas.scale(1, radii_ratio);
-
-					if(s.flags.sweep){
-						// make sure angle1 is smaller than angle2
-						if(angle1 > angle2){
-							angle1 -= 2 * utki::pi<real>();
-						}
-						this->canvas.arc_abs(center, r.x(), angle1, angle2);
-					}else{
-						// make sure angle2 is smaller than angle1
-						if(angle2 > angle1){
-							angle2 -= 2 * utki::pi<real>();
-						}
-						this->canvas.arc_abs(center, r.x(), angle1, angle2);
-					}
-				}
+				this->canvas.arc_rel(
+						{real(s.x), real(s.y)},
+						{real(s.rx), real(s.ry)},
+						deg_to_rad(real(s.x_axis_rotation)),
+						s.flags.large_arc,
+						s.flags.sweep
+					);
 				break;
 			default:
 				ASSERT_INFO(false, "unknown path step type: " << unsigned(s.type_))
@@ -980,7 +903,7 @@ void renderer::visit(const svgdom::path_element& e){
 		prevStep = &s;
 	}
 
-	this->render_shape(group_push.is_pushed());
+	this->render_shape(group_push.is_group_pushed());
 }
 
 void renderer::visit(const svgdom::circle_element& e){
@@ -991,22 +914,18 @@ void renderer::visit(const svgdom::circle_element& e){
 		return;
 	}
 
-	canvas_group_push group_push(*this, false);
-
-	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
-
-	canvas_context_push context_push(this->canvas);
+	common_element_push group_push(*this, false);
 
 	this->apply_transformations(e.transformations);
 
-	this->canvas.arc_abs(
-			this->length_to_px(e.cx, e.cy),
-			this->length_to_px(e.r),
-			0,
-			2 * utki::pi<real>()
-		);
+	auto c = this->length_to_px(e.cx, e.cy);
+	auto r = this->length_to_px(e.r);
 
-	this->render_shape(group_push.is_pushed());
+	this->canvas.move_to_abs(c + r4::vector2<real>{r, 0}); // move to start point
+	this->canvas.arc_abs(c,	r, 0, 2 * utki::pi<real>());
+	this->canvas.close_path();
+
+	this->render_shape(group_push.is_group_pushed());
 }
 
 void renderer::visit(const svgdom::polyline_element& e){
@@ -1017,13 +936,7 @@ void renderer::visit(const svgdom::polyline_element& e){
 		return;
 	}
 
-	// TODO: make a common push class for shapes
-
-	canvas_group_push group_push(*this, false);
-
-	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
-
-	canvas_context_push context_push(this->canvas);
+	common_element_push group_push(*this, false);
 
 	this->apply_transformations(e.transformations);
 
@@ -1039,7 +952,7 @@ void renderer::visit(const svgdom::polyline_element& e){
 		this->canvas.line_to_abs(i->to<real>());
 	}
 
-	this->render_shape(group_push.is_pushed());
+	this->render_shape(group_push.is_group_pushed());
 }
 
 void renderer::visit(const svgdom::polygon_element& e){
@@ -1050,11 +963,7 @@ void renderer::visit(const svgdom::polygon_element& e){
 		return;
 	}
 
-	canvas_group_push group_push(*this, false);
-
-	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
-
-	canvas_context_push context_push(this->canvas);
+	common_element_push group_push(*this, false);
 
 	this->apply_transformations(e.transformations);
 
@@ -1072,7 +981,7 @@ void renderer::visit(const svgdom::polygon_element& e){
 
 	this->canvas.close_path();
 
-	this->render_shape(group_push.is_pushed());
+	this->render_shape(group_push.is_group_pushed());
 }
 
 void renderer::visit(const svgdom::line_element& e){
@@ -1083,18 +992,14 @@ void renderer::visit(const svgdom::line_element& e){
 		return;
 	}
 
-	canvas_group_push group_push(*this, false);
-
-	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
-
-	canvas_context_push context_push(this->canvas);
+	common_element_push group_push(*this, false);
 
 	this->apply_transformations(e.transformations);
 
 	this->canvas.move_to_abs(this->length_to_px(e.x1, e.y1));
 	this->canvas.line_to_abs(this->length_to_px(e.x2, e.y2));
 
-	this->render_shape(group_push.is_pushed());
+	this->render_shape(group_push.is_group_pushed());
 }
 
 void renderer::visit(const svgdom::ellipse_element& e){
@@ -1105,25 +1010,17 @@ void renderer::visit(const svgdom::ellipse_element& e){
 		return;
 	}
 
-	canvas_group_push group_push(*this, false);
-
-	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
-
-	canvas_context_push context_push(this->canvas);
+	common_element_push group_push(*this, false);
 
 	this->apply_transformations(e.transformations);
 
-	{
-		canvas_context_push context_push_1(this->canvas);
+	auto c = this->length_to_px(e.cx, e.cy);
+	auto r = this->length_to_px(e.rx, e.ry);
+	this->canvas.move_to_abs(c + r4::vector2<real>{r.x(), 0}); // move to start point
+	this->canvas.arc_abs(c, r, 0, real(2) * utki::pi<real>());
+	this->canvas.close_path();
 
-		this->canvas.translate(this->length_to_px(e.cx, e.cy));
-		this->canvas.scale(this->length_to_px(e.rx, e.ry));
-
-		this->canvas.arc_abs(0, 1, 0, real(2) * utki::pi<real>());
-		this->canvas.close_path();
-	}
-
-	this->render_shape(group_push.is_pushed());
+	this->render_shape(group_push.is_group_pushed());
 }
 
 void renderer::visit(const svgdom::style_element& e){
@@ -1138,11 +1035,7 @@ void renderer::visit(const svgdom::rect_element& e){
 		return;
 	}
 
-	canvas_group_push group_push(*this, false);
-
-	DeviceSpaceBoundingBoxPush deviceSpaceBoundingBoxPush(*this);
-
-	canvas_context_push context_push(this->canvas);
+	common_element_push group_push(*this, false);
 
 	this->apply_transformations(e.transformations);
 
@@ -1186,44 +1079,44 @@ void renderer::visit(const svgdom::rect_element& e){
 		this->canvas.move_to_abs(p + r4::vector2<real>{r.x(), 0});
 		this->canvas.line_to_abs(p + r4::vector2<real>{dims.x() - r.x(), 0});
 
-		{
-			canvas_context_push context_push(this->canvas);
-			this->canvas.translate(p + r4::vector2<real>{dims.x() - r.x(), r.y()});
-			this->canvas.scale(r);
-			this->canvas.arc_abs(0, 1, -utki::pi<real>() / 2, 0);
-		}
+		this->canvas.arc_abs(
+				p + r4::vector2<real>{dims.x() - r.x(), r.y()},
+				r,
+				-utki::pi<real>() / 2,
+				utki::pi<real>() / 2
+			);
 
 		this->canvas.line_to_abs(p + dims - r4::vector2<real>{0, r.y()});
 
-		{
-			canvas_context_push context_push(this->canvas);
-			this->canvas.translate(p + dims - r);
-			this->canvas.scale(r);
-			this->canvas.arc_abs(0, 1, 0, utki::pi<real>() / 2);
-		}
+		this->canvas.arc_abs(
+				p + dims - r,
+				r,
+				0,
+				utki::pi<real>() / 2
+			);
 
 		this->canvas.line_to_abs(p + r4::vector2<real>{r.x(), dims.y()});
 
-		{
-			canvas_context_push context_push(this->canvas);
-			this->canvas.translate(p + r4::vector2<real>{r.x(), dims.y() - r.y()});
-			this->canvas.scale(r);
-			this->canvas.arc_abs(0, 1, utki::pi<real>() / 2, utki::pi<real>());
-		}
+		this->canvas.arc_abs(
+				p + r4::vector2<real>{r.x(), dims.y() - r.y()},
+				r,
+				utki::pi<real>() / 2,
+				utki::pi<real>() / 2
+			);
 
 		this->canvas.line_to_abs(p + r4::vector2<real>{0, r.y()});
-		
-		{
-			canvas_context_push context_push(this->canvas);
-			this->canvas.translate(p + r);
-			this->canvas.scale(r);
-			this->canvas.arc_abs(0, 1, utki::pi<real>(), utki::pi<real>() * 3 / 2);
-		}
+
+		this->canvas.arc_abs(
+				p + r,
+				r,
+				utki::pi<real>(),
+				utki::pi<real>() / 2
+			);
 
 		this->canvas.close_path();
 	}
 
-	this->render_shape(group_push.is_pushed());
+	this->render_shape(group_push.is_group_pushed());
 }
 
 const decltype(svgdom::transformable::transformations)& renderer::gradient_get_transformations(const svgdom::gradient& g){

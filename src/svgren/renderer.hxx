@@ -32,13 +32,13 @@ public:
 	
 	bool is_outermost_element = true;
 	
-	r4::vector2<real> viewport; // width, height
+	r4::vector2<real> viewport;
 	
 	// this bounding box is used for gradients
 	r4::rectangle<real> user_space_bounding_box;
 	
 	// this bounding box is used for filter region calculation.
-	DeviceSpaceBoundingBox device_space_bounding_box;
+	r4::segment2<real> device_space_bounding_box;
 	
 	svgdom::style_stack style_stack;
 	
@@ -54,7 +54,7 @@ public:
 	
 	void apply_transformations(const decltype(svgdom::transformable::transformations)& transformations);
 	
-	void set_gradient_properties(svgren::gradient& gradient, const svgdom::gradient& g, const svgdom::style_stack& ss);
+	void set_gradient_properties(canvas::gradient& gradient, const svgdom::gradient& g, const svgdom::style_stack& ss);
 	
 	void set_gradient(const std::string& id);
 	
@@ -67,7 +67,7 @@ public:
 	
 	void apply_viewbox(const svgdom::view_boxed& e, const svgdom::aspect_ratioed& ar);
 	
-	void render_element(
+	void render_svg_element(
 			const svgdom::container& c,
 			const svgdom::styleable& s,
 			const svgdom::view_boxed& v,
@@ -105,7 +105,7 @@ public:
 	renderer(
 			svgren::canvas& canvas,
 			unsigned dpi,
-			r4::vector2<real> canvasSize,
+			r4::vector2<real> viewport,
 			const svgdom::svg_element& root
 		);
 

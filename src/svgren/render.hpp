@@ -2,6 +2,8 @@
 
 #include <svgdom/dom.hpp>
 
+#include <r4/vector2.hpp>
+
 namespace svgren{
 
 /**
@@ -9,20 +11,12 @@ namespace svgren{
  */
 struct parameters{
 	/**
-	 * @brief Width request for the resulting raster image.
+	 * @brief Width and height request for the resulting raster image.
 	 * If width request is set to 0 then the width will be adjusted to preserve
 	 * aspect ratio of the SVG image or determined from the SVG root element if
-	 * height request is also set to zero.
+	 * height request is also set to zero. Same works for height request.
 	 */
-	unsigned width_request = 0;
-	
-	/**
-	 * @brief Height request for the resulting raster image.
-	 * If height request is set to 0 then the height will be adjusted to preserve
-	 * aspect ratio of the SVG image or determined from the SVG root element if
-	 * width request is also set to zero.
-	 */
-	unsigned height_request = 0;
+	r4::vector2<unsigned> dims_request = 0;
 	
 	/**
 	 * @brief Dots per inch to use for unit conversion to pixels.
@@ -40,14 +34,9 @@ struct result{
 	std::vector<uint32_t> pixels;
 	
 	/**
-	 * @brief Resulting width of the raster image.
+	 * @brief Resulting width and height of the raster image.
 	 */
-	unsigned width = 0;
-	
-	/**
-	 * @brief Resulting height of the raster image.
-	 */
-	unsigned height = 0;
+	r4::vector2<unsigned> dims = 0;
 };
 
 /**

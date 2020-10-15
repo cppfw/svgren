@@ -40,12 +40,12 @@ void surface::append_luminance_to_alpha(){
 	
 	// TODO: take stride into account, do not append luminance to alpha for data out of the surface width
 	for(auto p = this->span.begin(); p != this->span.end(); ++p){
-		auto c = get_rgba(*p).to<uint32_t>();
+		auto c = to_rgba(*p).to<uint32_t>();
 
 		uint32_t l = (2 * c.r() + 3 * c.g() + c.b()) / 6;
 		ASSERT(l <= 255)
 		
-		// Cairo uses premultiplied alpha, so no need to multiply alpha by liminance.
+		// we use premultiplied alpha format, so no need to multiply alpha by liminance
 		*p &= 0xffffff;
 		*p |= (l << 24);
 	}

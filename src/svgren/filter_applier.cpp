@@ -36,16 +36,16 @@ void boxBlurHorizontal(
 			int pos = i - boxOffset;
 			pos = max(pos, 0);
 			pos = min(pos, int(width - 1));
-			sum += get_rgba(src[srcStride * y + pos]);
+			sum += to_rgba(src[srcStride * y + pos]);
 		}
 		for(unsigned x = 0; x != width; ++x){
 			int tmp = x - boxOffset;
 			int last = max(tmp, 0);
 			int next = min(tmp + boxSize, width - 1);
 
-			dst[dstStride * y + x] = get_uint32_t((sum / boxSize));
+			dst[dstStride * y + x] = to_pixel((sum / boxSize));
 
-			sum += get_rgba(src[srcStride * y + next]) - get_rgba(src[srcStride * y + last]);
+			sum += to_rgba(src[srcStride * y + next]) - to_rgba(src[srcStride * y + last]);
 		}
 	}
 }
@@ -76,16 +76,16 @@ void boxBlurVertical(
 			pos = max(pos, 0);
 			pos = min(pos, int(height - 1));
 
-			sum += get_rgba(src[srcStride * pos + x]);
+			sum += to_rgba(src[srcStride * pos + x]);
 		}
 		for(unsigned y = 0; y != height; ++y){
 			int tmp = y - boxOffset;
 			int last = max(tmp, 0);
 			int next = min(tmp + boxSize, height - 1);
 
-			dst[dstStride * y + x] = get_uint32_t(sum / boxSize);
+			dst[dstStride * y + x] = to_pixel(sum / boxSize);
 
-			sum += get_rgba(src[srcStride * next + x]) - get_rgba(src[srcStride * last + x]);
+			sum += to_rgba(src[srcStride * next + x]) - to_rgba(src[srcStride * last + x]);
 		}
 	}
 }
@@ -246,16 +246,16 @@ void filter_applier::visit(const svgdom::filter_element& e){
 			case svgdom::coordinate_units::object_bounding_box:
 				{
 					r4::vector2<real> fe_pos{
-						percentLengthToFraction(e.x),
-						percentLengthToFraction(e.y)
+						percent_to_fraction(e.x),
+						percent_to_fraction(e.y)
 					};
 
 					r4::vector2<real> fe_dims{
-						percentLengthToFraction(e.width),
-						percentLengthToFraction(e.height)
+						percent_to_fraction(e.width),
+						percent_to_fraction(e.height)
 					};
 
-					fr.p = this->r.device_space_bounding_box.pos() + fe_pos.comp_mul(this->r.device_space_bounding_box.dims());
+					fr.p = this->r.device_space_bounding_box.p1 + fe_pos.comp_mul(this->r.device_space_bounding_box.dims());
 					fr.d = fe_dims.comp_mul(this->r.device_space_bounding_box.dims());
 				}
 				break;
@@ -271,21 +271,21 @@ void filter_applier::visit(const svgdom::filter_element& e){
 						{p2.x(), p1.y()}
 					}};
 
-					DeviceSpaceBoundingBox frBb;
-					frBb.set_empty();
+					r4::segment2<real> frBb;
+					frBb.set_empty_bounding_box();
 
 					for(auto& vertex : rectVertices){
 						vertex = this->r.canvas.matrix_mul(vertex);
 
-						DeviceSpaceBoundingBox bb;
-						bb.left = decltype(bb.left)(vertex.x());
-						bb.right = decltype(bb.right)(vertex.x());
-						bb.top = decltype(bb.top)(vertex.y());
-						bb.bottom = decltype(bb.bottom)(vertex.y());
+						r4::segment2<real> bb;
+						bb.p1.x() = decltype(bb.p1.x())(vertex.x());
+						bb.p2.x() = decltype(bb.p2.x())(vertex.x());
+						bb.p1.y() = decltype(bb.p1.y())(vertex.y());
+						bb.p2.y() = decltype(bb.p2.y())(vertex.y());
 
 						frBb.unite(bb);
 					}
-					fr.p = frBb.pos();
+					fr.p = frBb.p1;
 					fr.d = frBb.dims();
 				}
 				break;
@@ -340,7 +340,7 @@ filter_result color_matrix(const surface& s, const r4::matrix4<real>& m, const r
 		ASSERT_INFO(sp < s.span.end(), "sp = " << std::hex << static_cast<const void*>(sp) << " s.end = " << static_cast<const void*>(s.span.end()))
 		auto dp = &ret.surface.span[y * ret.surface.stride];
 		for(unsigned x = 0; x != s.d.x(); ++x){
-			auto cc = get_rgba(*sp);
+			auto cc = to_rgba(*sp);
 			++sp;
 
 			if(cc.a() != 0xff && cc.a() != 0){
@@ -366,7 +366,7 @@ filter_result color_matrix(const surface& s, const r4::matrix4<real>& m, const r
 			c1.g() *= c1.a();
 			c1.b() *= c1.a();
 			
-			*dp = get_uint32_t(min((c1 * 0xff).to<unsigned>(), 0xff)); // clamp top
+			*dp = to_pixel(min((c1 * 0xff).to<unsigned>(), 0xff)); // clamp top
 			++dp;
 		}
 	}
@@ -496,9 +496,9 @@ filter_result blend(const surface& in, const surface& in2, svgdom::fe_blend_elem
 		auto dp = &ret.surface.span[y * ret.surface.stride];
 		for(unsigned x = 0; x != ret.surface.d.x(); ++x){
 			// TODO: optimize by using integer arithmetics instead of floating point
-			auto c01 = get_rgba(*sp1).to<real>() / 0xff;
+			auto c01 = to_rgba(*sp1).to<real>() / 0xff;
 			++sp1;
-			auto c02 = get_rgba(*sp2).to<real>() / 0xff;
+			auto c02 = to_rgba(*sp2).to<real>() / 0xff;
 			++sp2;
 
 			/*
@@ -540,7 +540,7 @@ filter_result blend(const surface& in, const surface& in2, svgdom::fe_blend_elem
 			// qr = 1 - (1 - qa) * (1 - qb)
 			auto qr = 1 - (1 - c01.a()) * (1 - c02.a());
 
-			*dp = get_uint32_t((r4::vector4<real>{cr, qr} * 0xff).to<unsigned>());
+			*dp = to_pixel((r4::vector4<real>{cr, qr} * 0xff).to<unsigned>());
 			++dp;
 		}
 	}
@@ -583,9 +583,9 @@ filter_result composite(const surface& in, const surface& in2, const svgdom::fe_
 		auto dp = &ret.surface.span[y * ret.surface.stride];
 		for(unsigned x = 0; x != ret.surface.d.x(); ++x){
 			// TODO: optimize by using integer arithmetics instead of floating point
-			auto c01 = get_rgba(*sp1).to<real>() / 0xff;
+			auto c01 = to_rgba(*sp1).to<real>() / 0xff;
 			++sp1;
-			auto c02 = get_rgba(*sp2).to<real>() / 0xff;
+			auto c02 = to_rgba(*sp2).to<real>() / 0xff;
 			++sp2;
 			
 			r4::vector4<real> o;
@@ -625,7 +625,7 @@ filter_result composite(const surface& in, const surface& in2, const svgdom::fe_
 					break;
 			}
 
-			*dp = get_uint32_t((o * 0xff).to<unsigned>());
+			*dp = to_pixel((o * 0xff).to<unsigned>());
 			++dp;
 		}
 	}

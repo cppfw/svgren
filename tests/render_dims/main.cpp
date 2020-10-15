@@ -16,12 +16,10 @@ int main(int argc, char **argv){
 		ASSERT_ALWAYS(dom)
 
 		svgren::parameters p;
-		p.height_request = 10;
-		p.width_request = 10;
+		p.dims_request = decltype(p.dims_request){10, 10};
 		auto res = svgren::render(*dom, p);
 
-		ASSERT_ALWAYS(res.width == 10)
-		ASSERT_ALWAYS(res.height == 10)
+		ASSERT_ALWAYS(res.dims == p.dims_request)
 		
 //		TRACE(<< "imWidth = " << imWidth << " imHeight = " << imHeight << " img.size() = " << img.size() << std::endl)
 	}

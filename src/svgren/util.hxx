@@ -10,11 +10,7 @@
 #include <svgdom/elements/element.hpp>
 #include <svgdom/visitor.hpp>
 
-#if M_OS == M_OS_WINDOWS || M_OS_NAME == M_OS_NAME_IOS
-#	include <cairo.h>
-#else
-#	include <cairo/cairo.h>
-#endif
+#include <r4/segment2.hpp>
 
 #include "config.hxx"
 #include "surface.hxx"
@@ -27,10 +23,10 @@ inline real deg_to_rad(real deg){
 	return deg * utki::pi<real>() / real(180);
 }
 
-// Return angle between x axis and point knowing given center.
-inline real point_angle(const r4::vector2<real>& c, const r4::vector2<real>& p){
+// return angle between x axis and vector
+inline real get_angle(const r4::vector2<real>& v){
 	using std::atan2;
-    return atan2(p.y() - c.y(), p.x() - c.x());
+    return atan2(v.y(), v.x());
 }
 
 class canvas_matrix_push{
@@ -41,57 +37,17 @@ public:
 	~canvas_matrix_push()noexcept;
 };
 
-class canvas_context_push{
-	canvas& c;
-public:
-	canvas_context_push(canvas& c);
-	~canvas_context_push()noexcept;
-};
+real percent_to_fraction(const svgdom::length& l);
 
-real percentLengthToFraction(const svgdom::length& l);
-
-struct DeviceSpaceBoundingBox{
-	real left, top, right, bottom;
-	
-	void set_empty();
-	
-	void unite(const DeviceSpaceBoundingBox& bb);
-	
-	real width()const noexcept;
-	real height()const noexcept;
-
-	r4::vector2<real> pos()const noexcept{
-		return r4::vector2<real>{
-			this->left,
-			this->top
-		};
-	}
-
-	r4::vector2<real> dims()const noexcept{
-		return r4::vector2<real>{
-			this->width(),
-			this->height()
-		};
-	}
-};
-
-class DeviceSpaceBoundingBoxPush{
+class renderer_viewport_push{
 	class renderer& r;
-	DeviceSpaceBoundingBox oldBb;
+	r4::vector2<real> old_viewport;
 public:
-	DeviceSpaceBoundingBoxPush(renderer& r);
-	~DeviceSpaceBoundingBoxPush()noexcept;
+	renderer_viewport_push(renderer& r, const decltype(old_viewport)& viewport);
+	~renderer_viewport_push()noexcept;
 };
 
-class viewport_push{
-	class renderer& r;
-	r4::vector2<real> oldViewport;
-public:
-	viewport_push(renderer& r, const decltype(oldViewport)& viewport);
-	~viewport_push()noexcept;
-};
-
-class canvas_group_push{
+class common_element_push{
 	bool group_pushed;
 	surface old_background;
 	class svgren::renderer& renderer;
@@ -99,11 +55,15 @@ class canvas_group_push{
 	real opacity = real(1);
 	
 	const svgdom::element* mask_element = nullptr;
+
+	canvas_matrix_push matrix_push;
+
+	r4::segment2<real> old_device_space_bounding_box;
 public:
-	canvas_group_push(svgren::renderer& renderer, bool is_container);
-	~canvas_group_push()noexcept;
+	common_element_push(svgren::renderer& renderer, bool is_container);
+	~common_element_push()noexcept;
 	
-	bool is_pushed()const noexcept{
+	bool is_group_pushed()const noexcept{
 		return this->group_pushed;
 	}
 };

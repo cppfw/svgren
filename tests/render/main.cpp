@@ -121,13 +121,13 @@ int main(int argc, char **argv){
 	
 	TRACE(<< "SVG rendered in " << float(getTicks() - renderStart) / 1000.0f << " sec." << std::endl)
 	
-	TRACE(<< "imWidth = " << img.width << " imHeight = " << img.height << " img.size() = " << img.pixels.size() << std::endl)
+	TRACE(<< "img.dims = " << img.dims << " img.pixels.size() = " << img.pixels.size() << std::endl)
 
-	write_png(outFilename.c_str(), img.width, img.height, &*img.pixels.begin());
+	write_png(outFilename.c_str(), img.dims.x(), img.dims.y(), &*img.pixels.begin());
 	
 #if M_OS == M_OS_LINUX
-	int width = img.width + 2;
-	int height = img.height + 2;
+	int width = img.dims.x() + 2;
+	int height = img.dims.y() + 2;
 
 	Display *display = XOpenDisplay(NULL);
 	
@@ -140,53 +140,54 @@ int main(int argc, char **argv){
 		return 1;
 	}	
 	
-	XSelectInput(display, window, ButtonPressMask|ExposureMask);
+	XSelectInput(display, window, ButtonPressMask|ExposureMask|KeyPressMask);
 	
 	XMapWindow(display, window);
 	
 	while(true){
 		XEvent ev;
 		XNextEvent(display, &ev);
-		switch(ev.type)
-		{
-		case Expose:
-			{
-				int dummyInt;
-				unsigned dummyUnsigned;
-				Window dummyWindow;
-				unsigned winWidth = 0;
-				unsigned winHeight = 0;
-				
-				XGetGeometry(display, window, &dummyWindow, &dummyInt, &dummyInt, &winWidth, &winHeight, &dummyUnsigned, &dummyUnsigned);
-				
-//				TRACE(<< "imWidth = " << imWidth << " imHeight = " << imHeight << std::endl)
-				
-				using std::max;
-				
-				svgren::parameters p;
-				p.dpi = 96;
-				p.width_request = max(int(winWidth) - 2, 0);
-				p.height_request = max(int(winHeight) - 2, 0);
-				auto img = svgren::render(*dom, p);
+		switch(ev.type){
+			case Expose:
+				{
+					int dummyInt;
+					unsigned dummyUnsigned;
+					Window dummyWindow;
+					unsigned winWidth = 0;
+					unsigned winHeight = 0;
+					
+					XGetGeometry(display, window, &dummyWindow, &dummyInt, &dummyInt, &winWidth, &winHeight, &dummyUnsigned, &dummyUnsigned);
+					
+	//				TRACE(<< "imWidth = " << imWidth << " imHeight = " << imHeight << std::endl)
+					
+					using std::max;
+					
+					svgren::parameters p;
+					p.dpi = 96;
+					p.dims_request.x() = max(int(winWidth) - 2, 0);
+					p.dims_request.y() = max(int(winHeight) - 2, 0);
+					auto img = svgren::render(*dom, p);
 
-				// RGBA -> BGRA
-				for(auto &c : img.pixels){
-					c = (c & 0xff00ff00) | ((c << 16) & 0xff0000) | ((c >> 16) & 0xff);
+					// RGBA -> BGRA
+					for(auto &c : img.pixels){
+						c = (c & 0xff00ff00) | ((c << 16) & 0xff0000) | ((c >> 16) & 0xff);
+					}
+
+	//				TRACE(<< "imWidth = " << imWidth << " imHeight = " << imHeight << " img.size() = " << img.size() << std::endl)
+					
+					auto ximage = XCreateImage(display, visual, 24, ZPixmap, 0, reinterpret_cast<char*>(&*img.pixels.begin()), img.dims.x(), img.dims.y(), 8, 0);
+					utki::scope_exit scope_exit([ximage](){
+						ximage->data = nullptr; // Xlib will try to deallocate data which is owned by 'img' variable.
+						XDestroyImage(ximage);
+					});
+					
+					XPutImage(display, window, DefaultGC(display, 0), ximage, 0, 0, 1, 1, img.dims.x(), img.dims.y());
 				}
-
-//				TRACE(<< "imWidth = " << imWidth << " imHeight = " << imHeight << " img.size() = " << img.size() << std::endl)
-				
-				auto ximage = XCreateImage(display, visual, 24, ZPixmap, 0, reinterpret_cast<char*>(&*img.pixels.begin()), img.width, img.height, 8, 0);
-				utki::scope_exit scope_exit([ximage](){
-					ximage->data = nullptr; // Xlib will try to deallocate data which is owned by 'img' variable.
-					XDestroyImage(ximage);
-				});
-				
-				XPutImage(display, window, DefaultGC(display, 0), ximage, 0, 0, 1, 1, img.width, img.height);
-			}
-			break;
-		case ButtonPress:
-			exit(0);
+				break;
+			case KeyPress:
+			case ButtonPress:
+				exit(0);
+				break;
 		}
 	}
 #endif
