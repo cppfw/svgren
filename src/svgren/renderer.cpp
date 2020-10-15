@@ -264,7 +264,7 @@ void renderer::set_gradient(const std::string& id){
 			if(r.gradient_get_units(gradient) == svgdom::coordinate_units::object_bounding_box){
 				r.canvas.translate(r.user_space_bounding_box.p);
 				r.canvas.scale(r.user_space_bounding_box.d);
-				this->viewport_push = std::make_unique<renderer_viewport_push>(r, 1);
+				this->viewport_push = std::make_unique<renderer_viewport_push>(r, real(1));
 			}
 
 			r.apply_transformations(r.gradient_get_transformations(gradient));

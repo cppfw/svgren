@@ -38,7 +38,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	svgren::parameters params;
 	auto res = svgren::render(*dom, params);
 
-	bmp = CreateBitmap(res.width, res.height, 1, 32, res.pixels.data());
+	bmp = CreateBitmap(res.dims.x(), res.dims.y(), 1, 32, res.pixels.data());
 	ASSERT_ALWAYS(bmp != NULL)
 
     // Initialize global strings
