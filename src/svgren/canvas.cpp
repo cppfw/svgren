@@ -108,6 +108,23 @@ agg::rgba to_agg_rgba(const r4::vector4<real>& rgba){
 		);
 }
 }
+
+bool canvas::agg_snap_path_endpoint(backend_real x, backend_real y){
+	if(this->path.total_vertices() == 0){
+		return false;
+	}
+
+	const backend_real eps = 1e-4;
+
+	using std::abs;
+
+	if(abs(x - this->path.last_x()) > eps || abs(y - this->path.last_y()) > eps){
+		return false;
+	}
+
+	// this->path.modify_vertex(this->path.total_vertices() - 1, x, y);
+	return true;
+}
 #endif
 
 void canvas::transform(const r4::matrix2<real>& matrix){
@@ -504,6 +521,7 @@ void canvas::line_to_abs(const r4::vector2<real>& p){
 	cairo_line_to(this->cr, backend_real(p.x()), backend_real(p.y()));
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	this->agg_snap_path_endpoint(p.x(), p.y());
 	this->path.line_to(p.x(), p.y());
 #endif
 }
@@ -557,6 +575,12 @@ void canvas::quadratic_curve_to_abs(const r4::vector2<real>& cp1, const r4::vect
 			ep.x(), ep.y()
 		);
 
+	// WORKAROUND: see comment to agg_snap_path_endpoint() function
+	curve.rewind(0);
+	backend_real x = 0, y = 0;
+	curve.vertex(&x, &y);
+	this->agg_snap_path_endpoint(x, y);
+
 	this->path.join_path(curve);
 #endif
 }
@@ -607,6 +631,12 @@ void canvas::cubic_curve_to_abs(const r4::vector2<real>& cp1, const r4::vector2<
 			ep.x(), ep.y()
 		);
 
+	// WORKAROUND: see comment to agg_snap_path_endpoint() function
+	curve.rewind(0);
+	backend_real x = 0, y = 0;
+	curve.vertex(&x, &y);
+	this->agg_snap_path_endpoint(x, y);
+
 	this->path.join_path(curve);
 #endif
 }
@@ -638,6 +668,7 @@ void canvas::close_path(){
 	cairo_close_path(this->cr);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	this->agg_snap_path_endpoint(this->subpath_start_point.x(), this->subpath_start_point.y());
 	this->path.close_polygon();
 	this->move_to_abs(this->subpath_start_point);
 #endif
@@ -670,11 +701,11 @@ void canvas::arc_abs(const r4::vector2<real>& center, const r4::vector2<real>& r
 	agg::bezier_arc shape(center.x(), center.y(), radius.x(), radius.y(), start_angle, sweep_angle);
 	agg::conv_curve<decltype(shape), agg_curve3_type, agg_curve4_type> curve(shape);
 
-	// WORKAROUND: set last path point to coincide with first curve point to avoid drawing artifacts
-	// curve.rewind(0);
-	// double x, y;
-	// curve.vertex(&x, &y);
-	// this->path.modify_vertex(this->path.total_vertices() - 1, x, y);
+	// WORKAROUND: see comment to agg_snap_path_endpoint() function
+	curve.rewind(0);
+	backend_real x, y;
+	curve.vertex(&x, &y);
+	this->agg_snap_path_endpoint(x, y);
 
 	curve.approximation_scale(this->approximation_scale);
 	this->path.join_path(curve);
@@ -768,6 +799,13 @@ void canvas::arc_abs(const r4::vector2<real>& end_point, const r4::vector2<real>
 		);
 	agg::conv_curve<decltype(shape), agg_curve3_type, agg_curve4_type> curve(shape);
 	curve.approximation_scale(this->approximation_scale);
+
+	// WORKAROUND: see comment to agg_snap_path_endpoint() function
+	curve.rewind(0);
+	backend_real x, y;
+	curve.vertex(&x, &y);
+	this->agg_snap_path_endpoint(x, y);
+
 	this->path.join_path(curve);
 #endif
 }

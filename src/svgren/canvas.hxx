@@ -199,7 +199,7 @@ private:
 
 	cairo_t* cr;
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	typedef double backend_real;
+	typedef agg::path_storage::container_type::value_type backend_real;
 
 	struct group{
 		std::vector<pixel> pixels;
@@ -231,6 +231,10 @@ private:
 	r4::vector2<real> subpath_start_point{0};
 
 	agg::trans_affine matrix;
+
+	// WORKAROUND: set last path point to coincide with given x,y (firstpoint of the curve to join to the path) to avoid drawing artifacts
+	bool agg_snap_path_endpoint(backend_real x, backend_real y);
+
 #endif
 
 	struct context_type{
