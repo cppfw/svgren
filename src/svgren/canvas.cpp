@@ -879,6 +879,8 @@ void canvas::rectangle(const r4::rectangle<real>& rect, const r4::vector2<real>&
 		this->close_path();
 #endif
 	}else{
+		// approximate 90 degree arc with bezier curve which matches the arc at 45 degree point
+		// and has the same tangent as an arc at 45 degree point
 		using std::sqrt;
 		const real arc_bezier_param = (4 * (sqrt(2) - 1) / 3);
 
