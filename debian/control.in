@@ -26,7 +26,7 @@ Package: libsvgren-dev
 Section: libdevel
 Architecture: any
 Depends: libsvgren$(soname) (= ${binary:Version}), libsvgren$(soname)-dbg (= ${binary:Version}), ${misc:Depends},
-		libsvgdom-dev
+		libsvgdom-dev, libr4-dev
 Suggests: libsvgren-doc
 Description: cross-platform C++ SVG rendering library.
  SVG rendering library.
