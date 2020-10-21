@@ -236,8 +236,6 @@ private:
 		this->polyline_path.remove_all();
 	}
 
-	agg::trans_affine matrix;
-
 #endif
 
 	struct context_type{
@@ -249,6 +247,7 @@ private:
 		agg::line_cap_e line_cap = agg::line_cap_e::butt_cap;
 		agg::line_join_e line_join = agg::line_join_e::miter_join;
 		agg::trans_affine gradient_matrix;
+		agg::trans_affine matrix;
 #endif
 		std::shared_ptr<const gradient> grad; // this is needed at least to save shared pointer to gradient object to prevent its deletion
 	} context;

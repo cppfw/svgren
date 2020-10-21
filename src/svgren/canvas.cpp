@@ -137,7 +137,7 @@ void canvas::transform(const r4::matrix2<real>& matrix){
 	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo status = " << cairo_status_to_string(cairo_status(this->cr)))
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	ASSERT(!this->group_stack.empty())
-	this->matrix.premultiply(to_agg_matrix(matrix));
+	this->context.matrix.premultiply(to_agg_matrix(matrix));
 #endif
 }
 
@@ -147,7 +147,7 @@ void canvas::translate(real x, real y){
 	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo status = " << cairo_status_to_string(cairo_status(this->cr)))
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	ASSERT(!this->group_stack.empty())
-	this->matrix.premultiply(agg::trans_affine_translation(x, y));
+	this->context.matrix.premultiply(agg::trans_affine_translation(x, y));
 #endif
 }
 
@@ -157,7 +157,7 @@ void canvas::rotate(real radians){
 	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo status = " << cairo_status_to_string(cairo_status(this->cr)))
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	ASSERT(!this->group_stack.empty())
-	this->matrix.premultiply(agg::trans_affine_rotation(radians));
+	this->context.matrix.premultiply(agg::trans_affine_rotation(radians));
 #endif
 }
 
@@ -171,7 +171,7 @@ void canvas::scale(real x, real y){
 	}
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	ASSERT(!this->group_stack.empty())
-	this->matrix.premultiply(agg::trans_affine_scaling(x, y));
+	this->context.matrix.premultiply(agg::trans_affine_scaling(x, y));
 #endif
 }
 
@@ -408,8 +408,8 @@ r4::vector2<real> canvas::matrix_mul(const r4::vector2<real>& v)const{
 	return r4::vector2<real>(real(x), real(y));
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	ASSERT(!this->group_stack.empty())
-	auto vec = v.to<decltype(this->matrix.sx)>();
-	this->matrix.transform(&vec.x(), &vec.y());
+	auto vec = v.to<decltype(this->context.matrix.sx)>();
+	this->context.matrix.transform(&vec.x(), &vec.y());
 	return vec.to<real>();
 #endif
 }
@@ -423,8 +423,8 @@ r4::vector2<real> canvas::matrix_mul_distance(const r4::vector2<real>& v)const{
 	return r4::vector2<real>(real(x), real(y));
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	ASSERT(!this->group_stack.empty())
-	auto vec = v.to<decltype(this->matrix.sx)>();
-	this->matrix.transform_2x2(&vec.x(), &vec.y());
+	auto vec = v.to<decltype(this->context.matrix.sx)>();
+	this->context.matrix.transform_2x2(&vec.x(), &vec.y());
 	return vec.to<real>();
 #endif
 }
@@ -824,10 +824,10 @@ void canvas::fill(){
 
 	agg::conv_transform<
 			decltype(this->polyline_path),
-			decltype(this->matrix)
+			decltype(this->context.matrix)
 		> transformed_path(
 			this->polyline_path,
-			this->matrix
+			this->context.matrix
 		);
 
 	agg::rasterizer_scanline_aa<> rasterizer;
@@ -853,10 +853,10 @@ void canvas::stroke(){
 	ASSERT(!this->group_stack.empty())
 	agg::conv_transform<
 			decltype(stroke_path),
-			decltype(this->matrix)
+			decltype(this->context.matrix)
 		> transformed_path(
 			stroke_path,
-			this->matrix
+			this->context.matrix
 		);
 
 	agg::rasterizer_scanline_aa<> rasterizer;
@@ -1009,7 +1009,7 @@ r4::matrix2<real> canvas::get_matrix()const{
 	};
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	ASSERT(!this->group_stack.empty())
-	return to_r4_matrix(this->matrix);
+	return to_r4_matrix(this->context.matrix);
 #endif
 }
 
@@ -1021,7 +1021,7 @@ void canvas::set_matrix(const r4::matrix2<real>& m){
 	cairo_set_matrix(this->cr, &cm);
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	ASSERT(!this->group_stack.empty())
-	this->matrix = to_agg_matrix(m);
+	this->context.matrix = to_agg_matrix(m);
 #endif
 }
 
