@@ -230,6 +230,12 @@ private:
 	agg::path_storage path;
 	r4::vector2<real> subpath_start_point{0};
 
+	mutable agg::path_storage polyline_path;
+	void agg_path_to_polyline()const;
+	void agg_invalidate_polyline(){
+		this->polyline_path.remove_all();
+	}
+
 	agg::trans_affine matrix;
 
 	// WORKAROUND: set last path point to coincide with given x,y (firstpoint of the curve to join to the path) to avoid drawing artifacts

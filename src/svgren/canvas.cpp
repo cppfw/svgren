@@ -109,6 +109,19 @@ agg::rgba to_agg_rgba(const r4::vector4<real>& rgba){
 }
 }
 
+void canvas::agg_path_to_polyline()const{
+	if(this->polyline_path.total_vertices() != 0){
+		return;
+	}
+
+	agg::conv_curve<decltype(this->path), agg_curve3_type, agg_curve4_type> curve(
+			const_cast<decltype(this->path)&>(this->path)
+		);
+	curve.approximation_scale(this->approximation_scale);
+
+	this->polyline_path.concat_path(curve);
+}
+
 bool canvas::agg_snap_path_endpoint(backend_real x, backend_real y){
 	if(this->path.total_vertices() == 0){
 		return false;
@@ -453,9 +466,10 @@ r4::rectangle<real> canvas::get_shape_bounding_box()const{
 			{real(x2 - x1), real(y2 - y1)}
 		};
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	this->agg_path_to_polyline();
 	real x1, x2, y1, y2;
 	agg::bounding_rect_single(
-			const_cast<std::remove_const<std::remove_pointer<decltype(this)>::type>::type*>(this)->path,
+			this->polyline_path,
 			0,
 			&x1,
 			&y1,
@@ -500,6 +514,7 @@ void canvas::move_to_abs(const r4::vector2<real>& p){
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->path.move_to(p.x(), p.y());
 	this->subpath_start_point = p;
+	this->agg_invalidate_polyline();
 #endif
 }
 
@@ -523,6 +538,7 @@ void canvas::line_to_abs(const r4::vector2<real>& p){
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->agg_snap_path_endpoint(p.x(), p.y());
 	this->path.line_to(p.x(), p.y());
+	this->agg_invalidate_polyline();
 #endif
 }
 
@@ -536,6 +552,7 @@ void canvas::line_to_rel(const r4::vector2<real>& p){
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->path.line_rel(p.x(), p.y());
+	this->agg_invalidate_polyline();
 #endif
 }
 
@@ -565,23 +582,8 @@ void canvas::quadratic_curve_to_abs(const r4::vector2<real>& cp1, const r4::vect
 		);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	agg_curve3_type curve;
-	curve.approximation_scale(this->approximation_scale);
-	curve.angle_tolerance(agg::deg2rad(22));
-	curve.cusp_limit(agg::deg2rad(0));
-	curve.init(
-			this->path.last_x(), this->path.last_y(),
-			cp1.x(), cp1.y(),
-			ep.x(), ep.y()
-		);
-
-	// WORKAROUND: see comment to agg_snap_path_endpoint() function
-	curve.rewind(0);
-	backend_real x = 0, y = 0;
-	curve.vertex(&x, &y);
-	this->agg_snap_path_endpoint(x, y);
-
-	this->path.join_path(curve);
+	this->path.curve3(cp1.x(), cp1.y(), ep.x(), ep.y());
+	this->agg_invalidate_polyline();
 #endif
 }
 
@@ -620,24 +622,8 @@ void canvas::cubic_curve_to_abs(const r4::vector2<real>& cp1, const r4::vector2<
 		);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	agg_curve4_type curve;
-	curve.approximation_scale(this->approximation_scale);
-	curve.angle_tolerance(agg::deg2rad(22));
-	curve.cusp_limit(agg::deg2rad(0));
-	curve.init(
-			this->path.last_x(), this->path.last_y(),
-			cp1.x(), cp1.y(),
-			cp2.x(), cp2.y(),
-			ep.x(), ep.y()
-		);
-
-	// WORKAROUND: see comment to agg_snap_path_endpoint() function
-	curve.rewind(0);
-	backend_real x = 0, y = 0;
-	curve.vertex(&x, &y);
-	this->agg_snap_path_endpoint(x, y);
-
-	this->path.join_path(curve);
+	this->path.curve4(cp1.x(), cp1.y(), cp2.x(), cp2.y(), ep.x(), ep.y());
+	this->agg_invalidate_polyline();
 #endif
 }
 
@@ -671,6 +657,7 @@ void canvas::close_path(){
 	this->agg_snap_path_endpoint(this->subpath_start_point.x(), this->subpath_start_point.y());
 	this->path.close_polygon();
 	this->move_to_abs(this->subpath_start_point);
+	this->agg_invalidate_polyline();
 #endif
 }
 
@@ -681,6 +668,7 @@ void canvas::clear_path(){
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->path.remove_all();
 	this->subpath_start_point.set(0);
+	this->agg_invalidate_polyline();
 #endif
 }
 
@@ -699,16 +687,15 @@ void canvas::arc_abs(const r4::vector2<real>& center, const r4::vector2<real>& r
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	agg::bezier_arc shape(center.x(), center.y(), radius.x(), radius.y(), start_angle, sweep_angle);
-	agg::conv_curve<decltype(shape), agg_curve3_type, agg_curve4_type> curve(shape);
 
 	// WORKAROUND: see comment to agg_snap_path_endpoint() function
-	curve.rewind(0);
-	backend_real x, y;
-	curve.vertex(&x, &y);
+	shape.rewind(0);
+	backend_real x = 0, y = 0;
+	shape.vertex(&x, &y);
 	this->agg_snap_path_endpoint(x, y);
 
-	curve.approximation_scale(this->approximation_scale);
-	this->path.join_path(curve);
+	this->path.join_path(shape);
+	this->agg_invalidate_polyline();
 #endif
 }
 
@@ -797,16 +784,15 @@ void canvas::arc_abs(const r4::vector2<real>& end_point, const r4::vector2<real>
 			end_point.x(),
 			end_point.y()
 		);
-	agg::conv_curve<decltype(shape), agg_curve3_type, agg_curve4_type> curve(shape);
-	curve.approximation_scale(this->approximation_scale);
 
 	// WORKAROUND: see comment to agg_snap_path_endpoint() function
-	curve.rewind(0);
-	backend_real x, y;
-	curve.vertex(&x, &y);
+	shape.rewind(0);
+	backend_real x = 0, y = 0;
+	shape.vertex(&x, &y);
 	this->agg_snap_path_endpoint(x, y);
 
-	this->path.join_path(curve);
+	this->path.join_path(shape);
+	this->agg_invalidate_polyline();
 #endif
 }
 
@@ -863,11 +849,14 @@ void canvas::fill(){
 	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	ASSERT(!this->group_stack.empty())
+
+	this->agg_path_to_polyline();
+
 	agg::conv_transform<
-			decltype(this->path),
+			decltype(this->polyline_path),
 			decltype(this->matrix)
 		> transformed_path(
-			this->path,
+			this->polyline_path,
 			this->matrix
 		);
 
@@ -884,7 +873,9 @@ void canvas::stroke(){
 	cairo_stroke_preserve(this->cr);
 	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	agg::conv_stroke<decltype(this->path)> stroke_path(this->path);
+	this->agg_path_to_polyline();
+	
+	agg::conv_stroke<decltype(this->polyline_path)> stroke_path(this->polyline_path);
 	stroke_path.width(this->context.line_width);
 	stroke_path.line_join(this->context.line_join);
 	stroke_path.line_cap(this->context.line_cap);
