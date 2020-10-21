@@ -27,10 +27,9 @@ we have to supply the dots per inch (DPI) value of our physical display to the s
 
 ``` cpp
 svgren::parameters p;
-p.bgra = true; // returned pixels format will be BGRA instead of RGBA
 p.dpi = 240; // pixel density of target physical display is 240 dpi
-p.width_request = 0; // 0 means use width from SVG document
-p.height_request = 0; // 0 means use height from SVG document
+p.dims_request.x() = 0; // 0 means use width from SVG document
+p.dims_request.y() = 0; // 0 means use height from SVG document
 auto result = svgren::render(*dom, p);
 ```
 
