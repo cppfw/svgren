@@ -122,22 +122,6 @@ void canvas::agg_path_to_polyline()const{
 	this->polyline_path.concat_path(curve);
 }
 
-bool canvas::agg_snap_path_endpoint(backend_real x, backend_real y){
-	if(this->path.total_vertices() == 0){
-		return false;
-	}
-
-	const backend_real eps = 1e-4;
-
-	using std::abs;
-
-	if(abs(x - this->path.last_x()) > eps || abs(y - this->path.last_y()) > eps){
-		return false;
-	}
-
-	// this->path.modify_vertex(this->path.total_vertices() - 1, x, y);
-	return true;
-}
 #endif
 
 void canvas::transform(const r4::matrix2<real>& matrix){
@@ -653,7 +637,6 @@ void canvas::close_path(){
 	cairo_close_path(this->cr);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	this->agg_snap_path_endpoint(this->subpath_start_point.x(), this->subpath_start_point.y());
 	this->path.close_polygon();
 	this->move_to_abs(this->subpath_start_point);
 	this->agg_invalidate_polyline();
@@ -686,12 +669,6 @@ void canvas::arc_abs(const r4::vector2<real>& center, const r4::vector2<real>& r
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	agg::bezier_arc shape(center.x(), center.y(), radius.x(), radius.y(), start_angle, sweep_angle);
-
-	// WORKAROUND: see comment to agg_snap_path_endpoint() function
-	shape.rewind(0);
-	backend_real x = 0, y = 0;
-	shape.vertex(&x, &y);
-	this->agg_snap_path_endpoint(x, y);
 
 	this->path.join_path(shape);
 	this->agg_invalidate_polyline();
@@ -902,41 +879,40 @@ void canvas::rectangle(const r4::rectangle<real>& rect, const r4::vector2<real>&
 		this->close_path();
 #endif
 	}else{
+		using std::sqrt;
+		const real arc_bezier_param = (4 * (sqrt(2) - 1) / 3);
+
 		this->move_to_abs(rect.p + r4::vector2<real>{corner_radius.x(), 0});
 		this->line_to_abs(rect.p + r4::vector2<real>{rect.d.x() - corner_radius.x(), 0});
 
-		this->arc_abs(
-				rect.p + r4::vector2<real>{rect.d.x() - corner_radius.x(), corner_radius.y()},
-				corner_radius,
-				-utki::pi<real>() / 2,
-				utki::pi<real>() / 2
+		this->cubic_curve_to_rel(
+				{arc_bezier_param * corner_radius.x(), 0},
+				{corner_radius.x(), corner_radius.y() * (1 - arc_bezier_param)},
+				corner_radius
 			);
 
 		this->line_to_abs(rect.p + rect.d - r4::vector2<real>{0, corner_radius.y()});
 
-		this->arc_abs(
-				rect.p + rect.d - corner_radius,
-				corner_radius,
-				0,
-				utki::pi<real>() / 2
+		this->cubic_curve_to_rel(
+				{0, arc_bezier_param * corner_radius.y()},
+				{-corner_radius.x() * (1 - arc_bezier_param), corner_radius.y()},
+				{-corner_radius.x(), corner_radius.y()}
 			);
 
 		this->line_to_abs(rect.p + r4::vector2<real>{corner_radius.x(), rect.d.y()});
 
-		this->arc_abs(
-				rect.p + r4::vector2<real>{corner_radius.x(), rect.d.y() - corner_radius.y()},
-				corner_radius,
-				utki::pi<real>() / 2,
-				utki::pi<real>() / 2
+		this->cubic_curve_to_rel(
+				{-arc_bezier_param * corner_radius.x(), 0},
+				{-corner_radius.x(), -(1 - arc_bezier_param) * corner_radius.y()},
+				-corner_radius
 			);
 
 		this->line_to_abs(rect.p + r4::vector2<real>{0, corner_radius.y()});
 
-		this->arc_abs(
-				rect.p + corner_radius,
-				corner_radius,
-				utki::pi<real>(),
-				utki::pi<real>() / 2
+		this->cubic_curve_to_rel(
+				{0, -arc_bezier_param * corner_radius.y()},
+				{(1 - arc_bezier_param) * corner_radius.x(), -corner_radius.y()},
+				{corner_radius.x(), -corner_radius.y()}
 			);
 
 		this->close_path();
