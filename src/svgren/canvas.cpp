@@ -889,17 +889,58 @@ void canvas::stroke(){
 #endif
 }
 
-void canvas::rectangle(const r4::rectangle<real>& rect){
+void canvas::rectangle(const r4::rectangle<real>& rect, const r4::vector2<real>& corner_radius){
+	if(corner_radius.is_zero() || corner_radius.is_negative()){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	cairo_rectangle(this->cr, backend_real(rect.p.x()), backend_real(rect.p.y()), backend_real(rect.d.x()), backend_real(rect.d.y()));
-	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+		cairo_rectangle(this->cr, backend_real(rect.p.x()), backend_real(rect.p.y()), backend_real(rect.d.x()), backend_real(rect.d.y()));
+		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	this->move_to_abs(rect.p);
-	this->line_to_abs(rect.x2_y1());
-	this->line_to_abs(rect.x2_y2());
-	this->line_to_abs(rect.x1_y2());
-	this->close_path();
+		this->move_to_abs(rect.p);
+		this->line_to_abs(rect.x2_y1());
+		this->line_to_abs(rect.x2_y2());
+		this->line_to_abs(rect.x1_y2());
+		this->close_path();
 #endif
+	}else{
+		this->move_to_abs(rect.p + r4::vector2<real>{corner_radius.x(), 0});
+		this->line_to_abs(rect.p + r4::vector2<real>{rect.d.x() - corner_radius.x(), 0});
+
+		this->arc_abs(
+				rect.p + r4::vector2<real>{rect.d.x() - corner_radius.x(), corner_radius.y()},
+				corner_radius,
+				-utki::pi<real>() / 2,
+				utki::pi<real>() / 2
+			);
+
+		this->line_to_abs(rect.p + rect.d - r4::vector2<real>{0, corner_radius.y()});
+
+		this->arc_abs(
+				rect.p + rect.d - corner_radius,
+				corner_radius,
+				0,
+				utki::pi<real>() / 2
+			);
+
+		this->line_to_abs(rect.p + r4::vector2<real>{corner_radius.x(), rect.d.y()});
+
+		this->arc_abs(
+				rect.p + r4::vector2<real>{corner_radius.x(), rect.d.y() - corner_radius.y()},
+				corner_radius,
+				utki::pi<real>() / 2,
+				utki::pi<real>() / 2
+			);
+
+		this->line_to_abs(rect.p + r4::vector2<real>{0, corner_radius.y()});
+
+		this->arc_abs(
+				rect.p + corner_radius,
+				corner_radius,
+				utki::pi<real>(),
+				utki::pi<real>() / 2
+			);
+
+		this->close_path();
+	}
 }
 
 void canvas::set_line_width(real width){

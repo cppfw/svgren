@@ -315,7 +315,7 @@ public:
 	void set_line_cap(svgdom::stroke_line_cap lc);
 	void set_line_join(svgdom::stroke_line_join lj);
 
-	void rectangle(const r4::rectangle<real>& rect);
+	void rectangle(const r4::rectangle<real>& rect, const r4::vector2<real>& corner_radius = {0});
 
 	r4::matrix2<real> get_matrix()const;
 	void set_matrix(const r4::matrix2<real>& m);
