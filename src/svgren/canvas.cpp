@@ -890,11 +890,11 @@ void canvas::stroke(){
 }
 
 void canvas::rectangle(const r4::rectangle<real>& rect, const r4::vector2<real>& corner_radius){
-	if(corner_radius.is_zero() || corner_radius.is_negative()){
+	if(corner_radius.is_zero()){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 		cairo_rectangle(this->cr, backend_real(rect.p.x()), backend_real(rect.p.y()), backend_real(rect.d.x()), backend_real(rect.d.y()));
 		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+#else
 		this->move_to_abs(rect.p);
 		this->line_to_abs(rect.x2_y1());
 		this->line_to_abs(rect.x2_y2());
