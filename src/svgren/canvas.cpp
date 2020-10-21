@@ -760,7 +760,7 @@ void canvas::arc_abs(const r4::vector2<real>& end_point, const r4::vector2<real>
 			end_point.x(),
 			end_point.y()
 		);
-
+	
 	this->path.join_path(shape);
 	this->agg_invalidate_polyline();
 #endif
@@ -846,6 +846,7 @@ void canvas::stroke(){
 	this->agg_path_to_polyline();
 	
 	agg::conv_stroke<decltype(this->polyline_path)> stroke_path(this->polyline_path);
+
 	stroke_path.width(this->context.line_width);
 	stroke_path.line_join(this->context.line_join);
 	stroke_path.line_cap(this->context.line_cap);
