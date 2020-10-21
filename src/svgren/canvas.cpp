@@ -536,7 +536,6 @@ void canvas::line_to_abs(const r4::vector2<real>& p){
 	cairo_line_to(this->cr, backend_real(p.x()), backend_real(p.y()));
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	this->agg_snap_path_endpoint(p.x(), p.y());
 	this->path.line_to(p.x(), p.y());
 	this->agg_invalidate_polyline();
 #endif
@@ -784,12 +783,6 @@ void canvas::arc_abs(const r4::vector2<real>& end_point, const r4::vector2<real>
 			end_point.x(),
 			end_point.y()
 		);
-
-	// WORKAROUND: see comment to agg_snap_path_endpoint() function
-	shape.rewind(0);
-	backend_real x = 0, y = 0;
-	shape.vertex(&x, &y);
-	this->agg_snap_path_endpoint(x, y);
 
 	this->path.join_path(shape);
 	this->agg_invalidate_polyline();
