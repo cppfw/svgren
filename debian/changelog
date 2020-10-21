@@ -1,3 +1,9 @@
+libsvgren (0.5.0) UNRELEASED; urgency=medium
+
+  * switch to AGG as rendering backend
+
+ -- Ivan Gagis <igagis@gmail.com>  Thu, 15 Oct 2020 23:13:05 +0300
+
 libsvgren (0.4.77) unstable; urgency=medium
 
   * link against latest libs

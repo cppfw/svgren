@@ -9,8 +9,8 @@
 
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-#	include <agg2/agg_conv_curve.h>
-#	include <agg2/agg_bounding_rect.h>
+#	include <agg/agg_conv_curve.h>
+#	include <agg/agg_bounding_rect.h>
 
 typedef agg::curve3_div agg_curve3_type;
 typedef agg::curve4_div agg_curve4_type;
@@ -108,6 +108,20 @@ agg::rgba to_agg_rgba(const r4::vector4<real>& rgba){
 		);
 }
 }
+
+void canvas::agg_path_to_polyline()const{
+	if(this->polyline_path.total_vertices() != 0){
+		return;
+	}
+
+	agg::conv_curve<decltype(this->path), agg_curve3_type, agg_curve4_type> curve(
+			const_cast<decltype(this->path)&>(this->path)
+		);
+	curve.approximation_scale(this->approximation_scale);
+
+	this->polyline_path.concat_path(curve);
+}
+
 #endif
 
 void canvas::transform(const r4::matrix2<real>& matrix){
@@ -123,7 +137,7 @@ void canvas::transform(const r4::matrix2<real>& matrix){
 	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo status = " << cairo_status_to_string(cairo_status(this->cr)))
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	ASSERT(!this->group_stack.empty())
-	this->matrix.premultiply(to_agg_matrix(matrix));
+	this->context.matrix.premultiply(to_agg_matrix(matrix));
 #endif
 }
 
@@ -133,7 +147,7 @@ void canvas::translate(real x, real y){
 	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo status = " << cairo_status_to_string(cairo_status(this->cr)))
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	ASSERT(!this->group_stack.empty())
-	this->matrix.premultiply(agg::trans_affine_translation(x, y));
+	this->context.matrix.premultiply(agg::trans_affine_translation(x, y));
 #endif
 }
 
@@ -143,7 +157,7 @@ void canvas::rotate(real radians){
 	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo status = " << cairo_status_to_string(cairo_status(this->cr)))
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	ASSERT(!this->group_stack.empty())
-	this->matrix.premultiply(agg::trans_affine_rotation(radians));
+	this->context.matrix.premultiply(agg::trans_affine_rotation(radians));
 #endif
 }
 
@@ -157,7 +171,7 @@ void canvas::scale(real x, real y){
 	}
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	ASSERT(!this->group_stack.empty())
-	this->matrix.premultiply(agg::trans_affine_scaling(x, y));
+	this->context.matrix.premultiply(agg::trans_affine_scaling(x, y));
 #endif
 }
 
@@ -367,9 +381,7 @@ void canvas::gradient::set_stops(utki::span<const stop> stops){
 	this->lut.build_lut();
 
 	// premultiply alpha since we use premultiplied pixel format
-	for(unsigned i = 0; i != this->lut.color_lut_size; ++i){
-		this->lut[i].premultiply();
-	}
+	this->lut.premultiply();
 #endif
 }
 
@@ -396,8 +408,8 @@ r4::vector2<real> canvas::matrix_mul(const r4::vector2<real>& v)const{
 	return r4::vector2<real>(real(x), real(y));
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	ASSERT(!this->group_stack.empty())
-	auto vec = v.to<decltype(this->matrix.sx)>();
-	this->matrix.transform(&vec.x(), &vec.y());
+	auto vec = v.to<decltype(this->context.matrix.sx)>();
+	this->context.matrix.transform(&vec.x(), &vec.y());
 	return vec.to<real>();
 #endif
 }
@@ -411,8 +423,8 @@ r4::vector2<real> canvas::matrix_mul_distance(const r4::vector2<real>& v)const{
 	return r4::vector2<real>(real(x), real(y));
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	ASSERT(!this->group_stack.empty())
-	auto vec = v.to<decltype(this->matrix.sx)>();
-	this->matrix.transform_2x2(&vec.x(), &vec.y());
+	auto vec = v.to<decltype(this->context.matrix.sx)>();
+	this->context.matrix.transform_2x2(&vec.x(), &vec.y());
 	return vec.to<real>();
 #endif
 }
@@ -438,9 +450,10 @@ r4::rectangle<real> canvas::get_shape_bounding_box()const{
 			{real(x2 - x1), real(y2 - y1)}
 		};
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	this->agg_path_to_polyline();
 	real x1, x2, y1, y2;
 	agg::bounding_rect_single(
-			const_cast<std::remove_const<std::remove_pointer<decltype(this)>::type>::type*>(this)->path,
+			this->polyline_path,
 			0,
 			&x1,
 			&y1,
@@ -485,6 +498,7 @@ void canvas::move_to_abs(const r4::vector2<real>& p){
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->path.move_to(p.x(), p.y());
 	this->subpath_start_point = p;
+	this->agg_invalidate_polyline();
 #endif
 }
 
@@ -507,6 +521,7 @@ void canvas::line_to_abs(const r4::vector2<real>& p){
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->path.line_to(p.x(), p.y());
+	this->agg_invalidate_polyline();
 #endif
 }
 
@@ -520,6 +535,7 @@ void canvas::line_to_rel(const r4::vector2<real>& p){
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->path.line_rel(p.x(), p.y());
+	this->agg_invalidate_polyline();
 #endif
 }
 
@@ -549,17 +565,8 @@ void canvas::quadratic_curve_to_abs(const r4::vector2<real>& cp1, const r4::vect
 		);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	agg_curve3_type curve;
-	curve.approximation_scale(this->approximation_scale);
-	curve.angle_tolerance(agg::deg2rad(22));
-	curve.cusp_limit(agg::deg2rad(0));
-	curve.init(
-			this->path.last_x(), this->path.last_y(),
-			cp1.x(), cp1.y(),
-			ep.x(), ep.y()
-		);
-
-	this->path.join_path(curve);
+	this->path.curve3(cp1.x(), cp1.y(), ep.x(), ep.y());
+	this->agg_invalidate_polyline();
 #endif
 }
 
@@ -598,18 +605,8 @@ void canvas::cubic_curve_to_abs(const r4::vector2<real>& cp1, const r4::vector2<
 		);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	agg_curve4_type curve;
-	curve.approximation_scale(this->approximation_scale);
-	curve.angle_tolerance(agg::deg2rad(22));
-	curve.cusp_limit(agg::deg2rad(0));
-	curve.init(
-			this->path.last_x(), this->path.last_y(),
-			cp1.x(), cp1.y(),
-			cp2.x(), cp2.y(),
-			ep.x(), ep.y()
-		);
-
-	this->path.join_path(curve);
+	this->path.curve4(cp1.x(), cp1.y(), cp2.x(), cp2.y(), ep.x(), ep.y());
+	this->agg_invalidate_polyline();
 #endif
 }
 
@@ -642,6 +639,7 @@ void canvas::close_path(){
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->path.close_polygon();
 	this->move_to_abs(this->subpath_start_point);
+	this->agg_invalidate_polyline();
 #endif
 }
 
@@ -652,6 +650,7 @@ void canvas::clear_path(){
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->path.remove_all();
 	this->subpath_start_point.set(0);
+	this->agg_invalidate_polyline();
 #endif
 }
 
@@ -670,16 +669,9 @@ void canvas::arc_abs(const r4::vector2<real>& center, const r4::vector2<real>& r
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	agg::bezier_arc shape(center.x(), center.y(), radius.x(), radius.y(), start_angle, sweep_angle);
-	agg::conv_curve<decltype(shape), agg_curve3_type, agg_curve4_type> curve(shape);
 
-	// WORKAROUND: set last path point to coincide with first curve point to avoid drawing artifacts
-	// curve.rewind(0);
-	// double x, y;
-	// curve.vertex(&x, &y);
-	// this->path.modify_vertex(this->path.total_vertices() - 1, x, y);
-
-	curve.approximation_scale(this->approximation_scale);
-	this->path.join_path(curve);
+	this->path.join_path(shape);
+	this->agg_invalidate_polyline();
 #endif
 }
 
@@ -768,9 +760,9 @@ void canvas::arc_abs(const r4::vector2<real>& end_point, const r4::vector2<real>
 			end_point.x(),
 			end_point.y()
 		);
-	agg::conv_curve<decltype(shape), agg_curve3_type, agg_curve4_type> curve(shape);
-	curve.approximation_scale(this->approximation_scale);
-	this->path.join_path(curve);
+	
+	this->path.join_path(shape);
+	this->agg_invalidate_polyline();
 #endif
 }
 
@@ -827,12 +819,15 @@ void canvas::fill(){
 	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	ASSERT(!this->group_stack.empty())
+
+	this->agg_path_to_polyline();
+
 	agg::conv_transform<
-			decltype(this->path),
-			decltype(this->matrix)
+			decltype(this->polyline_path),
+			decltype(this->context.matrix)
 		> transformed_path(
-			this->path,
-			this->matrix
+			this->polyline_path,
+			this->context.matrix
 		);
 
 	agg::rasterizer_scanline_aa<> rasterizer;
@@ -848,7 +843,10 @@ void canvas::stroke(){
 	cairo_stroke_preserve(this->cr);
 	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	agg::conv_stroke<decltype(this->path)> stroke_path(this->path);
+	this->agg_path_to_polyline();
+	
+	agg::conv_stroke<decltype(this->polyline_path)> stroke_path(this->polyline_path);
+
 	stroke_path.width(this->context.line_width);
 	stroke_path.line_join(this->context.line_join);
 	stroke_path.line_cap(this->context.line_cap);
@@ -856,10 +854,10 @@ void canvas::stroke(){
 	ASSERT(!this->group_stack.empty())
 	agg::conv_transform<
 			decltype(stroke_path),
-			decltype(this->matrix)
+			decltype(this->context.matrix)
 		> transformed_path(
 			stroke_path,
-			this->matrix
+			this->context.matrix
 		);
 
 	agg::rasterizer_scanline_aa<> rasterizer;
@@ -869,17 +867,59 @@ void canvas::stroke(){
 #endif
 }
 
-void canvas::rectangle(const r4::rectangle<real>& rect){
+void canvas::rectangle(const r4::rectangle<real>& rect, const r4::vector2<real>& corner_radius){
+	if(corner_radius.is_zero()){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	cairo_rectangle(this->cr, backend_real(rect.p.x()), backend_real(rect.p.y()), backend_real(rect.d.x()), backend_real(rect.d.y()));
-	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
-#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	this->move_to_abs(rect.p);
-	this->line_to_abs(rect.x2_y1());
-	this->line_to_abs(rect.x2_y2());
-	this->line_to_abs(rect.x1_y2());
-	this->close_path();
+		cairo_rectangle(this->cr, backend_real(rect.p.x()), backend_real(rect.p.y()), backend_real(rect.d.x()), backend_real(rect.d.y()));
+		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
+#else
+		this->move_to_abs(rect.p);
+		this->line_to_abs(rect.x2_y1());
+		this->line_to_abs(rect.x2_y2());
+		this->line_to_abs(rect.x1_y2());
+		this->close_path();
 #endif
+	}else{
+		// approximate 90 degree arc with bezier curve which matches the arc at 45 degree point
+		// and has the same tangent as an arc at 45 degree point
+		using std::sqrt;
+		const real arc_bezier_param = (4 * (sqrt(2) - 1) / 3);
+
+		this->move_to_abs(rect.p + r4::vector2<real>{corner_radius.x(), 0});
+		this->line_to_abs(rect.p + r4::vector2<real>{rect.d.x() - corner_radius.x(), 0});
+
+		this->cubic_curve_to_rel(
+				{arc_bezier_param * corner_radius.x(), 0},
+				{corner_radius.x(), corner_radius.y() * (1 - arc_bezier_param)},
+				corner_radius
+			);
+
+		this->line_to_abs(rect.p + rect.d - r4::vector2<real>{0, corner_radius.y()});
+
+		this->cubic_curve_to_rel(
+				{0, arc_bezier_param * corner_radius.y()},
+				{-corner_radius.x() * (1 - arc_bezier_param), corner_radius.y()},
+				{-corner_radius.x(), corner_radius.y()}
+			);
+
+		this->line_to_abs(rect.p + r4::vector2<real>{corner_radius.x(), rect.d.y()});
+
+		this->cubic_curve_to_rel(
+				{-arc_bezier_param * corner_radius.x(), 0},
+				{-corner_radius.x(), -(1 - arc_bezier_param) * corner_radius.y()},
+				-corner_radius
+			);
+
+		this->line_to_abs(rect.p + r4::vector2<real>{0, corner_radius.y()});
+
+		this->cubic_curve_to_rel(
+				{0, -arc_bezier_param * corner_radius.y()},
+				{(1 - arc_bezier_param) * corner_radius.x(), -corner_radius.y()},
+				{corner_radius.x(), -corner_radius.y()}
+			);
+
+		this->close_path();
+	}
 }
 
 void canvas::set_line_width(real width){
@@ -970,7 +1010,7 @@ r4::matrix2<real> canvas::get_matrix()const{
 	};
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	ASSERT(!this->group_stack.empty())
-	return to_r4_matrix(this->matrix);
+	return to_r4_matrix(this->context.matrix);
 #endif
 }
 
@@ -982,7 +1022,7 @@ void canvas::set_matrix(const r4::matrix2<real>& m){
 	cairo_set_matrix(this->cr, &cm);
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	ASSERT(!this->group_stack.empty())
-	this->matrix = to_agg_matrix(m);
+	this->context.matrix = to_agg_matrix(m);
 #endif
 }
 

@@ -23,19 +23,19 @@
 #		include <cairo/cairo.h>
 #	endif
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-#	include <agg2/agg_rendering_buffer.h>
-#	include <agg2/agg_pixfmt_rgba.h>
-#	include <agg2/agg_renderer_base.h>
-#	include <agg2/agg_renderer_scanline.h>
-#	include <agg2/agg_path_storage.h>
-#	include <agg2/agg_scanline_u.h>
-#	include <agg2/agg_rasterizer_scanline_aa.h>
-#	include <agg2/agg_curves.h>
-#	include <agg2/agg_conv_stroke.h>
-#	include <agg2/agg_gradient_lut.h>
-#	include <agg2/agg_span_gradient.h>
-#	include <agg2/agg_span_allocator.h>
-#	include <agg2/agg_span_interpolator_linear.h>
+#	include <agg/agg_rendering_buffer.h>
+#	include <agg/agg_pixfmt_rgba.h>
+#	include <agg/agg_renderer_base.h>
+#	include <agg/agg_renderer_scanline.h>
+#	include <agg/agg_path_storage.h>
+#	include <agg/agg_scanline_u.h>
+#	include <agg/agg_rasterizer_scanline_aa.h>
+#	include <agg/agg_curves.h>
+#	include <agg/agg_conv_stroke.h>
+#	include <agg/agg_gradient_lut.h>
+#	include <agg/agg_span_gradient.h>
+#	include <agg/agg_span_allocator.h>
+#	include <agg/agg_span_interpolator_linear.h>
 #endif
 
 namespace svgren{
@@ -199,7 +199,7 @@ private:
 
 	cairo_t* cr;
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	typedef double backend_real;
+	typedef agg::path_storage::container_type::value_type backend_real;
 
 	struct group{
 		std::vector<pixel> pixels;
@@ -227,10 +227,15 @@ private:
 
 	void agg_render(agg::rasterizer_scanline_aa<>& rasterizer);
 
-	agg::path_storage path;
+	agg::path_storage path; // this path stores path commands, including bezier curve commands
 	r4::vector2<real> subpath_start_point{0};
 
-	agg::trans_affine matrix;
+	mutable agg::path_storage polyline_path; // this path stores only move_to and line_to path commands
+	void agg_path_to_polyline()const;
+	void agg_invalidate_polyline(){
+		this->polyline_path.remove_all();
+	}
+
 #endif
 
 	struct context_type{
@@ -242,6 +247,7 @@ private:
 		agg::line_cap_e line_cap = agg::line_cap_e::butt_cap;
 		agg::line_join_e line_join = agg::line_join_e::miter_join;
 		agg::trans_affine gradient_matrix;
+		agg::trans_affine matrix;
 #endif
 		std::shared_ptr<const gradient> grad; // this is needed at least to save shared pointer to gradient object to prevent its deletion
 	} context;
@@ -305,7 +311,7 @@ public:
 	void set_line_cap(svgdom::stroke_line_cap lc);
 	void set_line_join(svgdom::stroke_line_join lj);
 
-	void rectangle(const r4::rectangle<real>& rect);
+	void rectangle(const r4::rectangle<real>& rect, const r4::vector2<real>& corner_radius = {0});
 
 	r4::matrix2<real> get_matrix()const;
 	void set_matrix(const r4::matrix2<real>& m);

@@ -42,17 +42,20 @@
         {
             "label": "run",
             "type": "shell",
-            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/VOLUME_GSP.svg ../samples/testdata/agg/VOLUME_GSP.png)",
+            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/camera.svg ../samples/testdata/agg/camera.png)",
             "problemMatcher": [],
             "dependsOn": "build"
         },
         {
             "label": "run_debug",
-			"type": "shell",
-			"command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/dropshadowfilter.svg out.png)",
+            "type": "shell",
+            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/machupicchu_collection_06.svg out.png)",
+            // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/machupicchu_collection_04.svg out.png)",
+            // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/machupicchu_collection_02.svg out.png)",
+            // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/machupicchu_collection_01.svg out.png)",
+            // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/test2.svg out.png)",
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/rectangle.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/test2.svg out.png)",
-
+            // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/dropshadowfilter.svg out.png)",
             // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/six_ball.svg out.png)",
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/granddad.svg out.png)",
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build ./tests ../samples/testdata/3.072.svg out.png)",

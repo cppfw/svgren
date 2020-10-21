@@ -23,8 +23,8 @@
 	  </dependency>
 	  <dependency>
 		  <groupId>io.github.igagis</groupId>
-		  <artifactId>cairo</artifactId>
-		  <version>[1.15.4,)</version>
+		  <artifactId>agg</artifactId>
+		  <version>[2.7.1,)</version>
 		  <type>aar</type>
 		  <scope>compile</scope>
 	  </dependency>
