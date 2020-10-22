@@ -13,4 +13,11 @@
            a25,75 -30 0,1 50,-25 l 50,-25 
            a25,100 -30 0,1 50,-25 l 50,-25"
         fill="none" stroke="red" stroke-width="5"  />
+  
+  <!-- test arc with zero radius -->
+  <path d="M300,400 a0,0,0,0,1,50,100"
+        fill="none" stroke="red" stroke-width="5"  />
+
+  <path d="M777.3,141.47l-.5-1.34a.55.55,0,0,0-.27-.29l0,0,.5,1.34a.55.55,0,0,0,.27.29A.05.05,0,0,0,777.3,141.47Z"
+        fill="none" stroke="red" stroke-width="5"  />
 </svg>

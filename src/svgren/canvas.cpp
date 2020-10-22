@@ -749,19 +749,7 @@ void canvas::arc_abs(const r4::vector2<real>& end_point, const r4::vector2<real>
 	this->arc_abs(center, rx, angle1, angle2 - angle1);
 
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	agg::bezier_arc_svg shape(
-			this->path.last_x(),
-			this->path.last_y(),
-			radius.x(),
-			radius.y(),
-			x_axis_rotation,
-			large_arc,
-			sweep,
-			end_point.x(),
-			end_point.y()
-		);
-	
-	this->path.join_path(shape);
+	this->path.arc_to(radius.x(), radius.y(), x_axis_rotation, large_arc, sweep, end_point.x(), end_point.y());
 	this->agg_invalidate_polyline();
 #endif
 }
