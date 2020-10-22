@@ -1,3 +1,9 @@
+libsvgren (0.5.1) unstable; urgency=medium
+
+  * improve AGG arc drawing
+
+ -- Ivan Gagis <igagis@gmail.com>  Thu, 22 Oct 2020 17:37:20 +0300
+
 libsvgren (0.5.0) unstable; urgency=medium
 
   * switch to AGG as rendering backend
