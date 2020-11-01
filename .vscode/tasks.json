@@ -14,11 +14,35 @@
                 "kind": "build",
                 "isDefault": true
             }
+		},
+		{
+            "label": "build_cairo",
+            "type": "shell",
+            "command": "make autojobs=true config=rel_cairo",
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
         },
         {
             "label": "build_debug_agg",
             "type": "shell",
             "command": "make autojobs=true debug=true config=dbg_agg",
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+		},
+		{
+            "label": "build_debug_cairo",
+            "type": "shell",
+            "command": "make autojobs=true debug=true config=dbg_cairo",
             "problemMatcher": [
                 "$gcc"
             ],
@@ -104,6 +128,20 @@
             "problemMatcher": [],
             "dependsOn": "build_debug_agg",
             // "dependsOn": "build_debug_grey_bg"
+		},
+		{
+            "label": "run_cairo",
+            "type": "shell",
+            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/rel_cairo out/rel_cairo/tests ../samples/testdata/Pioneer_all_vector_720_wo_bg_inkscape.svg ../samples/testdata/cairo/Pioneer_all_vector_720_wo_bg_inkscape.png)",
+            "problemMatcher": [],
+            "dependsOn": "build_cairo"
+        },
+		{
+            "label": "run_debug_cairo",
+            "type": "shell",
+            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_cairo out/dbg_cairo/tests ../samples/testdata/Pioneer_all_vector_720_wo_bg_inkscape.svg out.png)",
+            "problemMatcher": [],
+            "dependsOn": "build_debug_cairo",
         },
         {
             "label": "clean_agg",
