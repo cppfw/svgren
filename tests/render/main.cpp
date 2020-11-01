@@ -71,11 +71,13 @@ void write_png(const char* filename, int width, int height, uint32_t *buffer){
    if (png_ptr != NULL) png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
 }
 
+#ifdef DEBUG
 namespace{
 uint32_t getTicks(){
 	return uint32_t(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count());
 }
 }
+#endif
 
 
 int main(int argc, char **argv){
@@ -106,16 +108,19 @@ int main(int argc, char **argv){
 			outFilename = argv[2];
 			break;
 	}
-	
+
+#ifdef DEBUG
 	auto loadStart = getTicks();
+#endif
 	
 	auto dom = svgdom::load(papki::fs_file(filename));
 	ASSERT_ALWAYS(dom)
 	
 	TRACE(<< "SVG loaded in " << float(getTicks() - loadStart) / 1000.0f << " sec." << std::endl)
 	
-	
+#ifdef DEBUG
 	auto renderStart = getTicks();
+#endif
 	
 	auto img = svgren::render(*dom);
 	

@@ -2,22 +2,11 @@ include prorab.mk
 
 this_name := tests
 
-ifeq ($(gprof), true)
-    this_cxxflags += -pg
-    this_ldflags += -pg
-endif
-
-this_cxxflags += -g
-this_cxxflags += -Wall
-this_cxxflags += -Wno-format
-this_cxxflags += -Wno-format-security
-this_cxxflags += -DDEBUG
-this_cxxflags += -fstrict-aliasing
-this_cxxflags += -std=c++14
+$(eval $(call prorab-config, ../../config))
 
 this_srcs += main.cpp
 
-this_ldlibs += -lsvgdom $(d)../../src/build/libsvgren$(dot_so) -lpapki -lpng -lstdc++
+this_ldlibs += -lsvgdom $(d)../../src/out/$(c)/libsvgren$(dot_so) -lpapki -lpng -lstdc++
 this_ldflags += -L$(d)../../src
 
 ifeq ($(os), macosx)
@@ -33,20 +22,20 @@ this_no_install := true
 $(eval $(prorab-build-app))
 
 ifeq ($(os),windows)
-    this_run_cmd := $(a)cp $(d)../../src/build/libsvgren$(dot_so) $(d) && $$^)
+    this_run_cmd := $(a)cp $(d)../../src/out/$(c)/libsvgren$(dot_so) $(d) && $$^)
 else
-    this_run_cmd := $(a)(cd $(d); LD_LIBRARY_PATH=../../src/build $$^)
+    this_run_cmd := $(a)(cd $(d); LD_LIBRARY_PATH=../../src/out/$(c) $$^)
 endif
 
 define this_rules
-run:: $(prorab_this_name)
+    run:: $(prorab_this_name)
 $(.RECIPEPREFIX)@echo running $$^...
-$(.RECIPEPREFIX)$(a)cp $(d)../../src/build/libsvgren$(dot_so) . || true
-$(.RECIPEPREFIX)$(a)LD_LIBRARY_PATH=$(d)../../src/build $(d)./tests $(svg)
+$(.RECIPEPREFIX)$(a)cp $(d)../../src/out/$(c)/libsvgren$(dot_so) . || true
+$(.RECIPEPREFIX)$(a)LD_LIBRARY_PATH=$(d)../../src/out/$(c) $(d)out/$(c)/tests $(d)../samples/testdata/tiger.svg $(d)out.png
 endef
 $(eval $(this_rules))
 
 # add dependency on libsvgren
-$(prorab_this_name): $(abspath $(d)../../src/build/libsvgren$(dot_so))
+$(prorab_this_name): $(abspath $(d)../../src/out/$(c)/libsvgren$(dot_so))
 
 $(eval $(call prorab-include, ../../src/makefile))

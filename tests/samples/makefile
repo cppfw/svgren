@@ -6,17 +6,11 @@ $(eval $(prorab-clear-this-vars))
 
 this_name := checksvg
 
-this_cxxflags += -g
-this_cxxflags += -Wall
-this_cxxflags += -Wno-format
-this_cxxflags += -Wno-format-security
-this_cxxflags += -DDEBUG
-this_cxxflags += -fstrict-aliasing
-this_cxxflags += -std=c++14
-
 this_srcs += $(call prorab-src-dir, .)
 
-this_ldlibs += -lsvgdom $(d)../../src/build/libsvgren$(dot_so) -lpapki -lclargs -lpng -lstdc++
+$(eval $(call prorab-config, ../../config))
+
+this_ldlibs += -lsvgdom $(d)../../src/out/$(c)/libsvgren$(dot_so) -lpapki -lclargs -lpng -lstdc++
 
 ifeq ($(os), macosx)
     this_cxxflags += -stdlib=libc++ # this is needed to be able to use c++11 std lib
@@ -41,10 +35,10 @@ ifeq ($(this_arch_bit_depth),64)
 define this_rules
 test:: $(prorab_this_name)
 $(.RECIPEPREFIX)@myci-running-test.sh $(this_test)
-$(.RECIPEPREFIX)$(a)cp $(d)../../src/build/*.dll . || true
+$(.RECIPEPREFIX)$(a)cp $(d)../../src/out/$(c)/*.dll . || true
 $(.RECIPEPREFIX)$(a)for f in $(this_svgs); do \
         echo "checking file $$$$f.svg" && \
-        LD_LIBRARY_PATH=$(d)../../src/build $(d)./checksvg --tolerance=10 $(d)testdata/$$$$f.svg $(d)testdata/$(svgren_backend)/$$$$f.png; \
+        LD_LIBRARY_PATH=$(d)../../src/out/$(c) $(d)out/$(c)/checksvg --tolerance=10 $(d)testdata/$$$$f.svg $(d)testdata/$(svgren_backend)/$$$$f.png; \
         if [ $$$$? -ne 0 ]; then myci-error.sh "rendered SVG did not match etalon sample"; exit 1; fi \
     done
 $(.RECIPEPREFIX)@myci-passed.sh
@@ -53,4 +47,6 @@ $(eval $(this_rules))
 endif
 
 # add dependency on libsvgren
-$(prorab_this_name): $(abspath $(d)../../src/build/libsvgren$(dot_so))
+$(prorab_this_name): $(abspath $(d)../../src/out/$(c)/libsvgren$(dot_so))
+
+# NOTE: the svgren makefile is uncluded in the beginning of this makefile

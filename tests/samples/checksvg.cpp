@@ -157,9 +157,8 @@ public:
 		memset(&*sig.begin(), 0, sig.size() * sizeof(sig[0]));
 
 		{
-	#ifdef DEBUG
 			auto ret = // TODO: we should not rely on that it will always read the requested number of bytes (or should we?)
-	#endif
+
 			fi.read(utki::make_span(sig));
 			ASSERT_ALWAYS(ret == sig.size() * sizeof(sig[0]))
 		}
