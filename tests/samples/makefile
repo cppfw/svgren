@@ -32,18 +32,18 @@ this_arch_bit_depth := $(shell getconf LONG_BIT)
 # on 32 bit systems the actual rendered result differs a bit from PNG images generated on 64 bit system,
 # so do this test only for 64 bit systems
 ifeq ($(this_arch_bit_depth),64)
-define this_rules
-test:: $(prorab_this_name)
+    define this_rules
+        test:: $(prorab_this_name)
 $(.RECIPEPREFIX)@myci-running-test.sh $(this_test)
 $(.RECIPEPREFIX)$(a)cp $(d)../../src/out/$(c)/*.dll . || true
 $(.RECIPEPREFIX)$(a)for f in $(this_svgs); do \
-        echo "checking file $$$$f.svg" && \
-        LD_LIBRARY_PATH=$(d)../../src/out/$(c) $(d)out/$(c)/checksvg --tolerance=10 $(d)testdata/$$$$f.svg $(d)testdata/$(svgren_backend)/$$$$f.png; \
-        if [ $$$$? -ne 0 ]; then myci-error.sh "rendered SVG did not match etalon sample"; exit 1; fi \
-    done
+            echo "checking file $$$$f.svg" && \
+            LD_LIBRARY_PATH=$(d)../../src/out/$(c) $(d)out/$(c)/checksvg --tolerance=10 $(d)testdata/$$$$f.svg $(d)testdata/$(this_svgren_backend)/$$$$f.png; \
+            if [ $$$$? -ne 0 ]; then myci-error.sh "rendered SVG did not match etalon sample"; exit 1; fi \
+        done
 $(.RECIPEPREFIX)@myci-passed.sh
-endef
-$(eval $(this_rules))
+    endef
+    $(eval $(this_rules))
 endif
 
 # add dependency on libsvgren

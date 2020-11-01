@@ -6,18 +6,15 @@ this_soname := $(shell cat $(d)soname.txt)
 
 this_srcs := $(call prorab-src-dir,.)
 
-svgren_backend := agg
-# svgren_backend := cairo
-
 # this_cxxflags += -D SVGREN_BACKGROUND=0xffffffff
 # this_cxxflags += -D SVGREN_BACKGROUND=0xff00ffff
 
 $(eval $(call prorab-config, ../config))
 
-ifeq ($(svgren_backend),agg)
+ifeq ($(this_svgren_backend),agg)
     this_cxxflags += -D SVGREN_BACKEND=SVGREN_BACKEND_AGG
     this_ldlibs += `pkg-config --libs agg`
-else ifeq ($(svgren_backend),cairo)
+else ifeq ($(this_svgren_backend),cairo)
     this_cxxflags += -D SVGREN_BACKEND=SVGREN_BACKEND_CAIRO
     ifeq ($(os),windows)
         this_cxxflags += `pkg-config --cflags cairo`

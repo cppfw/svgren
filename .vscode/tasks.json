@@ -4,9 +4,9 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build",
+            "label": "build_agg",
             "type": "shell",
-            "command": "make autojobs=true",
+            "command": "make autojobs=true config=rel_agg",
             "problemMatcher": [
                 "$gcc"
             ],
@@ -16,9 +16,9 @@
             }
         },
         {
-            "label": "build_debug",
+            "label": "build_debug_agg",
             "type": "shell",
-            "command": "make autojobs=true debug=true config=dbg",
+            "command": "make autojobs=true debug=true config=dbg_agg",
             "problemMatcher": [
                 "$gcc"
             ],
@@ -40,16 +40,16 @@
             }
         },
         {
-            "label": "run",
+            "label": "run_agg",
             "type": "shell",
-            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/build out/rel/tests ../samples/testdata/Pioneer_all_vector_720_wo_bg_inkscape.svg ../samples/testdata/cairo/Pioneer_all_vector_720_wo_bg_inkscape.png)",
+            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/rel_agg out/rel_agg/tests ../samples/testdata/Pioneer_all_vector_720_wo_bg_inkscape.svg ../samples/testdata/cairo/Pioneer_all_vector_720_wo_bg_inkscape.png)",
             "problemMatcher": [],
-            "dependsOn": "build"
+            "dependsOn": "build_agg"
         },
         {
-            "label": "run_debug",
+            "label": "run_debug_agg",
             "type": "shell",
-            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../samples/testdata/Pioneer_all_vector_720_wo_bg_inkscape.svg out.png)",
+            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../samples/testdata/Pioneer_all_vector_720_wo_bg_inkscape.svg out.png)",
             // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../samples/testdata/Turntable-Active-NEW5.svg out.png)",
             // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../samples/testdata/machupicchu_collection_06.svg out.png)",
             // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../samples/testdata/machupicchu_collection_04.svg out.png)",
@@ -102,38 +102,38 @@
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../samples/testdata/radial_gradient_2.svg out.png)",
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../samples/testdata/gradient-transform-rotate-compare.svg out.png)",
             "problemMatcher": [],
-            "dependsOn": "build_debug",
+            "dependsOn": "build_debug_agg",
             // "dependsOn": "build_debug_grey_bg"
         },
         {
-            "label": "clean",
+            "label": "clean_agg",
             "type": "shell",
-            "command": "make clean",
+            "command": "make clean config=rel_agg",
             "problemMatcher": []
         },
         {
-            "label": "rebuild",
+            "label": "rebuild_agg",
             "type": "shell",
             "command": "make re",
             "dependsOn": [
-                "clean",
-                "build"
+                "clean_agg",
+                "build_agg"
             ],
             "problemMatcher": []
         },
         {
-            "label": "test",
+            "label": "test_agg",
             "type": "shell",
-            "command": "make test",
+            "command": "make test config=rel_agg",
             "problemMatcher": [],
-            "dependsOn": "build"
+            "dependsOn": "build_agg"
         },
         {
-            "label": "test_debug",
+            "label": "test_debug_agg",
             "type": "shell",
-            "command": "make test debug=true config=dbg",
+            "command": "make test debug=true config=dbg_agg",
             "problemMatcher": [],
-            "dependsOn": "build_debug"
+            "dependsOn": "build_debug_agg"
         }
     ]
 }
