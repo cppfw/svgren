@@ -1,7 +1,7 @@
 = svgren
 
 |====
-| link:https://github.com/igagis/svgren/releases[image:https://badge.fury.io/gh/igagis%2Fsvgren.svg[releases]] | link:https://travis-ci.org/igagis/svgren[image:https://travis-ci.org/igagis/svgren.svg?branch=master[Travis CI status]] | link:https://ci.appveyor.com/project/igagis/svgren/branch/master[image:https://ci.appveyor.com/api/projects/status/6ilonof8aqcjryoi/branch/master?svg=true[Appveyor status]] | link:https://www.patreon.com/bePatron?u=2662824[image:https://img.shields.io/badge/become-patron-red.svg[patreon]]
+| link:https://github.com/igagis/svgren/releases[image:https://badge.fury.io/gh/igagis%2Fsvgren.svg[releases]] | link:https://travis-ci.org/igagis/svgren[image:https://travis-ci.org/igagis/svgren.svg?branch=master[Travis CI status]] | link:https://ci.appveyor.com/project/igagis/svgren/branch/master[image:https://ci.appveyor.com/api/projects/status/6ilonof8aqcjryoi/branch/master?svg=true[Appveyor status]]
 |====
 
 SVG renderer library in C++.
