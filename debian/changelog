@@ -1,3 +1,9 @@
+libsvgren (0.5.3) unstable; urgency=medium
+
+  * relink against latest agg
+
+ -- Ivan Gagis <igagis@gmail.com>  Wed, 02 Dec 2020 01:30:28 +0200
+
 libsvgren (0.5.2) unstable; urgency=medium
 
   * github actions
