@@ -1,3 +1,9 @@
+libsvgren (0.5.2) unstable; urgency=medium
+
+  * github actions
+
+ -- Ivan Gagis <igagis@gmail.com>  Tue, 01 Dec 2020 14:00:59 +0200
+
 libsvgren (0.5.1) unstable; urgency=medium
 
   * improve AGG arc drawing
