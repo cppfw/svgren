@@ -6,12 +6,12 @@ See link:Features.adoc[Features] page.
 == Istallation
 :package_name: svgren
 
-. Setup your OS-preferred package system repo following link:https://github.com/igagis/pravila/blob/master/EnableRepo.adoc[this manual]
+. Setup your OS-preferred package system repo following link:https://github.com/cppfw/pravila/blob/master/EnableRepo.adoc[this manual]
 . Install package
 +
 - **deb** (Linux): **lib{package_name}-dev**
 - **homebrew** (MacOS X): **lib{package_name}**
-- **Android**: **io.github.igagis:{package_name}**
+- **Android**: **io.github.cppfw:{package_name}**
 - **cocoapods** (iOS): **{package_name}**
 - **Msys2** (Windows): **mingw-w64-i686-{package_name}**, **mingw-w64-x86_64-{package_name}**
 - **Nuget** (Windows, Visual Studio): **lib{package_name}**

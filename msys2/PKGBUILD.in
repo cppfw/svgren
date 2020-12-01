@@ -25,7 +25,7 @@ pkgrel=1
 epoch=
 pkgdesc="SVG rendering library in C++"
 #arch=('any') #defined above
-url="http://github.com/igagis/${packageName}"
+url="http://github.com/cppfw/${packageName}"
 license=('MIT')
 groups=()
 

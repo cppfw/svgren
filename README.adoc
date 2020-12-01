@@ -10,10 +10,10 @@ SVG renderer library in C++.
 
 image:wiki/camera.png[image sample]
 
-**svgren** uses **link:https://github.com/igagis/svgdom[svgdom]** to read the SVG file and **link:http://github.com/igagis/agg[AGG]** to render graphics.
+**svgren** uses **link:https://github.com/cppfw/svgdom[svgdom]** to read the SVG file and **link:http://github.com/cppfw/agg[AGG]** to render graphics.
 
 = Installation and Tutorials
 Read link:wiki/Main.adoc[WiKi] for installation instructions and tutorials.
 
 = Questions
-In case of questions, please submit those as link:https://github.com/igagis/svgren/issues[Issue].
+In case of questions, please submit those as link:https://github.com/cppfw/svgren/issues[Issue].

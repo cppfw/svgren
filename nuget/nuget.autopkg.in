@@ -18,9 +18,9 @@ nuget{
 		title: C++ SVG rendering library;
 		authors: {Ivan Gagis};
 		owners: {Ivan Gagis};
-		licenseUrl: "https://raw.githubusercontent.com/igagis/svgren/master/LICENSE";
-		projectUrl: "https://github.com/igagis/svgren";
-		iconUrl: "https://github.com/igagis/svgren/blob/master/logo.svg";
+		licenseUrl: "https://raw.githubusercontent.com/cppfw/svgren/master/LICENSE";
+		projectUrl: "https://github.com/cppfw/svgren";
+		iconUrl: "https://github.com/cppfw/svgren/blob/master/logo.svg";
 		requireLicenseAcceptance:false;
 		summary: C++ SVG rendering library;
 

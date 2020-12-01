@@ -1,4 +1,4 @@
-source 'https://github.com/igagis/cocoapods-repo.git'
+source 'https://github.com/cppfw/cocoapods-repo.git'
 
 project 'svgren/svgren.xcodeproj'
 
