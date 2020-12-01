@@ -1,7 +1,9 @@
-= svgren
+:name: svgren
+
+= {name}
 
 |====
-| link:https://github.com/igagis/svgren/releases[image:https://badge.fury.io/gh/igagis%2Fsvgren.svg[releases]] | link:https://travis-ci.org/igagis/svgren[image:https://travis-ci.org/igagis/svgren.svg?branch=master[Travis CI status]] | link:https://ci.appveyor.com/project/igagis/svgren/branch/master[image:https://ci.appveyor.com/api/projects/status/6ilonof8aqcjryoi/branch/master?svg=true[Appveyor status]]
+| link:https://github.com/cppfw/{name}/releases[image:https://img.shields.io/github/tag/cppfw/{name}.svg[releases]] | link:https://github.com/cppfw/{name}/actions[image:https://github.com/cppfw/{name}/workflows/ci/badge.svg[ci status]]
 |====
 
 SVG renderer library in C++.
