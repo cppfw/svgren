@@ -6,7 +6,7 @@ See link:Features.adoc[Features] page.
 == Installation
 :package_name: svgren
 
-. Setup your OS-preferred package system repo following link:https://github.com/cppfw/pravila/blob/master/EnableRepo.adoc[this manual]
+. Setup your OS-preferred package system repo following link:https://github.com/cppfw/wiki/blob/master/EnableRepo.adoc[this manual]
 . Install package
 +
 - **deb** (Linux): **lib{package_name}-dev**
