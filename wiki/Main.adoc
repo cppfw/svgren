@@ -3,7 +3,7 @@
 == Supported/unsupported SVG features
 See link:Features.adoc[Features] page.
 
-== Istallation
+== Installation
 :package_name: svgren
 
 . Setup your OS-preferred package system repo following link:https://github.com/cppfw/pravila/blob/master/EnableRepo.adoc[this manual]
