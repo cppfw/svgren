@@ -200,16 +200,16 @@ void renderer::set_gradient_properties(canvas::gradient& gradient, const svgdom:
 
 			r4::vector3<real> rgb;
 			if(auto p = this->ss.get_style_property(svgdom::style_property::stop_color)){
-				rgb = p->get_rgb().to<real>();
+				rgb = svgdom::get_rgb(*p).to<real>();
 			}else{
 				rgb.set(0);
 			}
 
-			svgdom::real opacity;
+			svgdom::real opacity = 1;
 			if(auto p = this->ss.get_style_property(svgdom::style_property::stop_opacity)){
-				opacity = p->opacity;
-			}else{
-				opacity = 1;
+				if(std::holds_alternative<svgdom::real>(*p)){
+					opacity = real(*std::get_if<svgdom::real>(p));
+				}
 			}
 			this->stops.push_back(canvas::gradient::stop{
 					{rgb, opacity},
@@ -228,7 +228,9 @@ void renderer::set_gradient_properties(canvas::gradient& gradient, const svgdom:
 
 void renderer::apply_filter(){
 	if(auto filter = this->style_stack.get_style_property(svgdom::style_property::filter)){
-		this->apply_filter(filter->get_local_id_from_iri());
+		if(std::holds_alternative<std::string>(*filter)){
+			this->apply_filter(svgdom::get_local_id_from_iri(*filter));
+		}
 	}
 }
 
@@ -368,17 +370,20 @@ void renderer::update_bounding_box(){
 void renderer::render_shape(bool isCairoGroupPushed){
 	this->update_bounding_box();
 
-	if(auto p = this->style_stack.get_style_property(svgdom::style_property::fill_rule)){
-		this->canvas.set_fill_rule(p->fill_rule);
-	}else{
-		this->canvas.set_fill_rule(svgdom::fill_rule::nonzero);
+	{
+		auto p = this->style_stack.get_style_property(svgdom::style_property::fill_rule);
+		if(p && std::holds_alternative<svgdom::fill_rule>(*p)){
+			this->canvas.set_fill_rule(*std::get_if<svgdom::fill_rule>(p));
+		}else{
+			this->canvas.set_fill_rule(svgdom::fill_rule::nonzero);
+		}
 	}
 
 	svgdom::style_value blackFill;
 
 	auto fill = this->style_stack.get_style_property(svgdom::style_property::fill);
 	if (!fill) {
-		blackFill = svgdom::style_value::parse_paint("black");
+		blackFill = svgdom::parse_paint("black");
 		fill = &blackFill;
 	}
 
@@ -390,56 +395,69 @@ void renderer::render_shape(bool isCairoGroupPushed){
 	//               the 'stroke-opacity' or 'fill-opacity' by 'opacity' value.
 	auto opacity = svgdom::real(1);
 	if(!isCairoGroupPushed){
-		if(auto p = this->style_stack.get_style_property(svgdom::style_property::opacity)){
-			opacity = p->opacity;
+		auto p = this->style_stack.get_style_property(svgdom::style_property::opacity);
+		if(p && std::holds_alternative<svgdom::real>(*p)){
+			opacity = *std::get_if<svgdom::real>(p);
 		}
 	}
 
 	ASSERT(fill)
-	if(!fill->is_none()){
-		if(fill->is_url()){
-			this->set_gradient(fill->get_local_id_from_iri());
+	if(!svgdom::is_none(*fill)){
+		if(std::holds_alternative<std::string>(*fill)){
+			this->set_gradient(svgdom::get_local_id_from_iri(*fill));
 		}else{
 			svgdom::real fillOpacity = 1;
-			if(auto p = this->style_stack.get_style_property(svgdom::style_property::fill_opacity)){
-				fillOpacity = p->opacity;
+			auto p = this->style_stack.get_style_property(svgdom::style_property::fill_opacity);
+			if(p && std::holds_alternative<svgdom::real>(*p)){
+				fillOpacity = *std::get_if<svgdom::real>(p);
 			}
 
-			auto fillRgb = fill->get_rgb().to<real>();
+			auto fillRgb = svgdom::get_rgb(*fill).to<real>();
 			this->canvas.set_source(r4::vector4<real>{fillRgb, fillOpacity * opacity});
 		}
 
 		this->canvas.fill();
 	}
 
-	if(stroke && !stroke->is_none()){
-		if(auto p = this->style_stack.get_style_property(svgdom::style_property::stroke_width)){
-			this->canvas.set_line_width(this->length_to_px(p->stroke_width));
-		}else{
-			this->canvas.set_line_width(1);
+	if(stroke && !svgdom::is_none(*stroke)){
+		{
+			auto p = this->style_stack.get_style_property(svgdom::style_property::stroke_width);
+			if(p && std::holds_alternative<svgdom::length>(*p)){
+				this->canvas.set_line_width(this->length_to_px(*std::get_if<svgdom::length>(p)));
+			}else{
+				this->canvas.set_line_width(1);
+			}
 		}
 
-		if(auto p = this->style_stack.get_style_property(svgdom::style_property::stroke_linecap)){
-			this->canvas.set_line_cap(p->stroke_line_cap);
-		}else{
-			this->canvas.set_line_cap(svgdom::stroke_line_cap::butt);
+		{
+			auto p = this->style_stack.get_style_property(svgdom::style_property::stroke_linecap);
+			if(p && std::holds_alternative<svgdom::stroke_line_cap>(*p)){
+				this->canvas.set_line_cap(*std::get_if<svgdom::stroke_line_cap>(p));
+			}else{
+				this->canvas.set_line_cap(svgdom::stroke_line_cap::butt);
+			}
 		}
 
-		if(auto p = this->style_stack.get_style_property(svgdom::style_property::stroke_linejoin)){
-			this->canvas.set_line_join(p->stroke_line_join);
-		}else{
-			this->canvas.set_line_join(svgdom::stroke_line_join::miter);
+		{
+			auto p = this->style_stack.get_style_property(svgdom::style_property::stroke_linejoin);
+			if(p && std::holds_alternative<svgdom::stroke_line_join>(*p)){
+				this->canvas.set_line_join(*std::get_if<svgdom::stroke_line_join>(p));
+			}else{
+				this->canvas.set_line_join(svgdom::stroke_line_join::miter);
+			}
 		}
 
-		if(stroke->is_url()){
-			this->set_gradient(stroke->get_local_id_from_iri());
+		ASSERT(stroke)
+		if(std::holds_alternative<std::string>(*stroke)){
+			this->set_gradient(svgdom::get_local_id_from_iri(*std::get_if<std::string>(stroke)));
 		}else{
 			svgdom::real strokeOpacity = 1;
-			if(auto p = this->style_stack.get_style_property(svgdom::style_property::stroke_opacity)){
-				strokeOpacity = p->opacity;
+			auto p = this->style_stack.get_style_property(svgdom::style_property::stroke_opacity);
+			if(p && std::holds_alternative<svgdom::real>(*p)){
+				strokeOpacity = *std::get_if<svgdom::real>(p);
 			}
 
-			auto rgb = stroke->get_rgb().to<real>();
+			auto rgb = svgdom::get_rgb(*stroke).to<real>();
 			this->canvas.set_source(r4::vector4<real>{rgb, strokeOpacity * opacity});
 		}
 
@@ -672,8 +690,9 @@ void renderer::visit(const svgdom::svg_element& e){
 }
 
 bool renderer::is_invisible(){
-	if(auto p = this->style_stack.get_style_property(svgdom::style_property::visibility)){
-		if(p->visibility != svgdom::visibility::visible){
+	auto p = this->style_stack.get_style_property(svgdom::style_property::visibility);
+	if(p && std::holds_alternative<svgdom::visibility>(*p)){
+		if(*std::get_if<svgdom::visibility>(p) != svgdom::visibility::visible){
 			return true;
 		}
 	}
@@ -681,8 +700,9 @@ bool renderer::is_invisible(){
 }
 
 bool renderer::is_group_invisible(){
-	if(auto p = this->style_stack.get_style_property(svgdom::style_property::display)){
-		if(p->display == svgdom::display::none){
+	auto p = this->style_stack.get_style_property(svgdom::style_property::display);
+	if(p && std::holds_alternative<svgdom::display>(*p)){
+		if(*std::get_if<svgdom::display>(p) == svgdom::display::none){
 			return true;
 		}
 	}

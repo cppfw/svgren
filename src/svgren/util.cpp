@@ -54,15 +54,21 @@ common_element_push::common_element_push(svgren::renderer& renderer, bool is_con
 
 	auto background_prop = this->renderer.style_stack.get_style_property(svgdom::style_property::enable_background);
 	
-	if(background_prop && background_prop->enable_background.value == svgdom::enable_background::new_){
+	if(background_prop &&
+			std::holds_alternative<svgdom::enable_background_property>(*background_prop) &&
+			std::get_if<svgdom::enable_background_property>(background_prop)->value == svgdom::enable_background::new_
+		)
+	{
 		this->old_background = this->renderer.background;
 	}
 	
 	auto filter_prop = this->renderer.style_stack.get_style_property(svgdom::style_property::filter);
 	
 	if(auto mask_prop = this->renderer.style_stack.get_style_property(svgdom::style_property::mask)){
-		if(auto ei = this->renderer.finder.find_by_id(mask_prop->get_local_id_from_iri())){
-			this->mask_element = &ei->e;
+		if(std::holds_alternative<std::string>(*mask_prop)){
+			if(auto ei = this->renderer.finder.find_by_id(svgdom::get_local_id_from_iri(*mask_prop))){
+				this->mask_element = &ei->e;
+			}
 		}
 	}
 	
@@ -73,20 +79,21 @@ common_element_push::common_element_push(svgren::renderer& renderer, bool is_con
 		auto stroke_prop = this->renderer.style_stack.get_style_property(svgdom::style_property::stroke);
 		auto fill_prop = this->renderer.style_stack.get_style_property(svgdom::style_property::fill);
 
-		// OPTIMIZATION: if opacity is set on an element then push cairo group only in case it is a Container element, like 'g' or 'svg',
+		// OPTIMIZATION: if opacity is set on an element then push cairo group only in case it is a container element, like 'g' or 'svg',
 		//               or in case the fill or stroke is a non-solid color, like gradient or pattern,
 		//               or both fill and stroke are non-none.
 		//               If element is non-container and one of stroke or fill is solid color and other one is none,
 		//               then opacity will be applied later without pushing cairo group.
 		if(this->group_pushed
 				|| is_container
-				|| (stroke_prop && stroke_prop->is_url())
-				|| (fill_prop && fill_prop->is_url())
-				|| (fill_prop && stroke_prop && !fill_prop->is_none() && !stroke_prop->is_none())
+				|| (stroke_prop && std::holds_alternative<std::string>(*stroke_prop))
+				|| (fill_prop && std::holds_alternative<std::string>(*fill_prop))
+				|| (fill_prop && stroke_prop && !svgdom::is_none(*fill_prop) && !svgdom::is_none(*stroke_prop))
 			)
 		{
-			if(auto p = this->renderer.style_stack.get_style_property(svgdom::style_property::opacity)){
-				opacity = p->opacity;
+			auto p = this->renderer.style_stack.get_style_property(svgdom::style_property::opacity);
+			if(p && std::holds_alternative<svgdom::real>(*p)){
+				opacity = *std::get_if<svgdom::real>(p);
 				this->group_pushed = this->group_pushed || opacity < 1;
 			}
 		}
