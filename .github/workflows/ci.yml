@@ -17,7 +17,7 @@ jobs:
           - {os: debian, codename: buster, image_owner: , package_type: deb}
           # - {os: debian, codename: buster, image_owner: i386/, package_type: deb}
           - {os: ubuntu, codename: bionic, image_owner: , package_type: deb}
-          - {os: ubuntu, codename: eoan, image_owner: , package_type: deb}
+          - {os: ubuntu, codename: focal, image_owner: , package_type: deb}
           # - {os: raspbian, codename: buster, image_owner: igagis/, package_type: deb}
     container: ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
     name: linux - ${{ matrix.os }}:${{ matrix.codename }}
@@ -31,7 +31,11 @@ jobs:
           repo-name: cppfw
           keys: 379CE192D401AB61
       - name: install ci tools
-        run: apt install --assume-yes devscripts equivs myci
+        run: |
+          # configure timezone to avoid 'tzdata' package to require user interaction during installation
+          TZ=Europe/Helsinki ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+          
+          apt install --assume-yes devscripts equivs myci
       - name: prepare debian package
         run: myci-deb-prepare.sh
       - name: install deps
