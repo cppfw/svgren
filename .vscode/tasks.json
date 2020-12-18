@@ -66,7 +66,7 @@
         {
             "label": "run_agg",
             "type": "shell",
-            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/rel_agg out/rel_agg/tests ../samples/testdata/Pioneer_all_vector_720_wo_bg_inkscape.svg ../samples/testdata/cairo/Pioneer_all_vector_720_wo_bg_inkscape.png)",
+            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/rel_agg out/rel_agg/tests ../samples/testdata/dashoffset1.svg ../samples/testdata/agg/dashoffset1.png)",
             "problemMatcher": [],
 			"dependsOn": "build_agg",
 			"group": "build"
@@ -74,7 +74,7 @@
         {
             "label": "run_debug_agg",
             "type": "shell",
-            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../samples/testdata/Pioneer_all_vector_720_wo_bg_inkscape.svg out.png)",
+            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../samples/testdata/dashoffset1.svg out.png)",
             // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../samples/testdata/Turntable-Active-NEW5.svg out.png)",
             // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../samples/testdata/machupicchu_collection_06.svg out.png)",
             // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../samples/testdata/machupicchu_collection_04.svg out.png)",
@@ -134,7 +134,7 @@
 		{
             "label": "run_cairo",
             "type": "shell",
-            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/rel_cairo out/rel_cairo/tests ../samples/testdata/car.svg ../samples/testdata/cairo/car.png)",
+            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/rel_cairo out/rel_cairo/tests ../samples/testdata/dashoffset1.svg ../samples/testdata/cairo/dashoffset1.png)",
             "problemMatcher": [],
 			"dependsOn": "build_cairo",
 			"group": "build"
@@ -142,7 +142,7 @@
 		{
             "label": "run_debug_cairo",
             "type": "shell",
-            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_cairo out/dbg_cairo/tests ../samples/testdata/car.svg out.png)",
+            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_cairo out/dbg_cairo/tests ../samples/testdata/dashoffset1.svg out.png)",
             "problemMatcher": [],
 			"dependsOn": "build_debug_cairo",
 			"group": "build"

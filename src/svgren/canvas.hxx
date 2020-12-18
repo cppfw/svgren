@@ -248,6 +248,8 @@ private:
 		agg::line_join_e line_join = agg::line_join_e::miter_join;
 		agg::trans_affine gradient_matrix;
 		agg::trans_affine matrix;
+		real dash_offset;
+		std::vector<std::pair<real, real>> dash_array;
 #endif
 		std::shared_ptr<const gradient> grad; // this is needed at least to save shared pointer to gradient object to prevent its deletion
 	} context;

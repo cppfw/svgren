@@ -11,6 +11,7 @@
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 #	include <agg/agg_conv_curve.h>
 #	include <agg/agg_bounding_rect.h>
+#	include <agg/agg_conv_dash.h>
 
 typedef agg::curve3_div agg_curve3_type;
 typedef agg::curve4_div agg_curve4_type;
@@ -832,12 +833,40 @@ void canvas::stroke(){
 	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->agg_path_to_polyline();
-	
-	agg::conv_stroke<decltype(this->polyline_path)> stroke_path(this->polyline_path);
+
+	agg::conv_dash<decltype(this->polyline_path)> dashed_path(this->polyline_path);
+
+	if(!this->context.dash_array.empty()){
+		// TRACE(<< "dasharray.size() = " << this->context.dash_array.size() << std::endl)
+		real dash_length = 0;
+		for(auto& d : this->context.dash_array){
+			// TRACE(<< "dash = (" << d.first << ", " << d.second << ")" << std::endl)
+			dashed_path.add_dash(d.first, d.second);
+			dash_length += d.first;
+			dash_length += d.second;
+		}
+
+		// TRACE(<< "dash offset = " << this->context.dash_offset << std::endl)
+
+		// in case no dashes are added to the dashed_path and dash offset is non-zero the dash_start() function will hang,
+		// so call the dash_start() only after all the add_dash() calls are done
+		if(this->context.dash_offset >= 0){
+			dashed_path.dash_start(backend_real(this->context.dash_offset));
+		}else{
+			dashed_path.dash_start(backend_real(dash_length + this->context.dash_offset));
+		}
+	}else{
+		// no dashing
+		dashed_path.add_dash(1000000, 0);
+		dashed_path.dash_start(0);
+	}
+
+	agg::conv_stroke<decltype(dashed_path)> stroke_path(dashed_path);
 
 	stroke_path.width(this->context.line_width);
-	stroke_path.line_join(this->context.line_join);
 	stroke_path.line_cap(this->context.line_cap);
+	stroke_path.line_join(this->context.line_join);
+	stroke_path.approximation_scale(this->approximation_scale);
 
 	ASSERT(!this->group_stack.empty())
 	agg::conv_transform<
@@ -1159,28 +1188,67 @@ void canvas::pop_mask_and_group(){
 }
 
 void canvas::set_dash_pattern(utki::span<const real> dashes, real offset){
+	const backend_real epsilon_dash = 1e-6;
+
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	if(dashes.empty()){
 		cairo_set_dash(this->cr, nullptr, 0, 0); // disable dashing
 	}else if(dashes.size() == 1){ // dashes and gaps are of equal length
-		auto dash = double(dashes[0]);
-		cairo_set_dash(this->cr, &dash, 1, double(offset));
+		auto dash = backend_real(dashes[0]);
+		cairo_set_dash(this->cr, &dash, 1, backend_real(offset));
 	}else{
-		unsigned num_repeats = 1 + unsigned(dashes.size() / 2); // if number of values is odd, then repeat twice
-		std::vector<double> dasharray(dashes.size() * num_repeats);
+		unsigned num_repeats = 1 + unsigned(dashes.size() % 2); // if number of values is odd, then repeat twice
+		std::vector<backend_real> dasharray(dashes.size() * num_repeats);
 		auto dst = dasharray.begin();
 		for(unsigned r = 0; r != num_repeats; ++r){
 			for(auto src = dashes.begin(); src != dashes.end(); ++src, ++dst){
 				ASSERT(dst != dasharray.end())
-				*dst = decltype(dasharray)::value_type(*src);
+				if(*src == 0){
+					*dst = epsilon_dash;
+				}else{
+					*dst = decltype(dasharray)::value_type(*src);
+				}
 			}
 		}
 		ASSERT(dst == dasharray.end())
-		cairo_set_dash(this->cr, dasharray.data(), dasharray.size(), double(offset));
+		cairo_set_dash(this->cr, dasharray.data(), dasharray.size(), backend_real(offset));
 		if(cairo_status(this->cr) != CAIRO_STATUS_SUCCESS){
 			throw std::runtime_error("cairo_set_dash() failed. Check if there was no negative values in dashes array.");
 		}
 	}
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	this->context.dash_offset = offset;
+
+	// TRACE(<< "dashes.size() = " << dashes.size() << std::endl)
+
+	unsigned num_repeats = 1 + unsigned(dashes.size() % 2); // if number of values is odd, then repeat dashes array twice
+	// TRACE(<< "num_repeats = " << num_repeats << std::endl)
+	this->context.dash_array.resize(dashes.size() / (3 - num_repeats));
+
+	// TRACE(<< "dash_array.size() = " << this->context.dash_array.size() << std::endl)
+
+	auto src = dashes.begin();
+	for(auto dst = this->context.dash_array.begin(); dst != this->context.dash_array.end(); ++dst){
+		std::array<real, 2> pair;
+		for(unsigned i = 0; i != 2; ++i){
+			ASSERT(src != dashes.end())
+			if(*src == 0){
+				pair[i] = epsilon_dash;
+			}else{
+				pair[i] = *src;
+			}
+			++src;
+			if(src == dashes.end()){
+				if(num_repeats == 2){
+					--num_repeats;
+					src = dashes.begin();
+				}else{
+					ASSERT(i == 1)
+					ASSERT(dst == --this->context.dash_array.end())
+				}
+			}
+		}
+		*dst = std::make_pair(pair[0], pair[1]);
+	}
 #endif
 }
