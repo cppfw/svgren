@@ -1157,3 +1157,30 @@ void canvas::pop_mask_and_group(){
 	this->pop_group(1); // pop masked group
 #endif
 }
+
+void canvas::set_dash_pattern(utki::span<const real> dashes, real offset){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	if(dashes.empty()){
+		cairo_set_dash(this->cr, nullptr, 0, 0); // disable dashing
+	}else if(dashes.size() == 1){ // dashes and gaps are of equal length
+		auto dash = double(dashes[0]);
+		cairo_set_dash(this->cr, &dash, 1, double(offset));
+	}else{
+		unsigned num_repeats = 1 + unsigned(dashes.size() / 2); // if number of values is odd, then repeat twice
+		std::vector<double> dasharray(dashes.size() * num_repeats);
+		auto dst = dasharray.begin();
+		for(unsigned r = 0; r != num_repeats; ++r){
+			for(auto src = dashes.begin(); src != dashes.end(); ++src, ++dst){
+				ASSERT(dst != dasharray.end())
+				*dst = decltype(dasharray)::value_type(*src);
+			}
+		}
+		ASSERT(dst == dasharray.end())
+		cairo_set_dash(this->cr, dasharray.data(), dasharray.size(), double(offset));
+		if(cairo_status(this->cr) != CAIRO_STATUS_SUCCESS){
+			throw std::runtime_error("cairo_set_dash() failed. Check if there was no negative values in dashes array.");
+		}
+	}
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+#endif
+}

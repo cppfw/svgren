@@ -447,6 +447,32 @@ void renderer::render_shape(bool isCairoGroupPushed){
 			}
 		}
 
+		{
+			auto dasharray_prop = this->style_stack.get_style_property(svgdom::style_property::stroke_dasharray);
+			if(dasharray_prop && std::holds_alternative<std::vector<svgdom::length>>(*dasharray_prop)){
+				auto dashoffset_prop = this->style_stack.get_style_property(svgdom::style_property::stroke_dashoffset);
+				real dashoffset = 0;
+				if(dashoffset_prop && std::holds_alternative<svgdom::length>(*dashoffset_prop)){
+					dashoffset = this->length_to_px(*std::get_if<svgdom::length>(dashoffset_prop));
+				}
+
+				const auto& lenarr = *std::get_if<std::vector<svgdom::length>>(dasharray_prop);
+
+				// convert lengthes to pixels
+				std::vector<real> dasharray(lenarr.size());
+				auto dst = dasharray.begin();
+				for(auto src = lenarr.begin(); src != lenarr.end(); ++src, ++dst){
+					ASSERT(dst != dasharray.end())
+					*dst = this->length_to_px(*src);
+				}
+				ASSERT(dst == dasharray.end())
+
+				this->canvas.set_dash_pattern(utki::make_span(dasharray), dashoffset);
+			}else{
+				this->canvas.set_dash_pattern(nullptr, 0); // no dashing
+			}
+		}
+
 		ASSERT(stroke)
 		if(std::holds_alternative<std::string>(*stroke)){
 			this->set_gradient(svgdom::get_local_id_from_iri(*std::get_if<std::string>(stroke)));

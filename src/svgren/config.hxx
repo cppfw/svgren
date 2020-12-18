@@ -9,9 +9,11 @@
 #   define SVGREN_BACKEND SVGREN_BACKEND_AGG
 #endif
 
+#include <svgdom/config.hpp>
+
 namespace svgren{
 
-typedef float real;
+typedef svgdom::real real;
 
 typedef uint32_t pixel;
 

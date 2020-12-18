@@ -134,7 +134,7 @@
 		{
             "label": "run_cairo",
             "type": "shell",
-            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/rel_cairo out/rel_cairo/tests ../samples/testdata/Pioneer_all_vector_720_wo_bg_inkscape.svg ../samples/testdata/cairo/Pioneer_all_vector_720_wo_bg_inkscape.png)",
+            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/rel_cairo out/rel_cairo/tests ../samples/testdata/car.svg ../samples/testdata/cairo/car.png)",
             "problemMatcher": [],
 			"dependsOn": "build_cairo",
 			"group": "build"
@@ -142,7 +142,7 @@
 		{
             "label": "run_debug_cairo",
             "type": "shell",
-            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_cairo out/dbg_cairo/tests ../samples/testdata/Pioneer_all_vector_720_wo_bg_inkscape.svg out.png)",
+            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_cairo out/dbg_cairo/tests ../samples/testdata/car.svg out.png)",
             "problemMatcher": [],
 			"dependsOn": "build_debug_cairo",
 			"group": "build"
@@ -179,6 +179,22 @@
             "command": "make test debug=true config=dbg_agg",
             "problemMatcher": [],
 			"dependsOn": "build_debug_agg",
+			"group": "build"
+        },
+        {
+            "label": "test_cairo",
+            "type": "shell",
+            "command": "make test config=rel_cairo",
+            "problemMatcher": [],
+			"dependsOn": "build_cairo",
+			"group": "build"
+        },
+        {
+            "label": "test_debug_cairo",
+            "type": "shell",
+            "command": "make test debug=true config=dbg_cairo",
+            "problemMatcher": [],
+			"dependsOn": "build_debug_cairo",
 			"group": "build"
         }
     ]

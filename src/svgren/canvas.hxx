@@ -304,6 +304,8 @@ public:
 
 	void clear_path();
 
+	void rectangle(const r4::rectangle<real>& rect, const r4::vector2<real>& corner_radius = {0});
+
 	void fill();
 	void stroke();
 
@@ -311,7 +313,14 @@ public:
 	void set_line_cap(svgdom::stroke_line_cap lc);
 	void set_line_join(svgdom::stroke_line_join lj);
 
-	void rectangle(const r4::rectangle<real>& rect, const r4::vector2<real>& corner_radius = {0});
+	/**
+	 * @brief Set stroke dash pattern.
+	 * @param dashes - array of dash and gap length. If number of values is odd,
+	 *                 then the array conents is effectively repeated twice. Negative values are an error.
+	 *                 Empty list means no dashing, the stroke line will be solid.
+	 * @param offset - dash pattern offset. Can be negative.
+	 */
+	void set_dash_pattern(utki::span<const real> dashes, real offset);
 
 	r4::matrix2<real> get_matrix()const;
 	void set_matrix(const r4::matrix2<real>& m);
