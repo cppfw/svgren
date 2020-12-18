@@ -856,9 +856,10 @@ void canvas::stroke(){
 			dashed_path.dash_start(backend_real(dash_length + this->context.dash_offset));
 		}
 	}else{
+		const backend_real no_dash_len = 1e8;
 		// no dashing
-		dashed_path.add_dash(1000000, 0);
-		dashed_path.dash_start(0);
+		dashed_path.add_dash(no_dash_len, 0);
+		dashed_path.dash_start(no_dash_len / 10);
 	}
 
 	agg::conv_stroke<decltype(dashed_path)> stroke_path(dashed_path);
@@ -1188,7 +1189,7 @@ void canvas::pop_mask_and_group(){
 }
 
 void canvas::set_dash_pattern(utki::span<const real> dashes, real offset){
-	const backend_real epsilon_dash = 1e-6;
+	const backend_real epsilon_dash = 1e-8;
 
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	if(dashes.empty()){
