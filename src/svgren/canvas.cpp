@@ -827,42 +827,9 @@ void canvas::fill(){
 #endif
 }
 
-void canvas::stroke(){
-#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	cairo_stroke_preserve(this->cr);
-	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
-#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	this->agg_path_to_polyline();
-
-	agg::conv_dash<decltype(this->polyline_path)> dashed_path(this->polyline_path);
-
-	if(!this->context.dash_array.empty()){
-		// TRACE(<< "dasharray.size() = " << this->context.dash_array.size() << std::endl)
-		real dash_length = 0;
-		for(auto& d : this->context.dash_array){
-			// TRACE(<< "dash = (" << d.first << ", " << d.second << ")" << std::endl)
-			dashed_path.add_dash(d.first, d.second);
-			dash_length += d.first;
-			dash_length += d.second;
-		}
-
-		// TRACE(<< "dash offset = " << this->context.dash_offset << std::endl)
-
-		// in case no dashes are added to the dashed_path and dash offset is non-zero the dash_start() function will hang,
-		// so call the dash_start() only after all the add_dash() calls are done
-		if(this->context.dash_offset >= 0){
-			dashed_path.dash_start(backend_real(this->context.dash_offset));
-		}else{
-			dashed_path.dash_start(backend_real(dash_length + this->context.dash_offset));
-		}
-	}else{
-		const backend_real no_dash_len = 1e8;
-		// no dashing
-		dashed_path.add_dash(no_dash_len, 0);
-		dashed_path.dash_start(no_dash_len / 10);
-	}
-
-	agg::conv_stroke<decltype(dashed_path)> stroke_path(dashed_path);
+#if SVGREN_BACKEND == SVGREN_BACKEND_AGG
+template <class T> void canvas::agg_stroke(T& vertex_source){
+	agg::conv_stroke<T> stroke_path(vertex_source);
 
 	stroke_path.width(this->context.line_width);
 	stroke_path.line_cap(this->context.line_cap);
@@ -881,7 +848,47 @@ void canvas::stroke(){
 	agg::rasterizer_scanline_aa<> rasterizer;
 	rasterizer.add_path(transformed_path);
 
-    this->agg_render(rasterizer);
+	this->agg_render(rasterizer);
+}
+#endif
+
+void canvas::stroke(){
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	cairo_stroke_preserve(this->cr);
+	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+	this->agg_path_to_polyline();
+
+	if(!this->context.dash_array.empty()){
+		// draw dashed line
+
+		agg::conv_dash<decltype(this->polyline_path)> dashed_path(this->polyline_path);
+
+		// TRACE(<< "dasharray.size() = " << this->context.dash_array.size() << std::endl)
+		real dash_length = 0;
+		for(auto& d : this->context.dash_array){
+			// TRACE(<< "dash = (" << d.first << ", " << d.second << ")" << std::endl)
+			dashed_path.add_dash(d.first, d.second);
+			dash_length += d.first;
+			dash_length += d.second;
+		}
+
+		// TRACE(<< "dash offset = " << this->context.dash_offset << std::endl)
+
+		// in case no dashes are added to the dashed_path and dash offset is non-zero the dash_start() function will hang,
+		// so call the dash_start() only after all the add_dash() calls are done
+		if(this->context.dash_offset >= 0){
+			dashed_path.dash_start(backend_real(this->context.dash_offset));
+		}else{
+			dashed_path.dash_start(backend_real(dash_length + this->context.dash_offset));
+		}
+
+		this->agg_stroke(dashed_path);
+	}else{
+		// no dashing
+
+		this->agg_stroke(this->polyline_path);
+	}
 #endif
 }
 

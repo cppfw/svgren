@@ -309,6 +309,13 @@ public:
 	void rectangle(const r4::rectangle<real>& rect, const r4::vector2<real>& corner_radius = {0});
 
 	void fill();
+
+#if SVGREN_BACKEND == SVGREN_BACKEND_AGG
+private:
+	template <class T> void agg_stroke(T& vertex_source);
+public:
+#endif
+
 	void stroke();
 
 	void set_line_width(real width);
