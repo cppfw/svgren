@@ -1241,7 +1241,7 @@ void canvas::set_dash_pattern(utki::span<const real> dashes, real offset){
 		for(unsigned i = 0; i != 2; ++i){
 			ASSERT(src != dashes.end())
 			if(*src == 0){
-				pair[i] = epsilon_dash;
+				pair[i] = decltype(pair)::value_type(epsilon_dash);
 			}else{
 				pair[i] = *src;
 			}
