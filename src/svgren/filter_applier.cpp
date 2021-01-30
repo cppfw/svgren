@@ -6,7 +6,7 @@
 #include <utki/debug.hpp>
 #include <utki/math.hpp>
 
-#include <r4/matrix4.hpp>
+#include <r4/matrix.hpp>
 
 #include "util.hxx"
 

@@ -2,7 +2,7 @@
 
 #include <svgdom/dom.hpp>
 
-#include <r4/vector2.hpp>
+#include <r4/vector.hpp>
 
 namespace svgren{
 

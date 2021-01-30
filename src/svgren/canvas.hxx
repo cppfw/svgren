@@ -7,7 +7,7 @@
 
 #include <utki/config.hpp>
 
-#include <r4/matrix2.hpp>
+#include <r4/matrix.hpp>
 #include <r4/rectangle.hpp>
 
 #include <svgdom/elements/styleable.hpp>

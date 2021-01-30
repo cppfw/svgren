@@ -5,7 +5,7 @@
 
 #include <png.h>
 
-#include <r4/vector2.hpp>
+#include <r4/vector.hpp>
 #include <papki/fs_file.hpp>
 
 #include <clargs/parser.hpp>
