@@ -228,7 +228,7 @@ private:
 	void agg_render(agg::rasterizer_scanline_aa<>& rasterizer);
 
 	agg::path_storage path; // this path stores path commands, including bezier curve commands
-	r4::vector2<real> subpath_start_point{0};
+	r4::vector2<real> subpath_start_point = 0;
 
 	mutable agg::path_storage polyline_path; // this path stores only move_to and line_to path commands
 	void agg_path_to_polyline()const;

@@ -4,15 +4,15 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        {
-            "name": "debug render",
+		{
+            "name": "debug render_dims",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/tests/render/tests",
-            "args": ["${workspaceFolder}/tests/samples/testdata/camera.svg"],
+            "program": "${workspaceFolder}/tests/render_dims/out/dbg_agg/tests",
+            "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/tests/render",
-            "environment": [{"name": "LD_LIBRARY_PATH", "value": "../../src/build"}],
+            "cwd": "${workspaceFolder}/tests/render_dims",
+            "environment": [{"name": "LD_LIBRARY_PATH", "value": "../../src/out/dbg_agg"}],
             "externalConsole": false,
             "MIMode": "gdb",
             "setupCommands": [
@@ -22,7 +22,27 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "build_debug"
+            "preLaunchTask": "build_debug_agg"
+        },
+        {
+            "name": "debug render",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/tests/render/out/dbg_agg/tests",
+            "args": ["${workspaceFolder}/tests/samples/testdata/car.svg", "${workspaceFolder}/out.png"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/tests/render",
+            "environment": [{"name": "LD_LIBRARY_PATH", "value": "../../src/out/dbg_agg"}],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "build_debug_agg"
         },
         {
             "name": "debug checksvg",

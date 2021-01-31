@@ -31,7 +31,7 @@ void boxBlurHorizontal(
 		using std::min;
 		using std::max;
 
-		r4::vector4<unsigned> sum{0};
+		r4::vector4<unsigned> sum = 0;
 		for(unsigned i = 0; i != boxSize; ++i){
 			int pos = i - boxOffset;
 			pos = max(pos, 0);
@@ -70,7 +70,7 @@ void boxBlurVertical(
 		using std::min;
 		using std::max;
 
-		r4::vector4<unsigned> sum{0};
+		r4::vector4<unsigned> sum = 0;
 		for(unsigned i = 0; i != boxSize; ++i){
 			int pos = i - boxOffset;
 			pos = max(pos, 0);

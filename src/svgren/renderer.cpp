@@ -747,7 +747,7 @@ void renderer::visit(const svgdom::path_element& e){
 
 	this->apply_transformations(e.transformations);
 
-	r4::vector2<real> prev_quadratic_p{0};
+	r4::vector2<real> prev_quadratic_p = 0;
 
 	const svgdom::path_element::step* prevStep = nullptr;
 
