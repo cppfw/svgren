@@ -31,9 +31,9 @@ nuget{
 	}
 	dependencies {
 		packages : {
-			libagg/2.7.1;
-			libsvgdom/0.3.22;
-			libutki/1.1.25;
+			libagg/2.8.1;
+			libsvgdom/0.3.56;
+			libutki/1.1.111;
 		};
 	}
 	files {
