@@ -1,3 +1,9 @@
+libsvgren (0.5.7) unstable; urgency=medium
+
+  * update dependency versions
+
+ -- Ivan Gagis <igagis@gmail.com>  Wed, 10 Feb 2021 14:17:27 +0200
+
 libsvgren (0.5.6) unstable; urgency=medium
 
   * fix vector initialization
