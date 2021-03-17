@@ -1,3 +1,9 @@
+libsvgren (0.5.8) unstable; urgency=medium
+
+  * msvs: disable whole program optimization
+
+ -- Ivan Gagis <igagis@gmail.com>  Wed, 17 Mar 2021 16:05:17 +0200
+
 libsvgren (0.5.7) unstable; urgency=medium
 
   * update dependency versions
