@@ -15,6 +15,6 @@ Pod::Spec.new do |s|
 
   s.ios.vendored_library = "lib/ios/lib#{s.name}.a"
 
-  s.dependency 'svgdom', '>= 0.3.56'
+  s.dependency 'svgdom', '>= 0.3.59'
   s.dependency 'agg', '>= 2.8.1'
 end
