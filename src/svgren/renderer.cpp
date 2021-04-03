@@ -11,6 +11,10 @@
 
 using namespace svgren;
 
+namespace{
+const std::string fake_svg_element_tag = "fake_svg_element";
+}
+
 real renderer::length_to_px(const svgdom::length& l)const noexcept{
 	if(l.is_percent()){
 		return this->viewport.x() * (l.value / 100);
@@ -175,7 +179,7 @@ void renderer::set_gradient_properties(canvas::gradient& gradient, const svgdom:
 		}
 
 		const std::string& get_tag()const override{
-			return this->g.get_tag();
+			return static_cast<const svgdom::element&>(this->g).get_tag();
 		}
 	} effective_gradient_styleable(g);
 
@@ -235,25 +239,28 @@ void renderer::apply_filter(){
 }
 
 void renderer::apply_filter(const std::string& id){
-	auto f = this->finder.find_by_id(id);
-	if(!f){
+	auto e = this->finder_by_id.find(id);
+	if(!e){
 		return;
 	}
 
 	filter_applier visitor(*this);
 
-	ASSERT(f)
-	f->e.accept(visitor);
+	ASSERT(e)
+	e->accept(visitor);
 
 	this->blit(visitor.get_last_result());
 }
 
 void renderer::set_gradient(const std::string& id){
-	auto g = this->finder.find_by_id(id);
-	if(!g){
+	auto ss = this->style_stack_cache.find(id);
+	auto e = this->finder_by_id.find(id);
+	ASSERT((ss && e) || !ss)
+	if(!ss){
 		this->canvas.set_source(r4::vector4<real>{0});
 		return;
 	}
+	ASSERT(e)
 
 	struct common_gradient_push{
 		canvas_matrix_push matrix_push;
@@ -275,12 +282,15 @@ void renderer::set_gradient(const std::string& id){
 		~common_gradient_push()noexcept{}
 	};
 
-	struct GradientSetter : public svgdom::const_visitor{
+	struct gradient_setter : public svgdom::const_visitor{
 		renderer& r;
 
 		const svgdom::style_stack& ss;
 
-		GradientSetter(renderer& r, const svgdom::style_stack& ss) : r(r), ss(ss) {}
+		gradient_setter(renderer& r, const svgdom::style_stack& ss) :
+				r(r),
+				ss(ss)
+		{}
 
 		void visit(const svgdom::linear_gradient_element& gradient)override{
 			common_gradient_push commonPush(this->r, gradient);
@@ -331,9 +341,9 @@ void renderer::set_gradient(const std::string& id){
 		void default_visit(const svgdom::element&)override{
 			this->r.canvas.set_source(r4::vector4<real>{0});
 		}
-	} visitor(*this, g->ss);
+	} visitor(*this, *ss);
 
-	g->e.accept(visitor);
+	e->accept(visitor);
 }
 
 void renderer::update_bounding_box(){
@@ -543,7 +553,8 @@ renderer::renderer(
 		const svgdom::svg_element& root
 	) :
 		canvas(canvas),
-		finder(root),
+		finder_by_id(root),
+		style_stack_cache(root),
 		dpi(real(dpi)),
 		viewport(viewport)
 {
@@ -585,7 +596,7 @@ void renderer::visit(const svgdom::g_element& e){
 
 void renderer::visit(const svgdom::use_element& e){
 //	TRACE(<< "rendering UseElement" << std::endl)
-	auto ref = this->finder.find_by_id(e.get_local_id_from_iri());
+	auto ref = this->finder_by_id.find(e.get_local_id_from_iri());
 	if(!ref){
 		return;
 	}
@@ -627,7 +638,7 @@ void renderer::visit(const svgdom::use_element& e){
 				void accept(svgdom::visitor& visitor)override{
 					ASSERT(false)
 				}
-				void accept(svgdom::const_visitor& visitor) const override{
+				void accept(svgdom::const_visitor& visitor)const override{
 					const auto hundred_percent = svgdom::length(100, svgdom::length_unit::percent);
 
 					this->r.render_svg_element(
@@ -640,6 +651,10 @@ void renderer::visit(const svgdom::use_element& e){
 							this->ue.width.is_valid() ? this->ue.width : hundred_percent,
 							this->ue.height.is_valid() ? this->ue.height : hundred_percent
 						);
+				}
+
+				const std::string& get_tag()const override{
+					return fake_svg_element_tag;
 				}
 			};
 
@@ -673,6 +688,10 @@ void renderer::visit(const svgdom::use_element& e){
 							this->ue.height.is_valid() ? this->ue.height : this->se.height
 						);
 				}
+
+				const std::string& get_tag()const override{
+					return fake_svg_element_tag;
+				}
 			};
 
 			this->fake_g_element.children.push_back(std::make_unique<fake_svg_element>(this->r, this->ue, svg));
@@ -694,6 +713,10 @@ void renderer::visit(const svgdom::use_element& e){
 				void accept(svgdom::const_visitor& visitor) const override{
 					this->e.accept(this->r);
 				}
+
+				const std::string& get_tag()const override{
+					return fake_svg_element_tag;
+				}
 			};
 
 			this->fake_g_element.children.push_back(std::make_unique<fake_svg_element>(this->r, element));
@@ -707,7 +730,7 @@ void renderer::visit(const svgdom::use_element& e){
 
 	ASSERT(ref)
 
-	ref->e.accept(visitor);
+	ref->accept(visitor);
 }
 
 void renderer::visit(const svgdom::svg_element& e){
@@ -1136,11 +1159,11 @@ const decltype(svgdom::transformable::transformations)& renderer::gradient_get_t
 
 	auto refId = g.get_local_id_from_iri();
 	if(refId.length() != 0){
-		auto ref = this->finder.find_by_id(refId);
+		auto ref = this->finder_by_id.find(refId);
 
 		if(ref){
 			gradient_caster caster;
-			ref->e.accept(caster);
+			ref->accept(caster);
 			if(caster.gradient){
 				return this->gradient_get_transformations(*caster.gradient);
 			}
@@ -1156,11 +1179,11 @@ svgdom::coordinate_units renderer::gradient_get_units(const svgdom::gradient& g)
 
 	auto refId = g.get_local_id_from_iri();
 	if(refId.length() != 0){
-		auto ref = this->finder.find_by_id(refId);
+		auto ref = this->finder_by_id.find(refId);
 
 		if(ref){
 			gradient_caster caster;
-			ref->e.accept(caster);
+			ref->accept(caster);
 			if(caster.gradient){
 				return this->gradient_get_units(*caster.gradient);
 			}
@@ -1176,11 +1199,11 @@ svgdom::length renderer::gradient_get_x1(const svgdom::linear_gradient_element& 
 
 	auto refId = g.get_local_id_from_iri();
 	if(refId.length() != 0){
-		auto ref = this->finder.find_by_id(refId);
+		auto ref = this->finder_by_id.find(refId);
 
 		if(ref){
 			gradient_caster caster;
-			ref->e.accept(caster);
+			ref->accept(caster);
 			if(caster.linear){
 				return this->gradient_get_x1(*caster.linear);
 			}
@@ -1196,11 +1219,11 @@ svgdom::length renderer::gradient_get_y1(const svgdom::linear_gradient_element& 
 
 	auto refId = g.get_local_id_from_iri();
 	if(refId.length() != 0){
-		auto ref = this->finder.find_by_id(refId);
+		auto ref = this->finder_by_id.find(refId);
 
 		if(ref){
 			gradient_caster caster;
-			ref->e.accept(caster);
+			ref->accept(caster);
 			if(caster.linear){
 				return this->gradient_get_y1(*caster.linear);
 			}
@@ -1216,11 +1239,11 @@ svgdom::length renderer::gradient_get_x2(const svgdom::linear_gradient_element& 
 
 	auto refId = g.get_local_id_from_iri();
 	if(refId.length() != 0){
-		auto ref = this->finder.find_by_id(refId);
+		auto ref = this->finder_by_id.find(refId);
 
 		if(ref){
 			gradient_caster caster;
-			ref->e.accept(caster);
+			ref->accept(caster);
 			if(caster.linear){
 				return this->gradient_get_x2(*caster.linear);
 			}
@@ -1236,11 +1259,11 @@ svgdom::length renderer::gradient_get_y2(const svgdom::linear_gradient_element& 
 
 	auto refId = g.get_local_id_from_iri();
 	if(refId.length() != 0){
-		auto ref = this->finder.find_by_id(refId);
+		auto ref = this->finder_by_id.find(refId);
 
 		if(ref){
 			gradient_caster caster;
-			ref->e.accept(caster);
+			ref->accept(caster);
 			if(caster.linear){
 				return this->gradient_get_y2(*caster.linear);
 			}
@@ -1256,11 +1279,11 @@ svgdom::length renderer::gradient_get_cx(const svgdom::radial_gradient_element& 
 
 	auto refId = g.get_local_id_from_iri();
 	if(refId.length() != 0){
-		auto ref = this->finder.find_by_id(refId);
+		auto ref = this->finder_by_id.find(refId);
 
 		if(ref){
 			gradient_caster caster;
-			ref->e.accept(caster);
+			ref->accept(caster);
 			if(caster.radial){
 				return this->gradient_get_cx(*caster.radial);
 			}
@@ -1276,11 +1299,11 @@ svgdom::length renderer::gradient_get_cy(const svgdom::radial_gradient_element& 
 
 	auto refId = g.get_local_id_from_iri();
 	if(refId.length() != 0){
-		auto ref = this->finder.find_by_id(refId);
+		auto ref = this->finder_by_id.find(refId);
 
 		if(ref){
 			gradient_caster caster;
-			ref->e.accept(caster);
+			ref->accept(caster);
 			if(caster.radial){
 				return this->gradient_get_cy(*caster.radial);
 			}
@@ -1296,11 +1319,11 @@ svgdom::length renderer::gradient_get_r(const svgdom::radial_gradient_element& g
 
 	auto refId = g.get_local_id_from_iri();
 	if(refId.length() != 0){
-		auto ref = this->finder.find_by_id(refId);
+		auto ref = this->finder_by_id.find(refId);
 
 		if(ref){
 			gradient_caster caster;
-			ref->e.accept(caster);
+			ref->accept(caster);
 			if(caster.radial){
 				return this->gradient_get_r(*caster.radial);
 			}
@@ -1316,11 +1339,11 @@ svgdom::length renderer::gradient_get_fx(const svgdom::radial_gradient_element& 
 
 	auto refId = g.get_local_id_from_iri();
 	if(refId.length() != 0){
-		auto ref = this->finder.find_by_id(refId);
+		auto ref = this->finder_by_id.find(refId);
 
 		if(ref){
 			gradient_caster caster;
-			ref->e.accept(caster);
+			ref->accept(caster);
 			if(caster.radial){
 				return this->gradient_get_fx(*caster.radial);
 			}
@@ -1336,11 +1359,11 @@ svgdom::length renderer::gradient_get_fy(const svgdom::radial_gradient_element& 
 
 	auto refId = g.get_local_id_from_iri();
 	if(refId.length() != 0){
-		auto ref = this->finder.find_by_id(refId);
+		auto ref = this->finder_by_id.find(refId);
 
 		if(ref){
 			gradient_caster caster;
-			ref->e.accept(caster);
+			ref->accept(caster);
 			if(caster.radial){
 				return this->gradient_get_fy(*caster.radial);
 			}
@@ -1356,11 +1379,11 @@ const decltype(svgdom::container::children)& renderer::gradient_get_stops(const 
 
 	auto refId = g.get_local_id_from_iri();
 	if(refId.length() != 0){
-		auto ref = this->finder.find_by_id(refId);
+		auto ref = this->finder_by_id.find(refId);
 
 		if(ref){
 			gradient_caster caster;
-			ref->e.accept(caster);
+			ref->accept(caster);
 			if(caster.gradient){
 				return this->gradient_get_stops(*caster.gradient);
 			}
@@ -1377,11 +1400,11 @@ const decltype(svgdom::styleable::styles)& renderer::gradient_get_styles(const s
 
 	auto refId = g.get_local_id_from_iri();
 	if(refId.length() != 0){
-		auto ref = this->finder.find_by_id(refId);
+		auto ref = this->finder_by_id.find(refId);
 
 		if(ref){
 			gradient_caster caster;
-			ref->e.accept(caster);
+			ref->accept(caster);
 			if(caster.gradient){
 				return this->gradient_get_styles(*caster.gradient);
 			}
@@ -1398,11 +1421,11 @@ const decltype(svgdom::styleable::classes)& renderer::gradient_get_classes(const
 
 	auto refId = g.get_local_id_from_iri();
 	if(refId.length() != 0){
-		auto ref = this->finder.find_by_id(refId);
+		auto ref = this->finder_by_id.find(refId);
 
 		if(ref){
 			gradient_caster caster;
-			ref->e.accept(caster);
+			ref->accept(caster);
 			if(caster.gradient){
 				return this->gradient_get_classes(*caster.gradient);
 			}
@@ -1421,11 +1444,11 @@ svgdom::gradient::spread_method renderer::gradient_get_spread_method(const svgdo
 
 	auto refId = g.get_local_id_from_iri();
 	if(refId.length() != 0){
-		auto ref = this->finder.find_by_id(refId);
+		auto ref = this->finder_by_id.find(refId);
 
 		if(ref){
 			gradient_caster caster;
-			ref->e.accept(caster);
+			ref->accept(caster);
 			if(caster.gradient){
 				return this->gradient_get_spread_method(*caster.gradient);
 			}
@@ -1442,11 +1465,11 @@ decltype(svgdom::styleable::presentation_attributes) renderer::gradient_get_pres
 
 	auto refId = g.get_local_id_from_iri();
 	if(refId.length() != 0){
-		auto ref = this->finder.find_by_id(refId);
+		auto ref = this->finder_by_id.find(refId);
 
 		if(ref){
 			gradient_caster caster;
-			ref->e.accept(caster);
+			ref->accept(caster);
 			if(caster.gradient){
 				ref_attrs = this->gradient_get_presentation_attributes(*caster.gradient);
 			}

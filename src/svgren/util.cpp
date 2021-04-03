@@ -66,8 +66,8 @@ common_element_push::common_element_push(svgren::renderer& renderer, bool is_con
 	
 	if(auto mask_prop = this->renderer.style_stack.get_style_property(svgdom::style_property::mask)){
 		if(std::holds_alternative<std::string>(*mask_prop)){
-			if(auto ei = this->renderer.finder.find_by_id(svgdom::get_local_id_from_iri(*mask_prop))){
-				this->mask_element = &ei->e;
+			if(auto ei = this->renderer.finder_by_id.find(svgdom::get_local_id_from_iri(*mask_prop))){
+				this->mask_element = ei;
 			}
 		}
 	}

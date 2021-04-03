@@ -5,8 +5,9 @@
 #include <utki/config.hpp>
 
 #include <svgdom/visitor.hpp>
-#include <svgdom/finder.hpp>
-#include <svgdom/style_stack.hpp>
+#include <svgdom/util/style_stack_cache.hpp>
+#include <svgdom/util/style_stack.hpp>
+#include <svgdom/util/finder_by_id.hpp>
 #include <svgdom/elements/aspect_ratioed.hpp>
 
 #include "config.hxx"
@@ -20,7 +21,8 @@ class renderer : public svgdom::const_visitor{
 public:
 	svgren::canvas& canvas;
 	
-	svgdom::finder finder;
+	svgdom::finder_by_id finder_by_id;
+	svgdom::style_stack_cache style_stack_cache;
 	
 	const real dpi;
 	
