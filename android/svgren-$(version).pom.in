@@ -17,7 +17,7 @@
 	  <dependency>
 		  <groupId>io.github.cppfw</groupId>
 		  <artifactId>svgdom</artifactId>
-		  <version>[0.3.59,)</version>
+		  <version>[0.3.60,)</version>
 		  <type>aar</type>
 		  <scope>compile</scope>
 	  </dependency>

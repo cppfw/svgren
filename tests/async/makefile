@@ -33,7 +33,7 @@ $(.RECIPEPREFIX)@myci-passed.sh
 endef
 # TODO: enable test
 # NOTE: this test is turned off because there is some problem with it when running under qemu (raspberry pi) on CI machine
-# $(eval $(this_rules))
+$(eval $(this_rules))
 
 # add dependency on libsvgren
 $(prorab_this_name): $(abspath $(d)../../src/out/$(c)/libsvgren$(dot_so))

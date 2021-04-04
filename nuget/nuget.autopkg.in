@@ -32,7 +32,7 @@ nuget{
 	dependencies {
 		packages : {
 			libagg/2.8.1;
-			libsvgdom/0.3.59;
+			libsvgdom/0.3.60;
 			libutki/1.1.111;
 		};
 	}
