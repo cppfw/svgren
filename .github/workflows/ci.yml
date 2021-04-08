@@ -2,8 +2,8 @@ name: ci
 on: [push, pull_request]
 env:
   PACKAGE_NAME: ${{ github.event.repository.name }}
-  MYCI_BINTRAY_USERNAME: igagis
-  MYCI_BINTRAY_API_KEY: ${{ secrets.MYCI_BINTRAY_API_KEY }}
+  MYCI_JFROG_USERNAME: ivan.gagis@gmail.com
+  MYCI_JFROG_PASSWORD: ${{ secrets.MYCI_JFROG_PASSWORD }}
   MYCI_GIT_USERNAME: igagis
   MYCI_GIT_PASSWORD: ${{ secrets.MYCI_GIT_ACCESS_TOKEN }}
 jobs:
@@ -27,9 +27,10 @@ jobs:
       - name: add cppfw deb repo
         uses: myci-actions/add-deb-repo@master
         with:
-          repo: deb http://dl.bintray.com/cppfw/${{ matrix.os }} ${{ matrix.codename }} main
+          repo: deb https://cppfw.jfrog.io/artifactory/${{ matrix.os }} ${{ matrix.codename }} main
           repo-name: cppfw
-          keys: 379CE192D401AB61
+          key-server: https://cppfw.jfrog.io/artifactory/api/gpg/key/public
+          keys: 4A949240F79AD8027C6CA2F4953AE777616ADEDF
       - name: install ci tools
         run: |
           # configure timezone to avoid 'tzdata' package to require user interaction during installation (needed for ubuntu:focal)
@@ -46,14 +47,14 @@ jobs:
       - name: build
         run: dpkg-buildpackage --unsigned-source --unsigned-changes
       - name: deploy deb packages
-        run: myci-deploy-debian-bintray.sh --owner cppfw --repo ${{ matrix.os }} --distro ${{ matrix.codename }} --component main --package $PACKAGE_NAME ../lib${PACKAGE_NAME}*_${PACKAGE_VERSION}_*.deb
+        run: myci-deploy-debian-jfrog.sh --domain cppfw --repo ${{ matrix.os }} --distro ${{ matrix.codename }} --component main ../lib${PACKAGE_NAME}*_${PACKAGE_VERSION}_*.deb
         if: matrix.package_type == 'deb' && startsWith(github.ref, 'refs/tags/')
 ##### macosx #####
   macosx:
     runs-on: macos-latest
     steps:
     - name: git clone
-      uses: actions/checkout@main
+      uses: actions/checkout@v2
     - name: add cppfw tap
       run: |
         brew tap cppfw/tap
@@ -80,7 +81,7 @@ jobs:
     - name: install ci tools
       run: brew install myci
     - name: git clone
-      uses: actions/checkout@main
+      uses: actions/checkout@v2
     - name: set PACKAGE_VERSION
       uses: myci-actions/export-env-var@master
       with: {name: PACKAGE_VERSION, value: $(myci-deb-version.sh debian/changelog)}
@@ -99,7 +100,7 @@ jobs:
     - name: create package
       run: myci-create-zip-package.sh --headers-dir src --file xcode/build/lib$PACKAGE_NAME.a///lib/ios --file LICENSE $PACKAGE_NAME-$PACKAGE_VERSION.zip
     - name: deploy
-      run: myci-deploy-cocoapods.sh --repo cppfw --version $PACKAGE_VERSION --bintray-owner cppfw --bintray-repo cocoapods --package-file $PACKAGE_NAME-$PACKAGE_VERSION.zip cocoapods/$PACKAGE_NAME.podspec.in
+      run: myci-deploy-cocoapods-jfrog.sh --repo cppfw --version $PACKAGE_VERSION --domain cppfw --jfrog-repo cocoapods --package-file $PACKAGE_NAME-$PACKAGE_VERSION.zip cocoapods/$PACKAGE_NAME.podspec.in
       if: startsWith(github.ref, 'refs/tags/')
 ##### android #####
   android:
@@ -107,13 +108,14 @@ jobs:
     container: mingc/android-build-box:latest
     steps:
     - name: git clone
-      uses: actions/checkout@main
+      uses: actions/checkout@v2
     - name: add cppfw deb repo
       uses: myci-actions/add-deb-repo@master
       with:
-        repo: deb http://dl.bintray.com/cppfw/$(lsb_release --id --short | tr '[:upper:]' '[:lower:]') $(lsb_release --codename --short) main
+        repo: deb https://cppfw.jfrog.io/artifactory/$(lsb_release --id --short | tr '[:upper:]' '[:lower:]') $(lsb_release --codename --short) main
         repo-name: cppfw
-        keys: 379CE192D401AB61
+        key-server: https://cppfw.jfrog.io/artifactory/api/gpg/key/public
+        keys: 4A949240F79AD8027C6CA2F4953AE777616ADEDF
     - name: install ci tools
       run: apt install --assume-yes myci
     - name: set PACKAGE_VERSION
@@ -126,7 +128,7 @@ jobs:
         myci-apply-version.sh -v $PACKAGE_VERSION *.pom.in
         myci-apply-version.sh -v $PACKAGE_VERSION *.aar.in --filename-only
     - name: deploy
-      run: myci-deploy-maven-bintray.sh --owner cppfw --repo android --path io/github/cppfw --package $PACKAGE_NAME --version $PACKAGE_VERSION android/$PACKAGE_NAME-$PACKAGE_VERSION.aar
+      run: myci-deploy-maven-jfrog.sh --domain cppfw --repo android --path io/github/cppfw/$PACKAGE_NAME/$PACKAGE_VERSION android/$PACKAGE_NAME-$PACKAGE_VERSION.aar
       if: startsWith(github.ref, 'refs/tags/')
 ##### msys2 #####
   msys2:
@@ -151,13 +153,13 @@ jobs:
           msys2-devel
           mingw-w64-${{ matrix.arch }}-toolchain
     - name: git clone
-      uses: actions/checkout@main
+      uses: actions/checkout@v2
     - name: add cppfw pacman msys repo
       uses: myci-actions/add-pacman-repo@master
-      with: {name: cppfw_msys, url: 'https://dl.bintray.com/cppfw/msys2/msys', shell: 'msys2 {0}'}
+      with: {name: cppfw_msys, url: 'https://cppfw.jfrog.io/artifactory/msys2/msys', shell: 'msys2 {0}'}
     - name: add cppfw pacman ${{ matrix.repo }} repo
       uses: myci-actions/add-pacman-repo@master
-      with: {name: 'cppfw_${{ matrix.repo }}', url: 'https://dl.bintray.com/cppfw/msys2/${{ matrix.repo }}', shell: 'msys2 {0}'}
+      with: {name: 'cppfw_${{ matrix.repo }}', url: 'https://cppfw.jfrog.io/artifactory/msys2/${{ matrix.repo }}', shell: 'msys2 {0}'}
     - name: install ci tools
       run: pacman -Sy --noconfirm myci
     - name: prepare pacman package
@@ -171,7 +173,7 @@ jobs:
     - name: deploy
       run: |
         for f in $(find msys2 -name "mingw-w64-${{ matrix.arch }}-$PACKAGE_NAME-*-any.pkg.*"); do
-          myci-deploy-pacman-bintray.sh --owner cppfw --repo msys2 --path ${{ matrix.repo }} --database cppfw_${{ matrix.repo }} $f
+          myci-deploy-pacman-jfrog.sh --domain cppfw --repo msys2 --path ${{ matrix.repo }} --database cppfw_${{ matrix.repo }} $f
         done
       if: startsWith(github.ref, 'refs/tags/')
 ##### msvs #####
@@ -182,7 +184,7 @@ jobs:
         shell: powershell
     steps:
     - name: git clone
-      uses: actions/checkout@main
+      uses: actions/checkout@v2
     - name: install CoAPP tools
       uses: myci-actions/install-coapp-tools@master
     - name: nuget update

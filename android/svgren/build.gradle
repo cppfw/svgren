@@ -46,7 +46,7 @@ android {
 
 repositories {
     maven {
-        url 'https://dl.bintray.com/cppfw/android/'
+        url 'https://cppfw.jfrog.io/artifactory/android/'
     }
 }
 dependencies {
