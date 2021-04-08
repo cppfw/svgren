@@ -10,13 +10,7 @@ this_srcs += $(call prorab-src-dir, .)
 
 $(eval $(call prorab-config, ../../config))
 
-this_ldlibs += -lsvgdom $(d)../../src/out/$(c)/libsvgren$(dot_so) -lpapki -lclargs -lpng -lstdc++
-
-ifeq ($(os), macosx)
-    this_cxxflags += -stdlib=libc++ # this is needed to be able to use c++11 std lib
-    this_ldlibs += -lc++
-else ifeq ($(os),windows)
-endif
+this_ldlibs += -lsvgdom $(d)../../src/out/$(c)/libsvgren$(dot_so) -lpapki -lclargs -lpng -lutki
 
 this_no_install := true
 
