@@ -2,10 +2,14 @@ name: ci
 on: [push, pull_request]
 env:
   PACKAGE_NAME: ${{ github.event.repository.name }}
+  PACKAGE_VERSION: ${{ github.sha }}
   MYCI_JFROG_USERNAME: ivan.gagis@gmail.com
   MYCI_JFROG_PASSWORD: ${{ secrets.MYCI_JFROG_PASSWORD }}
   MYCI_GIT_USERNAME: igagis
   MYCI_GIT_PASSWORD: ${{ secrets.MYCI_GIT_ACCESS_TOKEN }}
+  CONAN_REMOTE: https://cppfw.jfrog.io/artifactory/api/conan/conan
+  CONAN_V2_MODE: 1
+  CONAN_REVISIONS_ENABLED: 1
 jobs:
 ##### linux #####
   linux:
@@ -201,3 +205,76 @@ jobs:
         filename: '.\nuget\*.nupkg'
         api-key: ${{ secrets.NUGET_DOT_ORG_API_KEY }}
       if: startsWith(github.ref, 'refs/tags/')
+##### conan - linux #####
+  conan-linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: debian, codename: buster, image_owner: , arch: x86_64}
+          # - {os: debian, codename: buster, image_owner: i386/, arch: x86, labels: [i386,docker]}
+          # - {os: raspbian, codename: buster, image_owner: igagis/, arch: armhf, labels: [arm,docker]}
+    runs-on: ${{ (matrix.labels == '' && 'ubuntu-latest') || matrix.labels }}
+    container: ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
+    name: conan - linux - ${{ matrix.arch }}
+    steps:
+      - name: git clone
+        uses: actions/checkout@v1
+      - name: add cppfw deb repo
+        uses: myci-actions/add-deb-repo@master
+        with:
+          repo: deb https://cppfw.jfrog.io/artifactory/${{ matrix.os }} ${{ matrix.codename }} main
+          repo-name: cppfw
+          key-server: https://cppfw.jfrog.io/artifactory/api/gpg/key/public
+          keys: 4A949240F79AD8027C6CA2F4953AE777616ADEDF
+      - name: install ci tools
+        run: |
+          apt install --assume-yes devscripts equivs myci prorab prorab-extra python3-pip cmake
+      - name: install conan
+        run: |
+          pip3 install conan
+          conan profile new --detect default
+          conan profile update settings.compiler.libcxx=libstdc++11 default
+      - name: set PACKAGE_VERSION
+        uses: myci-actions/export-env-var@master
+        with: {name: PACKAGE_VERSION, value: $(myci-deb-version.sh debian/changelog)}
+        if: startsWith(github.ref, 'refs/tags/')
+      - name: prepare conanfile
+        run: myci-apply-version.sh -v $PACKAGE_VERSION conan/conanfile.py.in
+      - name: build
+        run: |
+          conan remote add cppfw $CONAN_REMOTE
+          conan create conan
+      - name: deploy conan package
+        run: |
+          conan user --remote cppfw --password $MYCI_JFROG_PASSWORD $MYCI_JFROG_USERNAME
+          conan upload --remote cppfw --all $PACKAGE_NAME/$PACKAGE_VERSION@
+        if: startsWith(github.ref, 'refs/tags/')
+##### conan - macosx #####
+  conan-macosx:
+    name: conan - macosx
+    runs-on: macos-latest
+    steps:
+      - name: git clone
+        uses: actions/checkout@v2
+      - name: add cppfw tap
+        run: |
+          brew tap cppfw/tap
+          brew update
+      - name: install ci tools
+        run: brew install myci prorab prorab-extra conan
+      - name: set PACKAGE_VERSION
+        uses: myci-actions/export-env-var@master
+        with: {name: PACKAGE_VERSION, value: $(myci-deb-version.sh debian/changelog)}
+        if: startsWith(github.ref, 'refs/tags/')
+      - name: prepare conanfile
+        run: myci-apply-version.sh -v $PACKAGE_VERSION conan/conanfile.py.in
+      - name: build
+        run: |
+          conan remote add cppfw $CONAN_REMOTE
+          conan create conan
+      - name: deploy conan package
+        run: |
+          conan user --remote cppfw --password $MYCI_JFROG_PASSWORD $MYCI_JFROG_USERNAME
+          conan upload --remote cppfw --all $PACKAGE_NAME/$PACKAGE_VERSION@
+        if: startsWith(github.ref, 'refs/tags/')
