@@ -511,6 +511,9 @@ filter_result blend(const surface& in, const surface& in2, svgdom::fe_blend_elem
 			*/
 			r4::vector3<real> cr;
 			switch(mode){
+				default:
+					ASSERT(false)
+					[[fallthrough]];
 				case svgdom::fe_blend_element::mode::normal:
 					// cr = (1 - qa) * cb + ca
 					cr = c02 * (real(1) - c01.a()) + c01;
@@ -532,9 +535,6 @@ filter_result blend(const surface& in, const surface& in2, svgdom::fe_blend_elem
 					using std::max;
 					// cr = max((1 - qa) * cb + ca, (1 - qb) * ca + cb)
 					cr = max(c02 * (1 - c01.a()) + c01, c01 * (1 - c02.a()) + c02);
-					break;
-				default:
-					ASSERT(false)
 					break;
 			}
 			// qr = 1 - (1 - qa) * (1 - qb)
