@@ -1,4 +1,7 @@
 include prorab.mk
+include myci.mk
+
+$(eval $(call myci-try-include, $(CONANBUILDINFO_DIR)conanbuildinfo.mak))
 
 this_name := svgren
 
@@ -22,24 +25,10 @@ else ifeq ($(this_svgren_backend),cairo)
     this_ldlibs += `pkg-config --libs cairo`
 endif
 
-ifeq ($(debug),true)
-    this_cxxflags += -DDEBUG
-else
-    this_cxxflags += -O3
-endif
-
-ifeq ($(gprof),true)
-    this_cxxflags += -pg
-    this_ldflags += -pg
-endif
-
 this_ldlibs += -lsvgdom -lstdc++ -lm
 
-ifeq ($(os),linux)
-    this_cxxflags += -fPIC # since we are building shared library, we need Position-Independend Code
-else ifeq ($(os),windows)
-else ifeq ($(os),macosx)
-    this_cxxflags += -stdlib=libc++ # this is needed to be able to use c++11 std lib
-endif
+this_cxxflags += $(addprefix -I,$(CONAN_INCLUDE_DIRS))
+this_cxxflags_test += $(addprefix -I,$(CONAN_INCLUDE_DIRS))
+this_ldflags += $(addprefix -L,$(CONAN_LIB_DIRS))
 
 $(eval $(prorab-build-lib))

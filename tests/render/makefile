@@ -1,4 +1,8 @@
 include prorab.mk
+include prorab-test.mk
+include myci.mk
+
+$(eval $(call myci-try-include, $(CONANBUILDINFO_DIR)conanbuildinfo.mak))
 
 this_name := tests
 
@@ -6,8 +10,11 @@ $(eval $(call prorab-config, ../../config))
 
 this_srcs += main.cpp
 
-this_ldlibs += -lsvgdom $(d)../../src/out/$(c)/libsvgren$(dot_so) -lpapki -lpng -lutki
+this_ldlibs += -lsvgdom $(d)../../src/out/$(c)/libsvgren$(dot_so) -lpapki -lpng -lutki -lm $(addprefix -l,$(CONAN_LIBS))
 this_ldflags += -L$(d)../../src
+
+this_cxxflags += $(addprefix -I,$(CONAN_INCLUDE_DIRS))
+this_ldflags += $(addprefix -L,$(CONAN_LIB_DIRS))
 
 ifeq ($(os), macosx)
 else ifeq ($(os),windows)
