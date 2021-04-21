@@ -230,6 +230,9 @@ jobs:
       - name: install ci tools
         run: |
           apt install --assume-yes devscripts equivs myci prorab prorab-extra python3-pip cmake
+      - name: install build deps
+        run: |
+          apt install --assume-yes libx11-dev
       - name: install conan
         run: |
           pip3 install conan
