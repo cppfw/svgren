@@ -10,7 +10,7 @@ this_srcs += main.cpp
 
 $(eval $(call prorab-config, ../../config))
 
-this_ldlibs += -lsvgdom $(d)../../src/out/$(c)/libsvgren$(dot_so) -lpapki -lutki
+this_ldlibs += -lsvgdom $(d)../../src/out/$(c)/libsvgren$(dot_so) -lpapki -lutki $(addprefix -l,$(CONAN_LIBS))
 this_ldflags += -L$(d)../../src
 
 this_cxxflags += $(addprefix -I,$(CONAN_INCLUDE_DIRS))
