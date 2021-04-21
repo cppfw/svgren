@@ -38,11 +38,11 @@ class SvgrenConan(ConanFile):
 		self.copy("*.h", dst="include", src=self.name + "/src")
 		self.copy("*.hpp", dst="include", src=self.name + "/src")
 		self.copy("*" + self.name + ".lib", dst="lib", keep_path=False)
-		self.copy("*.dll", dst="bin", src=self.name +   "/src/out/rel", keep_path=False)
-		self.copy("*.so", dst="lib", src=self.name +    "/src/out/rel", keep_path=False)
-		self.copy("*.so.*", dst="lib", src=self.name +  "/src/out/rel", keep_path=False)
-		self.copy("*.dylib", dst="lib", src=self.name + "/src/out/rel", keep_path=False)
-		self.copy("*.a", dst="lib", src=self.name +     "/src/out/rel", keep_path=False)
+		self.copy("*.dll", dst="bin", src=self.name +   "/src/out/rel_agg", keep_path=False)
+		self.copy("*.so", dst="lib", src=self.name +    "/src/out/rel_agg", keep_path=False)
+		self.copy("*.so.*", dst="lib", src=self.name +  "/src/out/rel_agg", keep_path=False)
+		self.copy("*.dylib", dst="lib", src=self.name + "/src/out/rel_agg", keep_path=False)
+		self.copy("*.a", dst="lib", src=self.name +     "/src/out/rel_agg", keep_path=False)
 
 	def package_info(self):
 		self.cpp_info.libs = [self.name]
