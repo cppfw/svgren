@@ -66,7 +66,7 @@
         {
             "label": "run_agg",
             "type": "shell",
-            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/rel_agg out/rel_agg/tests ../samples/testdata/visibility.svg ../samples/testdata/agg/visibility.png)",
+            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/rel_agg out/rel_agg/tests ../samples/testdata/cover_test.svg ../samples/testdata/agg/cover_test.png)",
             "problemMatcher": [],
 			"dependsOn": "build_agg",
 			"group": "build"

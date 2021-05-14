@@ -257,7 +257,7 @@ void renderer::set_gradient(const std::string& id){
 	auto e = this->finder_by_id.find(id);
 	ASSERT((ss && e) || !ss)
 	if(!ss){
-		this->canvas.set_source(r4::vector4<real>{0});
+		this->canvas.set_source(r4::vector4<real>(0));
 		return;
 	}
 	ASSERT(e)
