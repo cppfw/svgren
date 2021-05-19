@@ -4,7 +4,6 @@
 
 == Features not planned to support
 
-- Text
 - Animation
 - Interactivity
 
