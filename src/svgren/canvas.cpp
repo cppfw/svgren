@@ -393,6 +393,7 @@ void canvas::set_source(std::shared_ptr<const gradient> g){
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	// switch from screen coordinates to gradeint local coordinates
+	ASSERT(this->get_matrix().det() != 0, [this](auto&o){o << "matrix =\n" << this->get_matrix();}) // make sure the matrix is invertible
 	auto gm = g->local_matrix * this->get_matrix().inv();
 
 	this->context.gradient_matrix = to_agg_matrix(gm);

@@ -272,7 +272,13 @@ void renderer::set_gradient(const std::string& id){
 		{
 			if(r.gradient_get_units(gradient) == svgdom::coordinate_units::object_bounding_box){
 				r.canvas.translate(r.user_space_bounding_box.p);
-				r.canvas.scale(r.user_space_bounding_box.d);
+
+				// apply scale only if bounding box dimensions are not zero to avoid non-invertible matrix
+				if(r.user_space_bounding_box.d.is_positive()){
+					r.canvas.scale(r.user_space_bounding_box.d);
+				}
+
+				ASSERT(r.canvas.get_matrix().det() != 0, [&](auto&o){o << "matrix =\n" << r.canvas.get_matrix();})
 				this->viewport_push = std::make_unique<renderer_viewport_push>(r, real(1));
 			}
 
