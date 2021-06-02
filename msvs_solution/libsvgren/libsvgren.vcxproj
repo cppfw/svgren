@@ -607,9 +607,6 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="..\..\src\svgren\canvas.cpp" />
     <ClCompile Include="..\..\src\svgren\filter_applier.cpp" />
     <ClCompile Include="..\..\src\svgren\render.cpp" />
@@ -620,28 +617,31 @@
   <ItemGroup>
     <ClInclude Include="..\..\src\svgren\render.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\zlib_static.1.2.11.7\build\native\zlib_static.targets" Condition="Exists('..\packages\zlib_static.1.2.11.7\build\native\zlib_static.targets')" />
-    <Import Project="..\packages\libagg.2.8.1\build\native\libagg.targets" Condition="Exists('..\packages\libagg.2.8.1\build\native\libagg.targets')" />
-    <Import Project="..\packages\libutki.1.1.105\build\native\libutki.targets" Condition="Exists('..\packages\libutki.1.1.105\build\native\libutki.targets')" />
-    <Import Project="..\packages\libmikroxml.0.1.32\build\native\libmikroxml.targets" Condition="Exists('..\packages\libmikroxml.0.1.32\build\native\libmikroxml.targets')" />
-    <Import Project="..\packages\libr4.1.0.41\build\native\libr4.targets" Condition="Exists('..\packages\libr4.1.0.41\build\native\libr4.targets')" />
-    <Import Project="..\packages\libpapki.1.0.88\build\native\libpapki.targets" Condition="Exists('..\packages\libpapki.1.0.88\build\native\libpapki.targets')" />
-    <Import Project="..\packages\libcssdom.0.1.13\build\native\libcssdom.targets" Condition="Exists('..\packages\libcssdom.0.1.13\build\native\libcssdom.targets')" />
-    <Import Project="..\packages\libsvgdom.0.3.52\build\native\libsvgdom.targets" Condition="Exists('..\packages\libsvgdom.0.3.52\build\native\libsvgdom.targets')" />
+    <Import Project="..\packages\libagg.2.8.6\build\native\libagg.targets" Condition="Exists('..\packages\libagg.2.8.6\build\native\libagg.targets')" />
+    <Import Project="..\packages\libutki.1.1.145\build\native\libutki.targets" Condition="Exists('..\packages\libutki.1.1.145\build\native\libutki.targets')" />
+    <Import Project="..\packages\libmikroxml.0.1.40\build\native\libmikroxml.targets" Condition="Exists('..\packages\libmikroxml.0.1.40\build\native\libmikroxml.targets')" />
+    <Import Project="..\packages\libr4.1.0.56\build\native\libr4.targets" Condition="Exists('..\packages\libr4.1.0.56\build\native\libr4.targets')" />
+    <Import Project="..\packages\zlib_static.1.2.11.9\build\native\zlib_static.targets" Condition="Exists('..\packages\zlib_static.1.2.11.9\build\native\zlib_static.targets')" />
+    <Import Project="..\packages\libpapki.1.0.99\build\native\libpapki.targets" Condition="Exists('..\packages\libpapki.1.0.99\build\native\libpapki.targets')" />
+    <Import Project="..\packages\libsvgdom.0.3.66\build\native\libsvgdom.targets" Condition="Exists('..\packages\libsvgdom.0.3.66\build\native\libsvgdom.targets')" />
+    <Import Project="..\packages\libcssom.0.1.23\build\native\libcssom.targets" Condition="Exists('..\packages\libcssom.0.1.23\build\native\libcssom.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
-      <ErrorText>Данный проект ссылается на пакеты NuGet, отсутствующие на этом компьютере. Используйте восстановление пакетов NuGet, чтобы скачать их.  Дополнительную информацию см. по адресу: http://go.microsoft.com/fwlink/?LinkID=322105. Отсутствует следующий файл: {0}.</ErrorText>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\zlib_static.1.2.11.7\build\native\zlib_static.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\zlib_static.1.2.11.7\build\native\zlib_static.targets'))" />
-    <Error Condition="!Exists('..\packages\libagg.2.8.1\build\native\libagg.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libagg.2.8.1\build\native\libagg.targets'))" />
-    <Error Condition="!Exists('..\packages\libutki.1.1.105\build\native\libutki.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libutki.1.1.105\build\native\libutki.targets'))" />
-    <Error Condition="!Exists('..\packages\libmikroxml.0.1.32\build\native\libmikroxml.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libmikroxml.0.1.32\build\native\libmikroxml.targets'))" />
-    <Error Condition="!Exists('..\packages\libr4.1.0.41\build\native\libr4.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libr4.1.0.41\build\native\libr4.targets'))" />
-    <Error Condition="!Exists('..\packages\libpapki.1.0.88\build\native\libpapki.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libpapki.1.0.88\build\native\libpapki.targets'))" />
-    <Error Condition="!Exists('..\packages\libcssdom.0.1.13\build\native\libcssdom.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libcssdom.0.1.13\build\native\libcssdom.targets'))" />
-    <Error Condition="!Exists('..\packages\libsvgdom.0.3.52\build\native\libsvgdom.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libsvgdom.0.3.52\build\native\libsvgdom.targets'))" />
+    <Error Condition="!Exists('..\packages\libagg.2.8.6\build\native\libagg.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libagg.2.8.6\build\native\libagg.targets'))" />
+    <Error Condition="!Exists('..\packages\libutki.1.1.145\build\native\libutki.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libutki.1.1.145\build\native\libutki.targets'))" />
+    <Error Condition="!Exists('..\packages\libmikroxml.0.1.40\build\native\libmikroxml.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libmikroxml.0.1.40\build\native\libmikroxml.targets'))" />
+    <Error Condition="!Exists('..\packages\libr4.1.0.56\build\native\libr4.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libr4.1.0.56\build\native\libr4.targets'))" />
+    <Error Condition="!Exists('..\packages\zlib_static.1.2.11.9\build\native\zlib_static.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\zlib_static.1.2.11.9\build\native\zlib_static.targets'))" />
+    <Error Condition="!Exists('..\packages\libpapki.1.0.99\build\native\libpapki.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libpapki.1.0.99\build\native\libpapki.targets'))" />
+    <Error Condition="!Exists('..\packages\libsvgdom.0.3.66\build\native\libsvgdom.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libsvgdom.0.3.66\build\native\libsvgdom.targets'))" />
+    <Error Condition="!Exists('..\packages\libcssom.0.1.23\build\native\libcssom.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libcssom.0.1.23\build\native\libcssom.targets'))" />
   </Target>
 </Project>
