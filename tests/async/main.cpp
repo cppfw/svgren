@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
 		threads.emplace_back(
 				[s](){
 					auto res = svgren::render(*s);
-					TRACE_ALWAYS(<< "rendered, width = " << res.dims.x() << std::endl)
+					utki::log([&](auto&o){o << "rendered, width = " << res.dims.x() << std::endl;});
 				}
 			);
 	}
@@ -35,4 +35,3 @@ int main(int argc, char** argv) {
 	
 	return 0;
 }
-
