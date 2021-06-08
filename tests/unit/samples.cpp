@@ -5,6 +5,7 @@
 
 #include <png.h>
 
+#include <utki/config.hpp>
 #include <utki/span.hpp>
 #include <r4/vector.hpp>
 #include <papki/fs_file.hpp>
@@ -314,6 +315,11 @@ tst::set set("samples", [](tst::suite& suite){
 
     suite.add<std::string>(
         "sample",
+		{
+#if M_CPU_BITS != 64
+			tst::flag::disabled
+#endif
+		},
         std::move(files),
         [](const auto& p){
             papki::fs_file in_file(data_dir + p);
