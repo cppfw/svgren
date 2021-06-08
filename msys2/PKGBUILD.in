@@ -31,7 +31,7 @@ groups=()
 
 depends=("${pkgPrefix}utki" "${pkgPrefix}svgdom" "${pkgPrefix}agg")
 
-makedepends=('myci' 'prorab' 'prorab-extra' 'doxygen' "${pkgPrefix}r4" "${pkgPrefix}clargs" "${pkgPrefix}libpng")
+makedepends=('myci' 'prorab' 'prorab-extra' 'doxygen' "${pkgPrefix}r4" "${pkgPrefix}clargs" "${pkgPrefix}libpng" "${pkgPrefix}libtst")
 checkdepends=('myci')
 optdepends=()
 provides=()
