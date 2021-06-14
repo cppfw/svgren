@@ -28,7 +28,7 @@
             }
         },
         {
-            "label": "build_debug_agg",
+            "label": "build_dbg_agg",
             "type": "shell",
             "command": "make autojobs=true debug=true config=dbg_agg",
             "problemMatcher": [
@@ -40,7 +40,7 @@
             }
 		},
 		{
-            "label": "build_debug_cairo",
+            "label": "build_dbg_cairo",
             "type": "shell",
             "command": "make autojobs=true debug=true config=dbg_cairo",
             "problemMatcher": [
@@ -52,7 +52,7 @@
             }
         },
         {
-            "label": "build_debug_grey_bg",
+            "label": "build_dbg_grey_bg",
             "type": "shell",
             "command": "make autojobs=true debug=true CXXFLAGS=-DM_SVGREN_BACKGROUND=0xff808080",
             "problemMatcher": [
@@ -72,9 +72,9 @@
 			"group": "build"
         },
         {
-            "label": "run_debug_agg",
+            "label": "run_dbg_agg",
             "type": "shell",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../samples/testdata/car.svg out.png)",
+			"command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../menue-undo.svg out.png)",
 			
             // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../samples/testdata/Turntable-Active-NEW5.svg out.png)",
             // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../samples/testdata/machupicchu_collection_06.svg out.png)",
@@ -88,7 +88,7 @@
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../samples/testdata/granddad.svg out.png)",
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../samples/testdata/3.072.svg out.png)",
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../samples/testdata/0.451.svg out.png)",
-			"command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../samples/testdata/gradtest.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../samples/testdata/gradtest.svg out.png)",
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../samples/testdata/radial_gradient.svg out.png)",
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../samples/testdata/car.svg out.png)",
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../samples/testdata/VOLUME_GSP.svg out.png)",
@@ -128,8 +128,8 @@
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../samples/testdata/radial_gradient_2.svg out.png)",
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../samples/testdata/gradient-transform-rotate-compare.svg out.png)",
             "problemMatcher": [],
-            "dependsOn": "build_debug_agg",
-			// "dependsOn": "build_debug_grey_bg",
+            "dependsOn": "build_dbg_agg",
+			// "dependsOn": "build_dbg_grey_bg",
 			"group": "build"
 		},
 		{
@@ -141,11 +141,11 @@
 			"group": "build"
         },
 		{
-            "label": "run_debug_cairo",
+            "label": "run_dbg_cairo",
             "type": "shell",
             "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_cairo out/dbg_cairo/tests ../samples/testdata/lines.svg out.png)",
             "problemMatcher": [],
-			"dependsOn": "build_debug_cairo",
+			"dependsOn": "build_dbg_cairo",
 			"group": "build"
         },
         {
@@ -175,11 +175,11 @@
 			"group": "build"
         },
         {
-            "label": "test_debug_agg",
+            "label": "test_dbg_agg",
             "type": "shell",
             "command": "make test debug=true config=dbg_agg",
             "problemMatcher": [],
-			"dependsOn": "build_debug_agg",
+			"dependsOn": "build_dbg_agg",
 			"group": "build"
         },
         {
@@ -191,11 +191,11 @@
 			"group": "build"
         },
         {
-            "label": "test_debug_cairo",
+            "label": "test_dbg_cairo",
             "type": "shell",
             "command": "make test debug=true config=dbg_cairo",
             "problemMatcher": [],
-			"dependsOn": "build_debug_cairo",
+			"dependsOn": "build_dbg_cairo",
 			"group": "build"
         }
     ]
