@@ -32,7 +32,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
-	auto dom = svgdom::load(papki::fs_file("../samples/testdata/0.451.svg"));
+	auto dom = svgdom::load(papki::fs_file("../samples/testdata/menue-cut.svg"));
 	ASSERT_ALWAYS(dom)
 
 	svgren::parameters params;

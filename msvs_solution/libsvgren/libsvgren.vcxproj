@@ -623,25 +623,25 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\libagg.2.8.6\build\native\libagg.targets" Condition="Exists('..\packages\libagg.2.8.6\build\native\libagg.targets')" />
-    <Import Project="..\packages\libutki.1.1.145\build\native\libutki.targets" Condition="Exists('..\packages\libutki.1.1.145\build\native\libutki.targets')" />
     <Import Project="..\packages\libmikroxml.0.1.40\build\native\libmikroxml.targets" Condition="Exists('..\packages\libmikroxml.0.1.40\build\native\libmikroxml.targets')" />
     <Import Project="..\packages\libr4.1.0.56\build\native\libr4.targets" Condition="Exists('..\packages\libr4.1.0.56\build\native\libr4.targets')" />
     <Import Project="..\packages\zlib_static.1.2.11.9\build\native\zlib_static.targets" Condition="Exists('..\packages\zlib_static.1.2.11.9\build\native\zlib_static.targets')" />
     <Import Project="..\packages\libpapki.1.0.99\build\native\libpapki.targets" Condition="Exists('..\packages\libpapki.1.0.99\build\native\libpapki.targets')" />
-    <Import Project="..\packages\libsvgdom.0.3.66\build\native\libsvgdom.targets" Condition="Exists('..\packages\libsvgdom.0.3.66\build\native\libsvgdom.targets')" />
     <Import Project="..\packages\libcssom.0.1.23\build\native\libcssom.targets" Condition="Exists('..\packages\libcssom.0.1.23\build\native\libcssom.targets')" />
+    <Import Project="..\packages\libutki.1.1.147\build\native\libutki.targets" Condition="Exists('..\packages\libutki.1.1.147\build\native\libutki.targets')" />
+    <Import Project="..\packages\libsvgdom.0.3.68\build\native\libsvgdom.targets" Condition="Exists('..\packages\libsvgdom.0.3.68\build\native\libsvgdom.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\libagg.2.8.6\build\native\libagg.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libagg.2.8.6\build\native\libagg.targets'))" />
-    <Error Condition="!Exists('..\packages\libutki.1.1.145\build\native\libutki.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libutki.1.1.145\build\native\libutki.targets'))" />
     <Error Condition="!Exists('..\packages\libmikroxml.0.1.40\build\native\libmikroxml.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libmikroxml.0.1.40\build\native\libmikroxml.targets'))" />
     <Error Condition="!Exists('..\packages\libr4.1.0.56\build\native\libr4.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libr4.1.0.56\build\native\libr4.targets'))" />
     <Error Condition="!Exists('..\packages\zlib_static.1.2.11.9\build\native\zlib_static.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\zlib_static.1.2.11.9\build\native\zlib_static.targets'))" />
     <Error Condition="!Exists('..\packages\libpapki.1.0.99\build\native\libpapki.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libpapki.1.0.99\build\native\libpapki.targets'))" />
-    <Error Condition="!Exists('..\packages\libsvgdom.0.3.66\build\native\libsvgdom.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libsvgdom.0.3.66\build\native\libsvgdom.targets'))" />
     <Error Condition="!Exists('..\packages\libcssom.0.1.23\build\native\libcssom.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libcssom.0.1.23\build\native\libcssom.targets'))" />
+    <Error Condition="!Exists('..\packages\libutki.1.1.147\build\native\libutki.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libutki.1.1.147\build\native\libutki.targets'))" />
+    <Error Condition="!Exists('..\packages\libsvgdom.0.3.68\build\native\libsvgdom.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libsvgdom.0.3.68\build\native\libsvgdom.targets'))" />
   </Target>
 </Project>

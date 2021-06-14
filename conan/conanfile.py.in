@@ -11,7 +11,7 @@ class SvgrenConan(ConanFile):
 	settings = "os", "compiler", "build_type", "arch"
 	options = {"shared": [True, False], "fPIC": [True, False]}
 	default_options = {"shared": False, "fPIC": True}
-	requires = "utki/[>=0.0.0]", "svgdom/[>=0.0.0]", "agg/[>=0.0.0]", "libpng/[>=1.6.37]", "clargs/[>=0.0.0]"
+	requires = "utki/[>=0.0.0]", "svgdom/[>=0.0.0]", "agg/[>=0.0.0]", "libpng/[>=1.6.37]", "clargs/[>=0.0.0]", "tst/[>=0.0.0]"
 	generators = "make"
 
 	def config_options(self):

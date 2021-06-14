@@ -8,7 +8,8 @@ Build-Depends: debhelper (>= 9), pkg-config, prorab, prorab-extra, myci,
 		libsvgdom-dev (>= 0.3.61),
 		libantigrain-dev (>= 2.8.3),
 		libr4-dev,
-		libclargs-dev
+		libclargs-dev,
+		libtst-dev
 Build-Depends-Indep: doxygen
 Standards-Version: 3.9.2
 

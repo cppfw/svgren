@@ -10,6 +10,7 @@ class Libsvgren < Formula
   depends_on "libantigrain" => :build
   depends_on "libr4" => :build
   depends_on "libclargs" => :build
+  depends_on "libtst" => :build
   depends_on "libpng" => :build
   depends_on "libsvgdom"
   depends_on "libutki"

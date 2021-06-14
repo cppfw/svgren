@@ -15,10 +15,8 @@ this_srcs := $(call prorab-src-dir,.)
 $(eval $(call prorab-config, ../config))
 
 ifeq ($(this_svgren_backend),agg)
-    this_cxxflags += -D SVGREN_BACKEND=SVGREN_BACKEND_AGG
     this_ldlibs += `pkg-config --libs agg`
 else ifeq ($(this_svgren_backend),cairo)
-    this_cxxflags += -D SVGREN_BACKEND=SVGREN_BACKEND_CAIRO
     ifeq ($(os),windows)
         this_cxxflags += `pkg-config --cflags cairo`
     endif

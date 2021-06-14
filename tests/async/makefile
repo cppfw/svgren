@@ -22,7 +22,7 @@ $(eval $(prorab-build-app))
 # add dependency on libsvgren
 $(prorab_this_name): $(abspath $(d)../../src/out/$(c)/libsvgren$(dot_so))
 
-this_test_cmd := $(prorab_this_name) $(shell ls $(d)../samples/testdata/*.svg)
+this_test_cmd := $(prorab_this_name) $(shell ls $(d)../unit/samples_data/*.svg)
 this_test_deps := $(prorab_this_name)
 this_test_ld_path := ../../src/out/$(c) $(CONAN_LIB_DIRS)
 $(eval $(prorab-test))

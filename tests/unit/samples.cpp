@@ -1,16 +1,34 @@
-#include <iostream>
-#include <vector>
-#include <cstring>
-#include <stdexcept>
+#include <tst/set.hpp>
+#include <tst/check.hpp>
+
+#include <regex>
 
 #include <png.h>
 
+#include <utki/config.hpp>
+#include <utki/span.hpp>
 #include <r4/vector.hpp>
 #include <papki/fs_file.hpp>
+#include <svgdom/dom.hpp>
 
-#include <clargs/parser.hpp>
-
+#include "../../src/svgren/config.hxx"
 #include "../../src/svgren/render.hpp"
+
+namespace{
+const unsigned tolerance = 10;
+
+const std::string data_dir = "samples_data/";
+
+const std::string render_backend_name =
+#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+    "cairo"
+#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+    "agg"
+#else
+#   error "Unknown rendering backend"
+#endif
+;
+}
 
 class Image final{
 public:
@@ -277,85 +295,80 @@ public:
 	}
 };
 
-int main(int argc, char** argv){
-	clargs::parser p;
+namespace{
+tst::set set("samples", [](tst::suite& suite){
+    std::vector<std::string> files;
 
-	unsigned tolerance = 0;
-	bool help = false;
+    {
+		const std::regex suffix_regex("^.*\\.svg$");
+		auto all_files = papki::fs_file(data_dir).list_dir();
 
-	p.add('t', "tolerance", "comparison tolerance, default value is 0", [&tolerance](std::string&& s){tolerance = strtol(s.c_str(), nullptr, 0);});
-	p.add('h', "help", "show help information", [&help](){help = true;});
-
-	auto extras = p.parse(argc, argv);
-
-	if(help){
-		std::cout << "SVG to PNG comparator" << std::endl;
-		std::cout << std::endl;
-		std::cout << "Usage:" << std::endl;
-		std::cout << "  " << papki::not_dir(argv[0]) << " [<options>] <input-svg-file> <input-png-file>" << std::endl;
-		std::cout << std::endl;
-		std::cout << "Options:" << std::endl;
-		std::cout << p.description() << std::endl;
-		return 0;
+		std::copy_if(
+				all_files.begin(),
+				all_files.end(),
+				std::back_inserter(files),
+				[&suffix_regex](auto& f){
+					return std::regex_match(f, suffix_regex);
+				}
+			);
 	}
 
-	if(extras.size() != 2){
-		std::cout << "ERROR: wrong number of input files specified, expected exactly two" << std::endl;
-		return 1;
-	}
+    suite.add<std::string>(
+        "sample",
+		{
+#if M_CPU_BITS != 64
+			tst::flag::disabled
+#endif
+		},
+        std::move(files),
+        [](const auto& p){
+            papki::fs_file in_file(data_dir + p);
 
-	Image png;
-	png.loadPNG(papki::fs_file(extras[1]));
+            auto dom = svgdom::load(in_file);
 
-	ASSERT_ALWAYS(png.buf().size() != 0)
+            auto res = svgren::render(*dom);
+            auto& img = res.pixels;
 
-	auto dom = svgdom::load(papki::fs_file(extras[0]));
+            papki::fs_file png_file(data_dir + render_backend_name + "/" + papki::not_suffix(in_file.not_dir()) + ".png");
 
-	auto res = svgren::render(*dom);
-	auto& img = res.pixels;
+            Image png;
+            png.loadPNG(png_file);
 
-	if(png.colorDepth() != Image::ColorDepth_e::RGBA){
-		std::cout << "Error: PNG color depth is not RGBA: " << unsigned(png.colorDepth()) << std::endl;
-		return 1;
-	}
+            ASSERT_ALWAYS(png.buf().size() != 0)
 
-	if(res.dims != png.dims()){
-		std::cout << "Error: svg dims " << res.dims << " did not match png dims " << png.dims() << std::endl;
-		return 1;
-	}
+            tst::check(png.colorDepth() == Image::ColorDepth_e::RGBA, SL) << "Error: PNG color depth is not RGBA: " << unsigned(png.colorDepth());
+            
+            tst::check(res.dims == png.dims(), SL) << "Error: svg dims " << res.dims << " did not match png dims " << png.dims();
 
-	if(img.size() != png.buf().size() / png.numChannels()){
-		std::cout << "Error: svg pixel buffer size (" << img.size() << ") did not match png pixel buffer size(" << png.buf().size() / png.numChannels() << ")" << std::endl;
-		return 1;
-	}
+            tst::check(img.size() == png.buf().size() / png.numChannels(), SL) << "Error: svg pixel buffer size (" << img.size() << ") did not match png pixel buffer size(" << png.buf().size() / png.numChannels() << ")";
 
-	for(size_t i = 0; i != img.size(); ++i){
-		std::array<uint8_t, 4> rgba;
-		rgba[0] = img[i] & 0xff;
-		rgba[1] = (img[i] >> 8) & 0xff;
-		rgba[2] = (img[i] >> 16) & 0xff;
-		rgba[3] = (img[i] >> 24) & 0xff;
+            for(size_t i = 0; i != img.size(); ++i){
+                std::array<uint8_t, 4> rgba;
+                rgba[0] = img[i] & 0xff;
+                rgba[1] = (img[i] >> 8) & 0xff;
+                rgba[2] = (img[i] >> 16) & 0xff;
+                rgba[3] = (img[i] >> 24) & 0xff;
 
-		for(unsigned j = 0; j != rgba.size(); ++j){
-			auto c1 = rgba[j];
-			auto c2 = png.buf()[i * png.numChannels() + j];
-			if(c1 > c2){
-				std::swap(c1, c2);
-			}
+                for(unsigned j = 0; j != rgba.size(); ++j){
+                    auto c1 = rgba[j];
+                    auto c2 = png.buf()[i * png.numChannels() + j];
+                    if(c1 > c2){
+                        std::swap(c1, c2);
+                    }
 
-			if(unsigned(c2 - c1) > tolerance){
-				uint32_t pixel =
-					uint32_t(png.buf()[i * png.numChannels()]) |
-					(uint32_t(png.buf()[i * png.numChannels() + 1]) << 8) |
-					(uint32_t(png.buf()[i * png.numChannels() + 2]) << 16) |
-					(uint32_t(png.buf()[i * png.numChannels() + 3]) << 24)
-				;
+                    if(unsigned(c2 - c1) > tolerance){
+                        uint32_t pixel =
+                            uint32_t(png.buf()[i * png.numChannels()]) |
+                            (uint32_t(png.buf()[i * png.numChannels() + 1]) << 8) |
+                            (uint32_t(png.buf()[i * png.numChannels() + 2]) << 16) |
+                            (uint32_t(png.buf()[i * png.numChannels() + 3]) << 24)
+                        ;
 
-				std::cout << "Error: PNG pixel #" << std::dec << i << " [" << (i % res.dims.x()) << ", " << (i / res.dims.y()) << "] " << " (0x" << std::hex << pixel << ") did not match SVG pixel (0x" << img[i] << ")" << std::endl;
-				return 1;
-			}
-		}
-	}
-
-	return 0;
+                        tst::check(false, SL) << "Error: PNG pixel #" << std::dec << i << " [" << (i % res.dims.x()) << ", " << (i / res.dims.y()) << "]" << " (0x" << std::hex << pixel << ") did not match SVG pixel (0x" << img[i] << ")" << ", png_file = " << png_file.path();
+                    }
+                }
+            }
+        }
+    );
+});
 }
