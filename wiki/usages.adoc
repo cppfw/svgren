@@ -1,0 +1,5 @@
+= Projects using svgren
+
+. link:https://www.sae-it.com/en/products/software/setit-configuration-tool.html[setIT configuration tool] by link:https://www.sae-it.com[SAE it-systems]
+. link:https://play.google.com/store/apps/details?id=com.symbolicone.ouille[Speech therapy app] for Android.
+. Add your project
