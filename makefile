@@ -1,3 +1,3 @@
 include prorab.mk
 
-$(eval $(prorab-build-subdirs))
+$(eval $(prorab-include-subdirs))

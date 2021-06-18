@@ -10,8 +10,8 @@ this_srcs += $(call prorab-src-dir, .)
 
 $(eval $(call prorab-config, ../../config))
 
-this_ldlibs += -lsvgdom $(d)../../src/out/$(c)/libsvgren$(dot_so) -lpng -lpapki -lutki -ltst -lm $(addprefix -l,$(CONAN_LIBS))
-this_ldflags += -L$(d)../../src
+this_ldlibs += -lsvgdom ../../src/out/$(c)/libsvgren$(dot_so) -lpng -lpapki -lutki -ltst -lm $(addprefix -l,$(CONAN_LIBS))
+this_ldflags += -L../../src
 
 this_cxxflags += $(addprefix -I,$(CONAN_INCLUDE_DIRS))
 this_ldflags += $(addprefix -L,$(CONAN_LIB_DIRS))
