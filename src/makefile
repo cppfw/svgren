@@ -1,7 +1,6 @@
 include prorab.mk
-include myci.mk
 
-$(eval $(call myci-try-include, $(CONANBUILDINFO_DIR)conanbuildinfo.mak))
+$(eval $(call prorab-try-simple-include, $(CONANBUILDINFO_DIR)conanbuildinfo.mak))
 
 this_name := svgren
 

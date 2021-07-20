@@ -46,7 +46,7 @@ android {
 
 repositories {
     maven {
-        url 'https://cppfw.jfrog.io/artifactory/android/'
+        url 'http://gagis.hopto.org/nexus/repository/android/'
     }
 }
 dependencies {

@@ -11,16 +11,18 @@ class SvgrenConan(ConanFile):
 	settings = "os", "compiler", "build_type", "arch"
 	options = {"shared": [True, False], "fPIC": [True, False]}
 	default_options = {"shared": False, "fPIC": True}
-	requires = "utki/[>=0.0.0]", "svgdom/[>=0.0.0]", "agg/[>=0.0.0]", "libpng/[>=1.6.37]", "clargs/[>=0.0.0]", "tst/[>=0.0.0]"
+	requires = "utki/[>=0.0.0]@cppfw/main", "svgdom/[>=0.0.0]@cppfw/main", "agg/[>=0.0.0]@cppfw/main", "libpng/[>=1.6.37]", "clargs/[>=0.0.0]@cppfw/main", "tst/[>=0.0.0]@cppfw/main"
 	generators = "make"
+	scm = {"type": "git", "url": "auto", "revision": "auto"}
 
 	def config_options(self):
 		if self.settings.os == "Windows":
 			del self.options.fPIC
 
-	def source(self):
-		self.run("git clone https://github.com/cppfw/" + self.name + ".git")
-		self.run("cd " + self.name + " && git checkout " + self.version)
+	# we use the 'scm' attribute, so the source() method is not needed
+#	def source(self):
+#		self.run("git clone https://github.com/cppfw/" + self.name + ".git")
+#		self.run("cd " + self.name + " && git checkout " + self.version)
 
 		# This small hack might be useful to guarantee proper /MT /MD linkage
 		# in MSVC if the packaged project doesn't have variables to set it
@@ -31,18 +33,18 @@ class SvgrenConan(ConanFile):
 # conan_basic_setup()''')
 
 	def build(self):
-		self.run("CONANBUILDINFO_DIR=$(pwd)/ make --directory " + self.name + " autojobs=true")
-		self.run("CONANBUILDINFO_DIR=$(pwd)/ make --directory " + self.name + " autojobs=true test")
+		self.run("CONANBUILDINFO_DIR=$(pwd)/ make autojobs=true")
+		self.run("CONANBUILDINFO_DIR=$(pwd)/ make autojobs=true test")
 
 	def package(self):
-		self.copy("*.h", dst="include", src=self.name + "/src")
-		self.copy("*.hpp", dst="include", src=self.name + "/src")
+		self.copy("*.h", dst="include", src="src")
+		self.copy("*.hpp", dst="include", src="src")
 		self.copy("*" + self.name + ".lib", dst="lib", keep_path=False)
-		self.copy("*.dll", dst="bin", src=self.name +   "/src/out/rel_agg", keep_path=False)
-		self.copy("*.so", dst="lib", src=self.name +    "/src/out/rel_agg", keep_path=False)
-		self.copy("*.so.*", dst="lib", src=self.name +  "/src/out/rel_agg", keep_path=False)
-		self.copy("*.dylib", dst="lib", src=self.name + "/src/out/rel_agg", keep_path=False)
-		self.copy("*.a", dst="lib", src=self.name +     "/src/out/rel_agg", keep_path=False)
+		self.copy("*.dll", dst="bin", src=  "src/out/rel", keep_path=False)
+		self.copy("*.so", dst="lib", src=   "src/out/rel", keep_path=False)
+		self.copy("*.so.*", dst="lib", src= "src/out/rel", keep_path=False)
+		self.copy("*.dylib", dst="lib", src="src/out/rel", keep_path=False)
+		self.copy("*.a", dst="lib", src=    "src/out/rel", keep_path=False)
 
 	def package_info(self):
 		self.cpp_info.libs = [self.name]
