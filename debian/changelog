@@ -1,3 +1,9 @@
+libsvgren (0.5.17) unstable; urgency=medium
+
+  * deploy to own repo
+
+ -- Ivan Gagis <igagis@gmail.com>  Wed, 21 Jul 2021 15:33:11 +0300
+
 libsvgren (0.5.16) unstable; urgency=medium
 
   * relink to latest libs
