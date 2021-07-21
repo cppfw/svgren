@@ -1,1 +1,1 @@
-$(eval $(call prorab-config-default, rel_agg))
+$(eval $(call prorab-config-default, rel))
