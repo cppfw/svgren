@@ -1,3 +1,9 @@
+libsvgren (0.5.18) unstable; urgency=medium
+
+  * conan minor mode of package id
+
+ -- Ivan Gagis <igagis@gmail.com>  Tue, 10 Aug 2021 00:39:34 +0300
+
 libsvgren (0.5.17) unstable; urgency=medium
 
   * deploy to own repo
