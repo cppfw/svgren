@@ -1,3 +1,9 @@
+libsvgren (0.5.19) unstable; urgency=medium
+
+  * use latest make in homebrew formulae
+
+ -- Ivan Gagis <igagis@gmail.com>  Thu, 12 Aug 2021 14:30:43 +0300
+
 libsvgren (0.5.18) unstable; urgency=medium
 
   * conan minor mode of package id
