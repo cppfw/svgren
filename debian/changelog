@@ -1,3 +1,9 @@
+libsvgren (0.5.20) unstable; urgency=medium
+
+  * msvs: build for v141 tools
+
+ -- Ivan Gagis <igagis@gmail.com>  Sun, 15 Aug 2021 21:07:43 +0300
+
 libsvgren (0.5.19) unstable; urgency=medium
 
   * use latest make in homebrew formulae
