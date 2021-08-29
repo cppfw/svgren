@@ -25,6 +25,7 @@ jobs:
           - {os: debian, codename: buster, image_owner: , package_type: deb}
           - {os: debian, codename: buster, image_owner: i386/, package_type: deb, labels: [i386,docker]}
           - {os: debian, codename: buster, image_owner: arm32v7/, package_type: deb, labels: [arm,docker]}
+          - {os: debian, codename: bullseye, image_owner: , package_type: deb}
           - {os: ubuntu, codename: focal, image_owner: , package_type: deb}
           - {os: raspbian, codename: buster, image_owner: igagis/, package_type: deb, labels: [arm,docker]}
     runs-on: ${{ (matrix.labels == '' && 'ubuntu-latest') || matrix.labels }}
@@ -36,7 +37,7 @@ jobs:
         with:
           repo: deb http://gagis.hopto.org/repo/cppfw/${{ matrix.os }} ${{ matrix.codename }} main
           repo-name: cppfw
-          key-server: http://gagis.hopto.org/repo/cppfw/pubkey.gpg
+          keys-asc: http://gagis.hopto.org/repo/cppfw/pubkey.gpg
           install: myci git
       - name: install ci tools
         run: |
@@ -130,7 +131,7 @@ jobs:
       with:
         repo: deb http://gagis.hopto.org/repo/cppfw/$(lsb_release --id --short | tr '[:upper:]' '[:lower:]') $(lsb_release --codename --short) main
         repo-name: cppfw
-        key-server: http://gagis.hopto.org/repo/cppfw/pubkey.gpg
+        keys-asc: http://gagis.hopto.org/repo/cppfw/pubkey.gpg
         install: myci
     - name: set PACKAGE_VERSION
       uses: myci-actions/export-env-var@master
@@ -243,7 +244,7 @@ jobs:
         with:
           repo: deb http://gagis.hopto.org/repo/cppfw/${{ matrix.os }} ${{ matrix.codename }} main
           repo-name: cppfw
-          key-server: http://gagis.hopto.org/repo/cppfw/pubkey.gpg
+          keys-asc: http://gagis.hopto.org/repo/cppfw/pubkey.gpg
           install: devscripts equivs myci prorab prorab-extra python3-pip cmake git libx11-dev
       - name: install conan
         run: |
