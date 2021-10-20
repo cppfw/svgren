@@ -3,13 +3,11 @@ apply plugin: 'com.ydq.android.gradle.native-aar.export' // must go after androi
 apply plugin: 'com.ydq.android.gradle.native-aar.import' // must go after android gradle plugin
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 29
 
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 28
-        versionCode 1
-        versionName "1.0"
+        targetSdkVersion 29
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
@@ -47,6 +45,7 @@ android {
 repositories {
     maven {
         url 'http://gagis.hopto.org/nexus/repository/android/'
+        allowInsecureProtocol = true
     }
 }
 dependencies {
