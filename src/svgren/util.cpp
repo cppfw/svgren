@@ -173,7 +173,7 @@ common_element_push::~common_element_push()noexcept{
 			
 			this->mask_element->accept(mr);
 			
-			scope_exit.reset();
+			scope_exit.release();
 
 			this->renderer.canvas.pop_mask_and_group();
 		}catch(...){
