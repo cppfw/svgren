@@ -1,6 +1,6 @@
 # Basic usage tutorial
 
-Please note, that **svgren** uses C++'11 features, like *auto* etc.
+Please note, that **svgren** uses C++'17 features.
 
 First of all we need to include the **svgren** header file
 
