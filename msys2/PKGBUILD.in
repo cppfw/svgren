@@ -54,7 +54,7 @@ prepare() {
 
 build() {
 	cd "$rootDir"
-	make autojobs=true
+	make
 }
 
 check() {

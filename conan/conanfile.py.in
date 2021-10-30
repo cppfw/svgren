@@ -33,8 +33,8 @@ class SvgrenConan(ConanFile):
 # conan_basic_setup()''')
 
 	def build(self):
-		self.run("CONANBUILDINFO_DIR=$(pwd)/ make autojobs=true")
-		self.run("CONANBUILDINFO_DIR=$(pwd)/ make autojobs=true test")
+		self.run("CONANBUILDINFO_DIR=$(pwd)/ make")
+		self.run("CONANBUILDINFO_DIR=$(pwd)/ make test")
 
 	def package(self):
 		self.copy("*.h", dst="include", src="src")

@@ -6,7 +6,7 @@
         {
             "label": "build_agg",
             "type": "shell",
-            "command": "make autojobs=true config=rel_agg",
+            "command": "make config=rel_agg",
             "problemMatcher": [
                 "$gcc"
             ],
@@ -18,7 +18,7 @@
 		{
             "label": "build_cairo",
             "type": "shell",
-            "command": "make autojobs=true config=rel_cairo",
+            "command": "make config=rel_cairo",
             "problemMatcher": [
                 "$gcc"
             ],
@@ -30,7 +30,7 @@
         {
             "label": "build_dbg_agg",
             "type": "shell",
-            "command": "make autojobs=true debug=true config=dbg_agg",
+            "command": "make debug=true config=dbg_agg",
             "problemMatcher": [
                 "$gcc"
             ],
@@ -42,7 +42,7 @@
 		{
             "label": "build_dbg_cairo",
             "type": "shell",
-            "command": "make autojobs=true debug=true config=dbg_cairo",
+            "command": "make debug=true config=dbg_cairo",
             "problemMatcher": [
                 "$gcc"
             ],
@@ -54,7 +54,7 @@
         {
             "label": "build_dbg_grey_bg",
             "type": "shell",
-            "command": "make autojobs=true debug=true CXXFLAGS=-DM_SVGREN_BACKGROUND=0xff808080",
+            "command": "make debug=true CXXFLAGS=-DM_SVGREN_BACKGROUND=0xff808080",
             "problemMatcher": [
                 "$gcc"
             ],

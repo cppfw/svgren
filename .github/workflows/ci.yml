@@ -26,6 +26,7 @@ jobs:
           # - {os: debian, codename: buster, image_owner: i386/, package_type: deb, labels: [i386,docker]}
           - {os: debian, codename: buster, image_owner: arm32v7/, package_type: deb, labels: [arm,docker]}
           - {os: debian, codename: bullseye, image_owner: , package_type: deb}
+          - {os: debian, codename: bullseye, image_owner: arm32v7/, package_type: deb, labels: [arm,docker]}
           - {os: ubuntu, codename: focal, image_owner: , package_type: deb}
           - {os: raspbian, codename: buster, image_owner: igagis/, package_type: deb, labels: [arm,docker]}
     runs-on: ${{ (matrix.labels == '' && 'ubuntu-latest') || matrix.labels }}
@@ -79,9 +80,9 @@ jobs:
     - name: install deps
       run: myci-brew-install.sh `myci-list-deps-homebrew.sh`
     - name: build
-      run: make autojobs=true
+      run: make
     - name: test
-      run: make test autojobs=true
+      run: make test
     - name: deploy
       run: myci-deploy-homebrew.sh --tap cppfw/tap
       if: startsWith(github.ref, 'refs/tags/')
@@ -140,8 +141,8 @@ jobs:
       run: |
         cd android
         ./gradlew copy_aar --warning-mode all
-        myci-apply-version.sh -v $PACKAGE_VERSION *.pom.in
-        myci-apply-version.sh -v $PACKAGE_VERSION *.aar.in --filename-only
+        myci-apply-version.sh --version $PACKAGE_VERSION *.pom.in
+        myci-apply-version.sh --version $PACKAGE_VERSION *.aar.in --filename-only
     - name: deploy
       run: myci-deploy-maven-nexus.sh --base-url http://gagis.hopto.org/nexus --repo android android/$PACKAGE_NAME-$PACKAGE_VERSION.aar
       if: startsWith(github.ref, 'refs/tags/')
@@ -185,13 +186,13 @@ jobs:
     - name: git clone
       uses: myci-actions/checkout@master
     - name: prepare pacman package
-      run: myci-apply-version.sh -v $(myci-deb-version.sh debian/changelog) msys2/PKGBUILD.in
+      run: myci-apply-version.sh --version $(myci-deb-version.sh debian/changelog) msys2/PKGBUILD.in
     - name: build
       # to make makepkg-mingw build only one architecture we need to set the MINGW_INSTALLS
       env: {MINGW_INSTALLS: '${{ matrix.repo }}'}
       run: |
         cd msys2
-        PKGEXT='.pkg.tar.xz' autojobs=true makepkg-mingw --syncdeps --noconfirm --skipinteg
+        PKGEXT='.pkg.tar.xz' makepkg-mingw --syncdeps --noconfirm --skipinteg
     - name: deploy
       run: |
         echo "${{ secrets.MYCI_REPO_SSH_KEY }}" > repo_key_rsa && chmod 600 repo_key_rsa
@@ -258,7 +259,7 @@ jobs:
         with: {name: PACKAGE_VERSION, value: $(myci-deb-version.sh debian/changelog)}
         if: startsWith(github.ref, 'refs/tags/')
       - name: prepare conanfile
-        run: myci-apply-version.sh -v $PACKAGE_VERSION conan/conanfile.py.in
+        run: myci-apply-version.sh --version $PACKAGE_VERSION conan/conanfile.py.in
       - name: build
         run: |
           conan remote add cppfw $MYCI_CONAN_REMOTE
@@ -289,7 +290,7 @@ jobs:
         with: {name: PACKAGE_VERSION, value: $(myci-deb-version.sh debian/changelog)}
         if: startsWith(github.ref, 'refs/tags/')
       - name: prepare conanfile
-        run: myci-apply-version.sh -v $PACKAGE_VERSION conan/conanfile.py.in
+        run: myci-apply-version.sh --version $PACKAGE_VERSION conan/conanfile.py.in
       - name: build
         run: |
           conan remote add cppfw $MYCI_CONAN_REMOTE
