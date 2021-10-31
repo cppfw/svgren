@@ -1,3 +1,9 @@
+libsvgren (0.5.24) unstable; urgency=medium
+
+  * build for ios 9.0
+
+ -- Ivan Gagis <igagis@gmail.com>  Sun, 31 Oct 2021 23:10:44 +0200
+
 libsvgren (0.5.23) unstable; urgency=medium
 
   * ios: static framework
