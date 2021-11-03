@@ -520,7 +520,7 @@ r4::vector2<real> canvas::get_current_point()const{
 #endif
 }
 
-void canvas::move_to_abs(const r4::vector2<real>& p){
+void canvas::move_abs(const r4::vector2<real>& p){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	cairo_move_to(this->cr, backend_real(p.x()), backend_real(p.y()));
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
@@ -531,20 +531,20 @@ void canvas::move_to_abs(const r4::vector2<real>& p){
 #endif
 }
 
-void canvas::move_to_rel(const r4::vector2<real>& p){
+void canvas::move_rel(const r4::vector2<real>& p){
 	if(!this->has_current_point()){
-		this->move_to_abs(p);
+		this->move_abs(p);
 		return;
 	}
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	cairo_rel_move_to(this->cr, backend_real(p.x()), backend_real(p.y()));
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	this->move_to_abs(this->get_current_point() + p);
+	this->move_abs(this->get_current_point() + p);
 #endif
 }
 
-void canvas::line_to_abs(const r4::vector2<real>& p){
+void canvas::line_abs(const r4::vector2<real>& p){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	cairo_line_to(this->cr, backend_real(p.x()), backend_real(p.y()));
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
@@ -554,9 +554,9 @@ void canvas::line_to_abs(const r4::vector2<real>& p){
 #endif
 }
 
-void canvas::line_to_rel(const r4::vector2<real>& p){
+void canvas::line_rel(const r4::vector2<real>& p){
 	if(!this->has_current_point()){
-		this->line_to_abs(p);
+		this->line_abs(p);
 		return;
 	}
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
@@ -568,7 +568,7 @@ void canvas::line_to_rel(const r4::vector2<real>& p){
 #endif
 }
 
-void canvas::quadratic_curve_to_abs(const r4::vector2<real>& cp1, const r4::vector2<real>& ep){
+void canvas::quadratic_curve_abs(const r4::vector2<real>& cp1, const r4::vector2<real>& ep){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	backend_real x0, y0; // current point, absolute coordinates
 	if (cairo_has_current_point(this->cr)) {
@@ -599,9 +599,9 @@ void canvas::quadratic_curve_to_abs(const r4::vector2<real>& cp1, const r4::vect
 #endif
 }
 
-void canvas::quadratic_curve_to_rel(const r4::vector2<real>& cp1, const r4::vector2<real>& ep){
+void canvas::quadratic_curve_rel(const r4::vector2<real>& cp1, const r4::vector2<real>& ep){
 	if(!this->has_current_point()){
-		this->quadratic_curve_to_abs(cp1, ep);
+		this->quadratic_curve_abs(cp1, ep);
 		return;
 	}
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
@@ -617,11 +617,11 @@ void canvas::quadratic_curve_to_rel(const r4::vector2<real>& cp1, const r4::vect
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	auto d = this->get_current_point();
-	this->quadratic_curve_to_abs(cp1 + d, ep + d);
+	this->quadratic_curve_abs(cp1 + d, ep + d);
 #endif
 }
 
-void canvas::cubic_curve_to_abs(const r4::vector2<real>& cp1, const r4::vector2<real>& cp2, const r4::vector2<real>& ep){
+void canvas::cubic_curve_abs(const r4::vector2<real>& cp1, const r4::vector2<real>& cp2, const r4::vector2<real>& ep){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	cairo_curve_to(
 			this->cr,
@@ -639,9 +639,9 @@ void canvas::cubic_curve_to_abs(const r4::vector2<real>& cp1, const r4::vector2<
 #endif
 }
 
-void canvas::cubic_curve_to_rel(const r4::vector2<real>& cp1, const r4::vector2<real>& cp2, const r4::vector2<real>& ep){
+void canvas::cubic_curve_rel(const r4::vector2<real>& cp1, const r4::vector2<real>& cp2, const r4::vector2<real>& ep){
 	if(!this->has_current_point()){
-		this->cubic_curve_to_abs(cp1, cp2, ep);
+		this->cubic_curve_abs(cp1, cp2, ep);
 		return;
 	}
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
@@ -657,7 +657,7 @@ void canvas::cubic_curve_to_rel(const r4::vector2<real>& cp1, const r4::vector2<
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	auto d = this->get_current_point();
-	this->cubic_curve_to_abs(cp1 + d, cp2 + d, ep + d);
+	this->cubic_curve_abs(cp1 + d, cp2 + d, ep + d);
 #endif
 }
 
@@ -667,7 +667,7 @@ void canvas::close_path(){
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->path.close_polygon();
-	this->move_to_abs(this->subpath_start_point);
+	this->move_abs(this->subpath_start_point);
 	this->agg_invalidate_polyline();
 #endif
 }
@@ -926,10 +926,10 @@ void canvas::rectangle(const r4::rectangle<real>& rect, const r4::vector2<real>&
 		cairo_rectangle(this->cr, backend_real(rect.p.x()), backend_real(rect.p.y()), backend_real(rect.d.x()), backend_real(rect.d.y()));
 		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #else
-		this->move_to_abs(rect.p);
-		this->line_to_abs(rect.x2_y1());
-		this->line_to_abs(rect.x2_y2());
-		this->line_to_abs(rect.x1_y2());
+		this->move_abs(rect.p);
+		this->line_abs(rect.x2_y1());
+		this->line_abs(rect.x2_y2());
+		this->line_abs(rect.x1_y2());
 		this->close_path();
 #endif
 	}else{
@@ -938,34 +938,34 @@ void canvas::rectangle(const r4::rectangle<real>& rect, const r4::vector2<real>&
 		using std::sqrt;
 		const real arc_bezier_param = real(4 * (sqrt(2) - 1) / 3);
 
-		this->move_to_abs(rect.p + r4::vector2<real>{corner_radius.x(), 0});
-		this->line_to_abs(rect.p + r4::vector2<real>{rect.d.x() - corner_radius.x(), 0});
+		this->move_abs(rect.p + r4::vector2<real>{corner_radius.x(), 0});
+		this->line_abs(rect.p + r4::vector2<real>{rect.d.x() - corner_radius.x(), 0});
 
-		this->cubic_curve_to_rel(
+		this->cubic_curve_rel(
 				{arc_bezier_param * corner_radius.x(), 0},
 				{corner_radius.x(), corner_radius.y() * (1 - arc_bezier_param)},
 				corner_radius
 			);
 
-		this->line_to_abs(rect.p + rect.d - r4::vector2<real>{0, corner_radius.y()});
+		this->line_abs(rect.p + rect.d - r4::vector2<real>{0, corner_radius.y()});
 
-		this->cubic_curve_to_rel(
+		this->cubic_curve_rel(
 				{0, arc_bezier_param * corner_radius.y()},
 				{-corner_radius.x() * (1 - arc_bezier_param), corner_radius.y()},
 				{-corner_radius.x(), corner_radius.y()}
 			);
 
-		this->line_to_abs(rect.p + r4::vector2<real>{corner_radius.x(), rect.d.y()});
+		this->line_abs(rect.p + r4::vector2<real>{corner_radius.x(), rect.d.y()});
 
-		this->cubic_curve_to_rel(
+		this->cubic_curve_rel(
 				{-arc_bezier_param * corner_radius.x(), 0},
 				{-corner_radius.x(), -(1 - arc_bezier_param) * corner_radius.y()},
 				-corner_radius
 			);
 
-		this->line_to_abs(rect.p + r4::vector2<real>{0, corner_radius.y()});
+		this->line_abs(rect.p + r4::vector2<real>{0, corner_radius.y()});
 
-		this->cubic_curve_to_rel(
+		this->cubic_curve_rel(
 				{0, -arc_bezier_param * corner_radius.y()},
 				{(1 - arc_bezier_param) * corner_radius.x(), -corner_radius.y()},
 				{corner_radius.x(), -corner_radius.y()}
@@ -976,7 +976,7 @@ void canvas::rectangle(const r4::rectangle<real>& rect, const r4::vector2<real>&
 }
 
 void canvas::circle(const r4::vector2<real>& center, real radius){
-	this->move_to_abs(center + r4::vector2<real>{radius, 0}); // move to start point
+	this->move_abs(center + r4::vector2<real>{radius, 0}); // move to start point
 	this->arc_abs(center, radius, 0, 2 * utki::pi<real>());
 	this->close_path();
 }

@@ -810,43 +810,43 @@ void renderer::visit(const svgdom::path_element& e){
 	for(auto& s : e.path){
 		switch(s.type_){
 			case svgdom::path_element::step::type::move_abs:
-				this->canvas.move_to_abs({real(s.x), real(s.y)});
+				this->canvas.move_abs({real(s.x), real(s.y)});
 				break;
 			case svgdom::path_element::step::type::move_rel:
-				this->canvas.move_to_rel({real(s.x), real(s.y)});
+				this->canvas.move_rel({real(s.x), real(s.y)});
 				break;
 			case svgdom::path_element::step::type::line_abs:
-				this->canvas.line_to_abs({real(s.x), real(s.y)});
+				this->canvas.line_abs({real(s.x), real(s.y)});
 				break;
 			case svgdom::path_element::step::type::line_rel:
-				this->canvas.line_to_rel({real(s.x), real(s.y)});
+				this->canvas.line_rel({real(s.x), real(s.y)});
 				break;
 			case svgdom::path_element::step::type::horizontal_line_abs:
-				this->canvas.line_to_abs({
+				this->canvas.line_abs({
 						real(s.x),
 						this->canvas.get_current_point().y()
 					});
 				break;
 			case svgdom::path_element::step::type::horizontal_line_rel:
-				this->canvas.line_to_rel({real(s.x), 0});
+				this->canvas.line_rel({real(s.x), 0});
 				break;
 			case svgdom::path_element::step::type::vertical_line_abs:
-				this->canvas.line_to_abs({
+				this->canvas.line_abs({
 						this->canvas.get_current_point().x(),
 						real(s.y)
 					});
 				break;
 			case svgdom::path_element::step::type::vertical_line_rel:
-				this->canvas.line_to_rel({0, real(s.y)});
+				this->canvas.line_rel({0, real(s.y)});
 				break;
 			case svgdom::path_element::step::type::close:
 				this->canvas.close_path();
 				break;
 			case svgdom::path_element::step::type::quadratic_abs:
-				this->canvas.quadratic_curve_to_abs({real(s.x1), real(s.y1)}, {real(s.x), real(s.y)});
+				this->canvas.quadratic_curve_abs({real(s.x1), real(s.y1)}, {real(s.x), real(s.y)});
 				break;
 			case svgdom::path_element::step::type::quadratic_rel:
-				this->canvas.quadratic_curve_to_rel({real(s.x1), real(s.y1)}, {real(s.x), real(s.y)});
+				this->canvas.quadratic_curve_rel({real(s.x1), real(s.y1)}, {real(s.x), real(s.y)});
 				break;
 			case svgdom::path_element::step::type::quadratic_smooth_abs:
 				{
@@ -875,7 +875,7 @@ void renderer::visit(const svgdom::path_element& e){
 							break;
 					}
 					prev_quadratic_p = cp1;
-					this->canvas.quadratic_curve_to_abs(cp1, {real(s.x), real(s.y)});
+					this->canvas.quadratic_curve_abs(cp1, {real(s.x), real(s.y)});
 				}
 				break;
 			case svgdom::path_element::step::type::quadratic_smooth_rel:
@@ -905,18 +905,18 @@ void renderer::visit(const svgdom::path_element& e){
 							break;
 					}
 					prev_quadratic_p = cp1;
-					this->canvas.quadratic_curve_to_rel(cp1, {real(s.x), real(s.y)});
+					this->canvas.quadratic_curve_rel(cp1, {real(s.x), real(s.y)});
 				}
 				break;
 			case svgdom::path_element::step::type::cubic_abs:
-				this->canvas.cubic_curve_to_abs(
+				this->canvas.cubic_curve_abs(
 						{real(s.x1), real(s.y1)},
 						{real(s.x2), real(s.y2)},
 						{real(s.x), real(s.y)}
 					);
 				break;
 			case svgdom::path_element::step::type::cubic_rel:
-				this->canvas.cubic_curve_to_rel(
+				this->canvas.cubic_curve_rel(
 						{real(s.x1), real(s.y1)},
 						{real(s.x2), real(s.y2)},
 						{real(s.x), real(s.y)}
@@ -944,7 +944,7 @@ void renderer::visit(const svgdom::path_element& e){
 							cp1 = cur_p;
 							break;
 					}
-					this->canvas.cubic_curve_to_abs(
+					this->canvas.cubic_curve_abs(
 							cp1,
 							{real(s.x2), real(s.y2)},
 							{real(s.x), real(s.y)}
@@ -973,7 +973,7 @@ void renderer::visit(const svgdom::path_element& e){
 							cp1.set(0);
 							break;
 					}
-					this->canvas.cubic_curve_to_rel(
+					this->canvas.cubic_curve_rel(
 							cp1,
 							{real(s.x2), real(s.y2)},
 							{real(s.x), real(s.y)}
@@ -1045,11 +1045,11 @@ void renderer::visit(const svgdom::polyline_element& e){
 	}
 
 	auto i = e.points.begin();
-	this->canvas.move_to_abs(i->to<real>());
+	this->canvas.move_abs(i->to<real>());
 	++i;
 
 	for(; i != e.points.end(); ++i){
-		this->canvas.line_to_abs(i->to<real>());
+		this->canvas.line_abs(i->to<real>());
 	}
 
 	this->render_shape(group_push.is_group_pushed());
@@ -1072,11 +1072,11 @@ void renderer::visit(const svgdom::polygon_element& e){
 	}
 
 	auto i = e.points.begin();
-	this->canvas.move_to_abs(i->to<real>());
+	this->canvas.move_abs(i->to<real>());
 	++i;
 
 	for (; i != e.points.end(); ++i) {
-		this->canvas.line_to_abs(i->to<real>());
+		this->canvas.line_abs(i->to<real>());
 	}
 
 	this->canvas.close_path();
@@ -1096,8 +1096,8 @@ void renderer::visit(const svgdom::line_element& e){
 
 	this->apply_transformations(e.transformations);
 
-	this->canvas.move_to_abs(this->length_to_px(e.x1, e.y1));
-	this->canvas.line_to_abs(this->length_to_px(e.x2, e.y2));
+	this->canvas.move_abs(this->length_to_px(e.x1, e.y1));
+	this->canvas.line_abs(this->length_to_px(e.x2, e.y2));
 
 	this->render_shape(group_push.is_group_pushed());
 }
@@ -1116,7 +1116,7 @@ void renderer::visit(const svgdom::ellipse_element& e){
 
 	auto c = this->length_to_px(e.cx, e.cy);
 	auto r = this->length_to_px(e.rx, e.ry);
-	this->canvas.move_to_abs(c + r4::vector2<real>{r.x(), 0}); // move to start point
+	this->canvas.move_abs(c + r4::vector2<real>{r.x(), 0}); // move to start point
 	this->canvas.arc_abs(c, r, 0, real(2) * utki::pi<real>());
 	this->canvas.close_path();
 

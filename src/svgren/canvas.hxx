@@ -312,17 +312,17 @@ public:
 
 	r4::vector2<real> get_current_point()const;
 
-	void move_to_abs(const r4::vector2<real>& p);
-	void move_to_rel(const r4::vector2<real>& p);
+	void move_abs(const r4::vector2<real>& p);
+	void move_rel(const r4::vector2<real>& p);
 
-	void line_to_abs(const r4::vector2<real>& p);
-	void line_to_rel(const r4::vector2<real>& p);
+	void line_abs(const r4::vector2<real>& p);
+	void line_rel(const r4::vector2<real>& p);
 
-	void quadratic_curve_to_abs(const r4::vector2<real>& cp1, const r4::vector2<real>& ep);
-	void quadratic_curve_to_rel(const r4::vector2<real>& cp1, const r4::vector2<real>& ep);
+	void quadratic_curve_abs(const r4::vector2<real>& cp1, const r4::vector2<real>& ep);
+	void quadratic_curve_rel(const r4::vector2<real>& cp1, const r4::vector2<real>& ep);
 
-	void cubic_curve_to_abs(const r4::vector2<real>& cp1, const r4::vector2<real>& cp2, const r4::vector2<real>& ep);
-	void cubic_curve_to_rel(const r4::vector2<real>& cp1, const r4::vector2<real>& cp2, const r4::vector2<real>& ep);
+	void cubic_curve_abs(const r4::vector2<real>& cp1, const r4::vector2<real>& cp2, const r4::vector2<real>& ep);
+	void cubic_curve_rel(const r4::vector2<real>& cp1, const r4::vector2<real>& cp2, const r4::vector2<real>& ep);
 
 	void arc_abs(const r4::vector2<real>& center, const r4::vector2<real>& radius, real start_angle, real sweep_angle);
 
