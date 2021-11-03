@@ -1,3 +1,9 @@
+libsvgren (0.5.25) unstable; urgency=medium
+
+  * fix circle drawing
+
+ -- Ivan Gagis <igagis@gmail.com>  Thu, 04 Nov 2021 01:06:12 +0200
+
 libsvgren (0.5.24) unstable; urgency=medium
 
   * build for ios 9.0
