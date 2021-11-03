@@ -975,6 +975,12 @@ void canvas::rectangle(const r4::rectangle<real>& rect, const r4::vector2<real>&
 	}
 }
 
+void canvas::circle(const r4::vector2<real>& center, real radius){
+	this->move_to_abs(center + r4::vector2<real>{radius, 0}); // move to start point
+	this->arc_abs(center, radius, 0, 2 * utki::pi<real>());
+	this->close_path();
+}
+
 void canvas::set_line_width(real width){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	cairo_set_line_width(this->cr, backend_real(width));

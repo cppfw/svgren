@@ -1023,9 +1023,7 @@ void renderer::visit(const svgdom::circle_element& e){
 	auto c = this->length_to_px(e.cx, e.cy);
 	auto r = this->length_to_px(e.r);
 
-	this->canvas.move_to_abs(c + r4::vector2<real>{r, 0}); // move to start point
-	this->canvas.arc_abs(c,	r, 0, 2 * utki::pi<real>());
-	this->canvas.close_path();
+	this->canvas.circle(c, r);
 
 	this->render_shape(group_push.is_group_pushed());
 }

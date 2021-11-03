@@ -334,6 +334,8 @@ public:
 	void clear_path();
 
 	void rectangle(const r4::rectangle<real>& rect, const r4::vector2<real>& corner_radius = 0);
+	
+	void circle(const r4::vector2<real>& center, real radius);
 
 	void fill();
 
