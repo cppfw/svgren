@@ -136,7 +136,7 @@
 		{
             "label": "run_cairo",
             "type": "shell",
-            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/rel_cairo out/rel_cairo/tests ../unit/samples_data/circle1.svg ../unit/samples_data/cairo/circle1.png)",
+            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/rel_cairo out/rel_cairo/tests ../unit/samples_data/sample3.svg ../unit/samples_data/cairo/sample3.png)",
             "problemMatcher": [],
 			"dependsOn": "build_cairo",
 			"group": "build"
