@@ -46,6 +46,13 @@ typedef agg::curve4_div agg_curve4_type;
 
 using namespace svgren;
 
+namespace{
+// approximate 90 degree arc with bezier curve which matches the arc at 45 degree point
+// and has the same tangent as an arc at 45 degree point
+using std::sqrt;
+const real arc_bezier_param = real(4 * (sqrt(2) - 1) / 3);
+}
+
 canvas::canvas(const r4::vector2<unsigned>& dims) :
 		dims(dims)
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
@@ -933,11 +940,6 @@ void canvas::rectangle(const r4::rectangle<real>& rect, const r4::vector2<real>&
 		this->close_path();
 #endif
 	}else{
-		// approximate 90 degree arc with bezier curve which matches the arc at 45 degree point
-		// and has the same tangent as an arc at 45 degree point
-		using std::sqrt;
-		const real arc_bezier_param = real(4 * (sqrt(2) - 1) / 3);
-
 		this->move_abs(rect.p + r4::vector2<real>{corner_radius.x(), 0});
 		this->line_abs(rect.p + r4::vector2<real>{rect.d.x() - corner_radius.x(), 0});
 
@@ -976,8 +978,32 @@ void canvas::rectangle(const r4::rectangle<real>& rect, const r4::vector2<real>&
 }
 
 void canvas::circle(const r4::vector2<real>& center, real radius){
-	this->move_abs(center + r4::vector2<real>{radius, 0}); // move to start point
-	this->arc_abs(center, radius, 0, 2 * utki::pi<real>());
+	this->move_abs(center + r4::vector2<real>{radius, 0});
+
+	this->cubic_curve_rel(
+		{0, arc_bezier_param * radius},
+		{-radius * (1 - arc_bezier_param), radius},
+		{-radius, radius}
+	);
+
+	this->cubic_curve_rel(
+		{-arc_bezier_param * radius, 0},
+		{-radius, -radius * (1 - arc_bezier_param)},
+		{-radius, -radius}
+	);
+
+	this->cubic_curve_rel(
+		{0, -arc_bezier_param * radius},
+		{radius * (1 - arc_bezier_param), -radius},
+		{radius, -radius}
+	);
+
+	this->cubic_curve_rel(
+		{arc_bezier_param * radius, 0},
+		{radius, radius * (1 - arc_bezier_param)},
+		{radius, radius}
+	);
+
 	this->close_path();
 }
 

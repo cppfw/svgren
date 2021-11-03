@@ -1,0 +1,7 @@
+<svg width="50" height="70" 
+  xmlns="http://www.w3.org/2000/svg">
+  <rect fill="grey" width="100%" height="100%"/>
+  <g transform="translate(10.755 9.526)" fill="none" fill-rule="evenodd">
+    <circle stroke="white" stroke-width="2.5" cx="23.889" cy="20.036" r="4.624"/>
+  </g>
+</svg>
