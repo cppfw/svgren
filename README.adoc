@@ -17,6 +17,3 @@ Read link:wiki/Main.adoc[WiKi] for installation instructions and tutorials.
 
 = Projects using svgren
 link:wiki/usages.adoc[See list here].
-
-= Questions
-In case of questions, please submit those as link:https://github.com/cppfw/svgren/issues[Issue].
