@@ -29,6 +29,7 @@ jobs:
           - {os: debian, codename: bullseye, image_owner: arm32v7/, package_type: deb, labels: [arm,docker]}
           - {os: ubuntu, codename: focal, image_owner: , package_type: deb}
           - {os: raspbian, codename: buster, image_owner: igagis/, package_type: deb, labels: [arm,docker]}
+          - {os: raspbian, codename: bullseye, image_owner: igagis/, package_type: deb, labels: [arm,docker]}
     runs-on: ${{ (matrix.labels == '' && 'ubuntu-latest') || matrix.labels }}
     container: ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
     name: linux - ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
