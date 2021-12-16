@@ -308,9 +308,14 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
 ##### conan - macosx #####
   conan-macosx:
-    name: conan - macosx
-    # runs-on: macos-latest
-    runs-on: macos-10.15
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-10.15
+          - macos-11
+    name: conan - ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     steps:
       - name: git clone
         uses: myci-actions/checkout@master
