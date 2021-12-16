@@ -291,7 +291,8 @@ public:
 //			TRACE(<< "Image::LoadPNG(): image data read" << std::endl)
 		}
 
-		png_destroy_read_struct(&pngPtr,0,0); // free libpng memory
+		png_destroy_info_struct(pngPtr, &infoPtr);
+		png_destroy_read_struct(&pngPtr, 0, 0);
 	}
 };
 
