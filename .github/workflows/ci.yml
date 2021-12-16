@@ -309,7 +309,8 @@ jobs:
 ##### conan - macosx #####
   conan-macosx:
     name: conan - macosx
-    runs-on: macos-latest
+    # runs-on: macos-latest
+    runs-on: macos-10.15
     steps:
       - name: git clone
         uses: myci-actions/checkout@master
