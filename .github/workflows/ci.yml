@@ -16,6 +16,83 @@ env:
   CONAN_REVISIONS_ENABLED: 1
   CONAN_SCM_TO_CONANDATA: 1
 jobs:
+##### coverage #####
+  coverage:
+    runs-on: ubuntu-latest
+    container: debian:bullseye
+    name: coverage - measure
+    env:
+      linux_distro: debian
+      linux_release: bullseye
+    steps:
+      - name: add cppfw deb repo
+        uses: myci-actions/add-deb-repo@master
+        with:
+          repo: deb http://gagis.hopto.org/repo/cppfw/${{ env.linux_distro }} ${{ env.linux_release }} main
+          repo-name: cppfw
+          keys-asc: http://gagis.hopto.org/repo/cppfw/pubkey.gpg
+          install: myci locales git
+      - name: install ci tools
+        run: |
+          apt --quiet install --assume-yes devscripts equivs lcov python3-pip
+
+          pip3 install git+https://github.com/eriwen/lcov-to-cobertura-xml.git
+      - name: git clone
+        uses: myci-actions/checkout@master
+      - name: prepare debian package
+        run: myci-deb-prepare.sh
+      - name: install deps
+        run: myci-deb-install-build-deps.sh
+      - name: add DE locale
+        # needed for testing that locale with "," as decimal delimiter does not break the parsing with string_parser
+        run: |
+          echo "de_DE.UTF-8 UTF-8" >> /etc/locale.gen
+          locale-gen
+      - name: build
+        run: make config=gcov
+      - name: create lcov baseline
+        run: lcov --no-external --capture --initial --directory . --output-file ./lcov_base.info
+      - name: test
+        run: make config=gcov test
+      - name: collect lcov coverage data
+        run: lcov --no-external --capture --directory . --output-file lcov_test.info
+      - name: combine lcov coverage data with baseline
+        run: lcov --add-tracefile lcov_base.info --add-tracefile lcov_test.info --output-file lcov_all.info
+      - name: filter coverage data
+        run: lcov --extract lcov_all.info "$(pwd)/src/*" -o lcov.info
+      - name: generate cobertura report
+        run: lcov_cobertura lcov.info --output cobertura.xml
+      - name: generate coverage summary in markdown format
+        uses: irongut/CodeCoverageSummary@v1.2.0
+        with:
+          filename: cobertura.xml
+          badge: true
+          fail_below_min: true
+          format: markdown
+          hide_branch_rate: false
+          hide_complexity: false
+          indicators: true
+          output: both
+          thresholds: '10 20'
+      - name: publish coverage summary
+        if: always() # even if previous steps fail, this one needs to be run
+        uses: LouisBrunner/checks-action@v1.2.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: coverage - report
+          conclusion: ${{ job.status }}
+          output: "{\"summary\":\"code coverage brief report\"}"
+          output_text_description_file: code-coverage-results.md
+      - name: upload coverage data to codecov.io
+        uses: codecov/codecov-action@v2
+        if: always() # even if previous steps fail, this one needs to be run
+        with:
+          # token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+          files: cobertura.xml
+          # flags: unittests # optional
+          name: codecov-umbrella # optional
+          fail_ci_if_error: true # optional (default = false)
+          verbose: true # optional (default = false)
 ##### sanitizer #####
   sanitizer:
     strategy:
