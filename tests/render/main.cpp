@@ -79,7 +79,7 @@ uint32_t getTicks(){
 }
 #endif
 
-
+// NOLINTNEXTLINE(bugprone-exception-escape): fatal exceptions are not caught
 int main(int argc, char **argv){
 	std::string filename;
 	std::string outFilename;

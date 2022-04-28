@@ -851,8 +851,17 @@ void renderer::visit(const svgdom::path_element& e){
 			case svgdom::path_element::step::type::quadratic_smooth_abs:
 				{
 					auto cur_p = this->canvas.get_current_point();
-					auto p = r4::vector2<real>{real(prevStep->x), real(prevStep->y)};
-					auto p1 = r4::vector2<real>{real(prevStep->x1), real(prevStep->y1)};
+
+					r4::vector2<real> p;
+					r4::vector2<real> p1;
+
+					if(prevStep){
+						p = {real(prevStep->x), real(prevStep->y)};
+						p1 = {real(prevStep->x1), real(prevStep->y1)};
+					}else{
+						p = real(0);
+						p1 = real(0);
+					}
 
 					r4::vector2<real> cp1; // control point
 					switch(prevStep ? prevStep->type_ : svgdom::path_element::step::type::unknown){
@@ -881,8 +890,17 @@ void renderer::visit(const svgdom::path_element& e){
 			case svgdom::path_element::step::type::quadratic_smooth_rel:
 				{
 					auto cur_p = this->canvas.get_current_point();
-					auto p = r4::vector2<real>{real(prevStep->x), real(prevStep->y)};
-					auto p1 = r4::vector2<real>{real(prevStep->x1), real(prevStep->y1)};
+					
+					r4::vector2<real> p;
+					r4::vector2<real> p1;
+					
+					if(prevStep){
+						p = {real(prevStep->x), real(prevStep->y)};
+						p1 = {real(prevStep->x1), real(prevStep->y1)};
+					}else{
+						p = real(0);
+						p1 = real(0);
+					}
 
 					r4::vector2<real> cp1; // control point
 					switch(prevStep ? prevStep->type_ : svgdom::path_element::step::type::unknown){
@@ -925,8 +943,17 @@ void renderer::visit(const svgdom::path_element& e){
 			case svgdom::path_element::step::type::cubic_smooth_abs:
 				{
 					auto cur_p = this->canvas.get_current_point();
-					auto p = r4::vector2<real>{real(prevStep->x), real(prevStep->y)};
-					auto p2 = r4::vector2<real>{real(prevStep->x2), real(prevStep->y2)};
+
+					r4::vector2<real> p;
+					r4::vector2<real> p2;
+					
+					if(prevStep){
+						p = {real(prevStep->x), real(prevStep->y)};
+						p2 = {real(prevStep->x2), real(prevStep->y2)};
+					}else{
+						p = real(0);
+						p2 = real(0);
+					}
 
 					r4::vector2<real> cp1; // first control point
 					switch(prevStep ? prevStep->type_ : svgdom::path_element::step::type::unknown){
@@ -954,8 +981,17 @@ void renderer::visit(const svgdom::path_element& e){
 			case svgdom::path_element::step::type::cubic_smooth_rel:
 				{
 					auto cur_p = this->canvas.get_current_point();
-					auto p = r4::vector2<real>{real(prevStep->x), real(prevStep->y)};
-					auto p2 = r4::vector2<real>{real(prevStep->x2), real(prevStep->y2)};
+					
+					r4::vector2<real> p;
+					r4::vector2<real> p2;
+					
+					if(prevStep){
+						p = {real(prevStep->x), real(prevStep->y)};
+						p2 = {real(prevStep->x2), real(prevStep->y2)};
+					}else{
+						p = real(0);
+						p2 = real(0);
+					}
 
 					r4::vector2<real> cp1; // first control point
 					switch(prevStep ? prevStep->type_ : svgdom::path_element::step::type::unknown){
