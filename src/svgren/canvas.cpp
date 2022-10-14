@@ -216,7 +216,7 @@ void canvas::scale(real x, real y){
 			[&](auto&o){o << "cairo status = " << cairo_status_to_string(cairo_status(this->cr));}
 		)
 	}else{
-		TRACE(<< "WARNING: non-invertible scaling encountered" << std::endl)
+		LOG([&](auto&o){o << "WARNING: non-invertible scaling encountered" << std::endl;})
 	}
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	ASSERT(!this->group_stack.empty())

@@ -116,7 +116,7 @@ int main(int argc, char **argv){
 	auto dom = svgdom::load(papki::fs_file(filename));
 	utki::assert(dom, SL);
 	
-	TRACE(<< "SVG loaded in " << float(getTicks() - loadStart) / 1000.0f << " sec." << std::endl)
+	LOG([&](auto&o){o << "SVG loaded in " << float(getTicks() - loadStart) / 1000.0f << " sec." << std::endl;})
 	
 #ifdef DEBUG
 	auto renderStart = getTicks();
@@ -124,9 +124,9 @@ int main(int argc, char **argv){
 	
 	auto img = svgren::render(*dom);
 	
-	TRACE(<< "SVG rendered in " << float(getTicks() - renderStart) / 1000.0f << " sec." << std::endl)
+	LOG([&](auto&o){o << "SVG rendered in " << float(getTicks() - renderStart) / 1000.0f << " sec." << std::endl;})
 	
-	TRACE(<< "img.dims = " << img.dims << " img.pixels.size() = " << img.pixels.size() << std::endl)
+	LOG([&](auto&o){o << "img.dims = " << img.dims << " img.pixels.size() = " << img.pixels.size() << std::endl;})
 
 	write_png(outFilename.c_str(), img.dims.x(), img.dims.y(), &*img.pixels.begin());
 	

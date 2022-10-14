@@ -1557,7 +1557,7 @@ decltype(svgdom::styleable::presentation_attributes) renderer::gradient_get_pres
 
 void renderer::blit(const surface& s){
 	if(s.span.empty() || s.d.x() == 0 || s.d.y() == 0){
-		TRACE(<< "renderer::blit(): source image is empty" << std::endl)
+		LOG([&](auto&o){o << "renderer::blit(): source image is empty" << std::endl;})
 		return;
 	}
 	ASSERT(!s.span.empty() && s.d.x() != 0 && s.d.y() != 0)
@@ -1565,7 +1565,7 @@ void renderer::blit(const surface& s){
 	auto dst = this->canvas.get_sub_surface();
 
 	if(s.p.x() >= dst.d.x() || s.p.y() >= dst.d.y()){
-		TRACE(<< "renderer::blit(): source image is out of canvas" << std::endl)
+		LOG([&](auto&o){o << "renderer::blit(): source image is out of canvas" << std::endl;})
 		return;
 	}
 
