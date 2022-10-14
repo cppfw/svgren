@@ -43,7 +43,10 @@ surface surface::intersection(const r4::rectangle<unsigned>& r)const{
 	// TRACE(<< "ret = " << ret << " r = " << r << std::endl)
 	ret.intersect(r);
 	// TRACE(<< "ret = " << ret << std::endl)
-	ASSERT_INFO(ret.d.y() <= r.d.y(), "ret = " << ret << " this = " << (*this) << " r = " << r)
+	ASSERT(
+		ret.d.y() <= r.d.y(),
+		[&](auto&o){o << "ret = " << ret << " this = " << (*this) << " r = " << r;}
+	)
 	
 	ASSERT(ret.p.x() >= this->p.x())
 	ASSERT(ret.p.y() >= this->p.y())
@@ -56,7 +59,10 @@ surface surface::intersection(const r4::rectangle<unsigned>& r)const{
 		);
 	
 	ASSERT(ret.span.end() == this->span.end())
-	ASSERT_INFO(ret.d.y() <= this->d.y(), "ret = " << ret << " this = " << *this << " r = " << r)
+	ASSERT(
+		ret.d.y() <= this->d.y(),
+		[&](auto&o){o << "ret = " << ret << " this = " << *this << " r = " << r;}
+	)
 	
 	return ret;
 }

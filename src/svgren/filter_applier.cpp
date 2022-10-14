@@ -125,7 +125,7 @@ filter_result allocateResult(const surface& src){
 	auto dataSize = src.d.x() * src.d.y();
 	if (dataSize != 0) {
 		ret.data.resize(dataSize);
-		ASSERT_INFO(ret.data.size() != 0, "src.d = " << src.d)
+		ASSERT(ret.data.size() != 0, [&](auto&o){o << "src.d = " << src.d;})
 		ret.surface.span = utki::make_span(ret.data);
 		ret.surface.stride = ret.surface.d.x();
 	}else{
@@ -364,7 +364,10 @@ filter_result color_matrix(const surface& s, const r4::matrix4<real>& m, const r
 	
 	for(unsigned y = 0; y != s.d.y(); ++y){
 		auto sp = &s.span[y * s.stride];
-		ASSERT_INFO(sp < s.span.end(), "sp = " << std::hex << static_cast<const void*>(sp) << " s.end = " << static_cast<const void*>(s.span.end()))
+		ASSERT(
+			sp < s.span.end(),
+			[&](auto&o){o << "sp = " << std::hex << static_cast<const void*>(sp) << " s.end = " << static_cast<const void*>(s.span.end());}
+		)
 		auto dp = &ret.surface.span[y * ret.surface.stride];
 		for(unsigned x = 0; x != s.d.x(); ++x){
 			auto cc = to_rgba(*sp);
@@ -381,10 +384,10 @@ filter_result color_matrix(const surface& s, const r4::matrix4<real>& m, const r
 			
 			auto c = min(cc.to<real>() / 0xff, 1); // clamp top
 
-			ASSERT_INFO(real(0) <= c.r() && c.r() <= real(1), "c = " << c << ", cc = " << cc)
-			ASSERT_INFO(real(0) <= c.g() && c.g() <= real(1), "c = " << c << ", cc = " << cc)
-			ASSERT_INFO(real(0) <= c.b() && c.b() <= real(1), "c = " << c << ", cc = " << cc)
-			ASSERT_INFO(real(0) <= c.a() && c.a() <= real(1), "c = " << c << ", cc = " << cc)
+			ASSERT(real(0) <= c.r() && c.r() <= real(1), [&](auto&o){o << "c = " << c << ", cc = " << cc;})
+			ASSERT(real(0) <= c.g() && c.g() <= real(1), [&](auto&o){o << "c = " << c << ", cc = " << cc;})
+			ASSERT(real(0) <= c.b() && c.b() <= real(1), [&](auto&o){o << "c = " << c << ", cc = " << cc;})
+			ASSERT(real(0) <= c.a() && c.a() <= real(1), [&](auto&o){o << "c = " << c << ", cc = " << cc;})
 
 			auto c1 = m * c + mc5;
 
@@ -511,7 +514,10 @@ filter_result blend(const surface& in, const surface& in2, svgdom::fe_blend_elem
 	auto s1 = in.intersection(in2);
 	auto s2 = in2.intersection(in);
 	
-	ASSERT_INFO(s1.d.x() == s2.d.x(), "s1.d.x() = " << s1.d.x() << " s2.d.x() = " << s2.d.x())
+	ASSERT(
+		s1.d.x() == s2.d.x(),
+		[&](auto&o){o << "s1.d.x() = " << s1.d.x() << " s2.d.x() = " << s2.d.x();}
+	)
 	ASSERT(s1.d.y() == s2.d.y())
 	ASSERT(s1.p == s2.p)
 	
@@ -598,7 +604,10 @@ filter_result composite(const surface& in, const surface& in2, const svgdom::fe_
 	auto s1 = in.intersection(in2);
 	auto s2 = in2.intersection(in);
 	
-	ASSERT_INFO(s1.d.x() == s2.d.x(), "s1.d.x() = " << s1.d.x() << " s2.d.x()) = " << s2.d.x())
+	ASSERT(
+		s1.d.x() == s2.d.x(),
+		[&](auto&o){o << "s1.d.x() = " << s1.d.x() << " s2.d.x()) = " << s2.d.x();}
+	)
 	ASSERT(s1.d.y() == s2.d.y())
 	ASSERT(s1.p == s2.p)
 	

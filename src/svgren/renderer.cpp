@@ -1035,7 +1035,10 @@ void renderer::visit(const svgdom::path_element& e){
 					);
 				break;
 			default:
-				ASSERT_INFO(false, "unknown path step type: " << unsigned(s.type_))
+				ASSERT(
+					false,
+					[&](auto&o){o << "unknown path step type: " << unsigned(s.type_);}
+				)
 				break;
 		}
 		prevStep = &s;

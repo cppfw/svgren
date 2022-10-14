@@ -169,7 +169,10 @@ void canvas::transform(const r4::matrix2<real>& matrix){
 	m.x0 = matrix[0][2];
 	m.y0 = matrix[1][2];
 	cairo_transform(this->cr, &m);
-	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo status = " << cairo_status_to_string(cairo_status(this->cr)))
+	ASSERT(
+		cairo_status(this->cr) == CAIRO_STATUS_SUCCESS,
+		[&](auto&o){o << "cairo status = " << cairo_status_to_string(cairo_status(this->cr));}
+	)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	ASSERT(!this->group_stack.empty())
 	this->context.matrix.premultiply(to_agg_matrix(matrix));
@@ -179,7 +182,12 @@ void canvas::transform(const r4::matrix2<real>& matrix){
 void canvas::translate(real x, real y){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	cairo_translate(this->cr, x, y);
-	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo status = " << cairo_status_to_string(cairo_status(this->cr)))
+	ASSERT(
+		cairo_status(this->cr) == CAIRO_STATUS_SUCCESS,
+		[&](auto&o){
+			o << "cairo status = " << cairo_status_to_string(cairo_status(this->cr));
+		}
+	)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	ASSERT(!this->group_stack.empty())
 	this->context.matrix.premultiply(agg::trans_affine_translation(x, y));
@@ -189,7 +197,10 @@ void canvas::translate(real x, real y){
 void canvas::rotate(real radians){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	cairo_rotate(this->cr, radians);
-	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo status = " << cairo_status_to_string(cairo_status(this->cr)))
+	ASSERT(
+		cairo_status(this->cr) == CAIRO_STATUS_SUCCESS,
+		[&](auto&o){o << "cairo status = " << cairo_status_to_string(cairo_status(this->cr));}
+	)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	ASSERT(!this->group_stack.empty())
 	this->context.matrix.premultiply(agg::trans_affine_rotation(radians));
@@ -200,7 +211,10 @@ void canvas::scale(real x, real y){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	if(x * y != 0){ // cairo does not allow non-invertible scaling
 		cairo_scale(this->cr, x, y);
-		ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo status = " << cairo_status_to_string(cairo_status(this->cr)))
+		ASSERT(
+			cairo_status(this->cr) == CAIRO_STATUS_SUCCESS,
+			[&](auto&o){o << "cairo status = " << cairo_status_to_string(cairo_status(this->cr));}
+		)
 	}else{
 		TRACE(<< "WARNING: non-invertible scaling encountered" << std::endl)
 	}
@@ -399,9 +413,10 @@ void canvas::gradient::set_stops(utki::span<const stop> stops){
 				s.rgba.b(),
 				s.rgba.a()
 			);
-		ASSERT_INFO(cairo_pattern_status(this->pattern) == CAIRO_STATUS_SUCCESS,
-				"status = " << cairo_status_to_string(cairo_pattern_status(this->pattern)) << " offset = " << s.offset << " rgba = " << s.rgba
-			)
+		ASSERT(
+			cairo_pattern_status(this->pattern) == CAIRO_STATUS_SUCCESS,
+			[&](auto&o){o << "status = " << cairo_status_to_string(cairo_pattern_status(this->pattern)) << " offset = " << s.offset << " rgba = " << s.rgba;}
+		)
 	}
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	if(stops.size() == 1){
@@ -840,7 +855,10 @@ void canvas::agg_render(agg::rasterizer_scanline_aa<>& rasterizer){
 void canvas::fill(){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	cairo_fill_preserve(this->cr);
-	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
+	ASSERT(
+		cairo_status(this->cr) == CAIRO_STATUS_SUCCESS,
+		[&](auto&o){o << "cairo error: " << cairo_status_to_string(cairo_status(this->cr));}
+	)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	ASSERT(!this->group_stack.empty())
 
@@ -890,7 +908,10 @@ template <class T> void canvas::agg_stroke(T& vertex_source){
 void canvas::stroke(){
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	cairo_stroke_preserve(this->cr);
-	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
+	ASSERT(
+		cairo_status(this->cr) == CAIRO_STATUS_SUCCESS,
+		[&](auto&o){o << "cairo error: " << cairo_status_to_string(cairo_status(this->cr));}
+	)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->agg_path_to_polyline();
 
@@ -1175,14 +1196,20 @@ void canvas::pop_group(real opacity){
 	ASSERT(0 <= opacity) ASSERT(opacity <= 1)
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	cairo_pop_group_to_source(this->cr);
-	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
+	ASSERT(
+		cairo_status(this->cr) == CAIRO_STATUS_SUCCESS,
+		[&](auto&o){o << "cairo error: " << cairo_status_to_string(cairo_status(this->cr));}
+	)
 
 	if(opacity < 1){
 		cairo_paint_with_alpha(this->cr, opacity);
 	}else{
 		cairo_paint(this->cr);
 	}
-	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
+	ASSERT(
+		cairo_status(this->cr) == CAIRO_STATUS_SUCCESS,
+		[&](auto&o){o << "cairo error: " << cairo_status_to_string(cairo_status(this->cr));}
+	)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	ASSERT(this->group_stack.size() >= 2)
 
@@ -1215,17 +1242,26 @@ void canvas::pop_mask_and_group(){
 
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	cairo_pattern_t* mask = cairo_pop_group(this->cr);
-	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
+	ASSERT(
+		cairo_status(this->cr) == CAIRO_STATUS_SUCCESS,
+		[&](auto&o){o << "cairo error: " << cairo_status_to_string(cairo_status(this->cr));}
+	)
 
 	utki::scope_exit scope_exit([mask](){
 		cairo_pattern_destroy(mask);
 	});
 
 	cairo_pop_group_to_source(this->cr);
-	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
+	ASSERT(
+		cairo_status(this->cr) == CAIRO_STATUS_SUCCESS,
+		[&](auto&o){o << "cairo error: " << cairo_status_to_string(cairo_status(this->cr));}
+	)
 
 	cairo_mask(this->cr, mask);
-	ASSERT_INFO(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS, "cairo error: " << cairo_status_to_string(cairo_status(this->cr)))
+	ASSERT(
+		cairo_status(this->cr) == CAIRO_STATUS_SUCCESS,
+		[&](auto&o){o << "cairo error: " << cairo_status_to_string(cairo_status(this->cr));}
+	)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	ASSERT(this->group_stack.size() >= 2)
 
