@@ -114,7 +114,7 @@ int main(int argc, char **argv){
 #endif
 	
 	auto dom = svgdom::load(papki::fs_file(filename));
-	ASSERT_ALWAYS(dom)
+	utki::assert(dom, SL);
 	
 	TRACE(<< "SVG loaded in " << float(getTicks() - loadStart) / 1000.0f << " sec." << std::endl)
 	

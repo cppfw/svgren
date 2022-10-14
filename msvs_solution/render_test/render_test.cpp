@@ -33,7 +33,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(lpCmdLine);
 
 	auto dom = svgdom::load(papki::fs_file("../samples/testdata/menue-cut.svg"));
-	ASSERT_ALWAYS(dom)
+	utki::assert(dom, SL);
 
 	svgren::parameters params;
 	auto res = svgren::render(*dom, params);
@@ -44,7 +44,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     }
 
 	bmp = CreateBitmap(res.dims.x(), res.dims.y(), 1, 32, res.pixels.data());
-	ASSERT_ALWAYS(bmp != NULL)
+	utki::assert(bmp != NULL, SL);
 
     // Initialize global strings
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
