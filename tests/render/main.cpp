@@ -141,7 +141,7 @@ int main(int argc, char **argv){
 	Window window = XCreateSimpleWindow(display, RootWindow(display, 0), 0, 0, width, height, 1, 0, 0);
 	
 	if(visual->c_class != TrueColor){
-		TRACE_ALWAYS(<< "Cannot handle non true color visual ...\n" << std::endl)
+		utki::log([](auto&o){o << "Cannot handle non true color visual ...\n" << std::endl;});
 		return 1;
 	}	
 	
@@ -197,5 +197,5 @@ int main(int argc, char **argv){
 	}
 #endif
 
-	TRACE_ALWAYS(<< "[PASSED]" << std::endl)
+	utki::log([](auto&o){o << "[PASSED]" << std::endl;});
 }
