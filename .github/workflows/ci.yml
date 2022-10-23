@@ -138,6 +138,7 @@ jobs:
           # - {os: debian, codename: bullseye, image_owner: i386/, package_type: deb, labels: [i386,docker]}
           - {os: debian, codename: bullseye, image_owner: arm32v7/, package_type: deb, labels: [arm,docker]}
           - {os: ubuntu, codename: focal, image_owner: , package_type: deb}
+          - {os: ubuntu, codename: jammy, image_owner: , package_type: deb}
           # - {os: raspbian, codename: buster, image_owner: igagis/, package_type: deb, labels: [arm,docker]}
           - {os: raspbian, codename: bullseye, image_owner: igagis/, package_type: deb, labels: [arm,docker]}
     runs-on: ${{ (matrix.labels == '' && 'ubuntu-latest') || matrix.labels }}
@@ -322,7 +323,7 @@ jobs:
         shell: powershell
     steps:
     - name: git clone
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: install CoAPP tools
       uses: myci-actions/install-coapp-tools@master
     - name: nuget update
@@ -330,7 +331,7 @@ jobs:
         nuget restore msvs_solution/msvs_solution.sln
         nuget update msvs_solution/msvs_solution.sln
     - name: add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
+      uses: microsoft/setup-msbuild@v1.1
     - name: build
       run: .\nuget\build_nuget.ps1
     - name: deploy
