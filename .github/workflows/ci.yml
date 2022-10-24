@@ -303,8 +303,8 @@ jobs:
     - name: prepare pacman package
       run: myci-apply-version.sh --version $(myci-deb-version.sh debian/changelog) msys2/PKGBUILD.in
     - name: build
-      # to make makepkg-mingw build only one architecture we need to set the MINGW_INSTALLS
-      env: {MINGW_INSTALLS: '${{ matrix.repo }}'}
+      # to make makepkg-mingw build only one architecture we need to set the MINGW_ARCH
+      env: {MINGW_ARCH: '${{ matrix.repo }}'}
       run: |
         cd msys2
         PKGEXT='.pkg.tar.xz' makepkg-mingw --syncdeps --noconfirm --skipinteg
@@ -390,8 +390,9 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - macos-10.15
+          # - macos-10.15
           - macos-11
+          # - macos-12
     name: conan - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     steps:
