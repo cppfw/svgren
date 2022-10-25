@@ -29,6 +29,7 @@ SOFTWARE.
 
 #include <array>
 #include <vector>
+#include <list>
 #include <cstdint>
 #include <stdexcept>
 
