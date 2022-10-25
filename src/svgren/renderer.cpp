@@ -1166,6 +1166,21 @@ void renderer::visit(const svgdom::style_element& e){
 	this->style_stack.add_css(e.css);
 }
 
+void renderer::visit(const svgdom::defs_element& e){
+	// add CSS from all <style> elements inside the <defs> element
+	struct defs_css_adder : public svgdom::const_visitor{
+		renderer& r;
+
+		defs_css_adder(renderer& r) : r(r){}
+
+		void visit(const svgdom::style_element& e)override{
+			this->r.style_stack.add_css(e.css);
+		}
+	} visitor(*this);
+
+	e.accept(visitor);
+}
+
 void renderer::visit(const svgdom::rect_element& e){
 //	TRACE(<< "rendering RectElement" << std::endl)
 	svgdom::style_stack::push pushStyles(this->style_stack, e);

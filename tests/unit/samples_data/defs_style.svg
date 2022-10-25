@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" id="layer_1" data-name="layer 1" viewBox="0 0 48 48">
+   <defs>
+      <style>.cls-1{fill:#47506a;fill-rule:evenodd;}.cls-2{fill:none;stroke:#3866f0;stroke-width:4px;}.cls-3{fill:#fff;fill-opacity:0;}</style>
+   </defs>
+   <g id="main">
+      <g id="all_tools">
+         <g id="group-24">
+            <g id="v2_icon_award" data-name="v2 icon award">
+               <path id="shape" class="cls-1" d="M24,1a20.15,20.15,0,0,1,9.52,37.83V47L24,41.25h0L14.48,47V38.83A20.15,20.15,0,0,1,24,1Zm0,4.79A15.34,15.34,0,1,0,39.24,21.12,15.29,15.29,0,0,0,24,5.79Z" transform="translate(0 0)" />
+               <circle id="shapeColorSymbol" class="cls-2" cx="24" cy="21" r="8" />
+               <rect id="rect" class="cls-3" width="48" height="48" />
+            </g>
+         </g>
+      </g>
+   </g>
+</svg>

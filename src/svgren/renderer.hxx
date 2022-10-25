@@ -148,6 +148,7 @@ public:
 	void visit(const svgdom::ellipse_element& e)override;
 	void visit(const svgdom::rect_element& e)override;
 	void visit(const svgdom::style_element& e)override;
+	void visit(const svgdom::defs_element& e)override;
 
 	void default_visit(const svgdom::element& e, const svgdom::container& c)override{
 		// do nothing by default
