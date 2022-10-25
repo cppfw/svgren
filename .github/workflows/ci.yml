@@ -263,6 +263,7 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
 ##### msys2 #####
   msys2:
+    if: ${{ false }}  # disable until https://github.com/msys2/MINGW-packages/issues/13104 is fixed
     runs-on: windows-latest
     defaults:
       run:
@@ -342,6 +343,7 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
 ##### conan - linux #####
   conan-linux:
+    if: ${{ false }}  # disable until libpng is updated
     strategy:
       fail-fast: false
       matrix:
@@ -386,6 +388,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
 ##### conan - macosx #####
   conan-macosx:
+    if: ${{ false }}  # disable until libpng is updated
     strategy:
       fail-fast: false
       matrix:
