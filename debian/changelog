@@ -1,3 +1,9 @@
+libsvgren (0.6.0) UNRELEASED; urgency=medium
+
+  * build for ubuntu jammy
+
+ -- Ivan Gagis <igagis@gmail.com>  Tue, 25 Oct 2022 23:30:00 +0300
+
 libsvgren (0.5.26) unstable; urgency=medium
 
   * build for raspbian bullseye
