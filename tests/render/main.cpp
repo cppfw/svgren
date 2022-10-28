@@ -18,6 +18,10 @@
 #	include <X11/Xutil.h>
 #endif
 
+#ifdef assert
+#	undef assert
+#endif
+
 void write_png(const char* filename, int width, int height, uint32_t *buffer){
    FILE *fp = NULL;
    png_structp png_ptr = NULL;
