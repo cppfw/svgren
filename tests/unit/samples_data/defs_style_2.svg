@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" id="layer_1" data-name="layer 1" viewBox="0 0 48 48">
+   <defs>
+      <style>.cls-1,.cls-3{fill:none;}.cls-2,.cls-4{fill:#47506a;}.cls-3{stroke:#3866f0;stroke-width:4px;}.cls-4{fill-rule:evenodd;}</style>
+   </defs>
+   <g id="main">
+      <g id="all tools">
+         <g id="group-13">
+            <g id="drive">
+               <rect id="rect" class="cls-1" width="48" height="48" />
+               <rect id="rect-2" data-name="rect" class="cls-2" x="12" y="32" width="24" height="4" />
+               <g id="group-2">
+                  <polyline id="shapeColorSymbol" class="cls-3" points="13 27.29 18.61 23.34 23.74 26.92 32.26 20.41" />
+                  <polyline id="shapeColorSymbol-2" data-name="shapeColorSymbol" class="cls-3" points="26 19 33 19 33 26" />
+               </g>
+               <path id="shape" class="cls-4" d="M36,6h9V39.76L40.76,44H7.24L3,39.76V6h9v5H8V39H40V11H36ZM19,3V13H14V3ZM34,3V13H29V3ZM27,6v5H21V6Z" transform="translate(0 0)" />
+            </g>
+         </g>
+      </g>
+   </g>
+</svg>

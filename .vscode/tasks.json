@@ -66,7 +66,7 @@
         {
             "label": "run_agg",
             "type": "shell",
-            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/rel_agg out/rel_agg/tests ../unit/samples_data/defs_style.svg ../unit/samples_data/agg/defs_style.png)",
+            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/rel_agg out/rel_agg/tests ../unit/samples_data/defs_style_2.svg ../unit/samples_data/agg/defs_style_2.png)",
             "problemMatcher": [],
 			"dependsOn": "build_agg",
 			"group": "build"
@@ -76,7 +76,8 @@
             "type": "shell",
 			"dependsOn": "build_dbg_agg",
 			// "dependsOn": "build_dbg_agg_bg",
-			"command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/defs_style.svg out.png)",
+            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/defs_style_2.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/defs_style.svg out.png)",
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/opacity.svg out.png)",
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/ready_test.svg out.png)",
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/shadow_test.svg out.png)",
@@ -139,7 +140,7 @@
 		{
             "label": "run_cairo",
             "type": "shell",
-            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/rel_cairo out/rel_cairo/tests ../unit/samples_data/defs_style.svg ../unit/samples_data/cairo/defs_style.png)",
+            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/rel_cairo out/rel_cairo/tests ../unit/samples_data/defs_style_2.svg ../unit/samples_data/cairo/defs_style_2.png)",
             "problemMatcher": [],
 			"dependsOn": "build_cairo",
 			"group": "build"

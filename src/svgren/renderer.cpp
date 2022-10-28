@@ -455,8 +455,10 @@ void renderer::render_shape(bool isCairoGroupPushed){
 				fillOpacity = *std::get_if<svgdom::real>(p);
 			}
 
-			auto fillRgb = svgdom::get_rgb(*fill).to<real>();
-			this->canvas.set_source(r4::vector4<real>{fillRgb, fillOpacity * opacity});
+			ASSERT(std::holds_alternative<uint32_t>(*fill))
+			auto fill_rgb = svgdom::get_rgb(*fill).to<real>();
+			// std::cout << "fill_rgb = " << fill_rgb << std::endl;
+			this->canvas.set_source(r4::vector4<real>{fill_rgb, fillOpacity * opacity});
 		}
 
 		this->canvas.fill();
@@ -1167,25 +1169,28 @@ void renderer::visit(const svgdom::style_element& e){
 }
 
 void renderer::visit(const svgdom::defs_element& e){
+	// std::cout << "visit defs" << std::endl;
+
 	// add CSS from all <style> elements inside the <defs> element
 	struct defs_css_adder : public svgdom::const_visitor{
-		renderer& r;
+		svgdom::style_stack& ss;
 
-		defs_css_adder(renderer& r) : r(r){}
+		defs_css_adder(svgdom::style_stack& ss) : ss(ss){}
 
 		void visit(const svgdom::style_element& e)override{
-			this->r.style_stack.add_css(e.css);
+			this->ss.add_css(e.css);
 		}
-	} visitor(*this);
+	} visitor(this->style_stack);
 
 	e.accept(visitor);
 }
 
 void renderer::visit(const svgdom::rect_element& e){
-//	TRACE(<< "rendering RectElement" << std::endl)
+	// std::cout << "rendering RectElement" << std::endl;
 	svgdom::style_stack::push pushStyles(this->style_stack, e);
 
 	if(this->is_invisible()){
+		// std::cout << "rect invisible" << std::endl;
 		return;
 	}
 
