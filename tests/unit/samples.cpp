@@ -145,7 +145,7 @@ public:
 private:
 	static void PNG_CustomReadFunction(png_structp pngPtr, png_bytep data, png_size_t length){
 		papki::file* fi = reinterpret_cast<papki::file*>(png_get_io_ptr(pngPtr));
-		utki::assert(fi, SL);
+		tst::check(fi, SL);
 	//	TRACE(<< "PNG_CustomReadFunction: fi = " << fi << " pngPtr = " << pngPtr << " data = " << std::hex << data << " length = " << length << std::endl)
 		try{
 			utki::span<png_byte> bufWrapper(data, size_t(length));
@@ -163,9 +163,9 @@ public:
 	 * @param f - PNG file.
 	 */
 	void loadPNG(const papki::file& fi){
-		utki::assert(!fi.is_open(), SL);
+		tst::check(!fi.is_open(), SL);
 
-		utki::assert(this->buf_v.size() == 0, SL);
+		tst::check(this->buf_v.size() == 0, SL);
 
 		papki::file::guard file_guard(fi); // this will guarantee that the file will be closed upon exit
 //		TRACE(<< "Image::LoadPNG(): file opened" << std::endl)
@@ -178,7 +178,7 @@ public:
 			auto ret = // TODO: we should not rely on that it will always read the requested number of bytes (or should we?)
 
 			fi.read(utki::make_span(sig));
-			utki::assert(ret == sig.size() * sizeof(sig[0]), SL);
+			tst::check(ret == sig.size() * sizeof(sig[0]), SL);
 		}
 
 		if(png_sig_cmp(&*sig.begin(), 0, sig.size() * sizeof(sig[0])) != 0){ // if it is not a PNG-file
@@ -236,7 +236,7 @@ public:
 		png_read_update_info(pngPtr, infoPtr);
 		// get all dimensions and color info again
 		png_get_IHDR(pngPtr, infoPtr, &width, &height, &bitDepth, &colorType, 0, 0, 0);
-		utki::assert(bitDepth == 8, SL);
+		tst::check(bitDepth == 8, SL);
 
 		// Set image type
 		Image::ColorDepth_e imageType;
@@ -273,11 +273,11 @@ public:
 			throw Image::Exc("Image::LoadPNG(): number of bytes per row does not match expected value");
 		}
 
-		utki::assert((bytesPerRow * height) == this->buf_v.size(), SL);
+		tst::check((bytesPerRow * height) == this->buf_v.size(), SL);
 
 //		TRACE(<< "Image::LoadPNG(): going to read in the data" << std::endl)
 		{
-			utki::assert(this->dims().y() && this->buf_v.size(), SL);
+			tst::check(this->dims().y() && this->buf_v.size(), SL);
 			std::vector<png_bytep> rows(this->dims().y());
 			// initialize row pointers
 //			TRACE(<< "Image::LoadPNG(): this->buf.Buf() = " << std::hex << this->buf.Buf() << std::endl)
@@ -335,7 +335,7 @@ tst::set set("samples", [](tst::suite& suite){
             Image png;
             png.loadPNG(png_file);
 
-            utki::assert(png.buf().size() != 0, SL);
+            tst::check(png.buf().size() != 0, SL);
 
             tst::check(png.colorDepth() == Image::ColorDepth_e::RGBA, SL) << "Error: PNG color depth is not RGBA: " << unsigned(png.colorDepth());
             
