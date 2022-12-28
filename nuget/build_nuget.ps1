@@ -55,7 +55,30 @@ msbuild /m ../msvs_solution/msvs_solution.sln /t:Rebuild /p:Configuration=v143_R
 msbuild /m ../msvs_solution/msvs_solution.sln /t:Rebuild /p:Configuration=v143_Debug_MT /p:Platform=x64 /v:minimal /nologo; If(!$?){exit 1}
 msbuild /m ../msvs_solution/msvs_solution.sln /t:Rebuild /p:Configuration=v143_Release_MT /p:Platform=x64 /v:minimal /nologo; If(!$?){exit 1}
 
-# TODO: run tests
+# run tests
+
+Push-Location
+cd ../tests/unit
+
+#     ../../msvs_solution/v142_Debug_MD/unit_tests.exe       --jobs=2 --junit-out=junit_x86_v142_debug_md.xml; If(!$?){exit 1}
+#     ../../msvs_solution/v142_Debug_MT/unit_tests.exe       --jobs=2 --junit-out=junit_x86_v142_debug_mt.xml; If(!$?){exit 1}
+#     ../../msvs_solution/v142_Release_MD/unit_tests.exe     --jobs=2 --junit-out=junit_x86_v142_release_md.xml; If(!$?){exit 1}
+#     ../../msvs_solution/v142_Release_MT/unit_tests.exe     --jobs=2 --junit-out=junit_x86_v142_release_mt.xml; If(!$?){exit 1}
+# ../../msvs_solution/x64/v142_Debug_MD/unit_tests.exe       --jobs=2 --junit-out=junit_x64_v142_debug_md.xml; If(!$?){exit 1}
+# ../../msvs_solution/x64/v142_Debug_MT/unit_tests.exe       --jobs=2 --junit-out=junit_x64_v142_debug_mt.xml; If(!$?){exit 1}
+# ../../msvs_solution/x64/v142_Release_MD/unit_tests.exe     --jobs=2 --junit-out=junit_x64_v142_release_md.xml; If(!$?){exit 1}
+# ../../msvs_solution/x64/v142_Release_MT/unit_tests.exe     --jobs=2 --junit-out=junit_x64_v142_release_mt.xml; If(!$?){exit 1}
+
+    ../../msvs_solution/v143_Debug_MD/unit_tests.exe       --jobs=2 --junit-out=junit_x86_v143_debug_md.xml; If(!$?){exit 1}
+    ../../msvs_solution/v143_Debug_MT/unit_tests.exe       --jobs=2 --junit-out=junit_x86_v143_debug_mt.xml; If(!$?){exit 1}
+    ../../msvs_solution/v143_Release_MD/unit_tests.exe     --jobs=2 --junit-out=junit_x86_v143_release_md.xml; If(!$?){exit 1}
+    ../../msvs_solution/v143_Release_MT/unit_tests.exe     --jobs=2 --junit-out=junit_x86_v143_release_mt.xml; If(!$?){exit 1}
+../../msvs_solution/x64/v143_Debug_MD/unit_tests.exe       --jobs=2 --junit-out=junit_x64_v143_debug_md.xml; If(!$?){exit 1}
+../../msvs_solution/x64/v143_Debug_MT/unit_tests.exe       --jobs=2 --junit-out=junit_x64_v143_debug_mt.xml; If(!$?){exit 1}
+../../msvs_solution/x64/v143_Release_MD/unit_tests.exe     --jobs=2 --junit-out=junit_x64_v143_release_md.xml; If(!$?){exit 1}
+../../msvs_solution/x64/v143_Release_MT/unit_tests.exe     --jobs=2 --junit-out=junit_x64_v143_release_mt.xml; If(!$?){exit 1}
+
+Pop-Location
 
 Write-NuGetPackage nuget.autopkg
 If(!$?){exit 1}
