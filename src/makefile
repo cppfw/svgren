@@ -23,7 +23,7 @@ else ifeq ($(this_svgren_backend),cairo)
     this_ldlibs += `pkg-config --libs cairo`
 endif
 
-this_ldlibs += -lsvgdom -lstdc++ -lm
+this_ldlibs += -lsvgdom -lutki -lstdc++ -lm
 
 this_cxxflags += $(addprefix -I,$(CONAN_INCLUDE_DIRS))
 this_cxxflags_test += $(addprefix -I,$(CONAN_INCLUDE_DIRS))
