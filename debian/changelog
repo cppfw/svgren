@@ -1,3 +1,9 @@
+libsvgren (0.6.3) unstable; urgency=medium
+
+  * do not use initializer list constructor of r4::vector
+
+ -- Ivan Gagis <igagis@gmail.com>  Tue, 14 Feb 2023 17:10:43 +0200
+
 libsvgren (0.6.2) unstable; urgency=medium
 
   * msvs: build v143 configs
