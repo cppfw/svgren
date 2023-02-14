@@ -372,7 +372,7 @@ void renderer::set_gradient(const std::string& id){
 		}
 
 		void default_visit(const svgdom::element&)override{
-			this->r.canvas.set_source(r4::vector4<real>{0});
+			this->r.canvas.set_source(r4::vector4<real>(0));
 		}
 	} visitor(*this, *ss);
 
