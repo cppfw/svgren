@@ -210,6 +210,13 @@
             "problemMatcher": [],
 			"dependsOn": "build_dbg_cairo",
 			"group": "build"
+        },
+        {
+            "label": "format",
+            "type": "shell",
+            "command": "make apply-format",
+            "problemMatcher": [],
+			"group": "build"
         }
     ]
 }

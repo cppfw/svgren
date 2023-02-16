@@ -1,0 +1,4 @@
+[submodule "tool-configs"]
+	path = tool-configs
+	url = ../../cppfw/tool-configs
+	branch = master

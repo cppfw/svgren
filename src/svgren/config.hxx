@@ -33,15 +33,15 @@ SOFTWARE.
 #define SVGREN_BACKEND_SKIA 3
 
 #ifndef SVGREN_BACKEND
-#   define SVGREN_BACKEND SVGREN_BACKEND_AGG
+#	define SVGREN_BACKEND SVGREN_BACKEND_AGG
 #endif
 
 #include <svgdom/config.hpp>
 
-namespace svgren{
+namespace svgren {
 
-typedef svgdom::real real;
+using real = svgdom::real;
 
-typedef uint32_t pixel;
+using pixel = uint32_t;
 
-}
+} // namespace svgren

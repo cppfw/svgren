@@ -32,11 +32,18 @@ jobs:
           repo-name: cppfw
           keys-asc: http://gagis.hopto.org/repo/cppfw/pubkey.gpg
           install: myci locales git
+      - name: add llvm repo (for clang-format)
+        uses: myci-actions/add-deb-repo@master
+        with:
+          repo: deb http://apt.llvm.org/${{ env.linux_release }} llvm-toolchain-${{ env.linux_release }} main
+          repo-name: llvm
+          keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
       - name: install ci tools
         run: |
           apt --quiet install --assume-yes devscripts equivs lcov python3-pip
 
-          pip3 install git+https://github.com/eriwen/lcov-to-cobertura-xml.git
+          # install gcovr >5.2
+          pip install git+https://github.com/gcovr/gcovr.git
       - name: git clone
         uses: myci-actions/checkout@master
       - name: prepare debian package
@@ -50,41 +57,17 @@ jobs:
           locale-gen
       - name: build
         run: make config=gcov
-      - name: create lcov baseline
-        run: lcov --no-external --capture --initial --directory . --output-file ./lcov_base.info
       - name: test
         run: make config=gcov test
-      - name: collect lcov coverage data
-        run: lcov --no-external --capture --directory . --output-file lcov_test.info
-      - name: combine lcov coverage data with baseline
-        run: lcov --add-tracefile lcov_base.info --add-tracefile lcov_test.info --output-file lcov_all.info
-      - name: filter coverage data
-        run: lcov --extract lcov_all.info "$(pwd)/src/*" -o lcov.info
-      - name: generate cobertura report
-        run: lcov_cobertura lcov.info --output cobertura.xml
-      - name: generate coverage summary in markdown format
-        uses: irongut/CodeCoverageSummary@v1.2.0
+      - name: generate coverage report
+        run: gcovr --gcov-ignore-parse-errors --exclude-throw-branches --filter src/ --cobertura > cobertura.xml
+      - name: upload coverage report to artifacts
+        uses: actions/upload-artifact@v3
         with:
-          filename: cobertura.xml
-          badge: true
-          fail_below_min: true
-          format: markdown
-          hide_branch_rate: false
-          hide_complexity: false
-          indicators: true
-          output: both
-          thresholds: '80 95'
-      - name: publish coverage summary
-        if: always() # even if previous steps fail, this one needs to be run
-        uses: LouisBrunner/checks-action@v1.2.0
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          name: coverage - report
-          conclusion: ${{ job.status }}
-          output: "{\"summary\":\"code coverage brief report\"}"
-          output_text_description_file: code-coverage-results.md
+          name: cobertura.xml
+          path: cobertura.xml
       - name: upload coverage data to codecov.io
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         if: always() # even if previous steps fail, this one needs to be run
         with:
           # token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
@@ -112,6 +95,12 @@ jobs:
           repo-name: cppfw
           keys-asc: http://gagis.hopto.org/repo/cppfw/pubkey.gpg
           install: myci git
+      - name: add llvm repo (for clang-format)
+        uses: myci-actions/add-deb-repo@master
+        with:
+          repo: deb http://apt.llvm.org/${{ matrix.codename }} llvm-toolchain-${{ matrix.codename }} main
+          repo-name: llvm
+          keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
       - name: install ci tools
         run: |
           apt install --assume-yes devscripts equivs
@@ -152,6 +141,12 @@ jobs:
           repo-name: cppfw
           keys-asc: http://gagis.hopto.org/repo/cppfw/pubkey.gpg
           install: myci git
+      - name: add llvm repo (for clang-format)
+        uses: myci-actions/add-deb-repo@master
+        with:
+          repo: deb http://apt.llvm.org/${{ matrix.codename }} llvm-toolchain-${{ matrix.codename }} main
+          repo-name: llvm
+          keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
       - name: install ci tools
         run: |
           # configure timezone to avoid 'tzdata' package to require user interaction during installation (needed for ubuntu:focal)
@@ -180,6 +175,12 @@ jobs:
     steps:
     - name: git clone
       uses: myci-actions/checkout@master
+    - name: install clang-tidy and clang-format
+      run: |
+        brew install llvm
+        ln -s "$(brew --prefix llvm)/bin/clang-format" "/usr/local/bin/clang-format"
+        ln -s "$(brew --prefix llvm)/bin/clang-tidy" "/usr/local/bin/clang-tidy"
+        ln -s "$(brew --prefix llvm)/bin/clang-apply-replacements" "/usr/local/bin/clang-apply-replacements"
     - name: add cppfw tap
       run: |
         brew tap cppfw/tap
@@ -263,7 +264,6 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
 ##### msys2 #####
   msys2:
-    if: ${{ false }}  # disable until https://github.com/msys2/MINGW-packages/issues/13104 is fixed
     runs-on: windows-latest
     defaults:
       run:
@@ -343,7 +343,8 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
 ##### conan - linux #####
   conan-linux:
-    if: ${{ false }}  # disable until libpng is updated
+    # TODO: remove comment
+    # if: ${{ false }}  # disable until libpng is updated
     strategy:
       fail-fast: false
       matrix:
@@ -355,8 +356,13 @@ jobs:
     container: ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
     name: conan - linux - ${{ matrix.arch }}
     steps:
-      - name: clean
-        uses: myci-actions/clean@master
+      - name: add llvm repo (for clang-format)
+        uses: myci-actions/add-deb-repo@master
+        with:
+          repo: deb http://apt.llvm.org/${{ matrix.codename }} llvm-toolchain-${{ matrix.codename }} main
+          repo-name: llvm
+          keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
+          install: clang-format clang-tidy
       - name: add cppfw deb repo
         uses: myci-actions/add-deb-repo@master
         with:
@@ -388,7 +394,8 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
 ##### conan - macosx #####
   conan-macosx:
-    if: ${{ false }}  # disable until libpng is updated
+    # TODO: remove comment
+    # if: ${{ false }}  # disable until libpng is updated
     strategy:
       fail-fast: false
       matrix:
@@ -401,12 +408,18 @@ jobs:
     steps:
       - name: git clone
         uses: myci-actions/checkout@master
+      - name: install clang-tidy and clang-format
+        run: |
+          brew install llvm
+          ln -s "$(brew --prefix llvm)/bin/clang-format" "/usr/local/bin/clang-format"
+          ln -s "$(brew --prefix llvm)/bin/clang-tidy" "/usr/local/bin/clang-tidy"
+          ln -s "$(brew --prefix llvm)/bin/clang-apply-replacements" "/usr/local/bin/clang-apply-replacements"
       - name: add cppfw tap
         run: |
           brew tap cppfw/tap
           brew update
       - name: install ci tools
-        run: brew install myci prorab prorab-extra conan make
+        run: brew install myci prorab prorab-extra conan make pkg-config
       - name: set PATH to use latest make
         uses: myci-actions/export-env-var@master
         with: {name: PATH, value: "/usr/local/opt/make/libexec/gnubin:$PATH"}

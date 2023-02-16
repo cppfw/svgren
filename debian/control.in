@@ -9,6 +9,7 @@ Build-Depends:
 		prorab-extra,
 		myci,
 		clang-tidy,
+		clang-format,
 		libx11-dev, libc6-dev, libpng-dev,
 		libutki-dev,
 		libsvgdom-dev (>= 0.3.61),

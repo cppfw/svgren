@@ -5,6 +5,10 @@
 
 #include "../../src/svgren/render.hpp"
 
+#ifdef assert
+#	undef assert
+#endif
+
 namespace{
 tst::set set("render_dims", [](tst::suite& suite){
 	suite.add(

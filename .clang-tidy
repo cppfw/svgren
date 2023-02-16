@@ -1,4 +1,1 @@
-Checks: "bugprone-exception-escape"
-WarningsAsErrors: '*'
-HeaderFilterRegex: '.*'
-InheritParentConfig: false
+tool-configs/clang-tidy/.clang-tidy

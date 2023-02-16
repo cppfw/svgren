@@ -5,6 +5,7 @@
 
 #include <thread>
 
+// NOLINTNEXTLINE(bugprone-exception-escape, "we need exceptions from main() to indicate test failure")
 int main(int argc, char** argv) {
 	if(argc < 2){
 		std::cerr << "at least 1 argument expected (SVG filename)" << std::endl;

@@ -27,16 +27,15 @@ SOFTWARE.
 
 #pragma once
 
+#include <r4/vector.hpp>
 #include <svgdom/dom.hpp>
 
-#include <r4/vector.hpp>
-
-namespace svgren{
+namespace svgren {
 
 /**
  * @brief SVG render parameters.
  */
-struct parameters{
+struct parameters {
 	/**
 	 * @brief Width and height request for the resulting raster image.
 	 * If width request is set to 0 then the width will be adjusted to preserve
@@ -44,7 +43,7 @@ struct parameters{
 	 * height request is also set to zero. Same works for height request.
 	 */
 	r4::vector2<unsigned> dims_request = 0;
-	
+
 	/**
 	 * @brief Dots per inch to use for unit conversion to pixels.
 	 */
@@ -54,12 +53,12 @@ struct parameters{
 /**
  * @brief SVG image rendering result.
  */
-struct result{
+struct result {
 	/**
 	 * @brief Array of pixels.
 	 */
 	std::vector<uint32_t> pixels;
-	
+
 	/**
 	 * @brief Resulting width and height of the raster image.
 	 */
@@ -74,4 +73,4 @@ struct result{
  */
 result render(const svgdom::svg_element& svg, const parameters& p = parameters());
 
-}
+} // namespace svgren

@@ -31,7 +31,17 @@ groups=()
 
 depends=("${pkgPrefix}utki" "${pkgPrefix}svgdom" "${pkgPrefix}agg")
 
-makedepends=('myci' 'prorab' 'prorab-extra' 'doxygen' "${pkgPrefix}r4" "${pkgPrefix}clargs" "${pkgPrefix}libpng" "${pkgPrefix}tst")
+makedepends=(
+	'myci'
+	'prorab'
+	'prorab-extra'
+	'doxygen'
+	"${pkgPrefix}clang-tools-extra"
+	"${pkgPrefix}r4"
+	"${pkgPrefix}clargs"
+	"${pkgPrefix}libpng"
+	"${pkgPrefix}tst"
+)
 checkdepends=('myci')
 optdepends=()
 provides=()
@@ -54,17 +64,17 @@ prepare() {
 
 build() {
 	cd "$rootDir"
-	make
+	make CXX=clang++
 }
 
 check() {
 	cd "$rootDir"
 	if [ "$MSYSTEM" == "MINGW64" ]; then
-		make test
+		make CXX=clang++ test
 	fi
 }
 
 package() {
 	cd "$rootDir"
-	make DESTDIR="$pkgdir" PREFIX="$dirPrefix" install
+	make CXX=clang++ DESTDIR="$pkgdir" PREFIX="$dirPrefix" install
 }

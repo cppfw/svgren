@@ -7,9 +7,9 @@
 
 #include <papki/fs_file.hpp>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 #include <png.h>
 
@@ -23,13 +23,13 @@
 #endif
 
 void write_png(const char* filename, int width, int height, uint32_t *buffer){
-   FILE *fp = NULL;
-   png_structp png_ptr = NULL;
-   png_infop info_ptr = NULL;
+   FILE *fp = nullptr;
+   png_structp png_ptr = nullptr;
+   png_infop info_ptr = nullptr;
    
    // Open file for writing (binary mode)
    fp = fopen(filename, "w+b");
-   if (fp == NULL) {
+   if (fp == nullptr) {
       fprintf(stderr, "Could not open file %s for writing\n", filename);
 	  std::stringstream ss;
 	  ss << "could not open file '" << filename << "' for writing";
@@ -37,15 +37,15 @@ void write_png(const char* filename, int width, int height, uint32_t *buffer){
    }
    
    // Initialize write structure
-   png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-   if (png_ptr == NULL) {
+   png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+   if (png_ptr == nullptr) {
       fprintf(stderr, "Could not allocate write struct\n");
       throw std::runtime_error("Could not allocate write struct");
    }
 
    // Initialize info structure
    info_ptr = png_create_info_struct(png_ptr);
-   if (info_ptr == NULL) {
+   if (info_ptr == nullptr) {
       fprintf(stderr, "Could not allocate info struct\n");
       throw std::runtime_error("Could not allocate info struct");
    }
@@ -68,11 +68,11 @@ void write_png(const char* filename, int width, int height, uint32_t *buffer){
    }
 
    // End write
-   png_write_end(png_ptr, NULL);
+   png_write_end(png_ptr, nullptr);
  
-   if (fp != NULL) fclose(fp);
-   if (info_ptr != NULL) png_free_data(png_ptr, info_ptr, PNG_FREE_ALL, -1);
-   if (png_ptr != NULL) png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
+   if (fp != nullptr) fclose(fp);
+   if (info_ptr != nullptr) png_free_data(png_ptr, info_ptr, PNG_FREE_ALL, -1);
+   if (png_ptr != nullptr) png_destroy_write_struct(&png_ptr, nullptr);
 }
 
 #ifdef DEBUG
@@ -86,30 +86,30 @@ uint32_t getTicks(){
 // NOLINTNEXTLINE(bugprone-exception-escape): fatal exceptions are not caught
 int main(int argc, char **argv){
 	std::string filename;
-	std::string outFilename;
+	std::string out_filename;
 	switch(argc){
 		case 0:
 		case 1:
 			std::cout << "Warning: 2 arguments expected: <in-svg-file> <out-png-file>" << std::endl;
 			std::cout << "\t Got 0 arguments, assume <in-svg-file>=tiger.svg <out-png-file>=tiger.png" << std::endl;
 			filename = "tiger.svg";
-			outFilename = "tiger.png";
+			out_filename = "tiger.png";
 			break;
 		case 2:
 			std::cout << "Warning: 2 arguments expected: <in-svg-file> <out-png-file>" << std::endl;
 			filename = argv[1];
 			{
-				auto dotIndex = filename.find_last_of(".", filename.size());
-				if(dotIndex == std::string::npos){
-					dotIndex = filename.size();
+				auto dot_index = filename.find_last_of(".", filename.size());
+				if(dot_index == std::string::npos){
+					dot_index = filename.size();
 				}
-				outFilename = filename.substr(0, dotIndex) + ".png";
+				out_filename = filename.substr(0, dot_index) + ".png";
 			}
-			std::cout << "\t Got 1 argument, assume <in-svg-file>=" << filename << " <out-png-file>=" << outFilename << std::endl;
+			std::cout << "\t Got 1 argument, assume <in-svg-file>=" << filename << " <out-png-file>=" << out_filename << std::endl;
 			break;
 		default:
 			filename = argv[1];
-			outFilename = argv[2];
+			out_filename = argv[2];
 			break;
 	}
 
@@ -132,13 +132,13 @@ int main(int argc, char **argv){
 	
 	LOG([&](auto&o){o << "img.dims = " << img.dims << " img.pixels.size() = " << img.pixels.size() << std::endl;})
 
-	write_png(outFilename.c_str(), img.dims.x(), img.dims.y(), &*img.pixels.begin());
+	write_png(out_filename.c_str(), int(img.dims.x()), int(img.dims.y()), img.pixels.data());
 	
 #if M_OS == M_OS_LINUX
-	int width = img.dims.x() + 2;
-	int height = img.dims.y() + 2;
+	auto width = int(img.dims.x() + 2);
+	auto height = int(img.dims.y() + 2);
 
-	Display *display = XOpenDisplay(NULL);
+	Display *display = XOpenDisplay(nullptr);
 	
 	Visual *visual = DefaultVisual(display, 0);
 	
@@ -159,13 +159,13 @@ int main(int argc, char **argv){
 		switch(ev.type){
 			case Expose:
 				{
-					int dummyInt;
-					unsigned dummyUnsigned;
-					Window dummyWindow;
-					unsigned winWidth = 0;
-					unsigned winHeight = 0;
+					int dummy_int;
+					unsigned dummy_unsigned;
+					Window dummy_window;
+					unsigned win_width = 0;
+					unsigned win_height = 0;
 					
-					XGetGeometry(display, window, &dummyWindow, &dummyInt, &dummyInt, &winWidth, &winHeight, &dummyUnsigned, &dummyUnsigned);
+					XGetGeometry(display, window, &dummy_window, &dummy_int, &dummy_int, &win_width, &win_height, &dummy_unsigned, &dummy_unsigned);
 					
 	//				TRACE(<< "imWidth = " << imWidth << " imHeight = " << imHeight << std::endl)
 					
@@ -173,8 +173,8 @@ int main(int argc, char **argv){
 					
 					svgren::parameters p;
 					p.dpi = 96;
-					p.dims_request.x() = max(int(winWidth) - 2, 0);
-					p.dims_request.y() = max(int(winHeight) - 2, 0);
+					p.dims_request.x() = max(int(win_width) - 2, 0);
+					p.dims_request.y() = max(int(win_height) - 2, 0);
 					auto img = svgren::render(*dom, p);
 
 					// RGBA -> BGRA
