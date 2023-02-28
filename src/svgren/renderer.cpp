@@ -539,7 +539,7 @@ void renderer::render_shape(bool is_group_pushed)
 
 		ASSERT(stroke)
 		if (std::holds_alternative<std::string>(*stroke)) {
-			this->set_gradient(svgdom::get_local_id_from_iri(*std::get_if<std::string>(stroke)));
+			this->set_gradient(svgdom::get_local_id_from_iri(*stroke));
 		} else {
 			svgdom::real stroke_opacity = 1;
 			auto p = this->style_stack.get_style_property(svgdom::style_property::stroke_opacity);
