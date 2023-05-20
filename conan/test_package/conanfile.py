@@ -1,25 +1,22 @@
 import os
 
-from conans import ConanFile, CMake, tools
+from conan import ConanFile, tools
+from conan.tools.cmake import CMake, cmake_layout
 
+class TestConan(ConanFile):
+	settings = "os", "compiler", "build_type", "arch"
+	generators = "CMakeToolchain", "CMakeDeps"
 
-class UtkiTestConan(ConanFile):
-    settings = "os", "compiler", "build_type", "arch"
-    generators = "cmake"
+	def requirements(self):
+		self.requires(self.tested_reference_str)
 
-    def build(self):
-        cmake = CMake(self)
-        # Current dir is "test_package/build/<build_id>" and CMakeLists.txt is
-        # in "test_package"
-        cmake.configure()
-        cmake.build()
+	def build(self):
+		cmake = CMake(self)
+		cmake.configure()
+		cmake.build()
 
-    def imports(self):
-        self.copy("*.dll", dst="bin", src="bin")
-        self.copy("*.dylib*", dst="bin", src="lib")
-        self.copy('*.so*', dst='bin', src='lib')
+	def layout(self):
+		cmake_layout(self)
 
-    def test(self):
-        if not tools.cross_building(self):
-            os.chdir("bin")
-            self.run(".%sexample" % os.sep, run_environment=True) # run_environment sets LD_LIBRARY_PATH etc. to find dependency libs
+	def test(self):
+		self.run(".%sexample" % os.sep, env="conanrun") # env sets LD_LIBRARY_PATH etc. to find dependency libs

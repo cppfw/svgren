@@ -9,12 +9,9 @@ env:
   MYCI_NEXUS_PASSWORD: ${{ secrets.MYCI_NEXUS_PASSWORD }}
   MYCI_GIT_USERNAME: igagis
   MYCI_GIT_PASSWORD: ${{ secrets.MYCI_GIT_ACCESS_TOKEN }}
-  MYCI_CONAN_REMOTE: http://gagis.hopto.org/conan
+  MYCI_CONAN_REMOTE: https://gagis.hopto.org/conan
   MYCI_CONAN_USER: cppfw
   MYCI_CONAN_PASSWORD: ${{ secrets.MYCI_CONAN_PASSWORD }}
-  CONAN_V2_MODE: 1
-  CONAN_REVISIONS_ENABLED: 1
-  CONAN_SCM_TO_CONANDATA: 1
 jobs:
 ##### coverage #####
   coverage:
@@ -28,9 +25,9 @@ jobs:
       - name: add cppfw deb repo
         uses: myci-actions/add-deb-repo@master
         with:
-          repo: deb http://gagis.hopto.org/repo/cppfw/${{ env.linux_distro }} ${{ env.linux_release }} main
+          repo: deb https://gagis.hopto.org/repo/cppfw/${{ env.linux_distro }} ${{ env.linux_release }} main
           repo-name: cppfw
-          keys-asc: http://gagis.hopto.org/repo/cppfw/pubkey.gpg
+          keys-asc: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
           install: myci locales git
       - name: add llvm repo (for clang-format)
         uses: myci-actions/add-deb-repo@master
@@ -91,9 +88,9 @@ jobs:
       - name: add cppfw deb repo
         uses: myci-actions/add-deb-repo@master
         with:
-          repo: deb http://gagis.hopto.org/repo/cppfw/${{ matrix.os }} ${{ matrix.codename }} main
+          repo: deb https://gagis.hopto.org/repo/cppfw/${{ matrix.os }} ${{ matrix.codename }} main
           repo-name: cppfw
-          keys-asc: http://gagis.hopto.org/repo/cppfw/pubkey.gpg
+          keys-asc: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
           install: myci git
       - name: add llvm repo (for clang-format)
         uses: myci-actions/add-deb-repo@master
@@ -137,9 +134,9 @@ jobs:
       - name: add cppfw deb repo
         uses: myci-actions/add-deb-repo@master
         with:
-          repo: deb http://gagis.hopto.org/repo/cppfw/${{ matrix.os }} ${{ matrix.codename }} main
+          repo: deb https://gagis.hopto.org/repo/cppfw/${{ matrix.os }} ${{ matrix.codename }} main
           repo-name: cppfw
-          keys-asc: http://gagis.hopto.org/repo/cppfw/pubkey.gpg
+          keys-asc: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
           install: myci git
       - name: add llvm repo (for clang-format)
         uses: myci-actions/add-deb-repo@master
@@ -246,9 +243,9 @@ jobs:
     - name: add cppfw deb repo
       uses: myci-actions/add-deb-repo@master
       with:
-        repo: deb http://gagis.hopto.org/repo/cppfw/$(lsb_release --id --short | tr '[:upper:]' '[:lower:]') $(lsb_release --codename --short) main
+        repo: deb https://gagis.hopto.org/repo/cppfw/$(lsb_release --id --short | tr '[:upper:]' '[:lower:]') $(lsb_release --codename --short) main
         repo-name: cppfw
-        keys-asc: http://gagis.hopto.org/repo/cppfw/pubkey.gpg
+        keys-asc: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
         install: myci
     - name: set PACKAGE_VERSION
       uses: myci-actions/export-env-var@master
@@ -260,7 +257,7 @@ jobs:
         myci-apply-version.sh --version $PACKAGE_VERSION *.pom.in
         myci-apply-version.sh --version $PACKAGE_VERSION *.aar.in --filename-only
     - name: deploy
-      run: myci-deploy-maven-nexus.sh --base-url http://gagis.hopto.org/nexus --repo android android/$PACKAGE_NAME-$PACKAGE_VERSION.aar
+      run: myci-deploy-maven-nexus.sh --base-url https://gagis.hopto.org/nexus --repo android android/$PACKAGE_NAME-$PACKAGE_VERSION.aar
       if: startsWith(github.ref, 'refs/tags/')
 ##### msys2 #####
   msys2:
@@ -288,17 +285,17 @@ jobs:
       uses: myci-actions/add-pacman-repo@master
       with:
         name: cppfw_msys
-        url: http://gagis.hopto.org/repo/cppfw/msys2/msys
+        url: https://gagis.hopto.org/repo/cppfw/msys2/msys
         shell: 'msys2 {0}'
-        key-server: http://gagis.hopto.org/repo/cppfw/pubkey.gpg
+        key-server: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
         install: myci
     - name: add cppfw pacman msys/mingw repo
       uses: myci-actions/add-pacman-repo@master
       with:
         name: cppfw_${{ matrix.repo }}
-        url: http://gagis.hopto.org/repo/cppfw/msys2/${{ matrix.repo }}
+        url: https://gagis.hopto.org/repo/cppfw/msys2/${{ matrix.repo }}
         shell: 'msys2 {0}'
-        key-server: http://gagis.hopto.org/repo/cppfw/pubkey.gpg
+        key-server: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
     - name: git clone
       uses: myci-actions/checkout@master
     - name: prepare pacman package
@@ -349,7 +346,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - {os: debian, codename: bullseye, image_owner: , arch: x86_64}
+          - {os: ubuntu, codename: jammy, image_owner: , arch: x86_64}
+          # - {os: debian, codename: bullseye, image_owner: , arch: x86_64}
           # - {os: debian, codename: bullseye, image_owner: i386/, arch: x86, labels: [i386,docker]}
           # - {os: debian, codename: bullseye, image_owner: arm32v7/, arch: armhf, labels: [arm,docker]}
     runs-on: ${{ (matrix.labels == '' && 'ubuntu-latest') || matrix.labels }}
@@ -366,31 +364,30 @@ jobs:
       - name: add cppfw deb repo
         uses: myci-actions/add-deb-repo@master
         with:
-          repo: deb http://gagis.hopto.org/repo/cppfw/${{ matrix.os }} ${{ matrix.codename }} main
+          repo: deb https://gagis.hopto.org/repo/cppfw/${{ matrix.os }} ${{ matrix.codename }} main
           repo-name: cppfw
-          keys-asc: http://gagis.hopto.org/repo/cppfw/pubkey.gpg
+          keys-asc: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
           install: devscripts equivs myci prorab prorab-extra python3-pip cmake git libx11-dev
       - name: install conan
+        run: pip3 --quiet install conan
+      - name: create default conan profile
         run: |
-          pip3 install conan
-          conan profile new --detect default
-          conan profile update settings.compiler.libcxx=libstdc++11 default
+          conan profile detect --name default
+          sed -i -E "s/compiler.cppstd=.*$/compiler.cppstd=17/g" ~/.conan2/profiles/default
       - name: git clone
         uses: myci-actions/checkout@master
       - name: set PACKAGE_VERSION
         uses: myci-actions/export-env-var@master
         with: {name: PACKAGE_VERSION, value: $(myci-deb-version.sh debian/changelog)}
         if: startsWith(github.ref, 'refs/tags/')
-      - name: prepare conanfile
-        run: myci-apply-version.sh --version $PACKAGE_VERSION conan/conanfile.py.in
       - name: build
         run: |
           conan remote add cppfw $MYCI_CONAN_REMOTE
-          conan create conan $MYCI_CONAN_USER/main --ignore-dirty
+          conan create conan --user $MYCI_CONAN_USER --channel main --version $PACKAGE_VERSION
       - name: deploy conan package
         run: |
-          conan user --remote cppfw --password $MYCI_CONAN_PASSWORD $MYCI_CONAN_USER
-          conan upload --remote cppfw --all $PACKAGE_NAME/$PACKAGE_VERSION@$MYCI_CONAN_USER/main
+          conan remote login --password $MYCI_CONAN_PASSWORD cppfw $MYCI_CONAN_USER
+          conan upload --check --remote cppfw $PACKAGE_NAME/$PACKAGE_VERSION@$MYCI_CONAN_USER/main
         if: startsWith(github.ref, 'refs/tags/')
 ##### conan - macosx #####
   conan-macosx:
@@ -420,6 +417,10 @@ jobs:
           brew update
       - name: install ci tools
         run: brew install myci prorab prorab-extra conan make pkg-config
+      - name: create default conan profile
+        run: |
+          conan profile detect --name default
+          sed -i -E "s/compiler.cppstd=.*$/compiler.cppstd=17/g" ~/.conan2/profiles/default
       - name: set PATH to use latest make
         uses: myci-actions/export-env-var@master
         with: {name: PATH, value: "/usr/local/opt/make/libexec/gnubin:$PATH"}
@@ -427,14 +428,12 @@ jobs:
         uses: myci-actions/export-env-var@master
         with: {name: PACKAGE_VERSION, value: $(myci-deb-version.sh debian/changelog)}
         if: startsWith(github.ref, 'refs/tags/')
-      - name: prepare conanfile
-        run: myci-apply-version.sh --version $PACKAGE_VERSION conan/conanfile.py.in
       - name: build
         run: |
           conan remote add cppfw $MYCI_CONAN_REMOTE
-          conan create conan $MYCI_CONAN_USER/main --ignore-dirty
+          conan create conan --user $MYCI_CONAN_USER --channel main --version $PACKAGE_VERSION
       - name: deploy conan package
         run: |
-          conan user --remote cppfw --password $MYCI_CONAN_PASSWORD $MYCI_CONAN_USER
-          conan upload --remote cppfw --all $PACKAGE_NAME/$PACKAGE_VERSION@$MYCI_CONAN_USER/main
+          conan remote login --password $MYCI_CONAN_PASSWORD cppfw $MYCI_CONAN_USER
+          conan upload --check --remote cppfw $PACKAGE_NAME/$PACKAGE_VERSION@$MYCI_CONAN_USER/main
         if: startsWith(github.ref, 'refs/tags/')

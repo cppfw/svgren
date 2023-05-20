@@ -1,18 +1,9 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.15)
 project(PackageTest CXX)
-
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup()
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
 # set(CMAKE_VERBOSE_MAKEFILE on)
 
-add_executable(example example.cpp)
-target_link_libraries(example ${CONAN_LIBS})
+find_package(svgren CONFIG REQUIRED)
 
-# CTest is a testing tool that can be used to test your project.
-# enable_testing()
-# add_test(NAME example
-#          WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-#          COMMAND example)
+add_executable(example example.cpp)
+target_link_libraries(example svgren::svgren)
