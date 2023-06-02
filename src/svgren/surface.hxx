@@ -39,7 +39,7 @@ struct surface : public r4::rectangle<unsigned> {
 	unsigned stride = 0; // stride in pixels, not bytes
 
 	surface() :
-		r4::rectangle<unsigned>{0, std::numeric_limits<unsigned>::max()}
+		r4::rectangle<unsigned>(0, std::numeric_limits<unsigned>::max())
 	{}
 
 	surface intersection(const r4::rectangle<unsigned>& r) const;
