@@ -2,8 +2,6 @@ include prorab.mk
 include prorab-license.mk
 include prorab-clang-format.mk
 
-$(eval $(call prorab-try-simple-include, $(CONANBUILDINFO_DIR)conanbuildinfo.mak))
-
 this_name := svgren
 
 this_soname := $(shell cat $(d)soname.txt)
@@ -27,10 +25,6 @@ else ifeq ($(this_svgren_backend),cairo)
 endif
 
 this_ldlibs += -lsvgdom -lstdc++ -lm
-
-this_cxxflags += $(addprefix -I,$(CONAN_INCLUDE_DIRS))
-this_cxxflags_test += $(addprefix -I,$(CONAN_INCLUDE_DIRS))
-this_ldflags += $(addprefix -L,$(CONAN_LIB_DIRS))
 
 $(eval $(prorab-build-lib))
 
