@@ -38,6 +38,7 @@ SOFTWARE.
 #include <svgdom/elements/gradients.hpp>
 #include <svgdom/elements/styleable.hpp>
 #include <utki/config.hpp>
+#include <rasterimage/image.hpp>
 
 #include "config.hxx"
 #include "surface.hxx"

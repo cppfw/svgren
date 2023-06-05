@@ -29,6 +29,7 @@ SOFTWARE.
 
 #include <r4/vector.hpp>
 #include <svgdom/dom.hpp>
+#include <rasterimage/image.hpp>
 
 namespace svgren {
 
@@ -72,5 +73,7 @@ struct result {
  * @return Rendering result.
  */
 result render(const svgdom::svg_element& svg, const parameters& p = parameters());
+
+rasterimage::image<uint8_t, 4> rasterize(const svgdom::svg_element& svg, const parameters& params = parameters());
 
 } // namespace svgren

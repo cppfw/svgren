@@ -84,7 +84,11 @@ result svgren::render(const svgdom::svg_element& svg, const parameters& p)
 
 	svg.accept(r);
 
-	ret.pixels = canvas.release();
+	auto pixels = canvas.release();
+
+	// TODO:
+
+	ret.pixels = std::move(pixels);
 
 	return ret;
 }

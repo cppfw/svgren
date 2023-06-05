@@ -18,6 +18,11 @@ endif
 
 this_no_install := true
 
+# TODO: remove
+this_cxxflags += -I ../../src
+this_cxxflags_test += -I ../../src
+
+
 $(eval $(prorab-build-app))
 
 ifeq ($(os),windows)

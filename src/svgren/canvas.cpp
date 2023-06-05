@@ -84,10 +84,10 @@ canvas::~canvas()
 std::vector<pixel> canvas::release()
 {
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	auto& ret = this->pixels;
+	auto ret = std::move(this->pixels);
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	ASSERT(!this->group_stack.empty())
-	auto& ret = this->group_stack.front().pixels;
+	auto ret = std::move(this->group_stack.front().pixels);
 #endif
 
 	for (auto& c : ret) {
@@ -114,7 +114,7 @@ std::vector<pixel> canvas::release()
 			c = 0;
 		}
 	}
-	return std::move(ret);
+	return ret;
 }
 
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO

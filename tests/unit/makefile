@@ -12,6 +12,10 @@ this_ldflags += -L../../src
 
 this_no_install := true
 
+# TODO: remove
+this_cxxflags += -I ../../src
+this_cxxflags_test += -I ../../src
+
 $(eval $(prorab-build-app))
 
 $(eval $(call prorab-depend, $(prorab_this_name), ../../src/out/$(c)/libsvgren$(dot_so)))
