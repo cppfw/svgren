@@ -374,17 +374,14 @@ public:
 				continue;
 			}
 
-			ASSERT(alpha > val_zero)
-
 			using std::min;
 			if constexpr (is_integral) {
-				p.r() = value_type(unsigned(p.r()) * val_max / alpha);
-				p.r() = min(p.r(), val_max); // clamp top
-				p.g() = value_type(unsigned(p.g()) * val_max / alpha);
-				p.g() = min(p.g(), val_max); // clamp top
-				p.b() = value_type(unsigned(p.b()) * val_max / alpha);
-				p.b() = min(p.b(), val_max); // clamp top
+				ASSERT(val_zero < alpha && alpha < val_max)
+				p.r() = value_type(min(unsigned(p.r()) * (val_max) / (alpha), unsigned(val_max)));
+				p.g() = value_type(min(unsigned(p.g()) * (val_max) / (alpha), unsigned(val_max)));
+				p.b() = value_type(min(unsigned(p.b()) * (val_max) / (alpha), unsigned(val_max)));
 			} else {
+				ASSERT(val_zero < alpha && alpha < val_one)
 				ASSERT(p.r() >= val_zero)
 				p.r() /= p.a();
 				p.r() = min(p.r(), val_one); // clamp top
