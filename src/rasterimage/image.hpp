@@ -377,6 +377,7 @@ public:
 			using std::min;
 			if constexpr (is_integral) {
 				ASSERT(val_zero < alpha && alpha < val_max)
+				// TODO: write and use operation
 				p.r() = value_type(min(unsigned(p.r()) * (val_max) / (alpha), unsigned(val_max)));
 				p.g() = value_type(min(unsigned(p.g()) * (val_max) / (alpha), unsigned(val_max)));
 				p.b() = value_type(min(unsigned(p.b()) * (val_max) / (alpha), unsigned(val_max)));
