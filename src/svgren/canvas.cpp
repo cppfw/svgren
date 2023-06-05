@@ -1285,15 +1285,12 @@ void canvas::pop_mask_and_group()
 	auto gi = grp.begin();
 	for (; mi != mask.end(); ++mi, ++gi) {
 		// extract group color and mask alpha
-		auto gc = *gi;
+		auto& gc = *gi;
 		auto ma = mi->a();
 
 		// multiply group color (since we use pre-multiplied pixel format) by mask alpha
 		// TODO: add operation?
 		gc = (gc.to<uint32_t>() * ma / 0xff).to<uint8_t>();
-
-		// store back the masked group color
-		*gi = gc;
 	}
 
 	this->group_stack.pop_back(); // pop out mask
