@@ -57,7 +57,7 @@ canvas::canvas(const r4::vector2<unsigned>& dims) :
 	dims(dims)
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	,
-	pixels(size_t(dims.x()) * size_t(dims.y()), 0),
+	pixels(size_t(dims.x()) * size_t(dims.y()), {0, 0, 0, 0}),
 	surface(dims.x(), dims.y(), this->pixels.data()),
 	cr(cairo_create(this->surface.surface))
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
@@ -84,7 +84,7 @@ canvas::~canvas()
 rasterimage::image<uint8_t, 4> canvas::release()
 {
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	auto ret = std::move(this->pixels);
+	auto ret = rasterimage::image<uint8_t, 4>(this->dims, std::move(this->pixels));
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	ASSERT(!this->group_stack.empty())
 	auto ret = rasterimage::image<uint8_t, 4>(this->dims, std::move(this->group_stack.front().pixels));

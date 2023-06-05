@@ -206,12 +206,12 @@ private:
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	using backend_real = double;
 
-	std::vector<pixel> pixels;
+	std::vector<rasterimage::image<uint8_t, 4>::pixel_type> pixels;
 
 	struct cairo_surface_wrapper {
 		cairo_surface_t* surface;
 
-		cairo_surface_wrapper(unsigned width, unsigned height, pixel* buffer)
+		cairo_surface_wrapper(unsigned width, unsigned height, decltype(pixels)::value_type* buffer)
 		{
 			if (width == 0 || height == 0) {
 				throw std::invalid_argument("svgren::canvas::canvas(): width or height argument is zero");

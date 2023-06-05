@@ -357,6 +357,7 @@ public:
 					continue;
 				}
 			} else {
+				ASSERT(alpha <= 1)
 				if (alpha == val_one) {
 					continue;
 				}
@@ -371,11 +372,11 @@ public:
 
 			using std::min;
 			if constexpr (is_integral) {
-				p.r() = p.r() * val_max / alpha;
+				p.r() = value_type(unsigned(p.r()) * val_max / alpha);
 				p.r() = min(p.r(), val_max); // clamp top
-				p.g() = p.g() * val_max / alpha;
+				p.g() = value_type(unsigned(p.g()) * val_max / alpha);
 				p.g() = min(p.g(), val_max); // clamp top
-				p.b() = p.b() * val_max / alpha;
+				p.b() = value_type(unsigned(p.b()) * val_max / alpha);
 				p.b() = min(p.b(), val_max); // clamp top
 			} else {
 				ASSERT(p.r() >= val_zero)
