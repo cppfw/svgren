@@ -63,7 +63,12 @@ public:
 	using value_type = typename pixel_type::value_type;
 
 	static_assert(sizeof(pixel_type) == sizeof(channel_type) * number_of_channels, "pixel_type has padding");
-	static_assert(sizeof(pixel_type[2]) == sizeof(pixel_type) * 2, "pixel_type array has gaps");
+
+	static_assert(
+		// NOLINTNEXTLINE(modernize-avoid-c-arrays)
+		sizeof(pixel_type[2]) == sizeof(pixel_type) * 2,
+		"pixel_type array has gaps"
+	);
 
 private:
 	std::vector<pixel_type> buffer;
