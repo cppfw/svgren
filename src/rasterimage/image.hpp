@@ -60,6 +60,7 @@ public:
 	static const size_t num_channels = number_of_channels;
 
 	using pixel_type = r4::vector<channel_type, num_channels>;
+	using value_type = typename pixel_type::value_type;
 
 	static_assert(sizeof(pixel_type) == sizeof(channel_type) * number_of_channels, "pixel_type has padding");
 
@@ -297,15 +298,6 @@ public:
 		return reverse_iterator(this->begin());
 	}
 
-	void clear(pixel_type val)
-	{
-		for (auto l : *this) {
-			for (auto& p : l) {
-				p = val;
-			}
-		}
-	}
-
 	utki::span<pixel_type> pixels() noexcept
 	{
 		return this->buffer;
@@ -326,7 +318,77 @@ public:
 		return *utki::next(this->begin(), line_index);
 	}
 
-	static image make(dimensions_type dims, const typename pixel_type::value_type* data, size_t stride_in_values = 0)
+	void clear(pixel_type val)
+	{
+		for (auto l : *this) {
+			for (auto& p : l) {
+				p = val;
+			}
+		}
+	}
+
+	void swap_red_blue() noexcept
+	{
+		using std::swap;
+		for (auto& p : this->pixels()) {
+			swap(p.r(), p.b());
+		}
+	}
+
+	void unpremultiply_alpha() noexcept
+	{
+		for (auto& p : this->pixels()) {
+			auto alpha = p.a();
+
+			const static bool is_integral = std::is_integral_v<value_type>;
+
+			static_assert(is_integral || std::is_floating_point_v<value_type>, "unexpected value_type");
+			static_assert(!is_integral || std::is_unsigned_v<value_type>, "unexpected signed integral value_type");
+
+			static const auto val_zero = value_type(0);
+			static const auto val_one = value_type(1);
+			static const auto val_max = std::numeric_limits<value_type>::max();
+
+			if constexpr (is_integral) {
+				if (alpha == val_max) {
+					continue;
+				}
+			} else {
+				if (alpha == val_one) {
+					continue;
+				}
+			}
+
+			if (alpha == val_zero) {
+				p.set(val_zero);
+				continue;
+			}
+
+			ASSERT(alpha > val_zero)
+
+			using std::min;
+			if constexpr (is_integral) {
+				p.r() = p.r() * val_max / alpha;
+				p.r() = min(p.r(), val_max); // clamp top
+				p.g() = p.g() * val_max / alpha;
+				p.g() = min(p.g(), val_max); // clamp top
+				p.b() = p.b() * val_max / alpha;
+				p.b() = min(p.b(), val_max); // clamp top
+			} else {
+				ASSERT(p.r() >= val_zero)
+				p.r() /= p.a();
+				p.r() = min(p.r(), val_one); // clamp top
+				ASSERT(p.g() >= val_zero)
+				p.g() /= p.a();
+				p.g() = min(p.g(), val_one); // clamp top
+				ASSERT(p.b() >= val_zero)
+				p.b() /= p.a();
+				p.b() = min(p.b(), val_one); // clamp top
+			}
+		}
+	}
+
+	static image make(dimensions_type dims, const value_type* data, size_t stride_in_values = 0)
 	{
 		if (stride_in_values == 0) {
 			stride_in_values = dims.x() * num_channels;
@@ -342,7 +404,7 @@ public:
 			std::copy( //
 				src_row,
 				src_row + num_values_per_row,
-				reinterpret_cast<typename pixel_type::value_type*>(row.data())
+				reinterpret_cast<value_type*>(row.data())
 			);
 			src_row += stride_in_values;
 		}
