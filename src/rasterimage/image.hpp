@@ -247,9 +247,12 @@ public:
 	image(dimensions_type dimensions, decltype(buffer) buffer) :
 		dimensioned(dimensions),
 		buffer(std::move(buffer)){ASSERT(
-			this->dims().x() * this->dims().y() != this->pixels().size(),
-			[](auto& o) {
-				o << "rasterimage::image::image(dims, buffer): dimensions do not match with pixels array size";
+			this->dims().x() * this->dims().y() == this->pixels().size(),
+			[this](auto& o) {
+				o << "rasterimage::image::image(dims, buffer): dimensions do not match with pixels array size"
+				  << "\n";
+				o << "\t"
+				  << "dims = " << this->dims() << ", pixels().size() = " << this->pixels().size();
 			}
 		)}
 

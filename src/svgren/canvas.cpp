@@ -81,39 +81,21 @@ canvas::~canvas()
 #endif
 }
 
-std::vector<pixel> canvas::release()
+rasterimage::image<uint8_t, 4> canvas::release()
 {
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	auto ret = std::move(this->pixels);
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	ASSERT(!this->group_stack.empty())
-	auto ret = std::move(this->group_stack.front().pixels);
+	auto ret = rasterimage::image<uint8_t, 4>(this->dims, std::move(this->group_stack.front().pixels));
 #endif
 
-	for (auto& c : ret) {
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-		// swap red and blue channels, as cairo works in BGRA format, while we need to return RGBA
-		c = (c & 0xff00ff00) | ((c << 16) & 0xff0000) | ((c >> 16) & 0xff);
+	ret.swap_red_blue();
 #endif
 
-		// unpremultiply alpha
-		pixel a = (c >> 24);
-		if (a == 0xff) {
-			continue;
-		}
-		if (a != 0) {
-			using std::min;
-			pixel r = (c & 0xff) * 0xff / a;
-			r = min(r, pixel(0xff)); // clamp top
-			pixel g = ((c >> 8) & 0xff) * 0xff / a;
-			g = min(g, pixel(0xff)); // clamp top
-			pixel b = ((c >> 16) & 0xff) * 0xff / a;
-			b = min(b, pixel(0xff)); // clamp top
-			c = ((a << 24) | (b << 16) | (g << 8) | r);
-		} else {
-			c = 0;
-		}
-	}
+	ret.unpremultiply_alpha();
+
 	return ret;
 }
 
@@ -1187,7 +1169,7 @@ svgren::surface canvas::get_sub_surface(const r4::rectangle<unsigned>& region)
 		dims = this->dims;
 		auto& cur_group = this->group_stack.back();
 		stride = cur_group.rendering_buffer.stride_abs();
-		buffer = cur_group.pixels.data();
+		buffer = reinterpret_cast<pixel*>(cur_group.pixels.data());
 	}
 #endif
 
@@ -1303,15 +1285,15 @@ void canvas::pop_mask_and_group()
 	auto gi = grp.begin();
 	for (; mi != mask.end(); ++mi, ++gi) {
 		// extract group color and mask alpha
-		auto gc = to_rgba(*gi);
-		auto ma = ((*mi) >> 24);
+		auto gc = *gi;
+		auto ma = mi->a();
 
 		// multiply group color (since we use pre-multiplied pixel format) by mask alpha
-		gc *= ma;
-		gc /= 0xff;
+		// TODO: add operation?
+		gc = (gc.to<uint32_t>() * ma / 0xff).to<uint8_t>();
 
 		// store back the masked group color
-		*gi = to_pixel(gc);
+		*gi = gc;
 	}
 
 	this->group_stack.pop_back(); // pop out mask

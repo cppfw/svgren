@@ -35,10 +35,10 @@ SOFTWARE.
 
 #include <r4/matrix.hpp>
 #include <r4/rectangle.hpp>
+#include <rasterimage/image.hpp>
 #include <svgdom/elements/gradients.hpp>
 #include <svgdom/elements/styleable.hpp>
 #include <utki/config.hpp>
-#include <rasterimage/image.hpp>
 
 #include "config.hxx"
 #include "surface.hxx"
@@ -240,7 +240,7 @@ private:
 	using backend_real = agg::path_storage::container_type::value_type;
 
 	struct group {
-		std::vector<pixel> pixels;
+		std::vector<rasterimage::image<uint8_t, 4>::pixel_type> pixels;
 		agg::rendering_buffer rendering_buffer;
 		agg::pixfmt_rgba32_pre pixel_format; // use premultiplied pixel format for faster blending
 		agg::renderer_base<decltype(pixel_format)> renderer_base;
@@ -403,7 +403,7 @@ public:
 
 	svgren::surface get_sub_surface(const r4::rectangle<unsigned>& region = {0, std::numeric_limits<unsigned>::max()});
 
-	std::vector<pixel> release();
+	rasterimage::image<uint8_t, 4> release();
 };
 
 } // namespace svgren

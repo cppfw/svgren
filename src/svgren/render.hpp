@@ -28,8 +28,8 @@ SOFTWARE.
 #pragma once
 
 #include <r4/vector.hpp>
-#include <svgdom/dom.hpp>
 #include <rasterimage/image.hpp>
+#include <svgdom/dom.hpp>
 
 namespace svgren {
 

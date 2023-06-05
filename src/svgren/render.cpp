@@ -84,11 +84,13 @@ result svgren::render(const svgdom::svg_element& svg, const parameters& p)
 
 	svg.accept(r);
 
-	auto pixels = canvas.release();
+	auto im = canvas.release();
 
-	// TODO:
+	ret.pixels.resize(im.pixels().size());
 
-	ret.pixels = std::move(pixels);
+	auto span = utki::make_span(reinterpret_cast<const uint32_t*>(im.pixels().data()), im.pixels().size());
+
+	std::copy(span.begin(), span.end(), ret.pixels.begin());
 
 	return ret;
 }
