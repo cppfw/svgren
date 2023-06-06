@@ -38,8 +38,10 @@ namespace rasterimage {
 template <typename value_type>
 value_type multiply(value_type a, value_type b)
 {
+#ifdef DEBUG
 	static const auto val_zero = value_type(0);
 	static const auto val_one = value_type(1);
+#endif
 	static const auto val_max = std::numeric_limits<value_type>::max();
 
 	using std::min;

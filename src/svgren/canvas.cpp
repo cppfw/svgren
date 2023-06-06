@@ -30,6 +30,7 @@ SOFTWARE.
 #include <algorithm>
 #include <iomanip>
 
+#include <rasterimage/operations.hpp>
 #include <utki/debug.hpp>
 
 #include "util.hxx"
@@ -1289,8 +1290,9 @@ void canvas::pop_mask_and_group()
 		auto ma = mi->a();
 
 		// multiply group color (since we use pre-multiplied pixel format) by mask alpha
-		// TODO: add operation?
-		gc = (gc.to<uint32_t>() * ma / 0xff).to<uint8_t>();
+		gc.comp_operation([&ma](const auto& a) {
+			return rasterimage::multiply(a, ma);
+		});
 	}
 
 	this->group_stack.pop_back(); // pop out mask
