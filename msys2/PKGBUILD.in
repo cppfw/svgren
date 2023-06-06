@@ -64,17 +64,17 @@ prepare() {
 
 build() {
 	cd "$rootDir"
-	make CXX=clang++
+	make
 }
 
 check() {
 	cd "$rootDir"
 	if [ "$MSYSTEM" == "MINGW64" ]; then
-		make CXX=clang++ test
+		make test
 	fi
 }
 
 package() {
 	cd "$rootDir"
-	make CXX=clang++ DESTDIR="$pkgdir" PREFIX="$dirPrefix" install
+	make DESTDIR="$pkgdir" PREFIX="$dirPrefix" install
 }
