@@ -44,7 +44,6 @@ value_type multiply(value_type a, value_type b)
 #endif
 	static const auto val_max = std::numeric_limits<value_type>::max();
 
-	using std::min;
 	if constexpr (std::is_integral_v<value_type>) {
 		static_assert(std::is_unsigned_v<value_type>, "unexpected signed integral type");
 		static_assert(sizeof(value_type) <= sizeof(uint32_t), "unexpected too large integral type");
@@ -63,5 +62,9 @@ value_type multiply(value_type a, value_type b)
 		return a * b;
 	}
 }
+
+template <typename value_type>
+value_type divide(value_type a, value_type b)
+{}
 
 } // namespace rasterimage
