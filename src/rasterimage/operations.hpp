@@ -48,7 +48,7 @@ value_type multiply(value_type a, value_type b)
 		static_assert(std::is_unsigned_v<value_type>, "unexpected signed integral type");
 		static_assert(sizeof(value_type) <= sizeof(uint32_t), "unexpected too large integral type");
 
-		using calc_type = typename utki::uint_size<sizeof(value_type) + 1>::type;
+		using calc_type = typename utki::uint_size<sizeof(value_type) * 2>::type;
 
 		return value_type(calc_type(a) * calc_type(b) / calc_type(val_max));
 	} else {
@@ -65,6 +65,33 @@ value_type multiply(value_type a, value_type b)
 
 template <typename value_type>
 value_type divide(value_type a, value_type b)
-{}
+{
+#ifdef DEBUG
+	static const auto val_zero = value_type(0);
+#endif
+	static const auto val_one = value_type(1);
+	static const auto val_max = std::numeric_limits<value_type>::max();
+
+	using std::min;
+	if constexpr (std::is_integral_v<value_type>) {
+		static_assert(std::is_unsigned_v<value_type>, "unexpected signed integral type");
+		static_assert(sizeof(value_type) <= sizeof(uint32_t), "unexpected too large integral type");
+
+		using calc_type = typename utki::uint_size<sizeof(value_type) * 2>::type;
+
+		return value_type(min(calc_type(calc_type(a) * calc_type(val_max) / calc_type(b)), calc_type(val_max)));
+	} else {
+		static_assert(
+			std::is_floating_point_v<value_type>,
+			"unexpected value type, expected either integral or floating point"
+		);
+		ASSERT(val_zero <= a && a <= val_one)
+		ASSERT(val_zero < b && b <= val_one)
+
+		auto res = min(a / b, val_one); // clamp top
+
+		return a;
+	}
+}
 
 } // namespace rasterimage

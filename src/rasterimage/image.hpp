@@ -31,6 +31,8 @@ SOFTWARE.
 #include <utki/debug.hpp>
 #include <utki/span.hpp>
 
+#include "operations.hpp"
+
 // TODO: doxygen
 namespace rasterimage {
 
@@ -349,24 +351,12 @@ public:
 		for (auto& p : this->pixels()) {
 			auto alpha = p.a();
 
-			const static bool is_integral = std::is_integral_v<value_type>;
-
-			static_assert(is_integral || std::is_floating_point_v<value_type>, "unexpected value_type");
-			static_assert(!is_integral || std::is_unsigned_v<value_type>, "unexpected signed integral value_type");
-
 			static const auto val_zero = value_type(0);
-			static const auto val_one = value_type(1);
-			static const auto val_max = std::numeric_limits<value_type>::max();
+			static const auto val_max =
+				std::is_integral_v<value_type> ? std::numeric_limits<value_type>::max() : value_type(1);
 
-			if constexpr (is_integral) {
-				if (alpha == val_max) {
-					continue;
-				}
-			} else {
-				ASSERT(alpha <= 1)
-				if (alpha == val_one) {
-					continue;
-				}
+			if (alpha == val_max) {
+				continue;
 			}
 
 			if (alpha == val_zero) {
@@ -374,25 +364,9 @@ public:
 				continue;
 			}
 
-			using std::min;
-			if constexpr (is_integral) {
-				ASSERT(val_zero < alpha && alpha < val_max)
-				// TODO: write and use operation
-				p.r() = value_type(min(unsigned(p.r()) * (val_max) / (alpha), unsigned(val_max)));
-				p.g() = value_type(min(unsigned(p.g()) * (val_max) / (alpha), unsigned(val_max)));
-				p.b() = value_type(min(unsigned(p.b()) * (val_max) / (alpha), unsigned(val_max)));
-			} else {
-				ASSERT(val_zero < alpha && alpha < val_one)
-				ASSERT(p.r() >= val_zero)
-				p.r() /= p.a();
-				p.r() = min(p.r(), val_one); // clamp top
-				ASSERT(p.g() >= val_zero)
-				p.g() /= p.a();
-				p.g() = min(p.g(), val_one); // clamp top
-				ASSERT(p.b() >= val_zero)
-				p.b() /= p.a();
-				p.b() = min(p.b(), val_one); // clamp top
-			}
+			p.r() = divide(p.r(), alpha);
+			p.g() = divide(p.g(), alpha);
+			p.b() = divide(p.b(), alpha);
 		}
 	}
 
