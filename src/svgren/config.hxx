@@ -42,6 +42,7 @@ namespace svgren {
 
 using real = svgdom::real;
 
+// TODO: image_type::pixel_type
 using pixel = uint32_t;
 
 } // namespace svgren

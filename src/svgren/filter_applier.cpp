@@ -43,7 +43,7 @@ using image_type = rasterimage::image<uint8_t, 4>;
 
 namespace {
 void box_blur_horizontal(
-	uint32_t* dst,
+	image_type::pixel_type* dst,
 	const image_type::pixel_type* src,
 	unsigned dst_stride,
 	unsigned src_stride,
@@ -73,7 +73,7 @@ void box_blur_horizontal(
 			int last = max(tmp, 0);
 			int next = min(tmp + int(box_size), int(width) - 1);
 
-			dst[dst_stride * y + x] = to_pixel((sum / box_size));
+			dst[dst_stride * y + x] = (sum / box_size).to<image_type::pixel_type::value_type>();
 
 			// TODO: subtracting colors, add rasterimage::subtract()?
 			sum += src[src_stride * y + next].to<unsigned>() - src[src_stride * y + last].to<unsigned>();
@@ -84,7 +84,7 @@ void box_blur_horizontal(
 
 namespace {
 void box_blur_vertical(
-	uint32_t* dst,
+	image_type::pixel_type* dst,
 	const image_type::pixel_type* src,
 	unsigned dst_stride,
 	unsigned src_stride,
@@ -115,7 +115,7 @@ void box_blur_vertical(
 			int last = max(tmp, 0);
 			int next = min(tmp + int(box_size), int(height) - 1);
 
-			dst[dst_stride * y + x] = to_pixel(sum / box_size);
+			dst[dst_stride * y + x] = (sum / box_size).to<image_type::pixel_type::value_type>();
 
 			// TODO: subtracting colors, add rasterimage::subtract()?
 			sum += src[src_stride * next + x].to<unsigned>() - src[src_stride * last + x].to<unsigned>();
@@ -202,7 +202,7 @@ filter_result blur_surface(const surface& src, r4::vector2<real> std_deviation)
 	}
 
 	box_blur_horizontal(
-		tmp.data(),
+		reinterpret_cast<image_type::pixel_type*>(tmp.data()),
 		reinterpret_cast<const image_type::pixel_type*>(src.span.data()),
 		src.d.x(),
 		src.stride,
@@ -212,7 +212,7 @@ filter_result blur_surface(const surface& src, r4::vector2<real> std_deviation)
 		h_offset[0]
 	);
 	box_blur_horizontal(
-		ret.surface.span.data(),
+		reinterpret_cast<image_type::pixel_type*>(ret.surface.span.data()),
 		reinterpret_cast<const image_type::pixel_type*>(tmp.data()),
 		ret.surface.stride,
 		src.d.x(),
@@ -222,7 +222,7 @@ filter_result blur_surface(const surface& src, r4::vector2<real> std_deviation)
 		h_offset[1]
 	);
 	box_blur_horizontal(
-		tmp.data(),
+		reinterpret_cast<image_type::pixel_type*>(tmp.data()),
 		reinterpret_cast<const image_type::pixel_type*>(ret.surface.span.data()),
 		src.d.x(),
 		ret.surface.stride,
@@ -233,7 +233,7 @@ filter_result blur_surface(const surface& src, r4::vector2<real> std_deviation)
 	);
 
 	box_blur_vertical(
-		ret.surface.span.data(),
+		reinterpret_cast<image_type::pixel_type*>(ret.surface.span.data()),
 		reinterpret_cast<const image_type::pixel_type*>(tmp.data()),
 		ret.surface.stride,
 		src.d.x(),
@@ -243,7 +243,7 @@ filter_result blur_surface(const surface& src, r4::vector2<real> std_deviation)
 		v_offset[0]
 	);
 	box_blur_vertical(
-		tmp.data(),
+		reinterpret_cast<image_type::pixel_type*>(tmp.data()),
 		reinterpret_cast<const image_type::pixel_type*>(ret.surface.span.data()),
 		src.d.x(),
 		ret.surface.stride,
@@ -253,7 +253,7 @@ filter_result blur_surface(const surface& src, r4::vector2<real> std_deviation)
 		v_offset[1]
 	);
 	box_blur_vertical(
-		ret.surface.span.data(),
+		reinterpret_cast<image_type::pixel_type*>(ret.surface.span.data()),
 		reinterpret_cast<const image_type::pixel_type*>(tmp.data()),
 		ret.surface.stride,
 		src.d.x(),
