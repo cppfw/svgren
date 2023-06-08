@@ -426,23 +426,18 @@ filter_result color_matrix(const surface& s, const r4::matrix4<real>& m, const r
 	ASSERT(!s.span.empty() || s.d.is_zero())
 
 	for (unsigned y = 0; y != s.d.y(); ++y) {
-		auto sp = &s.span[size_t(y) * size_t(s.stride)];
+		auto sp = reinterpret_cast<const image_type::pixel_type*>(&s.span[size_t(y) * size_t(s.stride)]);
 		ASSERT(sp < s.span.end(), [&](auto& o) {
 			o << "sp = " << std::hex << static_cast<const void*>(sp)
 			  << " s.end = " << static_cast<const void*>(s.span.end());
 		})
 		auto dp = &ret.surface.span[size_t(y) * size_t(ret.surface.stride)];
 		for (unsigned x = 0; x != s.d.x(); ++x) {
-			auto cc = to_rgba(*sp);
+			auto cc = *sp;
 			++sp;
 
-			if (cc.a() != 0xff && cc.a() != 0) {
-				// unpremultiply alpha
-
-				r4::vector3<unsigned> rgb{cc};
-				rgb *= 0xff; // first multiply
-				rgb /= cc.a(); // then divide
-				cc = decltype(cc){rgb, cc.a()};
+			if (cc.a() != 0xff && cc.a() != 0) { // TODO: move this inside unpremultiply_alpha()?
+				cc = rasterimage::unpremultiply_alpha(cc);
 			}
 
 			auto c = min(cc.to<real>() / 0xff, 1); // clamp top
