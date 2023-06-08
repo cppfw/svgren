@@ -440,6 +440,7 @@ filter_result color_matrix(const surface& s, const r4::matrix4<real>& m, const r
 				cc = rasterimage::unpremultiply_alpha(cc);
 			}
 
+			// TODO: add clamp operation
 			auto c = min(cc.to<real>() / 0xff, 1); // clamp top
 
 			ASSERT(real(0) <= c.r() && c.r() <= real(1), [&](auto& o) {
@@ -462,6 +463,7 @@ filter_result color_matrix(const surface& s, const r4::matrix4<real>& m, const r
 			c1.g() *= c1.a();
 			c1.b() *= c1.a();
 
+			// TODO: 0xff
 			*dp = to_pixel(min((c1 * 0xff).to<unsigned>(), 0xff)); // clamp top
 			++dp;
 		}
