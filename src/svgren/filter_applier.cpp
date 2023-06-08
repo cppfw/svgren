@@ -38,10 +38,13 @@ SOFTWARE.
 
 using namespace svgren;
 
+// TODO: remove?
+using image_type = rasterimage::image<uint8_t, 4>;
+
 namespace {
 void box_blur_horizontal(
 	uint32_t* dst,
-	const uint32_t* src,
+	const image_type::pixel_type* src,
 	unsigned dst_stride,
 	unsigned src_stride,
 	unsigned width,
@@ -57,12 +60,13 @@ void box_blur_horizontal(
 		using std::min;
 		using std::max;
 
+		// TODO: optimize by calculating first and last x and then iterate between them
 		r4::vector4<unsigned> sum = 0;
 		for (unsigned i = 0; i != box_size; ++i) {
 			int pos = int(i) - int(box_offset);
 			pos = max(pos, 0);
 			pos = min(pos, int(width) - 1);
-			sum += to_rgba(src[src_stride * y + pos]);
+			sum += src[src_stride * y + pos].to<unsigned>();
 		}
 		for (unsigned x = 0; x != width; ++x) {
 			int tmp = int(x) - int(box_offset);
@@ -71,7 +75,8 @@ void box_blur_horizontal(
 
 			dst[dst_stride * y + x] = to_pixel((sum / box_size));
 
-			sum += to_rgba(src[src_stride * y + next]) - to_rgba(src[src_stride * y + last]);
+			// TODO: subtracting colors, add rasterimage::subtract()?
+			sum += src[src_stride * y + next].to<unsigned>() - src[src_stride * y + last].to<unsigned>();
 		}
 	}
 }
@@ -80,7 +85,7 @@ void box_blur_horizontal(
 namespace {
 void box_blur_vertical(
 	uint32_t* dst,
-	const uint32_t* src,
+	const image_type::pixel_type* src,
 	unsigned dst_stride,
 	unsigned src_stride,
 	unsigned width,
@@ -97,12 +102,13 @@ void box_blur_vertical(
 		using std::max;
 
 		r4::vector4<unsigned> sum = 0;
+		// TODO: optimize by calculating first and last x and then iterate between them
 		for (unsigned i = 0; i != box_size; ++i) {
 			int pos = int(i) - int(box_offset);
 			pos = max(pos, 0);
 			pos = min(pos, int(height) - 1);
 
-			sum += to_rgba(src[src_stride * pos + x]);
+			sum += src[src_stride * pos + x].to<unsigned>();
 		}
 		for (unsigned y = 0; y != height; ++y) {
 			int tmp = int(y) - int(box_offset);
@@ -111,7 +117,8 @@ void box_blur_vertical(
 
 			dst[dst_stride * y + x] = to_pixel(sum / box_size);
 
-			sum += to_rgba(src[src_stride * next + x]) - to_rgba(src[src_stride * last + x]);
+			// TODO: subtracting colors, add rasterimage::subtract()?
+			sum += src[src_stride * next + x].to<unsigned>() - src[src_stride * last + x].to<unsigned>();
 		}
 	}
 }
@@ -143,7 +150,7 @@ filter_result allocate_result(const surface& src)
 namespace {
 filter_result blur_surface(const surface& src, r4::vector2<real> std_deviation)
 {
-	// see https://www.w3.org/TR/SVG/filters.html#feGaussianBlurElement for Gaussian Blur approximation algorithm
+	// see https://www.w3.org/TR/SVG11/filters.html#feGaussianBlurElement for Gaussian Blur approximation algorithm
 
 	ASSERT(src.d.x() <= src.stride)
 
@@ -196,7 +203,7 @@ filter_result blur_surface(const surface& src, r4::vector2<real> std_deviation)
 
 	box_blur_horizontal(
 		tmp.data(),
-		src.span.data(),
+		reinterpret_cast<const image_type::pixel_type*>(src.span.data()),
 		src.d.x(),
 		src.stride,
 		src.d.x(),
@@ -206,7 +213,7 @@ filter_result blur_surface(const surface& src, r4::vector2<real> std_deviation)
 	);
 	box_blur_horizontal(
 		ret.surface.span.data(),
-		tmp.data(),
+		reinterpret_cast<const image_type::pixel_type*>(tmp.data()),
 		ret.surface.stride,
 		src.d.x(),
 		src.d.x(),
@@ -216,7 +223,7 @@ filter_result blur_surface(const surface& src, r4::vector2<real> std_deviation)
 	);
 	box_blur_horizontal(
 		tmp.data(),
-		ret.surface.span.data(),
+		reinterpret_cast<const image_type::pixel_type*>(ret.surface.span.data()),
 		src.d.x(),
 		ret.surface.stride,
 		src.d.x(),
@@ -227,7 +234,7 @@ filter_result blur_surface(const surface& src, r4::vector2<real> std_deviation)
 
 	box_blur_vertical(
 		ret.surface.span.data(),
-		tmp.data(),
+		reinterpret_cast<const image_type::pixel_type*>(tmp.data()),
 		ret.surface.stride,
 		src.d.x(),
 		src.d.x(),
@@ -237,7 +244,7 @@ filter_result blur_surface(const surface& src, r4::vector2<real> std_deviation)
 	);
 	box_blur_vertical(
 		tmp.data(),
-		ret.surface.span.data(),
+		reinterpret_cast<const image_type::pixel_type*>(ret.surface.span.data()),
 		src.d.x(),
 		ret.surface.stride,
 		src.d.x(),
@@ -247,7 +254,7 @@ filter_result blur_surface(const surface& src, r4::vector2<real> std_deviation)
 	);
 	box_blur_vertical(
 		ret.surface.span.data(),
-		tmp.data(),
+		reinterpret_cast<const image_type::pixel_type*>(tmp.data()),
 		ret.surface.stride,
 		src.d.x(),
 		src.d.x(),
