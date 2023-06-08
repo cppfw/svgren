@@ -29,6 +29,7 @@ SOFTWARE.
 
 #include <type_traits>
 
+#include <r4/vector.hpp>
 #include <utki/debug.hpp>
 #include <utki/types.hpp>
 
@@ -92,6 +93,16 @@ value_type divide(value_type a, value_type b)
 
 		return a;
 	}
+}
+
+template <typename value_type>
+r4::vector4<value_type> unpremultiply_alpha(const r4::vector4<value_type>& c)
+{
+	return {//
+			divide(c.r(), c.a()),
+			divide(c.g(), c.a()),
+			divide(c.b(), c.a()),
+			c.a()};
 }
 
 } // namespace rasterimage
