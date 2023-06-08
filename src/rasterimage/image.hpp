@@ -349,11 +349,10 @@ public:
 	void unpremultiply_alpha() noexcept
 	{
 		for (auto& p : this->pixels()) {
-			auto alpha = p.a();
+			static const auto val_zero = value(0);
+			static const auto val_max = value(1);
 
-			static const auto val_zero = value_type(0);
-			static const auto val_max =
-				std::is_integral_v<value_type> ? std::numeric_limits<value_type>::max() : value_type(1);
+			auto alpha = p.a();
 
 			if (alpha == val_max) {
 				continue;
@@ -364,9 +363,7 @@ public:
 				continue;
 			}
 
-			p.r() = divide(p.r(), alpha);
-			p.g() = divide(p.g(), alpha);
-			p.b() = divide(p.b(), alpha);
+			p = rasterimage::unpremultiply_alpha(p);
 		}
 	}
 
