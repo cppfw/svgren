@@ -110,7 +110,7 @@ void png_read_callback(png_structp png_ptr, png_bytep data, png_size_t length)
 	auto fi = reinterpret_cast<papki::file*>(png_get_io_ptr(png_ptr));
 	ASSERT(fi)
 
-	// TODO: get number of butes read and check for EOF, rise error if needed
+	// TODO: get number of bytes read and check for EOF, rise error if needed
 	fi->read(utki::make_span(data, length));
 }
 } // namespace

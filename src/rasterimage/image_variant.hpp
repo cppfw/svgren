@@ -68,7 +68,11 @@ inline constexpr size_t to_num_channels(format f)
 
 inline constexpr format to_format(unsigned num_channels)
 {
-	// ASSERT(1 <= num_channels && num_channels <= 4) // TODO: make utki::assert constexpr and uncomment this line
+#ifdef DEBUG
+	if (num_channels < 1 || 4 < num_channels) {
+		throw std::logic_error("num_channels out of range");
+	}
+#endif
 	return format(num_channels - 1);
 }
 

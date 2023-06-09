@@ -273,9 +273,7 @@ void filter_applier::set_result(const std::string& name, filter_result&& result)
 {
 	this->results[name] = std::move(result);
 	this->lastResult = &this->results[name];
-	// TODO: uncomment
-	// ASSERT(this->lastResult->data.size() == 0 || this->lastResult->surface.span.data() ==
-	// this->lastResult->data.data())
+	ASSERT(this->lastResult->data.size() == 0 || this->lastResult->surface.span.data() == this->lastResult->data.data())
 }
 
 surface filter_applier::get_source(const std::string& in)
@@ -286,7 +284,7 @@ surface filter_applier::get_source(const std::string& in)
 	}
 	if (in == "SourceAlpha") {
 		// TODO: implement
-		throw std::runtime_error("SourceAlpha not implemented");
+		throw std::logic_error("SourceAlpha not implemented");
 	}
 	if (in == "BackgroundImage") {
 		// TRACE(<< "background image" << std::endl)
@@ -294,15 +292,15 @@ surface filter_applier::get_source(const std::string& in)
 	}
 	if (in == "BackgroundAlpha") {
 		// TODO: implement
-		throw std::runtime_error("BackgroundAlpha not implemented");
+		throw std::logic_error("BackgroundAlpha not implemented");
 	}
 	if (in == "FillPaint") {
 		// TODO: implement
-		throw std::runtime_error("FillPaint not implemented");
+		throw std::logic_error("FillPaint not implemented");
 	}
 	if (in == "StrokePaint") {
 		// TODO: implement
-		throw std::runtime_error("StrokePaint not implemented");
+		throw std::logic_error("StrokePaint not implemented");
 	}
 
 	auto i = this->results.find(in);
