@@ -38,9 +38,6 @@ SOFTWARE.
 
 using namespace svgren;
 
-// TODO: remove?
-using image_type = rasterimage::image<uint8_t, 4>;
-
 namespace {
 void box_blur_horizontal(
 	image_type::pixel_type* dst,
