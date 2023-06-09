@@ -431,7 +431,7 @@ filter_result color_matrix(const surface& s, const r4::matrix4<real>& m, const r
 			o << "sp = " << std::hex << static_cast<const void*>(sp)
 			  << " s.end = " << static_cast<const void*>(s.span.end());
 		})
-		auto dp = &ret.surface.span[size_t(y) * size_t(ret.surface.stride)];
+		auto dp = reinterpret_cast<image_type::pixel_type*>(&ret.surface.span[size_t(y) * size_t(ret.surface.stride)]);
 		for (unsigned x = 0; x != s.d.x(); ++x) {
 			auto cc = *sp;
 			++sp;
@@ -464,7 +464,7 @@ filter_result color_matrix(const surface& s, const r4::matrix4<real>& m, const r
 			c1.b() *= c1.a();
 
 			// TODO: 0xff
-			*dp = to_pixel(min((c1 * 0xff).to<unsigned>(), 0xff)); // clamp top
+			*dp = min((c1 * 0xff).to<unsigned>(), 0xff).to<uint8_t>();
 			++dp;
 		}
 	}
