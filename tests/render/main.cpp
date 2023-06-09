@@ -184,7 +184,7 @@ int main(int argc, char **argv){
 
 	//				TRACE(<< "imWidth = " << imWidth << " imHeight = " << imHeight << " img.size() = " << img.size() << std::endl)
 					
-					auto ximage = XCreateImage(display, visual, 24, ZPixmap, 0, reinterpret_cast<char*>(&*img.pixels.begin()), img.dims.x(), img.dims.y(), 8, 0);
+					auto ximage = XCreateImage(display, visual, 24, ZPixmap, 0, reinterpret_cast<char*>(img.pixels.data()), img.dims.x(), img.dims.y(), 8, 0);
 					utki::scope_exit scope_exit([ximage](){
 						ximage->data = nullptr; // Xlib will try to deallocate data which is owned by 'img' variable.
 						XDestroyImage(ximage);

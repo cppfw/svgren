@@ -67,11 +67,8 @@ void surface::append_luminance_to_alpha()
 {
 	// Luminance is calculated using formula L = 0.2126 * R + 0.7152 * G + 0.0722 * B
 
-	using image_type = rasterimage::image<uint8_t, 4>;
-	auto sp = utki::make_span(reinterpret_cast<image_type::pixel_type*>(this->span.data()), this->span.size());
-
 	// TODO: take stride into account, do not append luminance to alpha for data out of the surface width
-	for (auto& px : sp) {
+	for (auto& px : this->span) {
 		px.set(
 			image_type::value(1),
 			image_type::value(1),

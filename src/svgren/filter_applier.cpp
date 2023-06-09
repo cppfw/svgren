@@ -132,7 +132,7 @@ filter_result allocate_result(const surface& src)
 		ASSERT(ret.data.size() != 0, [&](auto& o) {
 			o << "src.d = " << src.d;
 		})
-		ret.surface.span = utki::make_span(reinterpret_cast<image_type::pixel_type*>(ret.data.data()), ret.data.size());
+		ret.surface.span = utki::make_span(ret.data);
 		ret.surface.stride = ret.surface.d.x();
 	} else {
 		ret.data.clear();
@@ -158,7 +158,7 @@ filter_result blur_surface(const surface& src, r4::vector2<real> std_deviation)
 
 	filter_result ret = allocate_result(src);
 
-	std::vector<uint32_t> tmp(ret.data.size());
+	std::vector<image_type::pixel_type> tmp(ret.data.size());
 
 	std::array<unsigned, 3> h_box_size;
 	std::array<unsigned, 3> h_offset;
@@ -199,8 +199,8 @@ filter_result blur_surface(const surface& src, r4::vector2<real> std_deviation)
 	}
 
 	box_blur_horizontal(
-		reinterpret_cast<image_type::pixel_type*>(tmp.data()),
-		reinterpret_cast<const image_type::pixel_type*>(src.span.data()),
+		tmp.data(),
+		src.span.data(),
 		src.d.x(),
 		src.stride,
 		src.d.x(),
@@ -209,8 +209,8 @@ filter_result blur_surface(const surface& src, r4::vector2<real> std_deviation)
 		h_offset[0]
 	);
 	box_blur_horizontal(
-		reinterpret_cast<image_type::pixel_type*>(ret.surface.span.data()),
-		reinterpret_cast<const image_type::pixel_type*>(tmp.data()),
+		ret.surface.span.data(),
+		tmp.data(),
 		ret.surface.stride,
 		src.d.x(),
 		src.d.x(),
@@ -219,8 +219,8 @@ filter_result blur_surface(const surface& src, r4::vector2<real> std_deviation)
 		h_offset[1]
 	);
 	box_blur_horizontal(
-		reinterpret_cast<image_type::pixel_type*>(tmp.data()),
-		reinterpret_cast<const image_type::pixel_type*>(ret.surface.span.data()),
+		tmp.data(),
+		ret.surface.span.data(),
 		src.d.x(),
 		ret.surface.stride,
 		src.d.x(),
@@ -230,8 +230,8 @@ filter_result blur_surface(const surface& src, r4::vector2<real> std_deviation)
 	);
 
 	box_blur_vertical(
-		reinterpret_cast<image_type::pixel_type*>(ret.surface.span.data()),
-		reinterpret_cast<const image_type::pixel_type*>(tmp.data()),
+		ret.surface.span.data(),
+		tmp.data(),
 		ret.surface.stride,
 		src.d.x(),
 		src.d.x(),
@@ -240,8 +240,8 @@ filter_result blur_surface(const surface& src, r4::vector2<real> std_deviation)
 		v_offset[0]
 	);
 	box_blur_vertical(
-		reinterpret_cast<image_type::pixel_type*>(tmp.data()),
-		reinterpret_cast<const image_type::pixel_type*>(ret.surface.span.data()),
+		tmp.data(),
+		ret.surface.span.data(),
 		src.d.x(),
 		ret.surface.stride,
 		src.d.x(),
@@ -250,8 +250,8 @@ filter_result blur_surface(const surface& src, r4::vector2<real> std_deviation)
 		v_offset[1]
 	);
 	box_blur_vertical(
-		reinterpret_cast<image_type::pixel_type*>(ret.surface.span.data()),
-		reinterpret_cast<const image_type::pixel_type*>(tmp.data()),
+		ret.surface.span.data(),
+		tmp.data(),
 		ret.surface.stride,
 		src.d.x(),
 		src.d.x(),
@@ -425,12 +425,12 @@ filter_result color_matrix(const surface& s, const r4::matrix4<real>& m, const r
 	ASSERT(!s.span.empty() || s.d.is_zero())
 
 	for (unsigned y = 0; y != s.d.y(); ++y) {
-		auto sp = reinterpret_cast<const image_type::pixel_type*>(&s.span[size_t(y) * size_t(s.stride)]);
+		auto sp = &s.span[size_t(y) * size_t(s.stride)];
 		ASSERT(sp < s.span.end(), [&](auto& o) {
 			o << "sp = " << std::hex << static_cast<const void*>(sp)
 			  << " s.end = " << static_cast<const void*>(s.span.end());
 		})
-		auto dp = reinterpret_cast<image_type::pixel_type*>(&ret.surface.span[size_t(y) * size_t(ret.surface.stride)]);
+		auto dp = &ret.surface.span[size_t(y) * size_t(ret.surface.stride)];
 		for (unsigned x = 0; x != s.d.x(); ++x) {
 			auto cc = *sp;
 			++sp;
@@ -610,9 +610,9 @@ filter_result blend(const surface& in, const surface& in2, svgdom::fe_blend_elem
 	auto ret = allocate_result(s1);
 
 	for (unsigned y = 0; y != ret.surface.d.y(); ++y) {
-		auto sp1 = reinterpret_cast<const image_type::pixel_type*>(&s1.span[size_t(y) * size_t(s1.stride)]);
-		auto sp2 = reinterpret_cast<const image_type::pixel_type*>(&s2.span[size_t(y) * size_t(s2.stride)]);
-		auto dp = reinterpret_cast<image_type::pixel_type*>(&ret.surface.span[size_t(y) * size_t(ret.surface.stride)]);
+		auto sp1 = &s1.span[size_t(y) * size_t(s1.stride)];
+		auto sp2 = &s2.span[size_t(y) * size_t(s2.stride)];
+		auto dp = &ret.surface.span[size_t(y) * size_t(ret.surface.stride)];
 		for (unsigned x = 0; x != ret.surface.d.x(); ++x) {
 			// TODO: optimize by using integer arithmetics instead of floating point
 			// TODO: use rasterimage::to_float()
@@ -703,9 +703,9 @@ filter_result composite(const surface& in, const surface& in2, const svgdom::fe_
 	auto ret = allocate_result(s1);
 
 	for (unsigned y = 0; y != ret.surface.d.y(); ++y) {
-		auto sp1 = reinterpret_cast<const image_type::pixel_type*>(&s1.span[size_t(y) * size_t(s1.stride)]);
-		auto sp2 = reinterpret_cast<const image_type::pixel_type*>(&s2.span[size_t(y) * size_t(s2.stride)]);
-		auto dp = reinterpret_cast<image_type::pixel_type*>(&ret.surface.span[size_t(y) * size_t(ret.surface.stride)]);
+		auto sp1 = &s1.span[size_t(y) * size_t(s1.stride)];
+		auto sp2 = &s2.span[size_t(y) * size_t(s2.stride)];
+		auto dp = &ret.surface.span[size_t(y) * size_t(ret.surface.stride)];
 		for (unsigned x = 0; x != ret.surface.d.x(); ++x) {
 			// TODO: optimize by using integer arithmetics instead of floating point
 			// TODO: reasterimage?
