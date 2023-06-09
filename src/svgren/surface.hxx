@@ -33,10 +33,11 @@ SOFTWARE.
 #include <rasterimage/image.hpp>
 #include <utki/span.hpp>
 
+#include "config.hxx"
+
 namespace svgren {
 
 struct surface : public r4::rectangle<unsigned> {
-	using image_type = rasterimage::image<uint8_t, 4>;
 	utki::span<image_type::pixel_type> span; // RGBA data
 	image_type::dimensions_type::value_type stride = 0; // stride in pixels, not bytes
 

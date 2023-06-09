@@ -1150,7 +1150,7 @@ void canvas::set_matrix(const r4::matrix2<real>& m)
 svgren::surface canvas::get_sub_surface(const r4::rectangle<unsigned>& region)
 {
 	r4::vector2<unsigned> dims;
-	pixel* buffer;
+	image_type::pixel_type* buffer;
 	unsigned stride;
 
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
@@ -1162,7 +1162,7 @@ svgren::surface canvas::get_sub_surface(const r4::rectangle<unsigned>& region)
 
 		dims = decltype(dims){unsigned(cairo_image_surface_get_width(s)), unsigned(cairo_image_surface_get_height(s))};
 
-		buffer = reinterpret_cast<pixel*>(cairo_image_surface_get_data(s));
+		buffer = reinterpret_cast<image_type::pixel_type*>(cairo_image_surface_get_data(s));
 	}
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	{
@@ -1170,7 +1170,7 @@ svgren::surface canvas::get_sub_surface(const r4::rectangle<unsigned>& region)
 		dims = this->dims;
 		auto& cur_group = this->group_stack.back();
 		stride = cur_group.rendering_buffer.stride_abs();
-		buffer = reinterpret_cast<pixel*>(cur_group.pixels.data());
+		buffer = cur_group.pixels.data();
 	}
 #endif
 
@@ -1183,7 +1183,7 @@ svgren::surface canvas::get_sub_surface(const r4::rectangle<unsigned>& region)
 	using std::min;
 	ret.d = min(region.d, dims - region.p);
 	ret.span = utki::make_span(
-		reinterpret_cast<surface::image_type::pixel_type*>(buffer + size_t(region.p.y() * ret.stride + region.p.x())),
+		buffer + size_t(region.p.y() * ret.stride + region.p.x()),
 		ret.stride * ret.d.y() - (ret.stride - ret.d.x()) // subtract 'tail' from last pixels row
 	);
 	ret.p = region.p;
