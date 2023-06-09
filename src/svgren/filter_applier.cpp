@@ -704,14 +704,15 @@ filter_result composite(const surface& in, const surface& in2, const svgdom::fe_
 	auto ret = allocate_result(s1);
 
 	for (unsigned y = 0; y != ret.surface.d.y(); ++y) {
-		auto sp1 = &s1.span[size_t(y) * size_t(s1.stride)];
-		auto sp2 = &s2.span[size_t(y) * size_t(s2.stride)];
-		auto dp = &ret.surface.span[size_t(y) * size_t(ret.surface.stride)];
+		auto sp1 = reinterpret_cast<const image_type::pixel_type*>(&s1.span[size_t(y) * size_t(s1.stride)]);
+		auto sp2 = reinterpret_cast<const image_type::pixel_type*>(&s2.span[size_t(y) * size_t(s2.stride)]);
+		auto dp = reinterpret_cast<image_type::pixel_type*>(&ret.surface.span[size_t(y) * size_t(ret.surface.stride)]);
 		for (unsigned x = 0; x != ret.surface.d.x(); ++x) {
 			// TODO: optimize by using integer arithmetics instead of floating point
-			auto c01 = to_rgba(*sp1).to<real>() / 0xff;
+			// TODO: reasterimage?
+			auto c01 = sp1->to<real>() / 0xff;
 			++sp1;
-			auto c02 = to_rgba(*sp2).to<real>() / 0xff;
+			auto c02 = sp2->to<real>() / 0xff;
 			++sp2;
 
 			r4::vector4<real> o;
@@ -751,7 +752,8 @@ filter_result composite(const surface& in, const surface& in2, const svgdom::fe_
 					break;
 			}
 
-			*dp = to_pixel((o * 0xff).to<unsigned>());
+			// TODO: rasterimage::to_integral()
+			*dp = (o * 0xff).to<uint8_t>();
 			++dp;
 		}
 	}
