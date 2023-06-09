@@ -611,14 +611,15 @@ filter_result blend(const surface& in, const surface& in2, svgdom::fe_blend_elem
 	auto ret = allocate_result(s1);
 
 	for (unsigned y = 0; y != ret.surface.d.y(); ++y) {
-		auto sp1 = &s1.span[size_t(y) * size_t(s1.stride)];
-		auto sp2 = &s2.span[size_t(y) * size_t(s2.stride)];
-		auto dp = &ret.surface.span[size_t(y) * size_t(ret.surface.stride)];
+		auto sp1 = reinterpret_cast<const image_type::pixel_type*>(&s1.span[size_t(y) * size_t(s1.stride)]);
+		auto sp2 = reinterpret_cast<const image_type::pixel_type*>(&s2.span[size_t(y) * size_t(s2.stride)]);
+		auto dp = reinterpret_cast<image_type::pixel_type*>(&ret.surface.span[size_t(y) * size_t(ret.surface.stride)]);
 		for (unsigned x = 0; x != ret.surface.d.x(); ++x) {
 			// TODO: optimize by using integer arithmetics instead of floating point
-			auto c01 = to_rgba(*sp1).to<real>() / 0xff;
+			// TODO: use rasterimage::to_float()
+			auto c01 = sp1->to<real>() / 0xff;
 			++sp1;
-			auto c02 = to_rgba(*sp2).to<real>() / 0xff;
+			auto c02 = sp2->to<real>() / 0xff;
 			++sp2;
 
 			/*
@@ -660,7 +661,8 @@ filter_result blend(const surface& in, const surface& in2, svgdom::fe_blend_elem
 			// qr = 1 - (1 - qa) * (1 - qb)
 			auto qr = 1 - (1 - c01.a()) * (1 - c02.a());
 
-			*dp = to_pixel((r4::vector4<real>{cr, qr} * 0xff).to<unsigned>());
+			// TODO: rasterimage?
+			*dp = (r4::vector4<real>{cr, qr} * 0xff).to<uint8_t>();
 			++dp;
 		}
 	}
