@@ -36,11 +36,14 @@ SOFTWARE.
 #	define SVGREN_BACKEND SVGREN_BACKEND_AGG
 #endif
 
+#include <rasterimage/image.hpp>
 #include <svgdom/config.hpp>
 
 namespace svgren {
 
 using real = svgdom::real;
+
+using image_type = rasterimage::image<uint8_t, 4>;
 
 // TODO: image_type::pixel_type
 using pixel = uint32_t;
