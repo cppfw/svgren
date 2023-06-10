@@ -612,10 +612,9 @@ filter_result blend(const surface& in, const surface& in2, svgdom::fe_blend_elem
 		auto dp = &ret.surface.span[size_t(y) * size_t(ret.surface.stride)];
 		for (unsigned x = 0; x != ret.surface.d.x(); ++x) {
 			// TODO: optimize by using integer arithmetics instead of floating point
-			// TODO: use rasterimage::to_float()
-			auto c01 = sp1->to<real>() / 0xff;
+			auto c01 = rasterimage::to_float<real>(*sp1);
 			++sp1;
-			auto c02 = sp2->to<real>() / 0xff;
+			auto c02 = rasterimage::to_float<real>(*sp2);
 			++sp2;
 
 			/*
@@ -657,8 +656,7 @@ filter_result blend(const surface& in, const surface& in2, svgdom::fe_blend_elem
 			// qr = 1 - (1 - qa) * (1 - qb)
 			auto qr = 1 - (1 - c01.a()) * (1 - c02.a());
 
-			// TODO: rasterimage?
-			*dp = (r4::vector4<real>{cr, qr} * 0xff).to<uint8_t>();
+			*dp = rasterimage::to_integral<image_type::value_type>(r4::vector4<real>{cr, qr});
 			++dp;
 		}
 	}
@@ -705,10 +703,9 @@ filter_result composite(const surface& in, const surface& in2, const svgdom::fe_
 		auto dp = &ret.surface.span[size_t(y) * size_t(ret.surface.stride)];
 		for (unsigned x = 0; x != ret.surface.d.x(); ++x) {
 			// TODO: optimize by using integer arithmetics instead of floating point
-			// TODO: reasterimage?
-			auto c01 = sp1->to<real>() / 0xff;
+			auto c01 = rasterimage::to_float<real>(*sp1);
 			++sp1;
-			auto c02 = sp2->to<real>() / 0xff;
+			auto c02 = rasterimage::to_float<real>(*sp2);
 			++sp2;
 
 			r4::vector4<real> o;
@@ -748,8 +745,7 @@ filter_result composite(const surface& in, const surface& in2, const svgdom::fe_
 					break;
 			}
 
-			// TODO: rasterimage::to_integral()
-			*dp = (o * 0xff).to<uint8_t>();
+			*dp = rasterimage::to_integral<image_type::value_type>(o);
 			++dp;
 		}
 	}
