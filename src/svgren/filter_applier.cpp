@@ -72,7 +72,7 @@ void box_blur_horizontal(
 
 			dst[dst_stride * y + x] = (sum / box_size).to<image_type::pixel_type::value_type>();
 
-			// TODO: subtracting colors, add rasterimage::subtract()?
+			// TODO: subtracting colors, why unsigned and not uint8_t?
 			sum += src[src_stride * y + next].to<unsigned>() - src[src_stride * y + last].to<unsigned>();
 		}
 	}
@@ -114,7 +114,7 @@ void box_blur_vertical(
 
 			dst[dst_stride * y + x] = (sum / box_size).to<image_type::pixel_type::value_type>();
 
-			// TODO: subtracting colors, add rasterimage::subtract()?
+			// TODO: subtracting colors, why unsigned and not uint8_t?
 			sum += src[src_stride * next + x].to<unsigned>() - src[src_stride * last + x].to<unsigned>();
 		}
 	}
@@ -433,9 +433,7 @@ filter_result color_matrix(const surface& s, const r4::matrix4<real>& m, const r
 			auto cc = *sp;
 			++sp;
 
-			if (cc.a() != 0xff && cc.a() != 0) { // TODO: move this inside unpremultiply_alpha()?
-				cc = rasterimage::unpremultiply_alpha(cc);
-			}
+			cc = rasterimage::unpremultiply_alpha(cc);
 
 			// TODO: add clamp operation
 			auto c = min(cc.to<real>() / 0xff, 1); // clamp top

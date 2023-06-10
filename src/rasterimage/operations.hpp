@@ -96,13 +96,42 @@ value_type divide(value_type a, value_type b)
 }
 
 template <typename value_type>
+value_type value(float f)
+{
+	if constexpr (std::is_floating_point_v<value_type>) {
+		return value_type(f);
+	} else {
+		static_assert(std::is_integral_v<value_type>, "unexpected non-integral value_type");
+		static_assert(std::is_unsigned_v<value_type>, "unexpected signed integral value_type");
+
+		const auto val_max = std::numeric_limits<value_type>::max();
+
+		return value_type(f * val_max);
+	}
+}
+
+template <typename value_type>
 r4::vector4<value_type> unpremultiply_alpha(const r4::vector4<value_type>& c)
 {
+	// optimization
+	if (c.a() == value<value_type>(1) || c.a() == value<value_type>(0)) {
+		return c;
+	}
+
 	return {//
 			divide(c.r(), c.a()),
 			divide(c.g(), c.a()),
 			divide(c.b(), c.a()),
 			c.a()};
 }
+
+// TODO: ?
+// template <typename to_value_type, typename from_value_type, size_t num_channels>
+// r4::vector<to_value_type, num_channels> to(const r4::vector<from_value_type, num_channels>& from)
+// {
+// 	if constexpr (std::is_floating_point_v<to_value_type>){
+// 		return from;
+// 	}
+// }
 
 } // namespace rasterimage

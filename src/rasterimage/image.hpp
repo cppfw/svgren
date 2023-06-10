@@ -349,20 +349,6 @@ public:
 	void unpremultiply_alpha() noexcept
 	{
 		for (auto& p : this->pixels()) {
-			static const auto val_zero = value(0);
-			static const auto val_max = value(1);
-
-			auto alpha = p.a();
-
-			if (alpha == val_max) {
-				continue;
-			}
-
-			if (alpha == val_zero) {
-				p.set(val_zero);
-				continue;
-			}
-
 			p = rasterimage::unpremultiply_alpha(p);
 		}
 	}
@@ -395,16 +381,7 @@ public:
 
 	constexpr static value_type value(float f)
 	{
-		if constexpr (std::is_floating_point_v<value_type>) {
-			return value_type(f);
-		} else {
-			static_assert(std::is_integral_v<value_type>, "unexpected non-integral value_type");
-			static_assert(std::is_unsigned_v<value_type>, "unexpected signed integral value_type");
-
-			const auto val_max = std::numeric_limits<value_type>::max();
-
-			return value_type(f * val_max);
-		}
+		return rasterimage::value<value_type>(f);
 	}
 };
 
