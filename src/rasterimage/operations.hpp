@@ -125,13 +125,28 @@ r4::vector4<value_type> unpremultiply_alpha(const r4::vector4<value_type>& c)
 			c.a()};
 }
 
-// TODO: ?
-// template <typename to_value_type, typename from_value_type, size_t num_channels>
-// r4::vector<to_value_type, num_channels> to(const r4::vector<from_value_type, num_channels>& from)
-// {
-// 	if constexpr (std::is_floating_point_v<to_value_type>){
-// 		return from;
-// 	}
-// }
+template <typename to_value_type = float, typename from_value_type, size_t num_channels>
+r4::vector<to_value_type, num_channels> to_float(const r4::vector<from_value_type, num_channels>& integral)
+{
+	static_assert(std::is_floating_point_v<to_value_type>, "unexpected non-floating point destination type");
+	static_assert(std::is_integral_v<from_value_type>, "unexpceted non-integral source type");
+	static_assert(std::is_unsigned_v<from_value_type>, "unexpected signed source type");
+
+	static const auto val_max = std::numeric_limits<from_value_type>::max();
+
+	return integral.template to<to_value_type>() / to_value_type(val_max);
+}
+
+template <typename to_value_type, typename from_value_type, size_t num_channels>
+r4::vector<to_value_type, num_channels> to_integral(const r4::vector<from_value_type, num_channels>& floating_point)
+{
+	static_assert(std::is_floating_point_v<from_value_type>, "unexpected non-floating point source type");
+	static_assert(std::is_integral_v<to_value_type>, "unexpceted non-integral destination type");
+	static_assert(std::is_unsigned_v<to_value_type>, "unexpected signed destination type");
+
+	static const auto val_max = std::numeric_limits<to_value_type>::max();
+
+	return (floating_point * val_max).template to<to_value_type>();
+}
 
 } // namespace rasterimage

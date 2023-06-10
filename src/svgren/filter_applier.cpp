@@ -31,6 +31,7 @@ SOFTWARE.
 #include <stdexcept>
 
 #include <r4/matrix.hpp>
+#include <rasterimage/operations.hpp>
 #include <utki/debug.hpp>
 #include <utki/math.hpp>
 
@@ -435,8 +436,7 @@ filter_result color_matrix(const surface& s, const r4::matrix4<real>& m, const r
 
 			cc = rasterimage::unpremultiply_alpha(cc);
 
-			// TODO: add clamp operation
-			auto c = min(cc.to<real>() / 0xff, 1); // clamp top
+			auto c = rasterimage::to_float<real>(cc);
 
 			ASSERT(real(0) <= c.r() && c.r() <= real(1), [&](auto& o) {
 				o << "c = " << c << ", cc = " << cc;
@@ -458,8 +458,9 @@ filter_result color_matrix(const surface& s, const r4::matrix4<real>& m, const r
 			c1.g() *= c1.a();
 			c1.b() *= c1.a();
 
-			// TODO: 0xff
-			*dp = min((c1 * 0xff).to<unsigned>(), 0xff).to<uint8_t>();
+			using std::min;
+			c1 = min(c1, real(1)); // clamp top
+			*dp = rasterimage::to_integral<image_type::value_type>(c1);
 			++dp;
 		}
 	}
