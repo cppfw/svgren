@@ -20,9 +20,9 @@ tst::set set("render_dims", [](tst::suite& suite){
 
 			svgren::parameters p;
 			p.dims_request = decltype(p.dims_request){10, 10};
-			auto res = svgren::render(*dom, p);
+			auto res = svgren::rasterize(*dom, p);
 
-			utki::assert(res.dims == p.dims_request, SL);
+			utki::assert(res.dims() == p.dims_request, SL);
 		}
 	);
 });

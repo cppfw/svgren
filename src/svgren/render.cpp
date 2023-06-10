@@ -42,49 +42,9 @@ result svgren::render(const svgdom::svg_element& svg, const parameters& p)
 {
 	result ret;
 
-	auto svg_dims = svg.get_dimensions(svgdom::real(p.dpi));
+	auto im = rasterize(svg, p);
 
-	if (!svg_dims.is_positive()) {
-		return ret;
-	}
-
-	if (p.dims_request.is_zero()) {
-		using std::ceil;
-		ret.dims = ceil(svg_dims).to<unsigned>();
-	} else {
-		real aspect_ratio = svg.aspect_ratio(svgdom::real(p.dpi));
-		if (aspect_ratio == 0) {
-			return ret;
-		}
-		ASSERT(aspect_ratio > 0)
-		using std::round;
-		using std::max;
-		if (p.dims_request.x() == 0 && p.dims_request.y() != 0) {
-			ret.dims.x() = unsigned(round(aspect_ratio * real(p.dims_request.y())));
-			ret.dims.x() = max(ret.dims.x(), unsigned(1)); // we don't want zero width
-			ret.dims.y() = p.dims_request.y();
-		} else if (p.dims_request.x() != 0 && p.dims_request.y() == 0) {
-			ret.dims.y() = unsigned(round(real(p.dims_request.x()) / aspect_ratio));
-			ret.dims.y() = max(ret.dims.y(), unsigned(1)); // we don't want zero height
-			ret.dims.x() = p.dims_request.x();
-		} else {
-			ASSERT(p.dims_request.is_positive())
-			ret.dims = p.dims_request;
-		}
-	}
-
-	ASSERT(ret.dims.is_positive())
-	ASSERT(svg_dims.is_positive())
-
-	svgren::canvas canvas(ret.dims);
-
-	canvas.scale(ret.dims.to<real>().comp_div(svg_dims.to<real>()));
-
-	renderer r(canvas, p.dpi, svg_dims, svg);
-
-	svg.accept(r);
-
-	auto im = canvas.release();
+	ret.dims = im.dims();
 
 	ret.pixels.resize(im.pixels().size());
 
@@ -93,4 +53,53 @@ result svgren::render(const svgdom::svg_element& svg, const parameters& p)
 	std::copy(span.begin(), span.end(), ret.pixels.begin());
 
 	return ret;
+}
+
+image_type svgren::rasterize(const svgdom::svg_element& svg, const parameters& params)
+{
+	auto svg_dims = svg.get_dimensions(svgdom::real(params.dpi));
+
+	if (!svg_dims.is_positive()) {
+		return {};
+	}
+
+	image_type::dimensions_type raster_dims;
+
+	if (params.dims_request.is_zero()) {
+		using std::ceil;
+		raster_dims = ceil(svg_dims).to<unsigned>();
+	} else {
+		real aspect_ratio = svg.aspect_ratio(svgdom::real(params.dpi));
+		if (aspect_ratio == 0) {
+			return {};
+		}
+		ASSERT(aspect_ratio > 0)
+		using std::round;
+		using std::max;
+		if (params.dims_request.x() == 0 && params.dims_request.y() != 0) {
+			raster_dims.x() = unsigned(round(aspect_ratio * real(params.dims_request.y())));
+			raster_dims.x() = max(raster_dims.x(), unsigned(1)); // we don't want zero width
+			raster_dims.y() = params.dims_request.y();
+		} else if (params.dims_request.x() != 0 && params.dims_request.y() == 0) {
+			raster_dims.y() = unsigned(round(real(params.dims_request.x()) / aspect_ratio));
+			raster_dims.y() = max(raster_dims.y(), unsigned(1)); // we don't want zero height
+			raster_dims.x() = params.dims_request.x();
+		} else {
+			ASSERT(params.dims_request.is_positive())
+			raster_dims = params.dims_request;
+		}
+	}
+
+	ASSERT(raster_dims.is_positive())
+	ASSERT(svg_dims.is_positive())
+
+	svgren::canvas canvas(raster_dims);
+
+	canvas.scale(raster_dims.to<real>().comp_div(svg_dims.to<real>()));
+
+	renderer r(canvas, params.dpi, svg_dims, svg);
+
+	svg.accept(r);
+
+	return canvas.release();
 }

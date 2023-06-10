@@ -33,6 +33,8 @@ SOFTWARE.
 
 namespace svgren {
 
+using image_type = rasterimage::image<uint8_t, 4>;
+
 /**
  * @brief SVG render parameters.
  */
@@ -72,8 +74,10 @@ struct result {
  * @param p - render parameters.
  * @return Rendering result.
  */
+// TODO: deprecate
+// [[deprecated("use rasterize()")]]
 result render(const svgdom::svg_element& svg, const parameters& p = parameters());
 
-rasterimage::image<uint8_t, 4> rasterize(const svgdom::svg_element& svg, const parameters& params = parameters());
+image_type rasterize(const svgdom::svg_element& svg, const parameters& params = parameters());
 
 } // namespace svgren

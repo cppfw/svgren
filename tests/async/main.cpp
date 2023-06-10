@@ -24,8 +24,8 @@ int main(int argc, char** argv) {
 		decltype(svg.get()) s = svg.get();
 		threads.emplace_back(
 				[s](){
-					auto res = svgren::render(*s);
-					utki::log([&](auto&o){o << "rendered, width = " << res.dims.x() << std::endl;});
+					auto res = svgren::rasterize(*s);
+					utki::log([&](auto&o){o << "rendered, width = " << res.dims().x() << std::endl;});
 				}
 			);
 	}
