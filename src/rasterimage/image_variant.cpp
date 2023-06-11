@@ -152,6 +152,11 @@ void image_variant::write_png(const papki::file& fi) const
 		throw std::logic_error("writing of only 8 bit images is currently supported");
 	}
 
+	if (this->get_format() != rasterimage::format::rgba) {
+		// TODO: support writing of non-RGBA images
+		throw std::logic_error("writing of non RGBA iamges is currently not supported");
+	}
+
 	papki::file::guard file_guard(fi, papki::file::mode::create);
 
 	png_structp png_ptr = nullptr;
@@ -191,7 +196,7 @@ void image_variant::write_png(const papki::file& fi) const
 		dims.x(),
 		dims.y(),
 		8,
-		PNG_COLOR_TYPE_RGBA,
+		PNG_COLOR_TYPE_RGBA, // TODO: support other color formats
 		PNG_INTERLACE_NONE,
 		PNG_COMPRESSION_TYPE_BASE,
 		PNG_FILTER_TYPE_BASE

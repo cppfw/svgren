@@ -76,6 +76,12 @@ struct result {
  */
 [[deprecated("use rasterize()")]] result render(const svgdom::svg_element& svg, const parameters& p = parameters());
 
+/**
+ * @brief Create raster image from given SVG DOM.
+ * @param svg - SVG DOM to rasterize.
+ * @param params - rasterization parameters.
+ * @return Raster image of the SVG.
+ */
 image_type rasterize(const svgdom::svg_element& svg, const parameters& params = parameters());
 
 } // namespace svgren
