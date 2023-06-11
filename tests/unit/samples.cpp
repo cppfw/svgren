@@ -298,13 +298,13 @@ tst::set set("samples", [](tst::suite& suite){
 	}
 
     suite.add<std::string>(
-        "sample",
+        "sample__deprecated_render",
 		{
 #if M_CPU_BITS != 64
 			tst::flag::disabled
 #endif
 		},
-        std::move(files),
+        files,
         [](const auto& p){
             papki::fs_file in_file(data_dir + p);
 
@@ -353,6 +353,63 @@ tst::set set("samples", [](tst::suite& suite){
                         ;
 
                         tst::check(false, SL) << "Error: PNG pixel #" << std::dec << i << " [" << (i % res.dims.x()) << ", " << (i / res.dims.y()) << "]" << " (0x" << std::hex << pixel << ") did not match SVG pixel (0x" << img[i] << ")" << ", png_file = " << png_file.path();
+                    }
+                }
+            }
+        }
+    );
+
+	suite.add<std::string>(
+        "sample",
+		{
+#if M_CPU_BITS != 64
+			tst::flag::disabled
+#endif
+		},
+        files,
+        [](const auto& p){
+            papki::fs_file in_file(data_dir + p);
+
+            auto dom = svgdom::load(in_file);
+
+            auto im = svgren::rasterize(*dom);
+
+            papki::fs_file png_file(data_dir + render_backend_name + "/" + papki::not_suffix(in_file.not_dir()) + ".png");
+
+			auto png_var = rasterimage::read_png(png_file);
+
+            tst::check(!png_var.empty(), SL);
+
+            tst::check(png_var.get_format() == rasterimage::format::rgba, SL) << "Error: PNG color format is not rgba: " << unsigned(png_var.get_format());
+			tst::check(png_var.get_depth() == rasterimage::depth::uint_8_bit, SL) << "Error: PNG color depth is not 8 bit: " << unsigned(png_var.get_depth());;
+            
+            tst::check(im.dims() == png_var.dims(), SL) << "Error: svg dims " << im.dims() << " did not match PNG dims " << png_var.dims();
+
+            tst::check(im.pixels().size() == png_var.buffer_size(), SL) << "Error: svg pixel buffer size (" << im.pixels().size() << ") did not match PNG pixel buffer size(" << png_var.buffer_size() << ")";
+
+			const auto& png = png_var.get<rasterimage::format::rgba>();
+
+            for(size_t i = 0; i != im.pixels().size(); ++i){
+                std::array<uint8_t, 4> rgba = im.pixels()[i];
+
+                for(unsigned j = 0; j != rgba.size(); ++j){
+                    auto c1 = rgba[j];
+                    auto c2 = png.pixels()[i][j];
+                    if(c1 > c2){
+                        std::swap(c1, c2);
+                    }
+
+                    if(unsigned(c2 - c1) > tolerance){
+						auto png_px = png.pixels()[i];
+
+                        uint32_t pixel =
+                            uint32_t(png_px.r()) |
+                            (uint32_t(png_px.g()) << 8) |
+                            (uint32_t(png_px.b()) << 16) |
+                            (uint32_t(png_px.a()) << 24)
+                        ;
+
+                        tst::check(false, SL) << "Error: PNG pixel #" << std::dec << i << " [" << (i % im.dims().x()) << ", " << (i / im.dims().y()) << "]" << " (0x" << std::hex << pixel << ") did not match SVG pixel (0x" << im.pixels()[i] << ")" << ", png_file = " << png_file.path();
                     }
                 }
             }
