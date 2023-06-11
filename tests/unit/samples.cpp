@@ -310,7 +310,15 @@ tst::set set("samples", [](tst::suite& suite){
 
             auto dom = svgdom::load(in_file);
 
+#if CFG_COMPILER == CFG_COMPILER_GCC
+#	pragma GCC diagnostic push
+#	pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
             auto res = svgren::render(*dom);
+#if CFG_COMPILER == CFG_COMPILER_GCC
+#	pragma GCC diagnostic pop
+#endif
+
             auto& img = res.pixels;
 
             papki::fs_file png_file(data_dir + render_backend_name + "/" + papki::not_suffix(in_file.not_dir()) + ".png");

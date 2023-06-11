@@ -167,6 +167,14 @@ public:
 	{
 		return std::get<image<depth_type_t<depth_enum>, to_num_channels(components_enum)>>(this->variant);
 	}
+
+	/**
+	 * @brief Write image to PNG file.
+	 *
+	 * @param fi - file interface for writing the file. Must not be opened.
+	 *             Exisitng file will be overwritten.
+	 */
+	void write_png(const papki::file& fi) const;
 };
 
 /**

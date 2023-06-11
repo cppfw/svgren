@@ -74,9 +74,7 @@ struct result {
  * @param p - render parameters.
  * @return Rendering result.
  */
-// TODO: deprecate
-// [[deprecated("use rasterize()")]]
-result render(const svgdom::svg_element& svg, const parameters& p = parameters());
+[[deprecated("use rasterize()")]] result render(const svgdom::svg_element& svg, const parameters& p = parameters());
 
 image_type rasterize(const svgdom::svg_element& svg, const parameters& params = parameters());
 

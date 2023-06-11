@@ -127,6 +127,98 @@ size_t image_variant::buffer_size() const noexcept
 	}
 }
 
+namespace {
+void png_write_callback(png_structp png_ptr, png_bytep data, png_size_t length)
+{
+	auto fi = reinterpret_cast<papki::file*>(png_get_io_ptr(png_ptr));
+	ASSERT(fi)
+
+	ASSERT(fi->is_open())
+
+	// TODO: check return value
+	fi->write(utki::make_span(data, length));
+}
+
+void png_flush_callback(png_structp png_ptr)
+{
+	// do nothing
+}
+} // namespace
+
+void image_variant::write_png(const papki::file& fi) const
+{
+	if (this->get_depth() != rasterimage::depth::uint_8_bit) {
+		// TODO: add support for writing 16 bit images
+		throw std::logic_error("writing of only 8 bit images is currently supported");
+	}
+
+	papki::file::guard file_guard(fi, papki::file::mode::create);
+
+	png_structp png_ptr = nullptr;
+	png_infop info_ptr = nullptr;
+
+	// Initialize write structure
+	png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+	if (png_ptr == nullptr) {
+		throw std::runtime_error("Could not allocate PNG write struct");
+	}
+	utki::scope_exit png_scope_exit([&png_ptr]() {
+		png_destroy_write_struct(&png_ptr, nullptr);
+	});
+
+	// Initialize info structure
+	info_ptr = png_create_info_struct(png_ptr);
+	if (info_ptr == nullptr) {
+		throw std::runtime_error("Could not allocate PNG info struct");
+	}
+	utki::scope_exit info_scope_exit([&png_ptr, &info_ptr]() {
+		png_free_data(png_ptr, info_ptr, PNG_FREE_ALL, -1);
+	});
+
+	auto dims = this->dims();
+
+	png_set_write_fn(
+		png_ptr,
+		const_cast<papki::file*>(&fi), // TODO: why const_cast?
+		&png_write_callback,
+		&png_flush_callback
+	);
+
+	// write header (8 bit color depth)
+	png_set_IHDR(
+		png_ptr,
+		info_ptr,
+		dims.x(),
+		dims.y(),
+		8,
+		PNG_COLOR_TYPE_RGBA,
+		PNG_INTERLACE_NONE,
+		PNG_COMPRESSION_TYPE_BASE,
+		PNG_FILTER_TYPE_BASE
+	);
+
+	png_write_info(png_ptr, info_ptr);
+
+	// write image data
+	auto p = std::visit(
+		[](const auto& im) {
+			return reinterpret_cast<png_const_bytep>(im.pixels().data());
+		},
+		this->variant
+	);
+	auto sizeof_pixel = std::visit(
+		[](const auto& im) {
+			return sizeof(typename std::remove_reference_t<decltype(im)>::pixel_type);
+		},
+		this->variant
+	);
+	for (uint32_t y = 0; y != dims.y(); ++y, p += dims.x() * sizeof_pixel) {
+		png_write_row(png_ptr, p);
+	}
+
+	png_write_end(png_ptr, nullptr);
+}
+
 image_variant rasterimage::read(const papki::file& fi)
 {
 	auto suffix = fi.suffix();
