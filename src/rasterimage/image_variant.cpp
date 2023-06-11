@@ -78,8 +78,44 @@ const dimensioned::dimensions_type& image_variant::dims() const noexcept
 	try {
 		ASSERT(!this->variant.valueless_by_exception())
 		return std::visit(
-			[&](const dimensioned& sfi) -> const auto& {
-				return sfi.dims();
+			[&](const dimensioned& im) -> const auto& {
+				return im.dims();
+			},
+			this->variant
+		);
+	} catch (std::bad_variant_access& e) {
+		// this->variant must never be valueless_by_exeception,
+		// so should never reach here
+		ASSERT(false)
+		abort();
+	}
+}
+
+bool image_variant::empty() const noexcept
+{
+	try {
+		ASSERT(!this->variant.valueless_by_exception())
+		return std::visit(
+			[&](const auto& im) {
+				return im.empty();
+			},
+			this->variant
+		);
+	} catch (std::bad_variant_access& e) {
+		// this->variant must never be valueless_by_exeception,
+		// so should never reach here
+		ASSERT(false)
+		abort();
+	}
+}
+
+size_t image_variant::buffer_size() const noexcept
+{
+	try {
+		ASSERT(!this->variant.valueless_by_exception())
+		return std::visit(
+			[&](const auto& im) {
+				return im.pixels().size();
 			},
 			this->variant
 		);

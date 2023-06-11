@@ -148,6 +148,14 @@ public:
 
 	const dimensioned::dimensions_type& dims() const noexcept;
 
+	bool empty() const noexcept;
+
+	/**
+	 * @brief Get buffer size.
+	 * @return Size of the underlying image buffer, in pixels.
+	 */
+	size_t buffer_size() const noexcept;
+
 	template <format components_enum, depth depth_enum = depth::uint_8_bit>
 	image<depth_type_t<depth_enum>, to_num_channels(components_enum)>& get()
 	{

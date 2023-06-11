@@ -11,6 +11,8 @@
 #include <papki/fs_file.hpp>
 #include <svgdom/dom.hpp>
 
+#include <rasterimage/image_variant.hpp>
+
 #include "../../src/svgren/config.hxx"
 #include "../../src/svgren/render.hpp"
 
@@ -313,16 +315,18 @@ tst::set set("samples", [](tst::suite& suite){
 
             papki::fs_file png_file(data_dir + render_backend_name + "/" + papki::not_suffix(in_file.not_dir()) + ".png");
 
-            raster_image png;
-            png.load_png(png_file);
+			auto png_var = rasterimage::read_png(png_file);
 
-            tst::check(png.buf().size() != 0, SL);
+            tst::check(!png_var.empty(), SL);
 
-            tst::check(png.depth() == raster_image::color_depth::rgba, SL) << "Error: PNG color depth is not rgba: " << unsigned(png.depth());
+            tst::check(png_var.get_format() == rasterimage::format::rgba, SL) << "Error: PNG color format is not rgba: " << unsigned(png_var.get_format());
+			tst::check(png_var.get_depth() == rasterimage::depth::uint_8_bit, SL) << "Error: PNG color depth is not 8 bit: " << unsigned(png_var.get_depth());;
             
-            tst::check(res.dims == png.dims(), SL) << "Error: svg dims " << res.dims << " did not match png dims " << png.dims();
+            tst::check(res.dims == png_var.dims(), SL) << "Error: svg dims " << res.dims << " did not match PNG dims " << png_var.dims();
 
-            tst::check(img.size() == png.buf().size() / png.num_channels(), SL) << "Error: svg pixel buffer size (" << img.size() << ") did not match png pixel buffer size(" << png.buf().size() / png.num_channels() << ")";
+            tst::check(img.size() == png_var.buffer_size(), SL) << "Error: svg pixel buffer size (" << img.size() << ") did not match PNG pixel buffer size(" << png_var.buffer_size() << ")";
+
+			const auto& png = png_var.get<rasterimage::format::rgba>();
 
             for(size_t i = 0; i != img.size(); ++i){
                 std::array<uint8_t, 4> rgba;
@@ -333,17 +337,19 @@ tst::set set("samples", [](tst::suite& suite){
 
                 for(unsigned j = 0; j != rgba.size(); ++j){
                     auto c1 = rgba[j];
-                    auto c2 = png.buf()[i * png.num_channels() + j];
+                    auto c2 = png.pixels()[i][j];
                     if(c1 > c2){
                         std::swap(c1, c2);
                     }
 
                     if(unsigned(c2 - c1) > tolerance){
+						auto png_px = png.pixels()[i];
+
                         uint32_t pixel =
-                            uint32_t(png.buf()[i * png.num_channels()]) |
-                            (uint32_t(png.buf()[i * png.num_channels() + 1]) << 8) |
-                            (uint32_t(png.buf()[i * png.num_channels() + 2]) << 16) |
-                            (uint32_t(png.buf()[i * png.num_channels() + 3]) << 24)
+                            uint32_t(png_px.r()) |
+                            (uint32_t(png_px.g()) << 8) |
+                            (uint32_t(png_px.b()) << 16) |
+                            (uint32_t(png_px.a()) << 24)
                         ;
 
                         tst::check(false, SL) << "Error: PNG pixel #" << std::dec << i << " [" << (i % res.dims.x()) << ", " << (i / res.dims.y()) << "]" << " (0x" << std::hex << pixel << ") did not match SVG pixel (0x" << img[i] << ")" << ", png_file = " << png_file.path();
