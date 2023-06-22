@@ -88,13 +88,15 @@ const tst::set set("samples", [](tst::suite& suite){
 			const auto& png = png_var.get<rasterimage::format::rgba>();
 
             for(size_t i = 0; i != img.size(); ++i){
-                std::array<uint8_t, 4> rgba;
-                rgba[0] = img[i] & utki::byte_mask;
-                rgba[1] = (img[i] >> utki::num_bits_in_byte) & utki::byte_mask;
-                rgba[2] = (img[i] >> (utki::num_bits_in_byte * 2)) & utki::byte_mask;
-                rgba[3] = (img[i] >> (utki::num_bits_in_byte * 3)) & utki::byte_mask;
+                std::array<uint8_t, 4> rgba = {
+                    uint8_t(img[i] & utki::byte_mask),
+                    uint8_t((img[i] >> utki::num_bits_in_byte) & utki::byte_mask),
+                    uint8_t((img[i] >> (utki::num_bits_in_byte * 2)) & utki::byte_mask),
+                    uint8_t((img[i] >> (utki::num_bits_in_byte * 3)) & utki::byte_mask)
+                };
 
                 for(unsigned j = 0; j != rgba.size(); ++j){
+                    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
                     auto c1 = rgba[j];
                     auto c2 = png.pixels()[i][j];
                     if(c1 > c2){

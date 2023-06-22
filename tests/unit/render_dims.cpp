@@ -19,6 +19,7 @@ const tst::set set("render_dims", [](tst::suite& suite){
 			utki::assert(dom, SL);
 
 			svgren::parameters p;
+			// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 			p.dims_request = decltype(p.dims_request){10, 10};
 			auto res = svgren::rasterize(*dom, p);
 

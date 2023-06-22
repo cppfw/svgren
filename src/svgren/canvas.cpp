@@ -1189,6 +1189,7 @@ svgren::surface canvas::get_sub_surface(const r4::rectangle<unsigned>& region)
 	using std::min;
 	ret.d = min(region.d, dims - region.p);
 	ret.span = utki::make_span(
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		buffer + size_t(region.p.y() * ret.stride + region.p.x()),
 		ret.stride * ret.d.y() - (ret.stride - ret.d.x()) // subtract 'tail' from last pixels row
 	);

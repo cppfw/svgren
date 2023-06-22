@@ -29,6 +29,7 @@ SOFTWARE.
 
 #include <svgdom/elements/coordinate_units.hpp>
 #include <utki/math.hpp>
+#include <utki/util.hpp>
 
 #include "config.hxx"
 #include "filter_applier.hxx"
@@ -43,7 +44,7 @@ const std::string fake_svg_element_tag = "fake_svg_element";
 real renderer::length_to_px(const svgdom::length& l) const noexcept
 {
 	if (l.is_percent()) {
-		return this->viewport.x() * (l.value / 100);
+		return this->viewport.x() * (l.value / utki::hundred_percent);
 	}
 	return real(l.to_px(this->dpi));
 }
@@ -51,8 +52,8 @@ real renderer::length_to_px(const svgdom::length& l) const noexcept
 r4::vector2<real> renderer::length_to_px(const svgdom::length& x, const svgdom::length& y) const noexcept
 {
 	return r4::vector2<real>{
-		x.is_percent() ? (this->viewport.x() * (x.value / 100)) : x.to_px(this->dpi),
-		y.is_percent() ? (this->viewport.y() * (y.value / 100)) : y.to_px(this->dpi)};
+		x.is_percent() ? (this->viewport.x() * (x.value / utki::hundred_percent)) : x.to_px(this->dpi),
+		y.is_percent() ? (this->viewport.y() * (y.value / utki::hundred_percent)) : y.to_px(this->dpi)};
 }
 
 void renderer::apply_transformation(const svgdom::transformable::transformation& t)
@@ -132,7 +133,9 @@ void renderer::apply_viewbox(const svgdom::view_boxed& e, const svgdom::aspect_r
 
 	if (ar.preserve_aspect_ratio.preserve != svgdom::aspect_ratioed::aspect_ratio_preservation::none) {
 		if (e.view_box[3] >= 0 && this->viewport[1] >= 0) { // if view_box width and viewport height are not 0
-			real scale_factor, dx, dy;
+			real scale_factor = 1;
+			real dx = 0;
+			real dy = 0;
 
 			real viewbox_aspect = e.view_box[2] / e.view_box[3];
 			real viewport_aspect = this->viewport[0] / this->viewport[1];
@@ -332,6 +335,12 @@ void renderer::set_gradient(const std::string& id)
 			r.apply_transformations(r.gradient_get_transformations(gradient));
 		}
 
+		common_gradient_push(const common_gradient_push&) = delete;
+		common_gradient_push& operator=(const common_gradient_push&) = delete;
+
+		common_gradient_push(common_gradient_push&&) = delete;
+		common_gradient_push& operator=(common_gradient_push&&) = delete;
+
 		~common_gradient_push() noexcept = default;
 	};
 
@@ -418,11 +427,10 @@ void renderer::update_bounding_box()
 	for (auto& vertex : rect_vertices) {
 		vertex = this->canvas.matrix_mul(vertex);
 
-		r4::segment2<real> bb;
-		bb.p1.x() = decltype(bb.p1.x())(vertex.x());
-		bb.p2.x() = decltype(bb.p2.x())(vertex.x());
-		bb.p1.y() = decltype(bb.p1.y())(vertex.y());
-		bb.p2.y() = decltype(bb.p2.y())(vertex.y());
+		r4::segment2<real> bb{
+			{vertex.x(), vertex.y()},
+			{vertex.x(), vertex.y()}
+        };
 
 		this->device_space_bounding_box.unite(bb);
 	}
@@ -667,7 +675,7 @@ void renderer::visit(const svgdom::use_element& e)
 
 			// add x and y transformation
 			{
-				svgdom::transformable::transformation t;
+				svgdom::transformable::transformation t{};
 				t.type_v = svgdom::transformable::transformation::type::translate;
 				auto p = this->r.length_to_px(e.x, e.y);
 				t.x() = p.x();
@@ -1377,7 +1385,7 @@ svgdom::length renderer::gradient_get_x2(const svgdom::linear_gradient_element& 
 			}
 		}
 	}
-	return {100, svgdom::length_unit::percent};
+	return {utki::hundred_percent, svgdom::length_unit::percent};
 }
 
 svgdom::length renderer::gradient_get_y2(const svgdom::linear_gradient_element& g)
@@ -1419,7 +1427,7 @@ svgdom::length renderer::gradient_get_cx(const svgdom::radial_gradient_element& 
 			}
 		}
 	}
-	return {50, svgdom::length_unit::percent};
+	return {real(utki::hundred_percent) / 2, svgdom::length_unit::percent};
 }
 
 svgdom::length renderer::gradient_get_cy(const svgdom::radial_gradient_element& g)
@@ -1440,7 +1448,7 @@ svgdom::length renderer::gradient_get_cy(const svgdom::radial_gradient_element& 
 			}
 		}
 	}
-	return {50, svgdom::length_unit::percent};
+	return {real(utki::hundred_percent) / 2, svgdom::length_unit::percent};
 }
 
 svgdom::length renderer::gradient_get_r(const svgdom::radial_gradient_element& g)
@@ -1461,7 +1469,7 @@ svgdom::length renderer::gradient_get_r(const svgdom::radial_gradient_element& g
 			}
 		}
 	}
-	return {50, svgdom::length_unit::percent};
+	return {real(utki::hundred_percent) / 2, svgdom::length_unit::percent};
 }
 
 svgdom::length renderer::gradient_get_fx(const svgdom::radial_gradient_element& g)
@@ -1651,7 +1659,9 @@ void renderer::blit(const surface& s)
 	auto dp = min(s.d, dst.d - s.p);
 
 	for (unsigned y = 0; y != dp.y(); ++y) {
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		auto p = dstp + size_t(y * dst.stride);
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		auto sp = srcp + size_t(y * s.stride);
 		for (unsigned x = 0; x != dp.x(); ++x, ++p, ++sp) {
 			*p = *sp;

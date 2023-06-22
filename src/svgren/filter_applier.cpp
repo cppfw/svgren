@@ -109,6 +109,7 @@ void box_blur_vertical(
 			pos = max(pos, 0);
 			pos = min(pos, int(height) - 1);
 
+			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 			sum += src[src_stride * pos + x].to<unsigned>();
 		}
 		for (unsigned y = 0; y != height; ++y) {
@@ -116,9 +117,11 @@ void box_blur_vertical(
 			int last = max(tmp, 0);
 			int next = min(tmp + int(box_size), int(height) - 1);
 
+			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 			dst[dst_stride * y + x] = (sum / box_size).to<image_type::pixel_type::value_type>();
 
 			// TODO: subtracting colors, why unsigned and not uint8_t?
+			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 			sum += src[src_stride * next + x].to<unsigned>() - src[src_stride * last + x].to<unsigned>();
 		}
 	}
@@ -156,6 +159,7 @@ filter_result blur_surface(const surface& src, r4::vector2<real> std_deviation)
 	ASSERT(src.d.x() <= src.stride)
 
 	using std::sqrt;
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 	auto d = (std_deviation * (3 * sqrt(2 * real(utki::pi)) / 4) + real(0.5)).to<unsigned>();
 
 	//	TRACE(<< "d = " << d[0] << ", " << d[1] << std::endl)
@@ -164,10 +168,10 @@ filter_result blur_surface(const surface& src, r4::vector2<real> std_deviation)
 
 	std::vector<image_type::pixel_type> tmp(ret.data.size());
 
-	std::array<unsigned, 3> h_box_size;
-	std::array<unsigned, 3> h_offset;
-	std::array<unsigned, 3> v_box_size;
-	std::array<unsigned, 3> v_offset;
+	std::array<unsigned, 3> h_box_size{};
+	std::array<unsigned, 3> h_offset{};
+	std::array<unsigned, 3> v_box_size{};
+	std::array<unsigned, 3> v_offset{};
 	if (d[0] % 2 == 0) {
 		h_offset[0] = d[0] / 2;
 		h_box_size[0] = d[0];
@@ -367,8 +371,8 @@ void filter_applier::visit(const svgdom::filter_element& e)
 							vertex = this->r.canvas.matrix_mul(vertex);
 
 							r4::segment2<real> bb{
-								{real(vertex.x()), real(vertex.y())},
-								{real(vertex.x()), real(vertex.y())}
+								{vertex.x(), vertex.y()},
+								{vertex.x(), vertex.y()}
                             };
 
 							fr_bb.unite(bb);

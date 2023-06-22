@@ -58,10 +58,10 @@ public:
 	r4::vector2<real> viewport;
 
 	// this bounding box is used for gradients
-	r4::rectangle<real> user_space_bounding_box;
+	r4::rectangle<real> user_space_bounding_box{};
 
 	// this bounding box is used for filter region calculation.
-	r4::segment2<real> device_space_bounding_box;
+	r4::segment2<real> device_space_bounding_box{};
 
 	svgdom::style_stack style_stack;
 
