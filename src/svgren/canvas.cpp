@@ -1345,21 +1345,19 @@ void canvas::set_dash_pattern(utki::span<const real> dashes, real offset)
 
 	auto src = dashes.begin();
 	for (auto& dst : this->context.dash_array) {
-		std::array<real, 2> pair;
-		for (unsigned i = 0; i != 2; ++i) {
+		std::array<real, 2> pair{};
+		for (auto& v : pair) {
 			ASSERT(src != dashes.end())
 			if (*src == 0) {
-				pair[i] = decltype(pair)::value_type(epsilon_dash);
+				v = decltype(pair)::value_type(epsilon_dash);
 			} else {
-				pair[i] = *src;
+				v = *src;
 			}
 			++src;
 			if (src == dashes.end()) {
 				if (num_repeats == 2) {
 					--num_repeats;
 					src = dashes.begin();
-				} else {
-					ASSERT(i == 1)
 				}
 			}
 		}

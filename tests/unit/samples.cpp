@@ -89,10 +89,10 @@ const tst::set set("samples", [](tst::suite& suite){
 
             for(size_t i = 0; i != img.size(); ++i){
                 std::array<uint8_t, 4> rgba;
-                rgba[0] = img[i] & 0xff;
-                rgba[1] = (img[i] >> 8) & 0xff;
-                rgba[2] = (img[i] >> 16) & 0xff;
-                rgba[3] = (img[i] >> 24) & 0xff;
+                rgba[0] = img[i] & utki::byte_mask;
+                rgba[1] = (img[i] >> utki::num_bits_in_byte) & utki::byte_mask;
+                rgba[2] = (img[i] >> (utki::num_bits_in_byte * 2)) & utki::byte_mask;
+                rgba[3] = (img[i] >> (utki::num_bits_in_byte * 3)) & utki::byte_mask;
 
                 for(unsigned j = 0; j != rgba.size(); ++j){
                     auto c1 = rgba[j];
