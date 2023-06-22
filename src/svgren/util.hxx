@@ -43,12 +43,6 @@ SOFTWARE.
 
 namespace svgren {
 
-// convert degrees to radians
-inline real deg_to_rad(real deg)
-{
-	return deg * real(utki::pi) / real(180);
-}
-
 // return angle between x axis and vector
 inline real get_angle(const r4::vector2<real>& v)
 {
@@ -63,6 +57,13 @@ class canvas_matrix_push
 
 public:
 	canvas_matrix_push(canvas& c);
+
+	canvas_matrix_push(const canvas_matrix_push&) = delete;
+	canvas_matrix_push& operator=(const canvas_matrix_push&) = delete;
+
+	canvas_matrix_push(canvas_matrix_push&&) = delete;
+	canvas_matrix_push& operator=(canvas_matrix_push&&) = delete;
+
 	~canvas_matrix_push() noexcept;
 };
 

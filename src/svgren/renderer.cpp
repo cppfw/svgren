@@ -75,15 +75,15 @@ void renderer::apply_transformation(const svgdom::transformable::transformation&
 			break;
 		case svgdom::transformable::transformation::type::rotate:
 			this->canvas.translate(t.x(), t.y());
-			this->canvas.rotate(deg_to_rad(t.angle()));
+			this->canvas.rotate(utki::deg_to_rad(t.angle()));
 			this->canvas.translate(-t.x(), -t.y());
 			break;
 		case svgdom::transformable::transformation::type::skewx:
 			{
 				using std::tan;
 				this->canvas.transform({
-					{1, tan(deg_to_rad(t.angle())), 0},
-					{0,						  1, 0}
+					{1, tan(utki::deg_to_rad(t.angle())), 0},
+					{0,								1, 0}
                 });
 			}
 			break;
@@ -91,8 +91,8 @@ void renderer::apply_transformation(const svgdom::transformable::transformation&
 			{
 				using std::tan;
 				this->canvas.transform({
-					{						 1, 0, 0},
-					{tan(deg_to_rad(t.angle())), 1, 0}
+					{							   1, 0, 0},
+					{tan(utki::deg_to_rad(t.angle())), 1, 0}
                 });
 			}
 			break;
@@ -1044,7 +1044,7 @@ void renderer::visit(const svgdom::path_element& e)
 				this->canvas.arc_abs(
 					{real(s.x), real(s.y)},
 					{real(s.rx()), real(s.ry())},
-					deg_to_rad(real(s.x_axis_rotation())),
+					utki::deg_to_rad(real(s.x_axis_rotation())),
 					s.flags.large_arc,
 					s.flags.sweep
 				);
@@ -1053,7 +1053,7 @@ void renderer::visit(const svgdom::path_element& e)
 				this->canvas.arc_rel(
 					{real(s.x), real(s.y)},
 					{real(s.rx()), real(s.ry())},
-					deg_to_rad(real(s.x_axis_rotation())),
+					utki::deg_to_rad(real(s.x_axis_rotation())),
 					s.flags.large_arc,
 					s.flags.sweep
 				);

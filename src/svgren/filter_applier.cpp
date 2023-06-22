@@ -541,7 +541,7 @@ void filter_applier::visit(const svgdom::fe_color_matrix_element& e)
 				using std::sin;
 				using std::cos;
 
-				auto a = deg_to_rad(real(e.values[0]));
+				auto a = utki::deg_to_rad(real(e.values[0]));
 				auto sina = sin(a);
 				auto cosa = cos(a);
 
