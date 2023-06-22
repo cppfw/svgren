@@ -10,7 +10,7 @@
 #endif
 
 namespace{
-tst::set set("render_dims", [](tst::suite& suite){
+const tst::set set("render_dims", [](tst::suite& suite){
 	suite.add(
 		"requested_dimensions",
 		[](){

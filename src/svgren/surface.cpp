@@ -67,6 +67,10 @@ void surface::append_luminance_to_alpha()
 {
 	// Luminance is calculated using formula L = 0.2126 * R + 0.7152 * G + 0.0722 * B
 
+	constexpr auto red_coeff = 0.2126;
+	constexpr auto green_coeff = 0.7152;
+	constexpr auto blue_coeff = 0.0722;
+
 	// TODO: take stride into account, do not append luminance to alpha for data out of the surface width
 	for (auto& px : this->span) {
 		px.set(
@@ -74,9 +78,9 @@ void surface::append_luminance_to_alpha()
 			image_type::value(1),
 			image_type::value(1),
 			// we use premultiplied alpha format, so no need to multiply alpha by liminance
-			rasterimage::multiply(px.r(), image_type::value(0.2126f))
-				+ rasterimage::multiply(px.g(), image_type::value(0.7152f))
-				+ rasterimage::multiply(px.b(), image_type::value(0.0722f))
+			rasterimage::multiply(px.r(), image_type::value(red_coeff))
+				+ rasterimage::multiply(px.g(), image_type::value(green_coeff))
+				+ rasterimage::multiply(px.b(), image_type::value(blue_coeff))
 		);
 	}
 }

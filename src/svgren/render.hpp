@@ -47,10 +47,12 @@ struct parameters {
 	 */
 	r4::vector2<unsigned> dims_request = 0;
 
+	constexpr static auto default_dpi = 96;
+
 	/**
 	 * @brief Dots per inch to use for unit conversion to pixels.
 	 */
-	unsigned dpi = 96;
+	unsigned dpi = default_dpi;
 };
 
 /**

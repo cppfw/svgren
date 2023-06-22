@@ -53,7 +53,7 @@ canvas_matrix_push::~canvas_matrix_push() noexcept
 real svgren::percent_to_fraction(const svgdom::length& l)
 {
 	if (l.is_percent()) {
-		return l.value / real(100);
+		return l.value / real(utki::hundred_percent);
 	}
 	if (l.unit == svgdom::length_unit::number) {
 		return l.value;

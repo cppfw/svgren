@@ -48,6 +48,9 @@ result svgren::render(const svgdom::svg_element& svg, const parameters& p)
 
 	ret.pixels.resize(im.pixels().size());
 
+	// This deprecated render() function uses the rasterize() and then just reinterprets the result,
+	// so it is OK to use reinterpret_cast here.
+	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
 	auto span = utki::make_span(reinterpret_cast<const uint32_t*>(im.pixels().data()), im.pixels().size());
 
 	std::copy(span.begin(), span.end(), ret.pixels.begin());

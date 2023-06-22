@@ -144,6 +144,9 @@ void canvas::agg_path_to_polyline() const
 	}
 
 	agg::conv_curve<decltype(this->path), agg_curve3_type, agg_curve4_type> curve(
+		// AGG should have had const argument for path, because path does not change,
+		// but it doesn't, so we have to use const_cast
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
 		const_cast<decltype(this->path)&>(this->path)
 	);
 	curve.approximation_scale(this->approximation_scale);
