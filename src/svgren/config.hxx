@@ -28,8 +28,11 @@ SOFTWARE.
 #pragma once
 
 // drawing backend variants
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define SVGREN_BACKEND_CAIRO 1
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define SVGREN_BACKEND_AGG 2
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define SVGREN_BACKEND_SKIA 3
 
 #ifndef SVGREN_BACKEND

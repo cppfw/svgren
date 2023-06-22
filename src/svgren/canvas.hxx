@@ -114,6 +114,14 @@ public:
 		struct gradient_wrapper_base {
 			virtual int calculate(int x, int y, int) const = 0;
 
+			gradient_wrapper_base() = default;
+
+			gradient_wrapper_base(const gradient_wrapper_base&) = delete;
+			gradient_wrapper_base& operator=(const gradient_wrapper_base&) = delete;
+
+			gradient_wrapper_base(gradient_wrapper_base&&) = delete;
+			gradient_wrapper_base& operator=(gradient_wrapper_base&&) = delete;
+
 			virtual ~gradient_wrapper_base() = default;
 		};
 
@@ -150,7 +158,8 @@ public:
 			return *this->cur_grad;
 		}
 
-		agg::gradient_lut<agg::color_interpolator<agg::rgba8>, 0x2ff> lut;
+		constexpr static auto gradient_lut_size = 0x2ff;
+		agg::gradient_lut<agg::color_interpolator<agg::rgba8>, gradient_lut_size> lut;
 
 		r4::matrix2<real> local_matrix;
 
@@ -248,6 +257,7 @@ private:
 		group(const r4::vector2<unsigned>& dims) :
 			pixels(size_t(dims.x() * dims.y()), 0),
 			rendering_buffer(
+				// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
 				reinterpret_cast<agg::int8u*>(this->pixels.data()),
 				dims.x(),
 				dims.y(),
@@ -288,7 +298,7 @@ private:
 		agg::line_join_e line_join = agg::line_join_e::miter_join;
 		agg::trans_affine gradient_matrix;
 		agg::trans_affine matrix;
-		real dash_offset;
+		real dash_offset = 0;
 		std::vector<std::pair<real, real>> dash_array;
 #endif
 		std::shared_ptr<const gradient>
