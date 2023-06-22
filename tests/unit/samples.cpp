@@ -106,9 +106,9 @@ const tst::set set("samples", [](tst::suite& suite){
 
                         uint32_t pixel =
                             uint32_t(png_px.r()) |
-                            (uint32_t(png_px.g()) << 8) |
-                            (uint32_t(png_px.b()) << 16) |
-                            (uint32_t(png_px.a()) << 24)
+                            (uint32_t(png_px.g()) << utki::num_bits_in_byte) |
+                            (uint32_t(png_px.b()) << (utki::num_bits_in_byte * 2)) |
+                            (uint32_t(png_px.a()) << (utki::num_bits_in_byte * 3))
                         ;
 
                         tst::check(false, SL) << "Error: PNG pixel #" << std::dec << i << " [" << (i % res.dims.x()) << ", " << (i / res.dims.y()) << "]" << " (0x" << std::hex << pixel << ") did not match SVG pixel (0x" << img[i] << ")" << ", png_file = " << png_file.path();

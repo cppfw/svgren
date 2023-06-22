@@ -67,36 +67,6 @@ SOFTWARE.
 
 namespace svgren {
 
-inline r4::vector4<unsigned> to_rgba(pixel c)
-{
-#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	// cairo uses BGRA format
-	return {
-		unsigned((c >> 16) & 0xff),
-		unsigned((c >> 8) & 0xff),
-		unsigned((c >> 0) & 0xff),
-		unsigned((c >> 24) & 0xff)};
-#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	// RGBA format
-	return {
-		unsigned((c >> 0) & 0xff),
-		unsigned((c >> 8) & 0xff),
-		unsigned((c >> 16) & 0xff),
-		unsigned((c >> 24) & 0xff)};
-#endif
-}
-
-inline pixel to_pixel(const r4::vector4<unsigned>& rgba)
-{
-#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	// cairo uses BGRA format
-	return rgba.b() | (rgba.g() << 8) | (rgba.r() << 16) | (rgba.a() << 24);
-#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	// RGBA format
-	return rgba.r() | (rgba.g() << 8) | (rgba.b() << 16) | (rgba.a() << 24);
-#endif
-}
-
 class canvas
 {
 public:
@@ -183,6 +153,12 @@ public:
 
 		void set_spread_method(svgdom::gradient::spread_method spread_method);
 		void set_stops(utki::span<const stop> stops);
+
+		gradient(const gradient&) = delete;
+		gradient& operator=(const gradient&) = delete;
+
+		gradient(gradient&&) = delete;
+		gradient& operator=(gradient&&) = delete;
 
 		virtual ~gradient();
 	};
@@ -309,6 +285,13 @@ private:
 
 public:
 	canvas(const r4::vector2<unsigned>& dims);
+
+	canvas(const canvas&) = delete;
+	canvas& operator=(const canvas&) = delete;
+
+	canvas(canvas&&) = delete;
+	canvas& operator=(canvas&&) = delete;
+
 	~canvas();
 
 	void transform(const r4::matrix2<real>& matrix);
