@@ -64,6 +64,7 @@ void box_blur_horizontal(
 			int pos = int(i) - int(box_offset);
 			pos = max(pos, 0);
 			pos = min(pos, int(width) - 1);
+			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 			sum += src[src_stride * y + pos].to<unsigned>();
 		}
 		for (unsigned x = 0; x != width; ++x) {
@@ -71,9 +72,11 @@ void box_blur_horizontal(
 			int last = max(tmp, 0);
 			int next = min(tmp + int(box_size), int(width) - 1);
 
+			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 			dst[dst_stride * y + x] = (sum / box_size).to<image_type::pixel_type::value_type>();
 
 			// TODO: subtracting colors, why unsigned and not uint8_t?
+			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 			sum += src[src_stride * y + next].to<unsigned>() - src[src_stride * y + last].to<unsigned>();
 		}
 	}
@@ -335,49 +338,46 @@ void filter_applier::visit(const svgdom::filter_element& e)
 	// set filter region
 	{
 		// filter region
-		r4::rectangle<real> fr;
+		auto fr = [this, &e]() -> r4::rectangle<real> {
+			switch (e.filter_units) {
+				default:
+				case svgdom::coordinate_units::object_bounding_box:
+					{
+						r4::vector2<real> fe_pos{percent_to_fraction(e.x), percent_to_fraction(e.y)};
 
-		switch (e.filter_units) {
-			default:
-			case svgdom::coordinate_units::object_bounding_box:
-				{
-					r4::vector2<real> fe_pos{percent_to_fraction(e.x), percent_to_fraction(e.y)};
+						r4::vector2<real> fe_dims{percent_to_fraction(e.width), percent_to_fraction(e.height)};
 
-					r4::vector2<real> fe_dims{percent_to_fraction(e.width), percent_to_fraction(e.height)};
-
-					fr.p = this->r.device_space_bounding_box.p1
-						+ fe_pos.comp_mul(this->r.device_space_bounding_box.dims());
-					fr.d = fe_dims.comp_mul(this->r.device_space_bounding_box.dims());
-				}
-				break;
-			case svgdom::coordinate_units::user_space_on_use:
-				{
-					auto p1 = this->r.length_to_px(e.x, e.y);
-					auto p2 = p1 + this->r.length_to_px(e.width, e.height);
-
-					std::array<r4::vector2<real>, 4> rect_vertices = {
-						{p1, p2, {p1.x(), p2.y()}, {p2.x(), p1.y()}}
-                    };
-
-					r4::segment2<real> fr_bb;
-					fr_bb.set_empty_bounding_box();
-
-					for (auto& vertex : rect_vertices) {
-						vertex = this->r.canvas.matrix_mul(vertex);
-
-						r4::segment2<real> bb;
-						bb.p1.x() = decltype(bb.p1.x())(vertex.x());
-						bb.p2.x() = decltype(bb.p2.x())(vertex.x());
-						bb.p1.y() = decltype(bb.p1.y())(vertex.y());
-						bb.p2.y() = decltype(bb.p2.y())(vertex.y());
-
-						fr_bb.unite(bb);
+						return {
+							this->r.device_space_bounding_box.p1
+								+ fe_pos.comp_mul(this->r.device_space_bounding_box.dims()),
+							fe_dims.comp_mul(this->r.device_space_bounding_box.dims())};
 					}
-					fr.p = fr_bb.p1;
-					fr.d = fr_bb.dims();
-				}
-				break;
-		}
+				case svgdom::coordinate_units::user_space_on_use:
+					{
+						auto p1 = this->r.length_to_px(e.x, e.y);
+						auto p2 = p1 + this->r.length_to_px(e.width, e.height);
+
+						std::array<r4::vector2<real>, 4> rect_vertices = {
+							{p1, p2, {p1.x(), p2.y()}, {p2.x(), p1.y()}}
+                        };
+
+						auto fr_bb = r4::segment2<real>().set_empty_bounding_box();
+
+						for (auto& vertex : rect_vertices) {
+							vertex = this->r.canvas.matrix_mul(vertex);
+
+							r4::segment2<real> bb{
+								{real(vertex.x()), real(vertex.y())},
+								{real(vertex.x()), real(vertex.y())}
+                            };
+
+							fr_bb.unite(bb);
+						}
+
+						return {fr_bb.p1, fr_bb.dims()};
+					}
+			}
+		}();
 
 		using std::floor;
 		using std::ceil;
@@ -480,10 +480,12 @@ void filter_applier::visit(const svgdom::fe_color_matrix_element& e)
 				unsigned j = 0;
 				for (; j != m[i].size(); ++j, ++p) {
 					ASSERT(p < e.values.size())
+					// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
 					m[i][j] = e.values[p];
 					//					TRACE(<< "m[" << i << "][" << j << "] = " << m[i][j] << std::endl)
 				}
 				ASSERT(p < e.values.size())
+				// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
 				mc5[i] = e.values[p];
 				++p;
 			}
@@ -500,16 +502,25 @@ void filter_applier::visit(const svgdom::fe_color_matrix_element& e)
 				auto s = real(e.values[0]);
 
 				m = {
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					{real(0.213) + real(0.787) * s,
+					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.715) - real(0.715) * s,
+					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.072) - real(0.072) * s,
 					 real(0)												 },
+ // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					{real(0.213) - real(0.213) * s,
+					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.715) + real(0.285) * s,
+					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.072) - real(0.072) * s,
 					 real(0)												 },
+ // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					{real(0.213) - real(0.213) * s,
+					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.715) - real(0.715) * s,
+					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.072) + real(0.928) * s,
 					 real(0)												 },
 					{					  real(0), real(0), real(0), real(1)}
@@ -546,16 +557,25 @@ void filter_applier::visit(const svgdom::fe_color_matrix_element& e)
 				auto cosa = cos(a);
 
 				m = {
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					{real(0.213) + cosa * real(0.787) - sina * real(0.213),
+					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.715) - cosa * real(0.715) - sina * real(0.715),
+					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.072) - cosa * real(0.072) + sina * real(0.928),
 					 real(0)																		 },
+ // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					{real(0.213) - cosa * real(0.213) + sina * real(0.143),
+					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.715) + cosa * real(0.285) + sina * real(0.140),
+					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.072) - cosa * real(0.072) - sina * real(0.283),
 					 real(0)																		 },
+ // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					{real(0.213) - cosa * real(0.213) - sina * real(0.787),
+					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.715) - cosa * real(0.715) + sina * real(0.715),
+					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.072) + cosa * real(0.928) + sina * real(0.072),
 					 real(0)																		 },
 					{											  real(0), real(0), real(0), real(1)}
@@ -571,11 +591,16 @@ void filter_applier::visit(const svgdom::fe_color_matrix_element& e)
 				| A' |     | 0.2125   0.7154   0.0721  0  0 |   | A |
 				| 1  |     |      0        0        0  0  1 |   | 1 |
 			 */
+
+			constexpr auto red_coeff = 0.2126;
+			constexpr auto green_coeff = 0.7152;
+			constexpr auto blue_coeff = 0.0722;
+
 			m = {
-				{     real(0),      real(0),      real(0), real(0)},
-				{     real(0),      real(0),      real(0), real(0)},
-				{     real(0),      real(0),      real(0), real(0)},
-				{real(0.2125), real(0.7154), real(0.0721), real(0)}
+				{        real(0),           real(0),          real(0), real(0)},
+				{        real(0),           real(0),          real(0), real(0)},
+				{        real(0),           real(0),          real(0), real(0)},
+				{real(red_coeff), real(green_coeff), real(blue_coeff), real(0)}
             };
 			mc5.set(real(0));
 			break;
