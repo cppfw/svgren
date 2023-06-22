@@ -75,6 +75,13 @@ class renderer_viewport_push
 
 public:
 	renderer_viewport_push(renderer& r, const decltype(old_viewport)& viewport);
+
+	renderer_viewport_push(const renderer_viewport_push&) = delete;
+	renderer_viewport_push& operator=(const renderer_viewport_push&) = delete;
+
+	renderer_viewport_push(renderer_viewport_push&&) = delete;
+	renderer_viewport_push& operator=(renderer_viewport_push&&) = delete;
+
 	~renderer_viewport_push() noexcept;
 };
 
@@ -94,6 +101,13 @@ class common_element_push
 
 public:
 	common_element_push(svgren::renderer& renderer, bool is_container);
+
+	common_element_push(const common_element_push&) = delete;
+	common_element_push& operator=(const common_element_push&) = delete;
+
+	common_element_push(common_element_push&&) = delete;
+	common_element_push& operator=(common_element_push&&) = delete;
+
 	~common_element_push() noexcept;
 
 	bool is_group_pushed() const noexcept
