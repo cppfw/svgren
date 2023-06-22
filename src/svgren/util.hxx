@@ -46,7 +46,7 @@ namespace svgren {
 // convert degrees to radians
 inline real deg_to_rad(real deg)
 {
-	return deg * utki::pi<real>() / real(180);
+	return deg * real(utki::pi) / real(180);
 }
 
 // return angle between x axis and vector

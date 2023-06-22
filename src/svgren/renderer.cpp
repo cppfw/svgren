@@ -58,10 +58,10 @@ r4::vector2<real> renderer::length_to_px(const svgdom::length& x, const svgdom::
 void renderer::apply_transformation(const svgdom::transformable::transformation& t)
 {
 	//	TRACE(<< "renderer::applyCairoTransformation(): applying transformation " << unsigned(t.type) << std::endl)
-	switch (t.type_) {
+	switch (t.type_v) {
 		case svgdom::transformable::transformation::type::translate:
 			//			TRACE(<< "translate x,y = (" << t.x << ", " << t.y << ")" << std::endl)
-			this->canvas.translate(t.x, t.y);
+			this->canvas.translate(t.x(), t.y());
 			break;
 		case svgdom::transformable::transformation::type::matrix:
 			this->canvas.transform({
@@ -71,19 +71,19 @@ void renderer::apply_transformation(const svgdom::transformable::transformation&
 			break;
 		case svgdom::transformable::transformation::type::scale:
 			//			TRACE(<< "scale transformation factors = (" << t.x << ", " << t.y << ")" << std::endl)
-			this->canvas.scale(t.x, t.y);
+			this->canvas.scale(t.x(), t.y());
 			break;
 		case svgdom::transformable::transformation::type::rotate:
-			this->canvas.translate(t.x, t.y);
-			this->canvas.rotate(deg_to_rad(t.angle));
-			this->canvas.translate(-t.x, -t.y);
+			this->canvas.translate(t.x(), t.y());
+			this->canvas.rotate(deg_to_rad(t.angle()));
+			this->canvas.translate(-t.x(), -t.y());
 			break;
 		case svgdom::transformable::transformation::type::skewx:
 			{
 				using std::tan;
 				this->canvas.transform({
-					{1, tan(deg_to_rad(t.angle)), 0},
-					{0,						1, 0}
+					{1, tan(deg_to_rad(t.angle())), 0},
+					{0,						  1, 0}
                 });
 			}
 			break;
@@ -91,8 +91,8 @@ void renderer::apply_transformation(const svgdom::transformable::transformation&
 			{
 				using std::tan;
 				this->canvas.transform({
-					{					   1, 0, 0},
-					{tan(deg_to_rad(t.angle)), 1, 0}
+					{						 1, 0, 0},
+					{tan(deg_to_rad(t.angle())), 1, 0}
                 });
 			}
 			break;
@@ -213,12 +213,12 @@ void renderer::set_gradient_properties(
 			g(g)
 		{}
 
-		const std::string& get_id() const override
+		std::string_view get_id() const override
 		{
 			return this->g.get_id();
 		}
 
-		const std::string& get_tag() const override
+		std::string_view get_tag() const override
 		{
 			return static_cast<const svgdom::element&>(this->g).get_tag();
 		}
@@ -668,10 +668,10 @@ void renderer::visit(const svgdom::use_element& e)
 			// add x and y transformation
 			{
 				svgdom::transformable::transformation t;
-				t.type_ = svgdom::transformable::transformation::type::translate;
+				t.type_v = svgdom::transformable::transformation::type::translate;
 				auto p = this->r.length_to_px(e.x, e.y);
-				t.x = p.x();
-				t.y = p.y();
+				t.x() = p.x();
+				t.y() = p.y();
 
 				this->fake_g_element.transformations.push_back(t);
 			}
@@ -711,7 +711,7 @@ void renderer::visit(const svgdom::use_element& e)
 					);
 				}
 
-				const std::string& get_tag() const override
+				std::string_view get_tag() const override
 				{
 					return fake_svg_element_tag;
 				}
@@ -754,7 +754,7 @@ void renderer::visit(const svgdom::use_element& e)
 					);
 				}
 
-				const std::string& get_tag() const override
+				std::string_view get_tag() const override
 				{
 					return fake_svg_element_tag;
 				}
@@ -785,7 +785,7 @@ void renderer::visit(const svgdom::use_element& e)
 					this->e.accept(this->r);
 				}
 
-				const std::string& get_tag() const override
+				std::string_view get_tag() const override
 				{
 					return fake_svg_element_tag;
 				}
@@ -852,7 +852,7 @@ void renderer::visit(const svgdom::path_element& e)
 	const svgdom::path_element::step* prev_step = nullptr;
 
 	for (auto& s : e.path) {
-		switch (s.type_) {
+		switch (s.type_v) {
 			case svgdom::path_element::step::type::move_abs:
 				this->canvas.move_abs({real(s.x), real(s.y)});
 				break;
@@ -902,7 +902,7 @@ void renderer::visit(const svgdom::path_element& e)
 					}
 
 					r4::vector2<real> cp1; // control point
-					switch (prev_step ? prev_step->type_ : svgdom::path_element::step::type::unknown) {
+					switch (prev_step ? prev_step->type_v : svgdom::path_element::step::type::unknown) {
 						case svgdom::path_element::step::type::quadratic_abs:
 							cp1 = -(p1 - cur_p) + cur_p;
 							break;
@@ -941,7 +941,7 @@ void renderer::visit(const svgdom::path_element& e)
 					}
 
 					r4::vector2<real> cp1; // control point
-					switch (prev_step ? prev_step->type_ : svgdom::path_element::step::type::unknown) {
+					switch (prev_step ? prev_step->type_v : svgdom::path_element::step::type::unknown) {
 						case svgdom::path_element::step::type::quadratic_smooth_abs:
 							cp1 = -(prev_quadratic_p - cur_p);
 							break;
@@ -988,7 +988,7 @@ void renderer::visit(const svgdom::path_element& e)
 					}
 
 					r4::vector2<real> cp1; // first control point
-					switch (prev_step ? prev_step->type_ : svgdom::path_element::step::type::unknown) {
+					switch (prev_step ? prev_step->type_v : svgdom::path_element::step::type::unknown) {
 						case svgdom::path_element::step::type::cubic_smooth_abs:
 						case svgdom::path_element::step::type::cubic_abs:
 							cp1 = -(p2 - cur_p) + cur_p;
@@ -1022,7 +1022,7 @@ void renderer::visit(const svgdom::path_element& e)
 					}
 
 					r4::vector2<real> cp1; // first control point
-					switch (prev_step ? prev_step->type_ : svgdom::path_element::step::type::unknown) {
+					switch (prev_step ? prev_step->type_v : svgdom::path_element::step::type::unknown) {
 						case svgdom::path_element::step::type::cubic_smooth_abs:
 						case svgdom::path_element::step::type::cubic_abs:
 							cp1 = -(p2 - cur_p);
@@ -1043,8 +1043,8 @@ void renderer::visit(const svgdom::path_element& e)
 			case svgdom::path_element::step::type::arc_abs:
 				this->canvas.arc_abs(
 					{real(s.x), real(s.y)},
-					{real(s.rx), real(s.ry)},
-					deg_to_rad(real(s.x_axis_rotation)),
+					{real(s.rx()), real(s.ry())},
+					deg_to_rad(real(s.x_axis_rotation())),
 					s.flags.large_arc,
 					s.flags.sweep
 				);
@@ -1052,15 +1052,15 @@ void renderer::visit(const svgdom::path_element& e)
 			case svgdom::path_element::step::type::arc_rel:
 				this->canvas.arc_rel(
 					{real(s.x), real(s.y)},
-					{real(s.rx), real(s.ry)},
-					deg_to_rad(real(s.x_axis_rotation)),
+					{real(s.rx()), real(s.ry())},
+					deg_to_rad(real(s.x_axis_rotation())),
 					s.flags.large_arc,
 					s.flags.sweep
 				);
 				break;
 			default:
 				ASSERT(false, [&](auto& o) {
-					o << "unknown path step type: " << unsigned(s.type_);
+					o << "unknown path step type: " << unsigned(s.type_v);
 				})
 				break;
 		}
@@ -1184,7 +1184,7 @@ void renderer::visit(const svgdom::ellipse_element& e)
 	auto c = this->length_to_px(e.cx, e.cy);
 	auto r = this->length_to_px(e.rx, e.ry);
 	this->canvas.move_abs(c + r4::vector2<real>{r.x(), 0}); // move to start point
-	this->canvas.arc_abs(c, r, 0, real(2) * utki::pi<real>());
+	this->canvas.arc_abs(c, r, 0, real(2) * real(utki::pi));
 	this->canvas.close_path();
 
 	this->render_shape(group_push.is_group_pushed());

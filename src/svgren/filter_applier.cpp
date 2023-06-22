@@ -153,7 +153,7 @@ filter_result blur_surface(const surface& src, r4::vector2<real> std_deviation)
 	ASSERT(src.d.x() <= src.stride)
 
 	using std::sqrt;
-	auto d = (std_deviation * (3 * sqrt(2 * utki::pi<real>()) / 4) + real(0.5)).to<unsigned>();
+	auto d = (std_deviation * (3 * sqrt(2 * real(utki::pi)) / 4) + real(0.5)).to<unsigned>();
 
 	//	TRACE(<< "d = " << d[0] << ", " << d[1] << std::endl)
 
