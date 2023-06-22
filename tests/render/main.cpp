@@ -46,6 +46,7 @@ int main(int argc, char **argv){
 			break;
 		case 2:
 			std::cout << "Warning: 2 arguments expected: <in-svg-file> <out-png-file>" << std::endl;
+			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 			filename = argv[1];
 			{
 				auto dot_index = filename.find_last_of(".", filename.size());
@@ -57,7 +58,9 @@ int main(int argc, char **argv){
 			std::cout << "\t Got 1 argument, assume <in-svg-file>=" << filename << " <out-png-file>=" << out_filename << std::endl;
 			break;
 		default:
+			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 			filename = argv[1];
+			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 			out_filename = argv[2];
 			break;
 	}
@@ -110,9 +113,9 @@ int main(int argc, char **argv){
 		switch(ev.type){
 			case Expose:
 				{
-					int dummy_int;
-					unsigned dummy_unsigned;
-					Window dummy_window;
+					int dummy_int = 0;
+					unsigned dummy_unsigned = 0;
+					Window dummy_window = 0;
 					unsigned win_width = 0;
 					unsigned win_height = 0;
 					
@@ -121,14 +124,15 @@ int main(int argc, char **argv){
 					using std::max;
 					
 					svgren::parameters p;
-					p.dpi = 96;
+					p.dpi = svgren::parameters::default_dpi;
 					p.dims_request.x() = max(int(win_width) - 2, 0);
 					p.dims_request.y() = max(int(win_height) - 2, 0);
 					auto img = svgren::rasterize(*dom, p);
 
 					img.swap_red_blue();
 
-					auto ximage = XCreateImage(display, visual, 24, ZPixmap, 0, reinterpret_cast<char*>(img.pixels().data()), img.dims().x(), img.dims().y(), 8, 0);
+					// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+					auto ximage = XCreateImage(display, visual, utki::num_bits_in_byte * 3, ZPixmap, 0, reinterpret_cast<char*>(img.pixels().data()), img.dims().x(), img.dims().y(), utki::num_bits_in_byte, 0);
 					utki::scope_exit scope_exit([ximage](){
 						ximage->data = nullptr; // Xlib will try to deallocate data which is owned by 'img' variable.
 						XDestroyImage(ximage);
