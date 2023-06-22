@@ -36,6 +36,14 @@ SOFTWARE.
 // TODO: doxygen
 namespace rasterimage {
 
+/**
+ * @brief Multiply two color values.
+ * In case color value is of integral type it is treated as normalized value in range [0:1].
+ * For floating point types it just does simple multiplication of the values.
+ * @param a - first color value.
+ * @param b - second color value.
+ * @return Product of the two color values.
+ */
 template <typename value_type>
 value_type multiply(value_type a, value_type b)
 {
@@ -64,6 +72,14 @@ value_type multiply(value_type a, value_type b)
 	}
 }
 
+/**
+ * @brief Divide color value by another color value.
+ * In case color value is of integral type it is treated as normalized value in range [0:1].
+ * For floating point types it just does simple division of one value by another.
+ * @param a - divised value.
+ * @param b - divisor value.
+ * @return Result of division of first value by second value.
+ */
 template <typename value_type>
 value_type divide(value_type a, value_type b)
 {
@@ -95,6 +111,14 @@ value_type divide(value_type a, value_type b)
 	}
 }
 
+/**
+ * @brief Construct value from float.
+ * This is mainly to construct color value literals from floating point value.
+ * In case the color value type is floating point it just returns the same floating point value.
+ * In case the color value type is integral it makes a normalized value in range [0:1].
+ * @param f - floating point in range [0:1] to turn into a color value.
+ * @return Color value.
+ */
 template <typename value_type>
 value_type value(float f)
 {
@@ -110,23 +134,33 @@ value_type value(float f)
 	}
 }
 
+/**
+ * @brief Unpremultiply alpha.
+ * @param px - pixel to unpremultiply alpha for.
+ * @return Pixel with unpremultiplied alpha.
+ */
 template <typename value_type>
-r4::vector4<value_type> unpremultiply_alpha(const r4::vector4<value_type>& c)
+r4::vector4<value_type> unpremultiply_alpha(const r4::vector4<value_type>& px)
 {
 	// optimization
-	if (c.a() == value<value_type>(1) || c.a() == value<value_type>(0)) {
-		return c;
+	if (px.a() == value<value_type>(1) || px.a() == value<value_type>(0)) {
+		return px;
 	}
 
 	return {//
-			divide(c.r(), c.a()),
-			divide(c.g(), c.a()),
-			divide(c.b(), c.a()),
-			c.a()};
+			divide(px.r(), px.a()),
+			divide(px.g(), px.a()),
+			divide(px.b(), px.a()),
+			px.a()};
 }
 
+/**
+ * @brief Convert pixel of integral color value type to floating point one.
+ * @param px - pixel to convert.
+ * @return Pixel of floating point color value type.
+ */
 template <typename to_value_type = float, typename from_value_type, size_t num_channels>
-r4::vector<to_value_type, num_channels> to_float(const r4::vector<from_value_type, num_channels>& integral)
+r4::vector<to_value_type, num_channels> to_float(const r4::vector<from_value_type, num_channels>& px)
 {
 	static_assert(std::is_floating_point_v<to_value_type>, "unexpected non-floating point destination type");
 	static_assert(std::is_integral_v<from_value_type>, "unexpceted non-integral source type");
@@ -134,11 +168,16 @@ r4::vector<to_value_type, num_channels> to_float(const r4::vector<from_value_typ
 
 	static const auto val_max = std::numeric_limits<from_value_type>::max();
 
-	return integral.template to<to_value_type>() / to_value_type(val_max);
+	return px.template to<to_value_type>() / to_value_type(val_max);
 }
 
+/**
+ * @brief Convert pixel of floating point color value type to integral one.
+ * @param px - pixel to convert.
+ * @return Pixel of integral color value type.
+ */
 template <typename to_value_type, typename from_value_type, size_t num_channels>
-r4::vector<to_value_type, num_channels> to_integral(const r4::vector<from_value_type, num_channels>& floating_point)
+r4::vector<to_value_type, num_channels> to_integral(const r4::vector<from_value_type, num_channels>& px)
 {
 	static_assert(std::is_floating_point_v<from_value_type>, "unexpected non-floating point source type");
 	static_assert(std::is_integral_v<to_value_type>, "unexpceted non-integral destination type");
@@ -146,7 +185,7 @@ r4::vector<to_value_type, num_channels> to_integral(const r4::vector<from_value_
 
 	static const auto val_max = std::numeric_limits<to_value_type>::max();
 
-	return (floating_point * val_max).template to<to_value_type>();
+	return (px * val_max).template to<to_value_type>();
 }
 
 } // namespace rasterimage

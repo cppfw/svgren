@@ -490,7 +490,10 @@ r4::rectangle<real> canvas::get_shape_bounding_box() const
     };
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->agg_path_to_polyline();
-	real x1, x2, y1, y2;
+	real x1 = 0;
+	real x2 = 0;
+	real y1 = 0;
+	real y2 = 0;
 	agg::bounding_rect_single(this->polyline_path, 0, &x1, &y1, &x2, &y2);
 	return {
 		{     x1,      y1},
@@ -1150,8 +1153,8 @@ void canvas::set_matrix(const r4::matrix2<real>& m)
 svgren::surface canvas::get_sub_surface(const r4::rectangle<unsigned>& region)
 {
 	r4::vector2<unsigned> dims;
-	image_type::pixel_type* buffer;
-	unsigned stride;
+	image_type::pixel_type* buffer = nullptr;
+	unsigned stride = 0;
 
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	{

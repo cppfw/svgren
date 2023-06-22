@@ -27,6 +27,7 @@ SOFTWARE.
 
 #include "image_variant.hpp"
 
+#include <stdexcept>
 #include <string>
 
 // JPEG lib does not have 'extern "C"{}' :-(, so we put it outside of their .h
@@ -69,6 +70,9 @@ image_variant::image_variant(const r4::vector2<uint32_t>& dimensions, format pix
 
 		auto i = to_variant_index(pixel_format, channel_depth);
 
+		ASSERT(i < factories_array.size())
+
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
 		return factories_array[i](dimensions);
 	}())
 {}
@@ -83,7 +87,7 @@ const dimensioned::dimensions_type& image_variant::dims() const noexcept
 			},
 			this->variant
 		);
-	} catch (std::bad_variant_access& e) {
+	} catch (std::bad_variant_access&) {
 		// this->variant must never be valueless_by_exeception,
 		// so should never reach here
 		ASSERT(false)
@@ -101,7 +105,7 @@ bool image_variant::empty() const noexcept
 			},
 			this->variant
 		);
-	} catch (std::bad_variant_access& e) {
+	} catch (std::bad_variant_access&) {
 		// this->variant must never be valueless_by_exeception,
 		// so should never reach here
 		ASSERT(false)
@@ -119,7 +123,7 @@ size_t image_variant::buffer_size() const noexcept
 			},
 			this->variant
 		);
-	} catch (std::bad_variant_access& e) {
+	} catch (std::bad_variant_access&) {
 		// this->variant must never be valueless_by_exeception,
 		// so should never reach here
 		ASSERT(false)
@@ -130,6 +134,7 @@ size_t image_variant::buffer_size() const noexcept
 namespace {
 void png_write_callback(png_structp png_ptr, png_bytep data, png_size_t length)
 {
+	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
 	auto fi = reinterpret_cast<papki::file*>(png_get_io_ptr(png_ptr));
 	ASSERT(fi)
 
@@ -184,7 +189,8 @@ void image_variant::write_png(const papki::file& fi) const
 
 	png_set_write_fn(
 		png_ptr,
-		const_cast<papki::file*>(&fi), // TODO: why const_cast?
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+		const_cast<papki::file*>(&fi), // png_set_write_fn() expects non-const void*
 		&png_write_callback,
 		&png_flush_callback
 	);
@@ -195,8 +201,35 @@ void image_variant::write_png(const papki::file& fi) const
 		info_ptr,
 		dims.x(),
 		dims.y(),
-		8,
-		PNG_COLOR_TYPE_RGBA, // TODO: support other color formats
+		// get bits per channel
+		std::visit(
+			[](const auto& im) {
+				using value_type = typename std::remove_reference_t<decltype(im)>::value_type;
+				if constexpr (!std::is_same_v<value_type, uint8_t> && !std::is_same_v<value_type, uint16_t>) {
+					throw std::invalid_argument("write_png(): PNG supports only 8 bit or 16 bit per channel images");
+				}
+				return int(sizeof(value_type) * utki::num_bits_in_byte);
+			},
+			this->variant
+		),
+		// get PNG color format
+		[this]() {
+			switch (this->get_format()) {
+				case rasterimage::format::enum_size:
+					ASSERT(false)
+					[[fallthrough]];
+				case rasterimage::format::grey:
+					return PNG_COLOR_TYPE_GRAY;
+				case rasterimage::format::greya:
+					return PNG_COLOR_TYPE_GRAY_ALPHA;
+				case rasterimage::format::rgb:
+					return PNG_COLOR_TYPE_RGB;
+				case rasterimage::format::rgba:
+					return PNG_COLOR_TYPE_RGB_ALPHA;
+			}
+			ASSERT(false)
+			return PNG_COLOR_TYPE_GRAY;
+		}(),
 		PNG_INTERLACE_NONE,
 		PNG_COMPRESSION_TYPE_BASE,
 		PNG_FILTER_TYPE_BASE
@@ -207,17 +240,19 @@ void image_variant::write_png(const papki::file& fi) const
 	// write image data
 	auto p = std::visit(
 		[](const auto& im) {
+			// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
 			return reinterpret_cast<png_const_bytep>(im.pixels().data());
 		},
 		this->variant
 	);
-	auto sizeof_pixel = std::visit(
+	auto stride = std::visit(
 		[](const auto& im) {
-			return sizeof(typename std::remove_reference_t<decltype(im)>::pixel_type);
+			return sizeof(typename std::remove_reference_t<decltype(im)>::pixel_type) * im.dims().x();
 		},
 		this->variant
 	);
-	for (uint32_t y = 0; y != dims.y(); ++y, p += dims.x() * sizeof_pixel) {
+	// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	for (uint32_t y = 0; y != dims.y(); ++y, p += stride) {
 		png_write_row(png_ptr, p);
 	}
 
@@ -240,7 +275,8 @@ image_variant rasterimage::read(const papki::file& fi)
 namespace {
 void png_read_callback(png_structp png_ptr, png_bytep data, png_size_t length)
 {
-	auto fi = reinterpret_cast<papki::file*>(png_get_io_ptr(png_ptr));
+	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+	auto fi = reinterpret_cast<const papki::file*>(png_get_io_ptr(png_ptr));
 	ASSERT(fi)
 
 	// TODO: get number of bytes read and check for EOF, rise error if needed
@@ -258,10 +294,8 @@ image_variant rasterimage::read_png(const papki::file& fi)
 	static const unsigned png_sig_size = 8; // the size of PNG signature
 
 	{
-		std::array<png_byte, png_sig_size> sig;
+		std::array<png_byte, png_sig_size> sig = {0};
 		auto span = utki::make_span(sig);
-
-		std::fill(span.begin(), span.end(), 0);
 
 		auto num_bytes_read = fi.read(span);
 		if (num_bytes_read != span.size_bytes()) {
@@ -289,10 +323,10 @@ image_variant rasterimage::read_png(const papki::file& fi)
 
 	png_set_sig_bytes(png_ptr, png_sig_size); // we've already read png_sig_size bytes
 
-	// set custom "ReadFromFile" function
 	png_set_read_fn(
 		png_ptr,
-		const_cast<papki::file*>(&fi), // TODO: why const_cast?
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+		const_cast<papki::file*>(&fi), // png_set_read_fn() expects non-const void*
 		png_read_callback
 	);
 
@@ -315,7 +349,7 @@ image_variant rasterimage::read_png(const papki::file& fi)
 	}
 
 	// convert grayscale PNG to 8bit greyscale PNG
-	if (color_format == PNG_COLOR_TYPE_GRAY && bit_depth < 8) {
+	if (color_format == PNG_COLOR_TYPE_GRAY && bit_depth < utki::num_bits_in_byte) {
 		png_set_expand_gray_1_2_4_to_8(png_ptr);
 	}
 
@@ -328,11 +362,14 @@ image_variant rasterimage::read_png(const papki::file& fi)
 	// set gamma information
 	double gamma = 0.0f;
 
-	// if there's gamma info in the file, set it to 2.2
+	constexpr auto screen_gamma = 2.2;
+
+	// if there's gamma info in the file, set it to screen_gamma
 	if (png_get_gAMA(png_ptr, info_ptr, &gamma)) {
-		png_set_gamma(png_ptr, 2.2, gamma);
+		png_set_gamma(png_ptr, screen_gamma, gamma);
 	} else {
-		png_set_gamma(png_ptr, 2.2, 0.45455); // set to 0.45455 otherwise (good guess for GIF images on PCs)
+		constexpr auto default_gamma = 0.45455; // good guess for GIF images on PCs
+		png_set_gamma(png_ptr, screen_gamma, default_gamma);
 	}
 
 	// update info after all transformations
@@ -341,33 +378,30 @@ image_variant rasterimage::read_png(const papki::file& fi)
 	// get all dimensions and color info again
 	png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_format, nullptr, nullptr, nullptr);
 
-	depth image_depth;
-
-	// strip 16-bit png to 8-bit
-	if (bit_depth == 16) {
-		image_depth = depth::uint_16_bit;
-	} else {
-		image_depth = depth::uint_8_bit;
-	}
+	depth image_depth = [&bit_depth]() {
+		if (bit_depth == sizeof(uint16_t) * utki::num_bits_in_byte) {
+			return depth::uint_16_bit;
+		} else {
+			ASSERT(bit_depth == utki::num_bits_in_byte)
+			return depth::uint_8_bit;
+		}
+	}();
 
 	// set image type
-	format image_format;
-	switch (color_format) {
-		case PNG_COLOR_TYPE_GRAY:
-			image_format = format::grey;
-			break;
-		case PNG_COLOR_TYPE_GRAY_ALPHA:
-			image_format = format::greya;
-			break;
-		case PNG_COLOR_TYPE_RGB:
-			image_format = format::rgb;
-			break;
-		case PNG_COLOR_TYPE_RGB_ALPHA:
-			image_format = format::rgba;
-			break;
-		default:
-			throw std::invalid_argument("rasterimage::read_png(): unknown color_format");
-	}
+	format image_format = [&color_format]() {
+		switch (color_format) {
+			case PNG_COLOR_TYPE_GRAY:
+				return format::grey;
+			case PNG_COLOR_TYPE_GRAY_ALPHA:
+				return format::greya;
+			case PNG_COLOR_TYPE_RGB:
+				return format::rgb;
+			case PNG_COLOR_TYPE_RGB_ALPHA:
+				return format::rgba;
+			default:
+				throw std::invalid_argument("rasterimage::read_png(): unknown color_format");
+		}
+	}();
 
 	image_variant im({width, height}, image_format, image_depth);
 
@@ -407,6 +441,7 @@ image_variant rasterimage::read_png(const papki::file& fi)
 						ASSERT(i != image.end())
 						auto ret = i->data();
 						++i;
+						// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
 						return reinterpret_cast<decltype(rows)::value_type>(ret);
 					}
 				);
@@ -422,11 +457,11 @@ image_variant rasterimage::read_png(const papki::file& fi)
 }
 
 namespace {
-const size_t jpeg_input_buffer_size = 4096;
+constexpr size_t jpeg_input_buffer_size = 4096;
 
 struct data_manager_jpeg_source {
 	jpeg_source_mgr pub;
-	papki::file* fi;
+	const papki::file* fi;
 	JOCTET* buffer;
 	bool sof; // true if the file was just opened
 };
@@ -434,6 +469,7 @@ struct data_manager_jpeg_source {
 void jpeg_init_source_callback(j_decompress_ptr cinfo)
 {
 	ASSERT(cinfo)
+	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
 	auto src = reinterpret_cast<data_manager_jpeg_source*>(cinfo->src);
 	ASSERT(src)
 	src->sof = true;
@@ -446,11 +482,12 @@ void jpeg_init_source_callback(j_decompress_ptr cinfo)
 boolean jpeg_callback_fill_input_buffer(j_decompress_ptr cinfo)
 {
 	ASSERT(cinfo)
+	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
 	auto src = reinterpret_cast<data_manager_jpeg_source*>(cinfo->src);
 	ASSERT(src)
 
 	// read in JPEGINPUTBUFFERSIZE JOCTET's
-	size_t nbytes;
+	size_t nbytes = 0;
 
 	try {
 		auto buf_wrapper = utki::make_span(src->buffer, sizeof(JOCTET) * jpeg_input_buffer_size);
@@ -461,7 +498,9 @@ boolean jpeg_callback_fill_input_buffer(j_decompress_ptr cinfo)
 			return FALSE; // the specified file is empty
 		}
 		// we read the data before. Insert End Of File info into the buffer
-		src->buffer[0] = (JOCTET)(0xFF);
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		src->buffer[0] = (JOCTET)(std::numeric_limits<uint8_t>::max()); // 0xff
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		src->buffer[1] = (JOCTET)(JPEG_EOI);
 		nbytes = 2;
 	} catch (...) {
@@ -479,6 +518,7 @@ boolean jpeg_callback_fill_input_buffer(j_decompress_ptr cinfo)
 void jpeg_callback_skip_input_data(j_decompress_ptr cinfo, long num_bytes)
 {
 	ASSERT(cinfo)
+	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
 	auto src = reinterpret_cast<data_manager_jpeg_source*>(cinfo->src);
 	ASSERT(src)
 	if (num_bytes <= 0) {
@@ -493,6 +533,7 @@ void jpeg_callback_skip_input_data(j_decompress_ptr cinfo, long num_bytes)
 	}
 
 	// update current JPEG read position
+	// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	src->pub.next_input_byte += size_t(num_bytes);
 	src->pub.bytes_in_buffer -= size_t(num_bytes);
 }
@@ -509,9 +550,12 @@ image_variant rasterimage::read_jpeg(const papki::file& fi)
 
 	papki::file::guard file_guard(fi);
 
+	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 	jpeg_decompress_struct cinfo; // decompression object
-	jpeg_error_mgr jerr;
 
+	// set error manager before calling to jpeg_create_*()
+	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
+	jpeg_error_mgr jerr;
 	cinfo.err = jpeg_std_error(&jerr);
 
 	jpeg_create_decompress(&cinfo); // creat decompress object
@@ -530,16 +574,17 @@ image_variant rasterimage::read_jpeg(const papki::file& fi)
 		// the library will take care of memory freeing for us.
 		// JPOOL_PERMANENT means that the memory is allocated for a whole
 		// time  of working with the library.
-		cinfo.src = reinterpret_cast<jpeg_source_mgr*>(
+		cinfo.src = static_cast<jpeg_source_mgr*>(
 			(cinfo.mem->alloc_small)(j_common_ptr(&cinfo), JPOOL_PERMANENT, sizeof(data_manager_jpeg_source))
 		);
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
 		src = reinterpret_cast<data_manager_jpeg_source*>(cinfo.src);
 		if (!src) {
 			throw std::bad_alloc();
 		}
 
 		// allocate memory for read data
-		src->buffer = reinterpret_cast<JOCTET*>(
+		src->buffer = static_cast<JOCTET*>(
 			(cinfo.mem->alloc_small)(j_common_ptr(&cinfo), JPOOL_PERMANENT, jpeg_input_buffer_size * sizeof(JOCTET))
 		);
 
@@ -547,6 +592,7 @@ image_variant rasterimage::read_jpeg(const papki::file& fi)
 			throw std::bad_alloc();
 		}
 	} else {
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
 		src = reinterpret_cast<data_manager_jpeg_source*>(cinfo.src);
 	}
 
@@ -557,7 +603,7 @@ image_variant rasterimage::read_jpeg(const papki::file& fi)
 	src->pub.resync_to_restart = &jpeg_resync_to_restart; // use default func
 	src->pub.term_source = &jpeg_callback_term_source;
 	// set the fields of our structure
-	src->fi = const_cast<papki::file*>(&fi);
+	src->fi = &fi;
 	// set pointers to the buffers
 	src->pub.bytes_in_buffer = 0; // forces fill_input_buffer on first read
 	src->pub.next_input_byte = nullptr; // until buffer loaded
@@ -575,7 +621,7 @@ image_variant rasterimage::read_jpeg(const papki::file& fi)
 	image_variant im({cinfo.output_width, cinfo.output_height}, image_format, depth::uint_8_bit);
 
 	// calculate the size of a row in bytes
-	auto num_bytes_in_row = size_t(im.dims().x() * im.num_channels());
+	auto num_bytes_in_row = JDIMENSION(im.dims().x() * im.num_channels());
 
 	// Allocate memory for one row. It is an array of rows which
 	// contains only one row. JPOOL_IMAGE means that the memory is allocated
@@ -596,7 +642,12 @@ image_variant rasterimage::read_jpeg(const papki::file& fi)
 
 				ASSERT(num_bytes_in_row == i->size_bytes())
 
-				std::copy(*buffer, *buffer + num_bytes_in_row, reinterpret_cast<uint8_t*>(i->data()));
+				std::copy(
+					*buffer,
+					*buffer + num_bytes_in_row,
+					// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+					reinterpret_cast<uint8_t*>(i->data())
+				);
 			}
 		},
 		im.variant
