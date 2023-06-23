@@ -791,12 +791,12 @@ void canvas::arc_abs(
 	if (sweep) {
 		// make sure angle1 is smaller than angle2
 		if (angle1 > angle2) {
-			angle1 -= 2 * utki::pi<real>();
+			angle1 -= 2 * real(utki::pi);
 		}
 	} else {
 		// make sure angle2 is smaller than angle1
 		if (angle2 > angle1) {
-			angle2 -= 2 * utki::pi<real>();
+			angle2 -= 2 * real(utki::pi);
 		}
 	}
 

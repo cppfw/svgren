@@ -80,6 +80,8 @@ public:
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 		cairo_pattern_t* pattern;
 
+		gradient() = default;
+
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 		struct gradient_wrapper_base {
 			virtual int calculate(int x, int y, int) const = 0;
