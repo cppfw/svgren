@@ -224,17 +224,16 @@ void canvas::scale(real x, real y)
 void canvas::set_fill_rule(svgdom::fill_rule fr)
 {
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	cairo_fill_rule_t cfr;
-	switch (fr) {
-		default:
-			ASSERT(false);
-		case svgdom::fill_rule::evenodd:
-			cfr = CAIRO_FILL_RULE_EVEN_ODD;
-			break;
-		case svgdom::fill_rule::nonzero:
-			cfr = CAIRO_FILL_RULE_WINDING;
-			break;
-	}
+	cairo_fill_rule_t cfr = [&fr]() {
+		switch (fr) {
+			default:
+				ASSERT(false);
+			case svgdom::fill_rule::evenodd:
+				return CAIRO_FILL_RULE_EVEN_ODD;
+			case svgdom::fill_rule::nonzero:
+				return CAIRO_FILL_RULE_WINDING;
+		}
+	}();
 	cairo_set_fill_rule(this->cr, cfr);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
@@ -361,22 +360,19 @@ void canvas::gradient::set_spread_method(svgdom::gradient::spread_method spread_
 {
 	ASSERT(spread_method != svgdom::gradient::spread_method::default_method)
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	cairo_extend_t extend;
-
-	switch (spread_method) {
-		default:
-		case svgdom::gradient::spread_method::default_method:
-			ASSERT(false)
-		case svgdom::gradient::spread_method::pad:
-			extend = CAIRO_EXTEND_PAD;
-			break;
-		case svgdom::gradient::spread_method::reflect:
-			extend = CAIRO_EXTEND_REFLECT;
-			break;
-		case svgdom::gradient::spread_method::repeat:
-			extend = CAIRO_EXTEND_REPEAT;
-			break;
-	}
+	cairo_extend_t extend = [&spread_method]() {
+		switch (spread_method) {
+			default:
+			case svgdom::gradient::spread_method::default_method:
+				ASSERT(false)
+			case svgdom::gradient::spread_method::pad:
+				return CAIRO_EXTEND_PAD;
+			case svgdom::gradient::spread_method::reflect:
+				return CAIRO_EXTEND_REFLECT;
+			case svgdom::gradient::spread_method::repeat:
+				return CAIRO_EXTEND_REPEAT;
+		}
+	}();
 
 	cairo_pattern_set_extend(this->pattern, extend);
 	ASSERT(cairo_pattern_status(this->pattern) == CAIRO_STATUS_SUCCESS)
@@ -482,7 +478,7 @@ r4::rectangle<real> canvas::get_shape_bounding_box() const
 	// stroke-width"
 
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	backend_real x1, y1, x2, y2;
+	backend_real x1 = 0, y1 = 0, x2 = 0, y2 = 0;
 
 	cairo_path_extents(this->cr, &x1, &y1, &x2, &y2);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
@@ -522,7 +518,7 @@ r4::vector2<real> canvas::get_current_point() const
 		return 0;
 	}
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	backend_real xx, yy;
+	backend_real xx = 0, yy = 0;
 	cairo_get_current_point(this->cr, &xx, &yy);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 	return {real(xx), real(yy)};
@@ -586,7 +582,7 @@ void canvas::line_rel(const r4::vector2<real>& p)
 void canvas::quadratic_curve_abs(const r4::vector2<real>& cp1, const r4::vector2<real>& ep)
 {
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	backend_real x0, y0; // current point, absolute coordinates
+	backend_real x0 = 0, y0 = 0; // current point, absolute coordinates
 	if (cairo_has_current_point(this->cr)) {
 		ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 		cairo_get_current_point(this->cr, &x0, &y0);
@@ -598,12 +594,16 @@ void canvas::quadratic_curve_abs(const r4::vector2<real>& cp1, const r4::vector2
 		x0 = 0;
 		y0 = 0;
 	}
+
+	constexpr auto one_third = 1.0 / 3.0;
+	constexpr auto two_thirds = one_third * 2;
+
 	cairo_curve_to(
 		this->cr,
-		2.0 / 3.0 * backend_real(cp1.x()) + 1.0 / 3.0 * x0,
-		2.0 / 3.0 * backend_real(cp1.y()) + 1.0 / 3.0 * y0,
-		2.0 / 3.0 * backend_real(cp1.x()) + 1.0 / 3.0 * backend_real(ep.x()),
-		2.0 / 3.0 * backend_real(cp1.y()) + 1.0 / 3.0 * backend_real(ep.y()),
+		two_thirds * backend_real(cp1.x()) + one_third * x0,
+		two_thirds * backend_real(cp1.y()) + one_third * y0,
+		two_thirds * backend_real(cp1.x()) + one_third * backend_real(ep.x()),
+		two_thirds * backend_real(cp1.y()) + one_third * backend_real(ep.y()),
 		backend_real(ep.x()),
 		backend_real(ep.y())
 	);
@@ -621,12 +621,15 @@ void canvas::quadratic_curve_rel(const r4::vector2<real>& cp1, const r4::vector2
 		return;
 	}
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+	constexpr auto one_third = 1.0 / 3.0;
+	constexpr auto two_thirds = one_third * 2;
+
 	cairo_rel_curve_to(
 		this->cr,
-		2.0 / 3.0 * backend_real(cp1.x()),
-		2.0 / 3.0 * backend_real(cp1.y()),
-		2.0 / 3.0 * backend_real(cp1.x()) + 1.0 / 3.0 * backend_real(ep.x()),
-		2.0 / 3.0 * backend_real(cp1.y()) + 1.0 / 3.0 * backend_real(ep.y()),
+		two_thirds * backend_real(cp1.x()),
+		two_thirds * backend_real(cp1.y()),
+		two_thirds * backend_real(cp1.x()) + one_third * backend_real(ep.x()),
+		two_thirds * backend_real(cp1.y()) + one_third * backend_real(ep.y()),
 		backend_real(ep.x()),
 		backend_real(ep.y())
 	);
@@ -1053,19 +1056,17 @@ void canvas::set_line_width(real width)
 void canvas::set_line_cap(svgdom::stroke_line_cap lc)
 {
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	cairo_line_cap_t clc;
-	switch (lc) {
-		default:
-		case svgdom::stroke_line_cap::butt:
-			clc = CAIRO_LINE_CAP_BUTT;
-			break;
-		case svgdom::stroke_line_cap::round:
-			clc = CAIRO_LINE_CAP_ROUND;
-			break;
-		case svgdom::stroke_line_cap::square:
-			clc = CAIRO_LINE_CAP_SQUARE;
-			break;
-	}
+	cairo_line_cap_t clc = [&lc]() {
+		switch (lc) {
+			default:
+			case svgdom::stroke_line_cap::butt:
+				return CAIRO_LINE_CAP_BUTT;
+			case svgdom::stroke_line_cap::round:
+				return CAIRO_LINE_CAP_ROUND;
+			case svgdom::stroke_line_cap::square:
+				return CAIRO_LINE_CAP_SQUARE;
+		}
+	}();
 	cairo_set_line_cap(this->cr, clc);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
@@ -1088,19 +1089,17 @@ void canvas::set_line_cap(svgdom::stroke_line_cap lc)
 void canvas::set_line_join(svgdom::stroke_line_join lj)
 {
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	cairo_line_join_t clj;
-	switch (lj) {
-		default:
-		case svgdom::stroke_line_join::miter:
-			clj = CAIRO_LINE_JOIN_MITER;
-			break;
-		case svgdom::stroke_line_join::round:
-			clj = CAIRO_LINE_JOIN_ROUND;
-			break;
-		case svgdom::stroke_line_join::bevel:
-			clj = CAIRO_LINE_JOIN_BEVEL;
-			break;
-	}
+	cairo_line_join_t clj = [&lj]() {
+		switch (lj) {
+			default:
+			case svgdom::stroke_line_join::miter:
+				return CAIRO_LINE_JOIN_MITER;
+			case svgdom::stroke_line_join::round:
+				return CAIRO_LINE_JOIN_ROUND;
+			case svgdom::stroke_line_join::bevel:
+				return CAIRO_LINE_JOIN_BEVEL;
+		}
+	}();
 	cairo_set_line_join(this->cr, clj);
 	ASSERT(cairo_status(this->cr) == CAIRO_STATUS_SUCCESS)
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
@@ -1168,6 +1167,7 @@ svgren::surface canvas::get_sub_surface(const r4::rectangle<unsigned>& region)
 
 		dims = decltype(dims){unsigned(cairo_image_surface_get_width(s)), unsigned(cairo_image_surface_get_height(s))};
 
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
 		buffer = reinterpret_cast<image_type::pixel_type*>(cairo_image_surface_get_data(s));
 	}
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG

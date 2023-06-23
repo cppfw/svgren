@@ -78,7 +78,7 @@ public:
 
 	protected:
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-		cairo_pattern_t* pattern;
+		cairo_pattern_t* pattern = nullptr;
 
 		gradient() = default;
 
@@ -205,6 +205,7 @@ private:
 			}
 			int stride = int(width) * int(sizeof(pixel));
 			this->surface = cairo_image_surface_create_for_data(
+				// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
 				reinterpret_cast<unsigned char*>(buffer),
 				CAIRO_FORMAT_ARGB32,
 				int(width),
@@ -215,6 +216,12 @@ private:
 				throw std::runtime_error("svgren::canvas::canvas(): could not create cairo surface");
 			}
 		}
+
+		cairo_surface_wrapper(const cairo_surface_wrapper&) = delete;
+		cairo_surface_wrapper& operator=(const cairo_surface_wrapper&) = delete;
+
+		cairo_surface_wrapper(cairo_surface_wrapper&&) = delete;
+		cairo_surface_wrapper& operator=(cairo_surface_wrapper&&) = delete;
 
 		~cairo_surface_wrapper()
 		{
