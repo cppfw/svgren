@@ -65,7 +65,13 @@ const tst::set set("samples", [](tst::suite& suite){
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
+#if CFG_COMPILER == CFG_COMPILER_MSVC
+#	pragma warning(disable : 4996)
+#endif
             auto res = svgren::render(*dom);
+#if CFG_COMPILER == CFG_COMPILER_MSVC
+#	pragma warning(enable: 4996)
+#endif
 #if CFG_COMPILER == CFG_COMPILER_GCC
 #	pragma GCC diagnostic pop
 #endif

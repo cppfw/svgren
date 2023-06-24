@@ -32,18 +32,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
-	auto dom = svgdom::load(papki::fs_file("../samples/testdata/menue-cut.svg"));
+	auto dom = svgdom::load(papki::fs_file("../unit/samples_data/tiger.svg"));
 	utki::assert(dom, SL);
 
 	svgren::parameters params;
-	auto res = svgren::render(*dom, params);
+	auto res = svgren::rasterize(*dom, params);
 
-    for(auto& c : res.pixels){
-        // swap red and blue channels, as cairo works in BGRA format, while we need to return RGBA
-        c = (c & 0xff00ff00) | ((c << 16) & 0xff0000) | ((c >> 16) & 0xff);
-    }
+	res.swap_red_blue();
 
-	bmp = CreateBitmap(res.dims.x(), res.dims.y(), 1, 32, res.pixels.data());
+	bmp = CreateBitmap(res.dims().x(), res.dims().y(), 1, 32, res.pixels().data());
 	utki::assert(bmp != NULL, SL);
 
     // Initialize global strings
