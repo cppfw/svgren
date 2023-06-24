@@ -17,4 +17,5 @@ Pod::Spec.new do |s|
 
   s.dependency 'svgdom', '>= 0.3.61'
   s.dependency 'agg', '>= 2.8.3'
+  s.dependency 'rasterimage', '>= 0.1.3'
 end

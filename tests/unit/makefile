@@ -7,14 +7,10 @@ this_srcs += $(call prorab-src-dir, .)
 
 $(eval $(call prorab-config, ../../config))
 
-this_ldlibs += -lsvgdom ../../src/out/$(c)/libsvgren$(dot_so) -lpng -lpapki -lutki -ltst -lm
+this_ldlibs += -lsvgdom ../../src/out/$(c)/libsvgren$(dot_so) -lpng -lpapki -lutki -ltst -lm -lrasterimage
 this_ldflags += -L../../src
 
 this_no_install := true
-
-# TODO: remove
-this_cxxflags += -I ../../src
-this_cxxflags_test += -I ../../src
 
 $(eval $(prorab-build-app))
 

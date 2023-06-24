@@ -11,10 +11,6 @@ this_ldlibs += -lsvgdom ../../src/out/$(c)/libsvgren$(dot_so) -lpapki -lpng -lut
 
 this_no_install := true
 
-# TODO: remove
-this_cxxflags += -I ../../src
-this_cxxflags_test += -I ../../src
-
 $(eval $(prorab-build-app))
 
 # add dependency on libsvgren

@@ -24,10 +24,6 @@ else ifeq ($(this_svgren_backend),cairo)
     this_ldlibs += `pkg-config --libs cairo`
 endif
 
-# TODO: remove
-this_cxxflags_test += -I .
-this_cxxflags += -I .
-
 this_ldlibs += -lsvgdom -lstdc++ -lm -ljpeg
 
 $(eval $(prorab-build-lib))
