@@ -162,14 +162,20 @@ const tst::set set("samples", [](tst::suite& suite){
                     }
 
                     if(unsigned(c2 - c1) > tolerance){
-                        uint32_t pixel =
+                        uint32_t png_pixel =
                             uint32_t(png_px.r()) |
                             (uint32_t(png_px.g()) << utki::num_bits_in_byte) |
                             (uint32_t(png_px.b()) << (utki::num_bits_in_byte * 2)) |
                             (uint32_t(png_px.a()) << (utki::num_bits_in_byte * 3))
                         ;
 
-                        tst::check(false, SL) << "Error: PNG pixel #" << std::dec << i << " [" << (i % im.dims().x()) << ", " << (i / im.dims().y()) << "]" << " (0x" << std::hex << pixel << ") did not match SVG pixel (0x" << im.pixels()[i] << ")" << ", png_file = " << png_file.path();
+                        uint32_t svg_pixel = uint32_t(rgba.r()) |
+                            (uint32_t(rgba.g()) << utki::num_bits_in_byte) |
+                            (uint32_t(rgba.b()) << (utki::num_bits_in_byte * 2)) |
+                            (uint32_t(rgba.a()) << (utki::num_bits_in_byte * 3))
+                        ;
+
+                        tst::check(false, SL) << "Error: PNG pixel #" << std::dec << i << " [" << (i % im.dims().x()) << ", " << (i / im.dims().y()) << "]" << " (0x" << std::hex << png_pixel << ") did not match SVG pixel (0x" << svg_pixel << ")" << ", png_file = " << png_file.path();
                     }
                 }
             }
