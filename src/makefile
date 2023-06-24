@@ -24,7 +24,7 @@ else ifeq ($(this_svgren_backend),cairo)
     this_ldlibs += `pkg-config --libs cairo`
 endif
 
-this_ldlibs += -lsvgdom -lstdc++ -lm -ljpeg
+this_ldlibs += -lsvgdom -lstdc++ -lm
 
 $(eval $(prorab-build-lib))
 

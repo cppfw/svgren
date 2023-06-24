@@ -29,7 +29,7 @@ url="http://github.com/cppfw/${packageName}"
 license=('MIT')
 groups=()
 
-depends=("${pkgPrefix}utki" "${pkgPrefix}svgdom" "${pkgPrefix}agg" "${pkgPrefix}librasterimage")
+depends=("${pkgPrefix}utki" "${pkgPrefix}svgdom" "${pkgPrefix}agg" "${pkgPrefix}rasterimage")
 
 makedepends=(
 	'myci'

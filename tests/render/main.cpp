@@ -4,6 +4,7 @@
 
 #include <utki/debug.hpp>
 #include <utki/config.hpp>
+#include <utki/time.hpp>
 
 #include <papki/fs_file.hpp>
 
@@ -22,14 +23,6 @@
 
 #ifdef assert
 #	undef assert
-#endif
-
-#ifdef DEBUG
-namespace{
-uint32_t get_ticks(){
-	return uint32_t(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count());
-}
-}
 #endif
 
 // NOLINTNEXTLINE(bugprone-exception-escape): fatal exceptions are not caught
@@ -74,17 +67,16 @@ int main(int argc, char **argv){
 	
 	LOG([&](auto&o){o << "SVG loaded in " << float(get_ticks() - loadStart) / 1000.0f << " sec." << std::endl;})
 	
-#ifdef DEBUG
-	auto renderStart = get_ticks();
-#endif
+	auto render_start_ms = utki::get_ticks_ms();
 	
 	auto image = rasterimage::image_variant(svgren::rasterize(*dom));
 
 	const auto& img = image.get<rasterimage::format::rgba>();
 	
-	LOG([&](auto&o){o << "SVG rendered in " << float(get_ticks() - renderStart) / 1000.0f << " sec." << std::endl;})
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+	utki::log([&](auto&o){o << "SVG rendered in " << float(utki::get_ticks_ms() - render_start_ms) / 1000.0f << " sec." << std::endl;});
 	
-	LOG([&](auto&o){o << "img.dims = " << img.dims() << " img.pixels.size() = " << img.pixels().size() << std::endl;})
+	utki::log([&](auto&o){o << "img.dims = " << img.dims() << " img.pixels.size() = " << img.pixels().size() << std::endl;});
 
 	image.write_png(papki::fs_file(out_filename));
 	
