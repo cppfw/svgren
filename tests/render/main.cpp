@@ -86,8 +86,10 @@ int main(int argc, char **argv){
 
 	Display *display = XOpenDisplay(nullptr);
 	
+	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast, cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	Visual *visual = DefaultVisual(display, 0);
 	
+	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast, cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	Window window = XCreateSimpleWindow(display, RootWindow(display, 0), 0, 0, width, height, 1, 0, 0);
 	
 	if(visual->c_class != TrueColor){
@@ -130,6 +132,7 @@ int main(int argc, char **argv){
 						XDestroyImage(ximage);
 					});
 					
+					// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast, cppcoreguidelines-pro-bounds-pointer-arithmetic)
 					XPutImage(display, window, DefaultGC(display, 0), ximage, 0, 0, 1, 1, img.dims().x(), img.dims().y());
 				}
 				break;

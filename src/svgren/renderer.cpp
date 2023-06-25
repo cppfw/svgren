@@ -1385,7 +1385,7 @@ svgdom::length renderer::gradient_get_x2(const svgdom::linear_gradient_element& 
 			}
 		}
 	}
-	return {utki::hundred_percent, svgdom::length_unit::percent};
+	return {real(utki::hundred_percent), svgdom::length_unit::percent};
 }
 
 svgdom::length renderer::gradient_get_y2(const svgdom::linear_gradient_element& g)
