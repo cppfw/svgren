@@ -7,7 +7,7 @@ $(eval $(call prorab-config, ../../config))
 
 this_srcs += main.cpp
 
-this_ldlibs += -lsvgdom ../../src/out/$(c)/libsvgren$(dot_so) -lpapki -lpng -lutki -lm
+this_ldlibs += -lsvgdom ../../src/out/$(c)/libsvgren$(dot_so) -lpapki -lpng -lutki -lm -lrasterimage
 this_ldflags += -L../../src
 
 ifeq ($(os), macosx)

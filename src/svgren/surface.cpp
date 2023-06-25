@@ -66,17 +66,21 @@ surface surface::intersection(const r4::rectangle<unsigned>& r) const
 void surface::append_luminance_to_alpha()
 {
 	// Luminance is calculated using formula L = 0.2126 * R + 0.7152 * G + 0.0722 * B
-	// For faster calculation it can be simplified to L = (2 * R + 3 * G + B) / 6
+
+	constexpr auto red_coeff = 0.2126;
+	constexpr auto green_coeff = 0.7152;
+	constexpr auto blue_coeff = 0.0722;
 
 	// TODO: take stride into account, do not append luminance to alpha for data out of the surface width
-	for (auto& pixel : this->span) {
-		auto c = to_rgba(pixel).to<uint32_t>();
-
-		uint32_t l = (2 * c.r() + 3 * c.g() + c.b()) / 6;
-		ASSERT(l <= 255)
-
-		// we use premultiplied alpha format, so no need to multiply alpha by liminance
-		pixel &= 0xffffff;
-		pixel |= (l << 24);
+	for (auto& px : this->span) {
+		px.set(
+			image_type::value(1),
+			image_type::value(1),
+			image_type::value(1),
+			// we use premultiplied alpha format, so no need to multiply alpha by liminance
+			rasterimage::multiply(px.r(), image_type::value(red_coeff))
+				+ rasterimage::multiply(px.g(), image_type::value(green_coeff))
+				+ rasterimage::multiply(px.b(), image_type::value(blue_coeff))
+		);
 	}
 }

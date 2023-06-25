@@ -29,6 +29,7 @@ SOFTWARE.
 
 #include <svgdom/elements/coordinate_units.hpp>
 #include <utki/math.hpp>
+#include <utki/util.hpp>
 
 #include "config.hxx"
 #include "filter_applier.hxx"
@@ -43,7 +44,7 @@ const std::string fake_svg_element_tag = "fake_svg_element";
 real renderer::length_to_px(const svgdom::length& l) const noexcept
 {
 	if (l.is_percent()) {
-		return this->viewport.x() * (l.value / 100);
+		return this->viewport.x() * (l.value / utki::hundred_percent);
 	}
 	return real(l.to_px(this->dpi));
 }
@@ -51,17 +52,17 @@ real renderer::length_to_px(const svgdom::length& l) const noexcept
 r4::vector2<real> renderer::length_to_px(const svgdom::length& x, const svgdom::length& y) const noexcept
 {
 	return r4::vector2<real>{
-		x.is_percent() ? (this->viewport.x() * (x.value / 100)) : x.to_px(this->dpi),
-		y.is_percent() ? (this->viewport.y() * (y.value / 100)) : y.to_px(this->dpi)};
+		x.is_percent() ? (this->viewport.x() * (x.value / utki::hundred_percent)) : x.to_px(this->dpi),
+		y.is_percent() ? (this->viewport.y() * (y.value / utki::hundred_percent)) : y.to_px(this->dpi)};
 }
 
 void renderer::apply_transformation(const svgdom::transformable::transformation& t)
 {
 	//	TRACE(<< "renderer::applyCairoTransformation(): applying transformation " << unsigned(t.type) << std::endl)
-	switch (t.type_) {
+	switch (t.type_v) {
 		case svgdom::transformable::transformation::type::translate:
 			//			TRACE(<< "translate x,y = (" << t.x << ", " << t.y << ")" << std::endl)
-			this->canvas.translate(t.x, t.y);
+			this->canvas.translate(t.x(), t.y());
 			break;
 		case svgdom::transformable::transformation::type::matrix:
 			this->canvas.transform({
@@ -71,19 +72,19 @@ void renderer::apply_transformation(const svgdom::transformable::transformation&
 			break;
 		case svgdom::transformable::transformation::type::scale:
 			//			TRACE(<< "scale transformation factors = (" << t.x << ", " << t.y << ")" << std::endl)
-			this->canvas.scale(t.x, t.y);
+			this->canvas.scale(t.x(), t.y());
 			break;
 		case svgdom::transformable::transformation::type::rotate:
-			this->canvas.translate(t.x, t.y);
-			this->canvas.rotate(deg_to_rad(t.angle));
-			this->canvas.translate(-t.x, -t.y);
+			this->canvas.translate(t.x(), t.y());
+			this->canvas.rotate(utki::deg_to_rad(t.angle()));
+			this->canvas.translate(-t.x(), -t.y());
 			break;
 		case svgdom::transformable::transformation::type::skewx:
 			{
 				using std::tan;
 				this->canvas.transform({
-					{1, tan(deg_to_rad(t.angle)), 0},
-					{0,						1, 0}
+					{1, tan(utki::deg_to_rad(t.angle())), 0},
+					{0,								1, 0}
                 });
 			}
 			break;
@@ -91,8 +92,8 @@ void renderer::apply_transformation(const svgdom::transformable::transformation&
 			{
 				using std::tan;
 				this->canvas.transform({
-					{					   1, 0, 0},
-					{tan(deg_to_rad(t.angle)), 1, 0}
+					{							   1, 0, 0},
+					{tan(utki::deg_to_rad(t.angle())), 1, 0}
                 });
 			}
 			break;
@@ -132,7 +133,9 @@ void renderer::apply_viewbox(const svgdom::view_boxed& e, const svgdom::aspect_r
 
 	if (ar.preserve_aspect_ratio.preserve != svgdom::aspect_ratioed::aspect_ratio_preservation::none) {
 		if (e.view_box[3] >= 0 && this->viewport[1] >= 0) { // if view_box width and viewport height are not 0
-			real scale_factor, dx, dy;
+			real scale_factor = 1;
+			real dx = 0;
+			real dy = 0;
 
 			real viewbox_aspect = e.view_box[2] / e.view_box[3];
 			real viewport_aspect = this->viewport[0] / this->viewport[1];
@@ -213,12 +216,12 @@ void renderer::set_gradient_properties(
 			g(g)
 		{}
 
-		const std::string& get_id() const override
+		std::string_view get_id() const override
 		{
 			return this->g.get_id();
 		}
 
-		const std::string& get_tag() const override
+		std::string_view get_tag() const override
 		{
 			return static_cast<const svgdom::element&>(this->g).get_tag();
 		}
@@ -332,6 +335,12 @@ void renderer::set_gradient(const std::string& id)
 			r.apply_transformations(r.gradient_get_transformations(gradient));
 		}
 
+		common_gradient_push(const common_gradient_push&) = delete;
+		common_gradient_push& operator=(const common_gradient_push&) = delete;
+
+		common_gradient_push(common_gradient_push&&) = delete;
+		common_gradient_push& operator=(common_gradient_push&&) = delete;
+
 		~common_gradient_push() noexcept = default;
 	};
 
@@ -418,11 +427,10 @@ void renderer::update_bounding_box()
 	for (auto& vertex : rect_vertices) {
 		vertex = this->canvas.matrix_mul(vertex);
 
-		r4::segment2<real> bb;
-		bb.p1.x() = decltype(bb.p1.x())(vertex.x());
-		bb.p2.x() = decltype(bb.p2.x())(vertex.x());
-		bb.p1.y() = decltype(bb.p1.y())(vertex.y());
-		bb.p2.y() = decltype(bb.p2.y())(vertex.y());
+		r4::segment2<real> bb{
+			{vertex.x(), vertex.y()},
+			{vertex.x(), vertex.y()}
+        };
 
 		this->device_space_bounding_box.unite(bb);
 	}
@@ -667,11 +675,11 @@ void renderer::visit(const svgdom::use_element& e)
 
 			// add x and y transformation
 			{
-				svgdom::transformable::transformation t;
-				t.type_ = svgdom::transformable::transformation::type::translate;
+				svgdom::transformable::transformation t{};
+				t.type_v = svgdom::transformable::transformation::type::translate;
 				auto p = this->r.length_to_px(e.x, e.y);
-				t.x = p.x();
-				t.y = p.y();
+				t.x() = p.x();
+				t.y() = p.y();
 
 				this->fake_g_element.transformations.push_back(t);
 			}
@@ -711,7 +719,7 @@ void renderer::visit(const svgdom::use_element& e)
 					);
 				}
 
-				const std::string& get_tag() const override
+				std::string_view get_tag() const override
 				{
 					return fake_svg_element_tag;
 				}
@@ -754,7 +762,7 @@ void renderer::visit(const svgdom::use_element& e)
 					);
 				}
 
-				const std::string& get_tag() const override
+				std::string_view get_tag() const override
 				{
 					return fake_svg_element_tag;
 				}
@@ -785,7 +793,7 @@ void renderer::visit(const svgdom::use_element& e)
 					this->e.accept(this->r);
 				}
 
-				const std::string& get_tag() const override
+				std::string_view get_tag() const override
 				{
 					return fake_svg_element_tag;
 				}
@@ -852,7 +860,7 @@ void renderer::visit(const svgdom::path_element& e)
 	const svgdom::path_element::step* prev_step = nullptr;
 
 	for (auto& s : e.path) {
-		switch (s.type_) {
+		switch (s.type_v) {
 			case svgdom::path_element::step::type::move_abs:
 				this->canvas.move_abs({real(s.x), real(s.y)});
 				break;
@@ -902,7 +910,7 @@ void renderer::visit(const svgdom::path_element& e)
 					}
 
 					r4::vector2<real> cp1; // control point
-					switch (prev_step ? prev_step->type_ : svgdom::path_element::step::type::unknown) {
+					switch (prev_step ? prev_step->type_v : svgdom::path_element::step::type::unknown) {
 						case svgdom::path_element::step::type::quadratic_abs:
 							cp1 = -(p1 - cur_p) + cur_p;
 							break;
@@ -941,7 +949,7 @@ void renderer::visit(const svgdom::path_element& e)
 					}
 
 					r4::vector2<real> cp1; // control point
-					switch (prev_step ? prev_step->type_ : svgdom::path_element::step::type::unknown) {
+					switch (prev_step ? prev_step->type_v : svgdom::path_element::step::type::unknown) {
 						case svgdom::path_element::step::type::quadratic_smooth_abs:
 							cp1 = -(prev_quadratic_p - cur_p);
 							break;
@@ -988,7 +996,7 @@ void renderer::visit(const svgdom::path_element& e)
 					}
 
 					r4::vector2<real> cp1; // first control point
-					switch (prev_step ? prev_step->type_ : svgdom::path_element::step::type::unknown) {
+					switch (prev_step ? prev_step->type_v : svgdom::path_element::step::type::unknown) {
 						case svgdom::path_element::step::type::cubic_smooth_abs:
 						case svgdom::path_element::step::type::cubic_abs:
 							cp1 = -(p2 - cur_p) + cur_p;
@@ -1022,7 +1030,7 @@ void renderer::visit(const svgdom::path_element& e)
 					}
 
 					r4::vector2<real> cp1; // first control point
-					switch (prev_step ? prev_step->type_ : svgdom::path_element::step::type::unknown) {
+					switch (prev_step ? prev_step->type_v : svgdom::path_element::step::type::unknown) {
 						case svgdom::path_element::step::type::cubic_smooth_abs:
 						case svgdom::path_element::step::type::cubic_abs:
 							cp1 = -(p2 - cur_p);
@@ -1043,8 +1051,8 @@ void renderer::visit(const svgdom::path_element& e)
 			case svgdom::path_element::step::type::arc_abs:
 				this->canvas.arc_abs(
 					{real(s.x), real(s.y)},
-					{real(s.rx), real(s.ry)},
-					deg_to_rad(real(s.x_axis_rotation)),
+					{real(s.rx()), real(s.ry())},
+					utki::deg_to_rad(real(s.x_axis_rotation())),
 					s.flags.large_arc,
 					s.flags.sweep
 				);
@@ -1052,15 +1060,15 @@ void renderer::visit(const svgdom::path_element& e)
 			case svgdom::path_element::step::type::arc_rel:
 				this->canvas.arc_rel(
 					{real(s.x), real(s.y)},
-					{real(s.rx), real(s.ry)},
-					deg_to_rad(real(s.x_axis_rotation)),
+					{real(s.rx()), real(s.ry())},
+					utki::deg_to_rad(real(s.x_axis_rotation())),
 					s.flags.large_arc,
 					s.flags.sweep
 				);
 				break;
 			default:
 				ASSERT(false, [&](auto& o) {
-					o << "unknown path step type: " << unsigned(s.type_);
+					o << "unknown path step type: " << unsigned(s.type_v);
 				})
 				break;
 		}
@@ -1184,7 +1192,7 @@ void renderer::visit(const svgdom::ellipse_element& e)
 	auto c = this->length_to_px(e.cx, e.cy);
 	auto r = this->length_to_px(e.rx, e.ry);
 	this->canvas.move_abs(c + r4::vector2<real>{r.x(), 0}); // move to start point
-	this->canvas.arc_abs(c, r, 0, real(2) * utki::pi<real>());
+	this->canvas.arc_abs(c, r, 0, real(2) * real(utki::pi));
 	this->canvas.close_path();
 
 	this->render_shape(group_push.is_group_pushed());
@@ -1377,7 +1385,7 @@ svgdom::length renderer::gradient_get_x2(const svgdom::linear_gradient_element& 
 			}
 		}
 	}
-	return {100, svgdom::length_unit::percent};
+	return {real(utki::hundred_percent), svgdom::length_unit::percent};
 }
 
 svgdom::length renderer::gradient_get_y2(const svgdom::linear_gradient_element& g)
@@ -1419,7 +1427,7 @@ svgdom::length renderer::gradient_get_cx(const svgdom::radial_gradient_element& 
 			}
 		}
 	}
-	return {50, svgdom::length_unit::percent};
+	return {real(utki::hundred_percent) / 2, svgdom::length_unit::percent};
 }
 
 svgdom::length renderer::gradient_get_cy(const svgdom::radial_gradient_element& g)
@@ -1440,7 +1448,7 @@ svgdom::length renderer::gradient_get_cy(const svgdom::radial_gradient_element& 
 			}
 		}
 	}
-	return {50, svgdom::length_unit::percent};
+	return {real(utki::hundred_percent) / 2, svgdom::length_unit::percent};
 }
 
 svgdom::length renderer::gradient_get_r(const svgdom::radial_gradient_element& g)
@@ -1461,7 +1469,7 @@ svgdom::length renderer::gradient_get_r(const svgdom::radial_gradient_element& g
 			}
 		}
 	}
-	return {50, svgdom::length_unit::percent};
+	return {real(utki::hundred_percent) / 2, svgdom::length_unit::percent};
 }
 
 svgdom::length renderer::gradient_get_fx(const svgdom::radial_gradient_element& g)
@@ -1651,7 +1659,9 @@ void renderer::blit(const surface& s)
 	auto dp = min(s.d, dst.d - s.p);
 
 	for (unsigned y = 0; y != dp.y(); ++y) {
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		auto p = dstp + size_t(y * dst.stride);
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		auto sp = srcp + size_t(y * s.stride);
 		for (unsigned x = 0; x != dp.x(); ++x, ++p, ++sp) {
 			*p = *sp;

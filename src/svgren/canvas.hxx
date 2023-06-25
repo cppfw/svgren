@@ -35,6 +35,7 @@ SOFTWARE.
 
 #include <r4/matrix.hpp>
 #include <r4/rectangle.hpp>
+#include <rasterimage/image.hpp>
 #include <svgdom/elements/gradients.hpp>
 #include <svgdom/elements/styleable.hpp>
 #include <utki/config.hpp>
@@ -66,36 +67,6 @@ SOFTWARE.
 
 namespace svgren {
 
-inline r4::vector4<unsigned> to_rgba(pixel c)
-{
-#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	// cairo uses BGRA format
-	return {
-		unsigned((c >> 16) & 0xff),
-		unsigned((c >> 8) & 0xff),
-		unsigned((c >> 0) & 0xff),
-		unsigned((c >> 24) & 0xff)};
-#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	// RGBA format
-	return {
-		unsigned((c >> 0) & 0xff),
-		unsigned((c >> 8) & 0xff),
-		unsigned((c >> 16) & 0xff),
-		unsigned((c >> 24) & 0xff)};
-#endif
-}
-
-inline pixel to_pixel(const r4::vector4<unsigned>& rgba)
-{
-#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	// cairo uses BGRA format
-	return rgba.b() | (rgba.g() << 8) | (rgba.r() << 16) | (rgba.a() << 24);
-#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	// RGBA format
-	return rgba.r() | (rgba.g() << 8) | (rgba.b() << 16) | (rgba.a() << 24);
-#endif
-}
-
 class canvas
 {
 public:
@@ -107,11 +78,21 @@ public:
 
 	protected:
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-		cairo_pattern_t* pattern;
+		cairo_pattern_t* pattern = nullptr;
+
+		gradient() = default;
 
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 		struct gradient_wrapper_base {
 			virtual int calculate(int x, int y, int) const = 0;
+
+			gradient_wrapper_base() = default;
+
+			gradient_wrapper_base(const gradient_wrapper_base&) = delete;
+			gradient_wrapper_base& operator=(const gradient_wrapper_base&) = delete;
+
+			gradient_wrapper_base(gradient_wrapper_base&&) = delete;
+			gradient_wrapper_base& operator=(gradient_wrapper_base&&) = delete;
 
 			virtual ~gradient_wrapper_base() = default;
 		};
@@ -149,7 +130,8 @@ public:
 			return *this->cur_grad;
 		}
 
-		agg::gradient_lut<agg::color_interpolator<agg::rgba8>, 0x2ff> lut;
+		constexpr static auto gradient_lut_size = 0x2ff;
+		agg::gradient_lut<agg::color_interpolator<agg::rgba8>, gradient_lut_size> lut;
 
 		r4::matrix2<real> local_matrix;
 
@@ -173,6 +155,12 @@ public:
 
 		void set_spread_method(svgdom::gradient::spread_method spread_method);
 		void set_stops(utki::span<const stop> stops);
+
+		gradient(const gradient&) = delete;
+		gradient& operator=(const gradient&) = delete;
+
+		gradient(gradient&&) = delete;
+		gradient& operator=(gradient&&) = delete;
 
 		virtual ~gradient();
 	};
@@ -205,18 +193,19 @@ private:
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 	using backend_real = double;
 
-	std::vector<pixel> pixels;
+	std::vector<rasterimage::image<uint8_t, 4>::pixel_type> pixels;
 
 	struct cairo_surface_wrapper {
 		cairo_surface_t* surface;
 
-		cairo_surface_wrapper(unsigned width, unsigned height, pixel* buffer)
+		cairo_surface_wrapper(unsigned width, unsigned height, decltype(pixels)::value_type* buffer)
 		{
 			if (width == 0 || height == 0) {
 				throw std::invalid_argument("svgren::canvas::canvas(): width or height argument is zero");
 			}
 			int stride = int(width) * int(sizeof(pixel));
 			this->surface = cairo_image_surface_create_for_data(
+				// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
 				reinterpret_cast<unsigned char*>(buffer),
 				CAIRO_FORMAT_ARGB32,
 				int(width),
@@ -227,6 +216,12 @@ private:
 				throw std::runtime_error("svgren::canvas::canvas(): could not create cairo surface");
 			}
 		}
+
+		cairo_surface_wrapper(const cairo_surface_wrapper&) = delete;
+		cairo_surface_wrapper& operator=(const cairo_surface_wrapper&) = delete;
+
+		cairo_surface_wrapper(cairo_surface_wrapper&&) = delete;
+		cairo_surface_wrapper& operator=(cairo_surface_wrapper&&) = delete;
 
 		~cairo_surface_wrapper()
 		{
@@ -239,7 +234,7 @@ private:
 	using backend_real = agg::path_storage::container_type::value_type;
 
 	struct group {
-		std::vector<pixel> pixels;
+		std::vector<rasterimage::image<uint8_t, 4>::pixel_type> pixels;
 		agg::rendering_buffer rendering_buffer;
 		agg::pixfmt_rgba32_pre pixel_format; // use premultiplied pixel format for faster blending
 		agg::renderer_base<decltype(pixel_format)> renderer_base;
@@ -247,6 +242,7 @@ private:
 		group(const r4::vector2<unsigned>& dims) :
 			pixels(size_t(dims.x() * dims.y()), 0),
 			rendering_buffer(
+				// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
 				reinterpret_cast<agg::int8u*>(this->pixels.data()),
 				dims.x(),
 				dims.y(),
@@ -287,7 +283,7 @@ private:
 		agg::line_join_e line_join = agg::line_join_e::miter_join;
 		agg::trans_affine gradient_matrix;
 		agg::trans_affine matrix;
-		real dash_offset;
+		real dash_offset = 0;
 		std::vector<std::pair<real, real>> dash_array;
 #endif
 		std::shared_ptr<const gradient>
@@ -298,6 +294,13 @@ private:
 
 public:
 	canvas(const r4::vector2<unsigned>& dims);
+
+	canvas(const canvas&) = delete;
+	canvas& operator=(const canvas&) = delete;
+
+	canvas(canvas&&) = delete;
+	canvas& operator=(canvas&&) = delete;
+
 	~canvas();
 
 	void transform(const r4::matrix2<real>& matrix);
@@ -402,7 +405,7 @@ public:
 
 	svgren::surface get_sub_surface(const r4::rectangle<unsigned>& region = {0, std::numeric_limits<unsigned>::max()});
 
-	std::vector<pixel> release();
+	rasterimage::image<uint8_t, 4> release();
 };
 
 } // namespace svgren

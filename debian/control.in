@@ -14,6 +14,7 @@ Build-Depends:
 		libutki-dev,
 		libsvgdom-dev (>= 0.3.61),
 		libantigrain-dev (>= 2.8.3),
+		librasterimage-dev,
 		libr4-dev,
 		libclargs-dev,
 		libtst-dev

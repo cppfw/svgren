@@ -29,7 +29,7 @@ url="http://github.com/cppfw/${packageName}"
 license=('MIT')
 groups=()
 
-depends=("${pkgPrefix}utki" "${pkgPrefix}svgdom" "${pkgPrefix}agg")
+depends=("${pkgPrefix}utki" "${pkgPrefix}svgdom" "${pkgPrefix}agg" "${pkgPrefix}rasterimage")
 
 makedepends=(
 	'myci'
@@ -39,7 +39,6 @@ makedepends=(
 	"${pkgPrefix}clang-tools-extra"
 	"${pkgPrefix}r4"
 	"${pkgPrefix}clargs"
-	"${pkgPrefix}libpng"
 	"${pkgPrefix}tst"
 )
 checkdepends=('myci')
@@ -64,17 +63,17 @@ prepare() {
 
 build() {
 	cd "$rootDir"
-	make CXX=clang++
+	CXX=clang++ make
 }
 
 check() {
 	cd "$rootDir"
 	if [ "$MSYSTEM" == "MINGW64" ]; then
-		make CXX=clang++ test
+		CXX=clang++ make test
 	fi
 }
 
 package() {
 	cd "$rootDir"
-	make CXX=clang++ DESTDIR="$pkgdir" PREFIX="$dirPrefix" install
+	make DESTDIR="$pkgdir" PREFIX="$dirPrefix" install
 }

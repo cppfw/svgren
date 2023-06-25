@@ -28,20 +28,27 @@ SOFTWARE.
 #pragma once
 
 // drawing backend variants
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define SVGREN_BACKEND_CAIRO 1
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define SVGREN_BACKEND_AGG 2
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define SVGREN_BACKEND_SKIA 3
 
 #ifndef SVGREN_BACKEND
 #	define SVGREN_BACKEND SVGREN_BACKEND_AGG
 #endif
 
+#include <rasterimage/image.hpp>
 #include <svgdom/config.hpp>
 
 namespace svgren {
 
 using real = svgdom::real;
 
+using image_type = rasterimage::image<uint8_t, 4>;
+
+// TODO: image_type::pixel_type
 using pixel = uint32_t;
 
 } // namespace svgren

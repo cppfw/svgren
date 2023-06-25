@@ -31,6 +31,7 @@ SOFTWARE.
 #include <stdexcept>
 
 #include <r4/matrix.hpp>
+#include <rasterimage/operations.hpp>
 #include <utki/debug.hpp>
 #include <utki/math.hpp>
 
@@ -40,8 +41,8 @@ using namespace svgren;
 
 namespace {
 void box_blur_horizontal(
-	uint32_t* dst,
-	const uint32_t* src,
+	image_type::pixel_type* dst,
+	const image_type::pixel_type* src,
 	unsigned dst_stride,
 	unsigned src_stride,
 	unsigned width,
@@ -57,21 +58,26 @@ void box_blur_horizontal(
 		using std::min;
 		using std::max;
 
+		// TODO: optimize by calculating first and last x and then iterate between them
 		r4::vector4<unsigned> sum = 0;
 		for (unsigned i = 0; i != box_size; ++i) {
 			int pos = int(i) - int(box_offset);
 			pos = max(pos, 0);
 			pos = min(pos, int(width) - 1);
-			sum += to_rgba(src[src_stride * y + pos]);
+			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+			sum += src[src_stride * y + pos].to<unsigned>();
 		}
 		for (unsigned x = 0; x != width; ++x) {
 			int tmp = int(x) - int(box_offset);
 			int last = max(tmp, 0);
 			int next = min(tmp + int(box_size), int(width) - 1);
 
-			dst[dst_stride * y + x] = to_pixel((sum / box_size));
+			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+			dst[dst_stride * y + x] = (sum / box_size).to<image_type::pixel_type::value_type>();
 
-			sum += to_rgba(src[src_stride * y + next]) - to_rgba(src[src_stride * y + last]);
+			// TODO: subtracting colors, why unsigned and not uint8_t?
+			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+			sum += src[src_stride * y + next].to<unsigned>() - src[src_stride * y + last].to<unsigned>();
 		}
 	}
 }
@@ -79,8 +85,8 @@ void box_blur_horizontal(
 
 namespace {
 void box_blur_vertical(
-	uint32_t* dst,
-	const uint32_t* src,
+	image_type::pixel_type* dst,
+	const image_type::pixel_type* src,
 	unsigned dst_stride,
 	unsigned src_stride,
 	unsigned width,
@@ -97,21 +103,26 @@ void box_blur_vertical(
 		using std::max;
 
 		r4::vector4<unsigned> sum = 0;
+		// TODO: optimize by calculating first and last x and then iterate between them
 		for (unsigned i = 0; i != box_size; ++i) {
 			int pos = int(i) - int(box_offset);
 			pos = max(pos, 0);
 			pos = min(pos, int(height) - 1);
 
-			sum += to_rgba(src[src_stride * pos + x]);
+			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+			sum += src[src_stride * pos + x].to<unsigned>();
 		}
 		for (unsigned y = 0; y != height; ++y) {
 			int tmp = int(y) - int(box_offset);
 			int last = max(tmp, 0);
 			int next = min(tmp + int(box_size), int(height) - 1);
 
-			dst[dst_stride * y + x] = to_pixel(sum / box_size);
+			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+			dst[dst_stride * y + x] = (sum / box_size).to<image_type::pixel_type::value_type>();
 
-			sum += to_rgba(src[src_stride * next + x]) - to_rgba(src[src_stride * last + x]);
+			// TODO: subtracting colors, why unsigned and not uint8_t?
+			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+			sum += src[src_stride * next + x].to<unsigned>() - src[src_stride * last + x].to<unsigned>();
 		}
 	}
 }
@@ -143,23 +154,24 @@ filter_result allocate_result(const surface& src)
 namespace {
 filter_result blur_surface(const surface& src, r4::vector2<real> std_deviation)
 {
-	// see https://www.w3.org/TR/SVG/filters.html#feGaussianBlurElement for Gaussian Blur approximation algorithm
+	// see https://www.w3.org/TR/SVG11/filters.html#feGaussianBlurElement for Gaussian Blur approximation algorithm
 
 	ASSERT(src.d.x() <= src.stride)
 
 	using std::sqrt;
-	auto d = (std_deviation * (3 * sqrt(2 * utki::pi<real>()) / 4) + real(0.5)).to<unsigned>();
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+	auto d = (std_deviation * (3 * sqrt(2 * real(utki::pi)) / 4) + real(0.5)).to<unsigned>();
 
 	//	TRACE(<< "d = " << d[0] << ", " << d[1] << std::endl)
 
 	filter_result ret = allocate_result(src);
 
-	std::vector<uint32_t> tmp(ret.data.size());
+	std::vector<image_type::pixel_type> tmp(ret.data.size());
 
-	std::array<unsigned, 3> h_box_size;
-	std::array<unsigned, 3> h_offset;
-	std::array<unsigned, 3> v_box_size;
-	std::array<unsigned, 3> v_offset;
+	std::array<unsigned, 3> h_box_size{};
+	std::array<unsigned, 3> h_offset{};
+	std::array<unsigned, 3> v_box_size{};
+	std::array<unsigned, 3> v_offset{};
 	if (d[0] % 2 == 0) {
 		h_offset[0] = d[0] / 2;
 		h_box_size[0] = d[0];
@@ -280,7 +292,7 @@ surface filter_applier::get_source(const std::string& in)
 	}
 	if (in == "SourceAlpha") {
 		// TODO: implement
-		throw std::runtime_error("SourceAlpha not implemented");
+		throw std::logic_error("SourceAlpha not implemented");
 	}
 	if (in == "BackgroundImage") {
 		// TRACE(<< "background image" << std::endl)
@@ -288,15 +300,15 @@ surface filter_applier::get_source(const std::string& in)
 	}
 	if (in == "BackgroundAlpha") {
 		// TODO: implement
-		throw std::runtime_error("BackgroundAlpha not implemented");
+		throw std::logic_error("BackgroundAlpha not implemented");
 	}
 	if (in == "FillPaint") {
 		// TODO: implement
-		throw std::runtime_error("FillPaint not implemented");
+		throw std::logic_error("FillPaint not implemented");
 	}
 	if (in == "StrokePaint") {
 		// TODO: implement
-		throw std::runtime_error("StrokePaint not implemented");
+		throw std::logic_error("StrokePaint not implemented");
 	}
 
 	auto i = this->results.find(in);
@@ -330,49 +342,46 @@ void filter_applier::visit(const svgdom::filter_element& e)
 	// set filter region
 	{
 		// filter region
-		r4::rectangle<real> fr;
+		auto fr = [this, &e]() -> r4::rectangle<real> {
+			switch (e.filter_units) {
+				default:
+				case svgdom::coordinate_units::object_bounding_box:
+					{
+						r4::vector2<real> fe_pos{percent_to_fraction(e.x), percent_to_fraction(e.y)};
 
-		switch (e.filter_units) {
-			default:
-			case svgdom::coordinate_units::object_bounding_box:
-				{
-					r4::vector2<real> fe_pos{percent_to_fraction(e.x), percent_to_fraction(e.y)};
+						r4::vector2<real> fe_dims{percent_to_fraction(e.width), percent_to_fraction(e.height)};
 
-					r4::vector2<real> fe_dims{percent_to_fraction(e.width), percent_to_fraction(e.height)};
-
-					fr.p = this->r.device_space_bounding_box.p1
-						+ fe_pos.comp_mul(this->r.device_space_bounding_box.dims());
-					fr.d = fe_dims.comp_mul(this->r.device_space_bounding_box.dims());
-				}
-				break;
-			case svgdom::coordinate_units::user_space_on_use:
-				{
-					auto p1 = this->r.length_to_px(e.x, e.y);
-					auto p2 = p1 + this->r.length_to_px(e.width, e.height);
-
-					std::array<r4::vector2<real>, 4> rect_vertices = {
-						{p1, p2, {p1.x(), p2.y()}, {p2.x(), p1.y()}}
-                    };
-
-					r4::segment2<real> fr_bb;
-					fr_bb.set_empty_bounding_box();
-
-					for (auto& vertex : rect_vertices) {
-						vertex = this->r.canvas.matrix_mul(vertex);
-
-						r4::segment2<real> bb;
-						bb.p1.x() = decltype(bb.p1.x())(vertex.x());
-						bb.p2.x() = decltype(bb.p2.x())(vertex.x());
-						bb.p1.y() = decltype(bb.p1.y())(vertex.y());
-						bb.p2.y() = decltype(bb.p2.y())(vertex.y());
-
-						fr_bb.unite(bb);
+						return {
+							this->r.device_space_bounding_box.p1
+								+ fe_pos.comp_mul(this->r.device_space_bounding_box.dims()),
+							fe_dims.comp_mul(this->r.device_space_bounding_box.dims())};
 					}
-					fr.p = fr_bb.p1;
-					fr.d = fr_bb.dims();
-				}
-				break;
-		}
+				case svgdom::coordinate_units::user_space_on_use:
+					{
+						auto p1 = this->r.length_to_px(e.x, e.y);
+						auto p2 = p1 + this->r.length_to_px(e.width, e.height);
+
+						std::array<r4::vector2<real>, 4> rect_vertices = {
+							{p1, p2, {p1.x(), p2.y()}, {p2.x(), p1.y()}}
+                        };
+
+						auto fr_bb = r4::segment2<real>().set_empty_bounding_box();
+
+						for (auto& vertex : rect_vertices) {
+							vertex = this->r.canvas.matrix_mul(vertex);
+
+							r4::segment2<real> bb{
+								{vertex.x(), vertex.y()},
+								{vertex.x(), vertex.y()}
+                            };
+
+							fr_bb.unite(bb);
+						}
+
+						return {fr_bb.p1, fr_bb.dims()};
+					}
+			}
+		}();
 
 		using std::floor;
 		using std::ceil;
@@ -426,19 +435,12 @@ filter_result color_matrix(const surface& s, const r4::matrix4<real>& m, const r
 		})
 		auto dp = &ret.surface.span[size_t(y) * size_t(ret.surface.stride)];
 		for (unsigned x = 0; x != s.d.x(); ++x) {
-			auto cc = to_rgba(*sp);
+			auto cc = *sp;
 			++sp;
 
-			if (cc.a() != 0xff && cc.a() != 0) {
-				// unpremultiply alpha
+			cc = rasterimage::unpremultiply_alpha(cc);
 
-				r4::vector3<unsigned> rgb{cc};
-				rgb *= 0xff; // first multiply
-				rgb /= cc.a(); // then divide
-				cc = decltype(cc){rgb, cc.a()};
-			}
-
-			auto c = min(cc.to<real>() / 0xff, 1); // clamp top
+			auto c = rasterimage::to_float<real>(cc);
 
 			ASSERT(real(0) <= c.r() && c.r() <= real(1), [&](auto& o) {
 				o << "c = " << c << ", cc = " << cc;
@@ -460,7 +462,9 @@ filter_result color_matrix(const surface& s, const r4::matrix4<real>& m, const r
 			c1.g() *= c1.a();
 			c1.b() *= c1.a();
 
-			*dp = to_pixel(min((c1 * 0xff).to<unsigned>(), 0xff)); // clamp top
+			using std::min;
+			c1 = min(c1, real(1)); // clamp top
+			*dp = rasterimage::to_integral<image_type::value_type>(c1);
 			++dp;
 		}
 	}
@@ -480,10 +484,12 @@ void filter_applier::visit(const svgdom::fe_color_matrix_element& e)
 				unsigned j = 0;
 				for (; j != m[i].size(); ++j, ++p) {
 					ASSERT(p < e.values.size())
+					// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
 					m[i][j] = e.values[p];
 					//					TRACE(<< "m[" << i << "][" << j << "] = " << m[i][j] << std::endl)
 				}
 				ASSERT(p < e.values.size())
+				// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
 				mc5[i] = e.values[p];
 				++p;
 			}
@@ -500,16 +506,25 @@ void filter_applier::visit(const svgdom::fe_color_matrix_element& e)
 				auto s = real(e.values[0]);
 
 				m = {
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					{real(0.213) + real(0.787) * s,
+					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.715) - real(0.715) * s,
+					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.072) - real(0.072) * s,
 					 real(0)												 },
+ // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					{real(0.213) - real(0.213) * s,
+					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.715) + real(0.285) * s,
+					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.072) - real(0.072) * s,
 					 real(0)												 },
+ // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					{real(0.213) - real(0.213) * s,
+					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.715) - real(0.715) * s,
+					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.072) + real(0.928) * s,
 					 real(0)												 },
 					{					  real(0), real(0), real(0), real(1)}
@@ -541,21 +556,30 @@ void filter_applier::visit(const svgdom::fe_color_matrix_element& e)
 				using std::sin;
 				using std::cos;
 
-				auto a = deg_to_rad(real(e.values[0]));
+				auto a = utki::deg_to_rad(real(e.values[0]));
 				auto sina = sin(a);
 				auto cosa = cos(a);
 
 				m = {
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					{real(0.213) + cosa * real(0.787) - sina * real(0.213),
+					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.715) - cosa * real(0.715) - sina * real(0.715),
+					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.072) - cosa * real(0.072) + sina * real(0.928),
 					 real(0)																		 },
+ // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					{real(0.213) - cosa * real(0.213) + sina * real(0.143),
+					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.715) + cosa * real(0.285) + sina * real(0.140),
+					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.072) - cosa * real(0.072) - sina * real(0.283),
 					 real(0)																		 },
+ // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					{real(0.213) - cosa * real(0.213) - sina * real(0.787),
+					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.715) - cosa * real(0.715) + sina * real(0.715),
+					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.072) + cosa * real(0.928) + sina * real(0.072),
 					 real(0)																		 },
 					{											  real(0), real(0), real(0), real(1)}
@@ -571,11 +595,16 @@ void filter_applier::visit(const svgdom::fe_color_matrix_element& e)
 				| A' |     | 0.2125   0.7154   0.0721  0  0 |   | A |
 				| 1  |     |      0        0        0  0  1 |   | 1 |
 			 */
+
+			constexpr auto red_coeff = 0.2126;
+			constexpr auto green_coeff = 0.7152;
+			constexpr auto blue_coeff = 0.0722;
+
 			m = {
-				{     real(0),      real(0),      real(0), real(0)},
-				{     real(0),      real(0),      real(0), real(0)},
-				{     real(0),      real(0),      real(0), real(0)},
-				{real(0.2125), real(0.7154), real(0.0721), real(0)}
+				{        real(0),           real(0),          real(0), real(0)},
+				{        real(0),           real(0),          real(0), real(0)},
+				{        real(0),           real(0),          real(0), real(0)},
+				{real(red_coeff), real(green_coeff), real(blue_coeff), real(0)}
             };
 			mc5.set(real(0));
 			break;
@@ -612,9 +641,9 @@ filter_result blend(const surface& in, const surface& in2, svgdom::fe_blend_elem
 		auto dp = &ret.surface.span[size_t(y) * size_t(ret.surface.stride)];
 		for (unsigned x = 0; x != ret.surface.d.x(); ++x) {
 			// TODO: optimize by using integer arithmetics instead of floating point
-			auto c01 = to_rgba(*sp1).to<real>() / 0xff;
+			auto c01 = rasterimage::to_float<real>(*sp1);
 			++sp1;
-			auto c02 = to_rgba(*sp2).to<real>() / 0xff;
+			auto c02 = rasterimage::to_float<real>(*sp2);
 			++sp2;
 
 			/*
@@ -656,7 +685,7 @@ filter_result blend(const surface& in, const surface& in2, svgdom::fe_blend_elem
 			// qr = 1 - (1 - qa) * (1 - qb)
 			auto qr = 1 - (1 - c01.a()) * (1 - c02.a());
 
-			*dp = to_pixel((r4::vector4<real>{cr, qr} * 0xff).to<unsigned>());
+			*dp = rasterimage::to_integral<image_type::value_type>(r4::vector4<real>{cr, qr});
 			++dp;
 		}
 	}
@@ -703,9 +732,9 @@ filter_result composite(const surface& in, const surface& in2, const svgdom::fe_
 		auto dp = &ret.surface.span[size_t(y) * size_t(ret.surface.stride)];
 		for (unsigned x = 0; x != ret.surface.d.x(); ++x) {
 			// TODO: optimize by using integer arithmetics instead of floating point
-			auto c01 = to_rgba(*sp1).to<real>() / 0xff;
+			auto c01 = rasterimage::to_float<real>(*sp1);
 			++sp1;
-			auto c02 = to_rgba(*sp2).to<real>() / 0xff;
+			auto c02 = rasterimage::to_float<real>(*sp2);
 			++sp2;
 
 			r4::vector4<real> o;
@@ -745,7 +774,7 @@ filter_result composite(const surface& in, const surface& in2, const svgdom::fe_
 					break;
 			}
 
-			*dp = to_pixel((o * 0xff).to<unsigned>());
+			*dp = rasterimage::to_integral<image_type::value_type>(o);
 			++dp;
 		}
 	}

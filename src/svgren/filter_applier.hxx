@@ -34,7 +34,7 @@ SOFTWARE.
 namespace svgren {
 
 struct filter_result {
-	std::vector<uint32_t> data;
+	std::vector<image_type::pixel_type> data;
 	svgren::surface surface;
 };
 
@@ -42,7 +42,7 @@ class filter_applier : public svgdom::const_visitor
 {
 	renderer& r;
 
-	decltype(svgdom::filter_element::primitive_units) primitiveUnits;
+	decltype(svgdom::filter_element::primitive_units) primitiveUnits = svgdom::coordinate_units::user_space_on_use;
 
 	r4::rectangle<unsigned> filterRegion = {0, std::numeric_limits<unsigned>::max()};
 

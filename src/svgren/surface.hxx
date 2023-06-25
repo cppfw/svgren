@@ -30,13 +30,16 @@ SOFTWARE.
 #include <cstdint>
 
 #include <r4/rectangle.hpp>
+#include <rasterimage/image.hpp>
 #include <utki/span.hpp>
+
+#include "config.hxx"
 
 namespace svgren {
 
 struct surface : public r4::rectangle<unsigned> {
-	utki::span<uint32_t> span; // RGBA data
-	unsigned stride = 0; // stride in pixels, not bytes
+	utki::span<image_type::pixel_type> span; // RGBA data
+	image_type::dimensions_type::value_type stride = 0; // stride in pixels, not bytes
 
 	surface() :
 		r4::rectangle<unsigned>(0, std::numeric_limits<unsigned>::max())

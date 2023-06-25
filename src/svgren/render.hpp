@@ -28,9 +28,12 @@ SOFTWARE.
 #pragma once
 
 #include <r4/vector.hpp>
+#include <rasterimage/image.hpp>
 #include <svgdom/dom.hpp>
 
 namespace svgren {
+
+using image_type = rasterimage::image<uint8_t, 4>;
 
 /**
  * @brief SVG render parameters.
@@ -44,10 +47,12 @@ struct parameters {
 	 */
 	r4::vector2<unsigned> dims_request = 0;
 
+	constexpr static auto default_dpi = 96;
+
 	/**
 	 * @brief Dots per inch to use for unit conversion to pixels.
 	 */
-	unsigned dpi = 96;
+	unsigned dpi = default_dpi;
 };
 
 /**
@@ -71,6 +76,14 @@ struct result {
  * @param p - render parameters.
  * @return Rendering result.
  */
-result render(const svgdom::svg_element& svg, const parameters& p = parameters());
+[[deprecated("use rasterize()")]] result render(const svgdom::svg_element& svg, const parameters& p = parameters());
+
+/**
+ * @brief Create raster image from given SVG DOM.
+ * @param svg - SVG DOM to rasterize.
+ * @param params - rasterization parameters.
+ * @return Raster image of the SVG.
+ */
+image_type rasterize(const svgdom::svg_element& svg, const parameters& params = parameters());
 
 } // namespace svgren

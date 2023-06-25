@@ -44,7 +44,7 @@ android {
 
 repositories {
     maven {
-        url 'http://gagis.hopto.org/nexus/repository/android/'
+        url 'https://gagis.hopto.org/nexus/repository/android/'
         allowInsecureProtocol = true
     }
 }
@@ -52,6 +52,7 @@ dependencies {
     implementation 'io.github.cppfw:utki:+'
     implementation 'io.github.cppfw:svgdom:+'
     implementation 'io.github.cppfw:agg:+'
+    implementation 'io.github.cppfw:rasterimage:+'
 }
 
 // copy and rename release AAR to unified name
