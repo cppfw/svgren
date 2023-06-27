@@ -170,6 +170,15 @@ jobs:
   macosx:
     runs-on: macos-latest
     steps:
+    - name: workaround python2 and python3 issue when upgrading python
+      run : |
+        rm -rf /usr/local/bin/2to3*
+        rm -rf /usr/local/bin/idle3*
+        rm -rf /usr/local/bin/pydoc3*
+        rm -rf /usr/local/bin/python3
+        rm -rf /usr/local/bin/python3-config
+        rm -rf /usr/local/bin/python3*
+        rm -rf /usr/local/bin/python3*-config
     - name: git clone
       uses: myci-actions/checkout@master
     - name: install clang-tidy and clang-format
@@ -200,6 +209,15 @@ jobs:
   ios:
     runs-on: macos-latest
     steps:
+    - name: workaround python2 and python3 issue when upgrading python
+      run : |
+        rm -rf /usr/local/bin/2to3*
+        rm -rf /usr/local/bin/idle3*
+        rm -rf /usr/local/bin/pydoc3*
+        rm -rf /usr/local/bin/python3
+        rm -rf /usr/local/bin/python3-config
+        rm -rf /usr/local/bin/python3*
+        rm -rf /usr/local/bin/python3*-config
     - name: add cppfw tap
       run: |
         brew tap cppfw/tap
@@ -403,6 +421,15 @@ jobs:
     name: conan - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     steps:
+      - name: workaround python2 and python3 issue when upgrading python
+        run : |
+          rm -rf /usr/local/bin/2to3*
+          rm -rf /usr/local/bin/idle3*
+          rm -rf /usr/local/bin/pydoc3*
+          rm -rf /usr/local/bin/python3
+          rm -rf /usr/local/bin/python3-config
+          rm -rf /usr/local/bin/python3*
+          rm -rf /usr/local/bin/python3*-config
       - name: git clone
         uses: myci-actions/checkout@master
       - name: install clang-tidy and clang-format
