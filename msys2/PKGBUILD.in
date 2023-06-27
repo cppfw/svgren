@@ -63,13 +63,13 @@ prepare() {
 
 build() {
 	cd "$rootDir"
-	CXX=clang++ make
+	make
 }
 
 check() {
 	cd "$rootDir"
 	if [ "$MSYSTEM" == "MINGW64" ]; then
-		CXX=clang++ make test
+		make test
 	fi
 }
 
