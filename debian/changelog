@@ -1,3 +1,9 @@
+libsvgren (0.6.8) unstable; urgency=medium
+
+  * use std::ratio
+
+ -- Ivan Gagis <igagis@gmail.com>  Thu, 13 Jul 2023 18:41:12 +0300
+
 libsvgren (0.6.7) unstable; urgency=medium
 
   * relink
