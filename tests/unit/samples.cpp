@@ -96,9 +96,9 @@ const tst::set set("samples", [](tst::suite& suite){
             for(size_t i = 0; i != img.size(); ++i){
                 std::array<uint8_t, 4> rgba = {
                     uint8_t(img[i] & utki::byte_mask),
-                    uint8_t((img[i] >> utki::num_bits_in_byte) & utki::byte_mask),
-                    uint8_t((img[i] >> (utki::num_bits_in_byte * 2)) & utki::byte_mask),
-                    uint8_t((img[i] >> (utki::num_bits_in_byte * 3)) & utki::byte_mask)
+                    uint8_t((img[i] >> utki::byte_bits) & utki::byte_mask),
+                    uint8_t((img[i] >> (utki::byte_bits * 2)) & utki::byte_mask),
+                    uint8_t((img[i] >> (utki::byte_bits * 3)) & utki::byte_mask)
                 };
 
                 for(unsigned j = 0; j != rgba.size(); ++j){
@@ -114,9 +114,9 @@ const tst::set set("samples", [](tst::suite& suite){
 
                         uint32_t pixel =
                             uint32_t(png_px.r()) |
-                            (uint32_t(png_px.g()) << utki::num_bits_in_byte) |
-                            (uint32_t(png_px.b()) << (utki::num_bits_in_byte * 2)) |
-                            (uint32_t(png_px.a()) << (utki::num_bits_in_byte * 3))
+                            (uint32_t(png_px.g()) << utki::byte_bits) |
+                            (uint32_t(png_px.b()) << (utki::byte_bits * 2)) |
+                            (uint32_t(png_px.a()) << (utki::byte_bits * 3))
                         ;
 
                         tst::check(false, SL) << "Error: PNG pixel #" << std::dec << i << " [" << (i % res.dims.x()) << ", " << (i / res.dims.y()) << "]" << " (0x" << std::hex << pixel << ") did not match SVG pixel (0x" << img[i] << ")" << ", png_file = " << png_file.path();
@@ -170,15 +170,15 @@ const tst::set set("samples", [](tst::suite& suite){
                     if(unsigned(c2 - c1) > tolerance){
                         uint32_t png_pixel =
                             uint32_t(png_px.r()) |
-                            (uint32_t(png_px.g()) << utki::num_bits_in_byte) |
-                            (uint32_t(png_px.b()) << (utki::num_bits_in_byte * 2)) |
-                            (uint32_t(png_px.a()) << (utki::num_bits_in_byte * 3))
+                            (uint32_t(png_px.g()) << utki::byte_bits) |
+                            (uint32_t(png_px.b()) << (utki::byte_bits * 2)) |
+                            (uint32_t(png_px.a()) << (utki::byte_bits * 3))
                         ;
 
                         uint32_t svg_pixel = uint32_t(rgba.r()) |
-                            (uint32_t(rgba.g()) << utki::num_bits_in_byte) |
-                            (uint32_t(rgba.b()) << (utki::num_bits_in_byte * 2)) |
-                            (uint32_t(rgba.a()) << (utki::num_bits_in_byte * 3))
+                            (uint32_t(rgba.g()) << utki::byte_bits) |
+                            (uint32_t(rgba.b()) << (utki::byte_bits * 2)) |
+                            (uint32_t(rgba.a()) << (utki::byte_bits * 3))
                         ;
 
                         tst::check(false, SL) << "Error: PNG pixel #" << std::dec << i << " [" << (i % im.dims().x()) << ", " << (i / im.dims().y()) << "]" << " (0x" << std::hex << png_pixel << ") did not match SVG pixel (0x" << svg_pixel << ")" << ", png_file = " << png_file.path();

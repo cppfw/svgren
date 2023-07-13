@@ -27,6 +27,8 @@ SOFTWARE.
 
 #include "renderer.hxx"
 
+#include <ratio>
+
 #include <svgdom/elements/coordinate_units.hpp>
 #include <utki/math.hpp>
 #include <utki/util.hpp>
@@ -44,7 +46,7 @@ const std::string fake_svg_element_tag = "fake_svg_element";
 real renderer::length_to_px(const svgdom::length& l) const noexcept
 {
 	if (l.is_percent()) {
-		return this->viewport.x() * (l.value / utki::hundred_percent);
+		return this->viewport.x() * (l.value / std::centi::den);
 	}
 	return real(l.to_px(this->dpi));
 }
@@ -52,8 +54,8 @@ real renderer::length_to_px(const svgdom::length& l) const noexcept
 r4::vector2<real> renderer::length_to_px(const svgdom::length& x, const svgdom::length& y) const noexcept
 {
 	return r4::vector2<real>{
-		x.is_percent() ? (this->viewport.x() * (x.value / utki::hundred_percent)) : x.to_px(this->dpi),
-		y.is_percent() ? (this->viewport.y() * (y.value / utki::hundred_percent)) : y.to_px(this->dpi)};
+		x.is_percent() ? (this->viewport.x() * (x.value / std::centi::den)) : x.to_px(this->dpi),
+		y.is_percent() ? (this->viewport.y() * (y.value / std::centi::den)) : y.to_px(this->dpi)};
 }
 
 void renderer::apply_transformation(const svgdom::transformable::transformation& t)
@@ -1385,7 +1387,7 @@ svgdom::length renderer::gradient_get_x2(const svgdom::linear_gradient_element& 
 			}
 		}
 	}
-	return {real(utki::hundred_percent), svgdom::length_unit::percent};
+	return {real(std::centi::den), svgdom::length_unit::percent};
 }
 
 svgdom::length renderer::gradient_get_y2(const svgdom::linear_gradient_element& g)
@@ -1427,7 +1429,7 @@ svgdom::length renderer::gradient_get_cx(const svgdom::radial_gradient_element& 
 			}
 		}
 	}
-	return {real(utki::hundred_percent) / 2, svgdom::length_unit::percent};
+	return {real(std::centi::den) / 2, svgdom::length_unit::percent};
 }
 
 svgdom::length renderer::gradient_get_cy(const svgdom::radial_gradient_element& g)
@@ -1448,7 +1450,7 @@ svgdom::length renderer::gradient_get_cy(const svgdom::radial_gradient_element& 
 			}
 		}
 	}
-	return {real(utki::hundred_percent) / 2, svgdom::length_unit::percent};
+	return {real(std::centi::den) / 2, svgdom::length_unit::percent};
 }
 
 svgdom::length renderer::gradient_get_r(const svgdom::radial_gradient_element& g)
@@ -1469,7 +1471,7 @@ svgdom::length renderer::gradient_get_r(const svgdom::radial_gradient_element& g
 			}
 		}
 	}
-	return {real(utki::hundred_percent) / 2, svgdom::length_unit::percent};
+	return {real(std::centi::den) / 2, svgdom::length_unit::percent};
 }
 
 svgdom::length renderer::gradient_get_fx(const svgdom::radial_gradient_element& g)

@@ -126,7 +126,7 @@ int main(int argc, char **argv){
 					img.swap_red_blue();
 
 					// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-					auto ximage = XCreateImage(display, visual, utki::num_bits_in_byte * 3, ZPixmap, 0, reinterpret_cast<char*>(img.pixels().data()), img.dims().x(), img.dims().y(), utki::num_bits_in_byte, 0);
+					auto ximage = XCreateImage(display, visual, utki::byte_bits * 3, ZPixmap, 0, reinterpret_cast<char*>(img.pixels().data()), img.dims().x(), img.dims().y(), utki::byte_bits, 0);
 					utki::scope_exit scope_exit([ximage](){
 						ximage->data = nullptr; // Xlib will try to deallocate data which is owned by 'img' variable.
 						XDestroyImage(ximage);
