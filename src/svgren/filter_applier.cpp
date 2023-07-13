@@ -354,7 +354,8 @@ void filter_applier::visit(const svgdom::filter_element& e)
 						return {
 							this->r.device_space_bounding_box.p1
 								+ fe_pos.comp_mul(this->r.device_space_bounding_box.dims()),
-							fe_dims.comp_mul(this->r.device_space_bounding_box.dims())};
+							fe_dims.comp_mul(this->r.device_space_bounding_box.dims())
+						};
 					}
 				case svgdom::coordinate_units::user_space_on_use:
 					{
@@ -363,7 +364,7 @@ void filter_applier::visit(const svgdom::filter_element& e)
 
 						std::array<r4::vector2<real>, 4> rect_vertices = {
 							{p1, p2, {p1.x(), p2.y()}, {p2.x(), p1.y()}}
-                        };
+						};
 
 						auto fr_bb = r4::segment2<real>().set_empty_bounding_box();
 
@@ -373,7 +374,7 @@ void filter_applier::visit(const svgdom::filter_element& e)
 							r4::segment2<real> bb{
 								{vertex.x(), vertex.y()},
 								{vertex.x(), vertex.y()}
-                            };
+							};
 
 							fr_bb.unite(bb);
 						}
@@ -528,7 +529,7 @@ void filter_applier::visit(const svgdom::fe_color_matrix_element& e)
 					 real(0.072) + real(0.928) * s,
 					 real(0)												 },
 					{					  real(0), real(0), real(0), real(1)}
-                };
+				};
 				mc5.set(real(0));
 			}
 			break;
@@ -583,7 +584,7 @@ void filter_applier::visit(const svgdom::fe_color_matrix_element& e)
 					 real(0.072) + cosa * real(0.928) + sina * real(0.072),
 					 real(0)																		 },
 					{											  real(0), real(0), real(0), real(1)}
-                };
+				};
 				mc5.set(real(0));
 			}
 			break;
@@ -605,7 +606,7 @@ void filter_applier::visit(const svgdom::fe_color_matrix_element& e)
 				{        real(0),           real(0),          real(0), real(0)},
 				{        real(0),           real(0),          real(0), real(0)},
 				{real(red_coeff), real(green_coeff), real(blue_coeff), real(0)}
-            };
+			};
 			mc5.set(real(0));
 			break;
 	}

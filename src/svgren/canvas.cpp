@@ -122,7 +122,7 @@ r4::matrix2<real> to_r4_matrix(const agg::trans_affine& matrix)
 	return {
 		{ real(matrix.sx), real(matrix.shx), real(matrix.tx)},
 		{real(matrix.shy),  real(matrix.sy), real(matrix.ty)}
-    };
+	};
 }
 } // namespace
 
@@ -133,7 +133,8 @@ agg::rgba to_agg_rgba(const r4::vector4<real>& rgba)
 		agg::rgba::value_type(rgba.r()),
 		agg::rgba::value_type(rgba.g()),
 		agg::rgba::value_type(rgba.b()),
-		agg::rgba::value_type(rgba.a())};
+		agg::rgba::value_type(rgba.a())
+	};
 }
 } // namespace
 
@@ -486,7 +487,7 @@ r4::rectangle<real> canvas::get_shape_bounding_box() const
 	return r4::rectangle<real>{
 		{     real(x1),      real(y1)},
 		{real(x2 - x1), real(y2 - y1)}
-    };
+	};
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	this->agg_path_to_polyline();
 	real x1 = 0;
@@ -497,7 +498,7 @@ r4::rectangle<real> canvas::get_shape_bounding_box() const
 	return {
 		{     x1,      y1},
 		{x2 - x1, y2 - y1}
-    };
+	};
 #endif
 }
 
@@ -838,7 +839,8 @@ void canvas::agg_render(agg::rasterizer_scanline_aa<>& rasterizer)
 		agg::render_scanlines(rasterizer, scanline, renderer);
 	} else {
 		agg::span_interpolator_linear<const decltype(this->context.gradient_matrix)> span_interpolator{
-			this->context.gradient_matrix};
+			this->context.gradient_matrix
+		};
 
 		agg::span_gradient<
 			decltype(group::pixel_format)::color_type,
@@ -1128,7 +1130,7 @@ r4::matrix2<real> canvas::get_matrix() const
 	return {
 		{real(cm.xx), real(cm.xy), real(cm.x0)},
 		{real(cm.yx), real(cm.yy), real(cm.y0)}
-    };
+	};
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	ASSERT(!this->group_stack.empty())
 	return to_r4_matrix(this->context.matrix);

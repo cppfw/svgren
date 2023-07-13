@@ -28,9 +28,9 @@ SOFTWARE.
 #include "util.hxx"
 
 #include <cstring>
+#include <ratio>
 #include <stdexcept>
 #include <vector>
-#include <ratio>
 
 #include <svgdom/length.hpp>
 #include <utki/debug.hpp>

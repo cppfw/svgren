@@ -55,7 +55,8 @@ r4::vector2<real> renderer::length_to_px(const svgdom::length& x, const svgdom::
 {
 	return r4::vector2<real>{
 		x.is_percent() ? (this->viewport.x() * (x.value / std::centi::den)) : x.to_px(this->dpi),
-		y.is_percent() ? (this->viewport.y() * (y.value / std::centi::den)) : y.to_px(this->dpi)};
+		y.is_percent() ? (this->viewport.y() * (y.value / std::centi::den)) : y.to_px(this->dpi)
+	};
 }
 
 void renderer::apply_transformation(const svgdom::transformable::transformation& t)
@@ -70,7 +71,7 @@ void renderer::apply_transformation(const svgdom::transformable::transformation&
 			this->canvas.transform({
 				{t.a, t.c, t.e},
 				{t.b, t.d, t.f}
-            });
+			});
 			break;
 		case svgdom::transformable::transformation::type::scale:
 			//			TRACE(<< "scale transformation factors = (" << t.x << ", " << t.y << ")" << std::endl)
@@ -87,7 +88,7 @@ void renderer::apply_transformation(const svgdom::transformable::transformation&
 				this->canvas.transform({
 					{1, tan(utki::deg_to_rad(t.angle())), 0},
 					{0,								1, 0}
-                });
+				});
 			}
 			break;
 		case svgdom::transformable::transformation::type::skewy:
@@ -96,7 +97,7 @@ void renderer::apply_transformation(const svgdom::transformable::transformation&
 				this->canvas.transform({
 					{							   1, 0, 0},
 					{tan(utki::deg_to_rad(t.angle())), 1, 0}
-                });
+				});
 			}
 			break;
 		default:
@@ -265,7 +266,7 @@ void renderer::set_gradient_properties(
 			this->stops.push_back(canvas::gradient::stop{
 				{rgb, opacity},
 				real(stop.offset)
-            });
+			});
 		}
 	} visitor(gradient_ss);
 
@@ -424,7 +425,7 @@ void renderer::update_bounding_box()
 		 this->user_space_bounding_box.x2_y2(),
 		 this->user_space_bounding_box.x1_y2(),
 		 this->user_space_bounding_box.x2_y1()}
-    };
+	};
 
 	for (auto& vertex : rect_vertices) {
 		vertex = this->canvas.matrix_mul(vertex);
@@ -432,7 +433,7 @@ void renderer::update_bounding_box()
 		r4::segment2<real> bb{
 			{vertex.x(), vertex.y()},
 			{vertex.x(), vertex.y()}
-        };
+		};
 
 		this->device_space_bounding_box.unite(bb);
 	}
@@ -626,7 +627,8 @@ renderer::renderer(svgren::canvas& canvas, unsigned dpi, r4::vector2<real> viewp
 			unsigned((SVGREN_BACKGROUND >> 0) & 0xff),
 			unsigned((SVGREN_BACKGROUND >> 8) & 0xff),
 			unsigned((SVGREN_BACKGROUND >> 16) & 0xff),
-			unsigned((SVGREN_BACKGROUND >> 24) & 0xff)}
+			unsigned((SVGREN_BACKGROUND >> 24) & 0xff)
+		}
 		/ 0xff
 	);
 	this->canvas.rectangle({0, viewport});
