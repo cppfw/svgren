@@ -69,7 +69,10 @@
             "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/rel_agg out/rel_agg/tests ../unit/samples_data/defs_style_2.svg ../unit/samples_data/agg/defs_style_2.png)",
             "problemMatcher": [],
 			"dependsOn": "build_agg",
-			"group": "build"
+			"group": {
+                "kind": "build",
+                "isDefault": true
+            }
         },
         {
             "label": "run_dbg_agg",
@@ -136,7 +139,10 @@
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/radial_gradient_2.svg out.png)",
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/gradient-transform-rotate-compare.svg out.png)",
             "problemMatcher": [],
-			"group": "build"
+			"group": {
+                "kind": "build",
+                "isDefault": true
+            }
 		},
 		{
             "label": "run_cairo",
@@ -144,7 +150,10 @@
             "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/rel_cairo out/rel_cairo/tests ../unit/samples_data/defs_style_2.svg ../unit/samples_data/cairo/defs_style_2.png)",
             "problemMatcher": [],
 			"dependsOn": "build_cairo",
-			"group": "build"
+			"group": {
+                "kind": "build",
+                "isDefault": true
+            }
         },
 		{
             "label": "run_dbg_cairo",
@@ -152,21 +161,30 @@
             "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_cairo out/dbg_cairo/tests ../unit/samples_data/dropshadowfilter.svg out.png)",
             "problemMatcher": [],
 			"dependsOn": "build_dbg_cairo",
-			"group": "build"
+			"group": {
+                "kind": "build",
+                "isDefault": true
+            }
         },
 		{
             "label": "clean-all",
             "type": "shell",
             "command": "make clean-all",
 			"problemMatcher": [],
-			"group": "build"
+			"group": {
+                "kind": "build",
+                "isDefault": true
+            }
         },
         {
             "label": "clean_agg",
             "type": "shell",
             "command": "make clean config=rel_agg",
 			"problemMatcher": [],
-			"group": "build"
+			"group": {
+                "kind": "build",
+                "isDefault": true
+            }
         },
         {
             "label": "rebuild_agg",
@@ -177,7 +195,10 @@
                 "build_agg"
             ],
 			"problemMatcher": [],
-			"group": "build"
+			"group": {
+                "kind": "build",
+                "isDefault": true
+            }
         },
         {
             "label": "test_agg",
@@ -185,7 +206,10 @@
             "command": "make test config=rel_agg",
             "problemMatcher": [],
 			"dependsOn": "build_agg",
-			"group": "build"
+			"group": {
+                "kind": "build",
+                "isDefault": true
+            }
         },
         {
             "label": "test_dbg_agg",
@@ -193,7 +217,10 @@
             "command": "make test config=dbg_agg",
             "problemMatcher": [],
 			"dependsOn": "build_dbg_agg",
-			"group": "build"
+			"group": {
+                "kind": "build",
+                "isDefault": true
+            }
         },
         {
             "label": "test_cairo",
@@ -201,7 +228,10 @@
             "command": "make test config=rel_cairo",
             "problemMatcher": [],
 			"dependsOn": "build_cairo",
-			"group": "build"
+			"group": {
+                "kind": "build",
+                "isDefault": true
+            }
         },
         {
             "label": "test_dbg_cairo",
@@ -209,14 +239,20 @@
             "command": "make test config=dbg_cairo",
             "problemMatcher": [],
 			"dependsOn": "build_dbg_cairo",
-			"group": "build"
+			"group": {
+                "kind": "build",
+                "isDefault": true
+            }
         },
         {
             "label": "format",
             "type": "shell",
             "command": "make apply-format",
             "problemMatcher": [],
-			"group": "build"
+			"group": {
+                "kind": "build",
+                "isDefault": true
+            }
         }
     ]
 }

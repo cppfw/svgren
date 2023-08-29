@@ -59,13 +59,13 @@ int main(int argc, char **argv){
 	}
 
 #ifdef DEBUG
-	auto loadStart = get_ticks();
+	auto loadStart = utki::get_ticks_ms();
 #endif
 	
 	auto dom = svgdom::load(papki::fs_file(filename));
 	utki::assert(dom, SL);
 	
-	LOG([&](auto&o){o << "SVG loaded in " << float(get_ticks() - loadStart) / 1000.0f << " sec." << std::endl;})
+	LOG([&](auto&o){o << "SVG loaded in " << float(utki::get_ticks_ms() - loadStart) / 1000.0f << " sec." << std::endl;})
 	
 	auto render_start_ms = utki::get_ticks_ms();
 	
@@ -105,6 +105,8 @@ int main(int argc, char **argv){
 		XEvent ev;
 		XNextEvent(display, &ev);
 		switch(ev.type){
+			default:
+				break;
 			case Expose:
 				{
 					int dummy_int = 0;

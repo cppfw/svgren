@@ -183,6 +183,7 @@ common_element_push::~common_element_push() noexcept
 			scope_exit.release();
 
 			this->renderer.canvas.pop_mask_and_group();
+			// NOLINTNEXTLINE(bugprone-empty-catch)
 		} catch (...) {
 			// rendering mask failed, just ignore it
 		}

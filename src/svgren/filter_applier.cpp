@@ -481,18 +481,23 @@ void filter_applier::visit(const svgdom::fe_color_matrix_element& e)
 
 	switch (e.type_) {
 		case svgdom::fe_color_matrix_element::type::matrix:
-			for (unsigned i = 0, p = 0; i != m.size(); ++i) {
-				unsigned j = 0;
-				for (; j != m[i].size(); ++j, ++p) {
-					ASSERT(p < e.values.size())
-					// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
-					m[i][j] = e.values[p];
-					//					TRACE(<< "m[" << i << "][" << j << "] = " << m[i][j] << std::endl)
+			{
+				auto e_values_iter = e.values.begin();
+				auto mc5_iter = mc5.begin();
+				for (auto& row : m) {
+					for (auto& elem : row) {
+						ASSERT(e_values_iter != e.values.end())
+						elem = *e_values_iter;
+						++e_values_iter;
+					}
+					ASSERT(e_values_iter != e.values.end())
+					ASSERT(mc5_iter != mc5.end())
+					*mc5_iter = *e_values_iter;
+					++mc5_iter;
+					++e_values_iter;
 				}
-				ASSERT(p < e.values.size())
-				// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
-				mc5[i] = e.values[p];
-				++p;
+				ASSERT(mc5_iter == mc5.end())
+				ASSERT(e_values_iter == e.values.end())
 			}
 			break;
 		case svgdom::fe_color_matrix_element::type::saturate:
