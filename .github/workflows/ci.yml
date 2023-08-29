@@ -79,8 +79,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - {os: debian, codename: bullseye, image_owner: , package_type: deb}
-          - {os: debian, codename: bullseye, image_owner: arm32v7/, package_type: deb, labels: [arm,docker]}
+          - {os: debian, codename: bullseye, image_owner: }
+          - {os: debian, codename: bullseye, image_owner: arm32v7/, labels: [arm,docker]}
     runs-on: ${{ (matrix.labels == '' && 'ubuntu-latest') || matrix.labels }}
     container: ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
     name: sanitizer - ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
@@ -117,16 +117,16 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # - {os: debian, codename: buster, image_owner: , package_type: deb}
-          # - {os: debian, codename: buster, image_owner: i386/, package_type: deb, labels: [i386,docker]}
-          # - {os: debian, codename: buster, image_owner: arm32v7/, package_type: deb, labels: [arm,docker]}
-          - {os: debian, codename: bullseye, image_owner: , package_type: deb}
-          # - {os: debian, codename: bullseye, image_owner: i386/, package_type: deb, labels: [i386,docker]}
-          - {os: debian, codename: bullseye, image_owner: arm32v7/, package_type: deb, labels: [arm,docker]}
-          - {os: ubuntu, codename: focal, image_owner: , package_type: deb}
-          - {os: ubuntu, codename: jammy, image_owner: , package_type: deb}
-          # - {os: raspbian, codename: buster, image_owner: igagis/, package_type: deb, labels: [arm,docker]}
-          - {os: raspbian, codename: bullseye, image_owner: igagis/, package_type: deb, labels: [arm,docker]}
+          # - {os: debian, codename: buster, image_owner: }
+          # - {os: debian, codename: buster, image_owner: i386/, labels: [i386,docker]}
+          # - {os: debian, codename: buster, image_owner: arm32v7/, labels: [arm,docker]}
+          - {os: debian, codename: bullseye, image_owner: }
+          # - {os: debian, codename: bullseye, image_owner: i386/, labels: [i386,docker]}
+          - {os: debian, codename: bullseye, image_owner: arm32v7/, labels: [arm,docker]}
+          - {os: ubuntu, codename: focal, image_owner: }
+          - {os: ubuntu, codename: jammy, image_owner: }
+          # - {os: raspbian, codename: buster, image_owner: igagis/, labels: [arm,docker]}
+          - {os: raspbian, codename: bullseye, image_owner: igagis/, labels: [arm,docker]}
     runs-on: ${{ (matrix.labels == '' && 'ubuntu-latest') || matrix.labels }}
     container: ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
     name: linux - ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
@@ -165,7 +165,51 @@ jobs:
         run: |
           echo "${{ secrets.MYCI_REPO_SSH_KEY }}" > repo_key_rsa && chmod 600 repo_key_rsa
           myci-deploy-debian-ssh-freight.sh --key repo_key_rsa --server gagis.hopto.org --repo cppfw/${{ matrix.os }} --distro ${{ matrix.codename }} --component main ../lib${PACKAGE_NAME}*_${PACKAGE_VERSION}_*.deb
-        if: matrix.package_type == 'deb' && startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/')
+##### archlinux #####
+  archlinux:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {image: "archlinux:latest", arch: amd64}
+          - {image: "lopsided/archlinux-arm32v7:latest", arch: arm32, labels: [arm,docker]}
+          - {image: "lopsided/archlinux-arm64v8:latest", arch: arm64, labels: [arm64,docker]}
+    runs-on: ${{ (matrix.labels == '' && 'ubuntu-latest') || matrix.labels }}
+    container: ${{ matrix.image }}
+    name: linux - archlinux - ${{ matrix.arch }}
+    steps:
+      - name: install ci tools
+        run: |
+          pacman --sync --refresh --sysupgrade --noconfirm --noprogressbar base-devel git
+      - name: add cppfw pacman repo
+        uses: myci-actions/add-pacman-repo@master
+        with:
+          name: cppfw
+          url: https://gagis.hopto.org/repo/cppfw/archlinux/${{ matrix.arch }}
+          key-server: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
+          install: >-
+            myci
+      - name: git clone
+        uses: myci-actions/checkout@master
+      - name: set PACKAGE_VERSION
+        uses: myci-actions/export-env-var@master
+        with: {name: PACKAGE_VERSION, value: $(myci-deb-version.sh debian/changelog)}
+      # makepkg needs to install dependency packages, so nobody user needs sudo rights
+      - name: add nobody to sudoers
+        run: |
+          echo "nobody ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+      - name: build
+        run: |
+          # provide write access to user nobody
+          chmod --recursive 777 .
+          cd archlinux
+          sudo --user=nobody --preserve-env=PACKAGE_VERSION makepkg --syncdeps --noconfirm --skipinteg --noprogressbar
+      - name: deploy
+        run: |
+          echo "${{ secrets.MYCI_REPO_SSH_KEY }}" > repo_key_rsa && chmod 600 repo_key_rsa
+          myci-deploy-pacman-ssh.sh --server gagis.hopto.org --key repo_key_rsa --repo cppfw/archlinux/${{ matrix.arch }} --database cppfw archlinux/$PACKAGE_NAME-*.pkg.*
+        if: startsWith(github.ref, 'refs/tags/')
 ##### macosx #####
   macosx:
     runs-on: macos-latest
