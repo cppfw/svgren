@@ -1370,7 +1370,7 @@ void canvas::set_dash_pattern(utki::span<const real> dashes, real offset)
 				}
 			}
 		}
-		dst = std::make_pair(std::move(pair[0]), std::move(pair[1]));
+		dst = std::make_pair(pair[0], pair[1]);
 	}
 #endif
 }
