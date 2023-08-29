@@ -1,47 +1,31 @@
 # Maintainer: Ivan Gagis <igagis@gmail.com>
 
-if [ "$MSYSTEM" == "MSYS" ]; then
-	pkgPrefix=
-	dirPrefix=/usr
-	arch=('x86_64' 'i686')
-elif [ "$MSYSTEM" == "MINGW32" ]; then
-	pkgPrefix=mingw-w64-i686-
-	dirPrefix=/mingw32
-	arch=('any')
-elif [ "$MSYSTEM" == "MINGW64" ]; then
-	pkgPrefix=mingw-w64-x86_64-
-	dirPrefix=/mingw64
-	arch=('any')
-else
-	echo "ERROR: unknown MSYS shell: $MSYSTEM"
-	exit 1
-fi
-
-CXX=clang++
-
-packageName=svgren
-
-pkgname="${pkgPrefix}${packageName}"
-pkgver=$(version)
+pkgname=svgren
+pkgver=$PACKAGE_VERSION
 pkgrel=1
+arch=('x86_64' 'armv7h' 'aarch64')
 epoch=
 pkgdesc="SVG rendering library in C++"
-#arch=('any') #defined above
 url="http://github.com/cppfw/${packageName}"
 license=('MIT')
 groups=()
 
-depends=("${pkgPrefix}utki" "${pkgPrefix}svgdom" "${pkgPrefix}agg" "${pkgPrefix}rasterimage")
+depends=(
+	"utki"
+	"svgdom"
+	"agg"
+	"rasterimage"
+)
 
 makedepends=(
 	'myci'
 	'prorab'
 	'prorab-extra'
 	'doxygen'
-	"${pkgPrefix}clang-tools-extra"
-	"${pkgPrefix}r4"
-	"${pkgPrefix}clargs"
-	"${pkgPrefix}tst"
+	"clang" # for clang-tidy and clang-format
+	"r4"
+	"clargs"
+	"tst"
 )
 checkdepends=('myci')
 optdepends=()
@@ -52,7 +36,7 @@ backup=()
 options=()
 install=
 changelog=
-source=() # Do not download any sources
+source=() # do not download any sources
 noextract=()
 md5sums=()
 validpgpkeys=()
@@ -65,17 +49,16 @@ prepare() {
 
 build() {
 	cd "$rootDir"
-	make
+	# TODO: turn on lint when arch adopts more modern clang-tidy
+	make lint=off
 }
 
 check() {
 	cd "$rootDir"
-	if [ "$MSYSTEM" == "MINGW64" ]; then
-		make test
-	fi
+	make test
 }
 
 package() {
 	cd "$rootDir"
-	make DESTDIR="$pkgdir" PREFIX="$dirPrefix" install
+	make DESTDIR="$pkgdir" PREFIX=/usr install
 }
