@@ -200,7 +200,6 @@ jobs:
         run: |
           echo "nobody ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
       - name: build
-        shell: bash
         run: |
           # provide write access to user nobody
           chmod --recursive 777 .
