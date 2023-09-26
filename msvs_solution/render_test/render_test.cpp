@@ -38,7 +38,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	svgren::parameters params;
 	auto res = svgren::rasterize(*dom, params);
 
-	res.swap_red_blue();
+	res.span().swap_red_blue();
 
 	bmp = CreateBitmap(res.dims().x(), res.dims().y(), 1, 32, res.pixels().data());
 	utki::assert(bmp != NULL, SL);
