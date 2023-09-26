@@ -125,7 +125,7 @@ int main(int argc, char **argv){
 					p.dims_request.y() = max(int(win_height) - 2, 0);
 					auto img = svgren::rasterize(*dom, p);
 
-					img.swap_red_blue();
+					img.span().swap_red_blue();
 
 					// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
 					auto ximage = XCreateImage(display, visual, utki::byte_bits * 3, ZPixmap, 0, reinterpret_cast<char*>(img.pixels().data()), img.dims().x(), img.dims().y(), utki::byte_bits, 0);

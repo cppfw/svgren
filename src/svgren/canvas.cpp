@@ -92,10 +92,10 @@ rasterimage::image<uint8_t, 4> canvas::release()
 #endif
 
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	ret.swap_red_blue();
+	ret.span().swap_red_blue();
 #endif
 
-	ret.unpremultiply_alpha();
+	ret.span().unpremultiply_alpha();
 
 	return ret;
 }
