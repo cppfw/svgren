@@ -44,7 +44,7 @@ SOFTWARE.
 #include "surface.hxx"
 
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-#	if M_OS == M_OS_WINDOWS || M_OS_NAME == M_OS_NAME_IOS
+#	if CFG_OS == CFG_OS_WINDOWS || CFG_OS_NAME == CFG_OS_NAME_IOS
 #		include <cairo.h>
 #	else
 #		include <cairo/cairo.h>

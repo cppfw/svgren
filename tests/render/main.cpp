@@ -16,7 +16,7 @@
 
 #include <png.h>
 
-#if M_OS == M_OS_LINUX
+#if CFG_OS == CFG_OS_LINUX
 #	include <X11/Xlib.h>
 #	include <X11/Xutil.h>
 #endif
@@ -80,7 +80,7 @@ int main(int argc, char **argv){
 
 	image.write_png(papki::fs_file(out_filename));
 	
-#if M_OS == M_OS_LINUX
+#if CFG_OS == CFG_OS_LINUX
 	auto width = int(img.dims().x() + 2);
 	auto height = int(img.dims().y() + 2);
 

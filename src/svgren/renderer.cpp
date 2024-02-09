@@ -143,8 +143,8 @@ void renderer::apply_viewbox(const svgdom::view_boxed& e, const svgdom::aspect_r
 			real viewbox_aspect = e.view_box[2] / e.view_box[3];
 			real viewport_aspect = this->viewport[0] / this->viewport[1];
 
-			if ((viewbox_aspect >= viewport_aspect && ar.preserve_aspect_ratio.slice)
-				|| (viewbox_aspect < viewport_aspect && !ar.preserve_aspect_ratio.slice))
+			if ((viewbox_aspect >= viewport_aspect && ar.preserve_aspect_ratio.slice) ||
+				(viewbox_aspect < viewport_aspect && !ar.preserve_aspect_ratio.slice))
 			{
 				// fit by Y
 				scale_factor = this->viewport[1] / e.view_box[3];
@@ -628,8 +628,8 @@ renderer::renderer(svgren::canvas& canvas, unsigned dpi, r4::vector2<real> viewp
 			unsigned((SVGREN_BACKGROUND >> 8) & 0xff),
 			unsigned((SVGREN_BACKGROUND >> 16) & 0xff),
 			unsigned((SVGREN_BACKGROUND >> 24) & 0xff)
-		}
-		/ 0xff
+		} /
+		0xff
 	);
 	this->canvas.rectangle({0, viewport});
 	this->canvas.fill();

@@ -52,7 +52,7 @@ const tst::set set("samples", [](tst::suite& suite){
     suite.add<std::string>(
         "sample__deprecated_render",
 		{
-#if M_CPU_BITS != 64
+#if CFG_CPU_BITS != 64
 			tst::flag::disabled
 #endif
 		},
@@ -120,7 +120,7 @@ const tst::set set("samples", [](tst::suite& suite){
 	suite.add<std::string>(
         "sample",
 		{
-#if M_CPU_BITS != 64
+#if CFG_CPU_BITS != 64
 			tst::flag::disabled
 #endif
 		},

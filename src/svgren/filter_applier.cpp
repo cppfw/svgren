@@ -352,8 +352,8 @@ void filter_applier::visit(const svgdom::filter_element& e)
 						r4::vector2<real> fe_dims{percent_to_fraction(e.width), percent_to_fraction(e.height)};
 
 						return {
-							this->r.device_space_bounding_box.p1
-								+ fe_pos.comp_mul(this->r.device_space_bounding_box.dims()),
+							this->r.device_space_bounding_box.p1 +
+								fe_pos.comp_mul(this->r.device_space_bounding_box.dims()),
 							fe_dims.comp_mul(this->r.device_space_bounding_box.dims())
 						};
 					}
@@ -512,21 +512,21 @@ void filter_applier::visit(const svgdom::fe_color_matrix_element& e)
 				auto s = real(e.values[0]);
 
 				m = {
-  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+					// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					{real(0.213) + real(0.787) * s,
 					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.715) - real(0.715) * s,
 					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.072) - real(0.072) * s,
 					 real(0)												 },
- // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+					// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					{real(0.213) - real(0.213) * s,
 					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.715) + real(0.285) * s,
 					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.072) - real(0.072) * s,
 					 real(0)												 },
- // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+					// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					{real(0.213) - real(0.213) * s,
 					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.715) - real(0.715) * s,
@@ -567,21 +567,21 @@ void filter_applier::visit(const svgdom::fe_color_matrix_element& e)
 				auto cosa = cos(a);
 
 				m = {
-  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+					// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					{real(0.213) + cosa * real(0.787) - sina * real(0.213),
 					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.715) - cosa * real(0.715) - sina * real(0.715),
 					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.072) - cosa * real(0.072) + sina * real(0.928),
 					 real(0)																		 },
- // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+					// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					{real(0.213) - cosa * real(0.213) + sina * real(0.143),
 					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.715) + cosa * real(0.285) + sina * real(0.140),
 					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.072) - cosa * real(0.072) - sina * real(0.283),
 					 real(0)																		 },
- // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+					// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					{real(0.213) - cosa * real(0.213) - sina * real(0.787),
 					 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 					 real(0.715) - cosa * real(0.715) + sina * real(0.715),
