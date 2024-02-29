@@ -123,6 +123,7 @@ jobs:
           - {os: debian, codename: bullseye, image_owner: }
           # - {os: debian, codename: bullseye, image_owner: i386/, labels: [i386,docker]}
           - {os: debian, codename: bullseye, image_owner: arm32v7/, labels: [arm,docker]}
+          - {os: debian, codename: bullseye, image_owner: arm64v8/, labels: [arm64,docker]}
           - {os: ubuntu, codename: focal, image_owner: }
           - {os: ubuntu, codename: jammy, image_owner: }
           # - {os: raspbian, codename: buster, image_owner: igagis/, labels: [arm,docker]}
@@ -164,7 +165,7 @@ jobs:
       - name: deploy deb packages
         run: |
           echo "${{ secrets.MYCI_REPO_SSH_KEY }}" > repo_key_rsa && chmod 600 repo_key_rsa
-          myci-deploy-debian-ssh-freight.sh --key repo_key_rsa --server gagis.hopto.org --repo cppfw/${{ matrix.os }} --distro ${{ matrix.codename }} --component main ../lib${PACKAGE_NAME}*_${PACKAGE_VERSION}_*.deb
+          myci-deploy-apt-ssh.sh --key repo_key_rsa --server gagis.hopto.org --repo cppfw/${{ matrix.os }} --distro ${{ matrix.codename }} --component main ../lib${PACKAGE_NAME}*_${PACKAGE_VERSION}_*.deb
         if: startsWith(github.ref, 'refs/tags/')
 ##### archlinux #####
   archlinux:
