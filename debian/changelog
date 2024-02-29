@@ -1,3 +1,9 @@
+libsvgren (0.6.11) unstable; urgency=medium
+
+  * aptian
+
+ -- Ivan Gagis <igagis@gmail.com>  Thu, 29 Feb 2024 17:50:05 +0200
+
 libsvgren (0.6.10) unstable; urgency=medium
 
   * update to latest rasterimage
