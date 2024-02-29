@@ -124,7 +124,7 @@ jobs:
           # - {os: debian, codename: bullseye, image_owner: i386/, labels: [i386,docker]}
           - {os: debian, codename: bullseye, image_owner: arm32v7/, labels: [arm,docker]}
           - {os: debian, codename: bullseye, image_owner: arm64v8/, labels: [arm64,docker]}
-          - {os: ubuntu, codename: focal, image_owner: }
+          # - {os: ubuntu, codename: focal, image_owner: }
           - {os: ubuntu, codename: jammy, image_owner: }
           # - {os: raspbian, codename: buster, image_owner: igagis/, labels: [arm,docker]}
           - {os: raspbian, codename: bullseye, image_owner: igagis/, labels: [arm,docker]}
