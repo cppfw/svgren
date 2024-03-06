@@ -1,4 +1,5 @@
-this_cxxflags += -O3
+# TODO: use -O3 when https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105651 is fixed in debian bookworm
+this_cxxflags += -O2
 
 this_lint_cmd = $(prorab_lint_cmd_clang_tidy)
 

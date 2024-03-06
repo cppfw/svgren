@@ -332,6 +332,7 @@ void renderer::set_gradient(const std::string& id)
 				ASSERT(r.canvas.get_matrix().det() != 0, [&](auto& o) {
 					o << "matrix =\n" << r.canvas.get_matrix();
 				})
+				// NOLINTNEXTLINE(bugprone-unused-return-value, "false positive")
 				this->viewport_push = std::make_unique<renderer_viewport_push>(r, real(1));
 			}
 
