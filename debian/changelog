@@ -1,3 +1,9 @@
+libsvgren (0.6.12) unstable; urgency=medium
+
+  * build for debian bookworm
+
+ -- Ivan Gagis <igagis@gmail.com>  Wed, 06 Mar 2024 17:38:16 +0200
+
 libsvgren (0.6.11) unstable; urgency=medium
 
   * aptian
