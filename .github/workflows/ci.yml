@@ -64,10 +64,10 @@ jobs:
           name: cobertura.xml
           path: cobertura.xml
       - name: upload coverage data to codecov.io
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         if: always() # even if previous steps fail, this one needs to be run
         with:
-          # token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: cobertura.xml
           # flags: unittests # optional
           name: codecov-umbrella # optional
@@ -137,25 +137,23 @@ jobs:
     container: ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
     name: linux - ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
     steps:
+      - name: set TZ for ubuntu:focal
+        run: |
+          # configure timezone to avoid 'tzdata' package to require user interaction during installation (needed for ubuntu:focal)
+          TZ=Europe/Helsinki ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
       - name: add cppfw deb repo
         uses: myci-actions/add-deb-repo@master
         with:
           repo: deb https://gagis.hopto.org/repo/cppfw/${{ matrix.os }} ${{ matrix.codename }} main
           repo-name: cppfw
           keys-asc: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
-          install: myci git
+          install: myci git devscripts equivs
       - name: add llvm repo (for clang-format)
         uses: myci-actions/add-deb-repo@master
         with:
           repo: deb http://apt.llvm.org/${{ matrix.codename }} llvm-toolchain-${{ matrix.codename }} main
           repo-name: llvm
           keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
-      - name: install ci tools
-        run: |
-          # configure timezone to avoid 'tzdata' package to require user interaction during installation (needed for ubuntu:focal)
-          TZ=Europe/Helsinki ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-          
-          apt install --assume-yes devscripts equivs
       - name: git clone
         uses: myci-actions/checkout@master
       - name: set PACKAGE_VERSION
@@ -170,7 +168,7 @@ jobs:
       - name: deploy deb packages
         run: |
           echo "${{ secrets.MYCI_REPO_SSH_KEY }}" > repo_key_rsa && chmod 600 repo_key_rsa
-          myci-deploy-apt-ssh.sh --key repo_key_rsa --server gagis.hopto.org --repo cppfw/${{ matrix.os }} --distro ${{ matrix.codename }} --component main ../lib${PACKAGE_NAME}*_${PACKAGE_VERSION}_*.deb
+          myci-deploy-apt-ssh.sh --key repo_key_rsa --server gagis.hopto.org --repo cppfw/${{ matrix.os }} --distro ${{ matrix.codename }} --component main ../lib${PACKAGE_NAME}*_${PACKAGE_VERSION}_*.*deb
         if: startsWith(github.ref, 'refs/tags/')
 ##### archlinux #####
   archlinux:
@@ -245,13 +243,22 @@ jobs:
       run: brew install myci make
     - name: set PATH to use latest make
       uses: myci-actions/export-env-var@master
-      with: {name: PATH, value: "/usr/local/opt/make/libexec/gnubin:$PATH"}
+      with: {name: PATH, value: "$HOMEBREW_PREFIX/opt/make/libexec/gnubin:$PATH"}
+    - name: set CFLAGS
+      uses: myci-actions/export-env-var@master
+      with: {name: CFLAGS, value: "-isystem $HOMEBREW_PREFIX/include $CFLAGS"}
+    - name: set CXXFLAGS
+      uses: myci-actions/export-env-var@master
+      with: {name: CXXFLAGS, value: "-isystem $HOMEBREW_PREFIX/include $CXXFLAGS"}
+    - name: set LDFLAGS
+      uses: myci-actions/export-env-var@master
+      with: {name: LDFLAGS, value: "-L $HOMEBREW_PREFIX/lib $LDFLAGS"}
     - name: install deps
       run: myci-brew-install.sh `myci-list-deps-homebrew.sh`
     - name: build
-      run: make
+      run: make --include-dir=$(brew --prefix)/include
     - name: test
-      run: make test
+      run: make --include-dir=$(brew --prefix)/include test
     - name: deploy
       run: myci-deploy-homebrew.sh --tap cppfw/tap
       if: startsWith(github.ref, 'refs/tags/')
