@@ -263,10 +263,12 @@ void renderer::set_gradient_properties(
 					opacity = real(*std::get_if<svgdom::real>(p));
 				}
 			}
-			this->stops.push_back(canvas::gradient::stop{
-				{rgb, opacity},
-				real(stop.offset)
-			});
+			this->stops.push_back( //
+				canvas::gradient::stop{
+					{rgb, opacity}, //
+					real(stop.offset)
+				}
+			);
 		}
 	} visitor(gradient_ss);
 
@@ -1287,8 +1289,8 @@ void renderer::visit(const svgdom::rect_element& e)
 	this->render_shape(group_push.is_group_pushed());
 }
 
-const decltype(svgdom::transformable::transformations)& renderer::gradient_get_transformations(const svgdom::gradient& g
-)
+const decltype(svgdom::transformable::transformations)& //
+renderer::gradient_get_transformations(const svgdom::gradient& g)
 {
 	if (g.transformations.size() != 0) {
 		return g.transformations;

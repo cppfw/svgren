@@ -119,8 +119,9 @@ public:
 	const decltype(svgdom::styleable::styles)& gradient_get_styles(const svgdom::gradient& g);
 	const decltype(svgdom::styleable::classes)& gradient_get_classes(const svgdom::gradient& g);
 	svgdom::gradient::spread_method gradient_get_spread_method(const svgdom::gradient& g);
-	decltype(svgdom::styleable::presentation_attributes) gradient_get_presentation_attributes(const svgdom::gradient& g
-	);
+
+	decltype(svgdom::styleable::presentation_attributes) //
+	gradient_get_presentation_attributes(const svgdom::gradient& g);
 
 	bool is_invisible();
 	bool is_group_invisible();
