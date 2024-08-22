@@ -459,6 +459,7 @@ void renderer::render_shape(bool is_group_pushed)
 
 	auto fill = this->style_stack.get_style_property(svgdom::style_property::fill);
 	if (!fill) {
+		// std::cout << "fill = null" << std::endl;
 		black_fill = svgdom::parse_paint("black");
 		fill = &black_fill;
 	}
@@ -491,7 +492,8 @@ void renderer::render_shape(bool is_group_pushed)
 			ASSERT(std::holds_alternative<uint32_t>(*fill))
 			auto fill_rgb = svgdom::get_rgb(*fill).to<real>();
 			// std::cout << "fill_rgb = " << fill_rgb << std::endl;
-			this->canvas.set_source(r4::vector4<real>{fill_rgb, fill_opacity * opacity});
+			auto color = r4::vector4<real>{fill_rgb, fill_opacity * opacity};
+			this->canvas.set_source(color);
 		}
 
 		this->canvas.fill();
@@ -851,7 +853,7 @@ bool renderer::is_group_invisible()
 
 void renderer::visit(const svgdom::path_element& e)
 {
-	//	TRACE(<< "rendering PathElement" << std::endl)
+	// std::cout << "render path_element, id = " << e.id << std::endl;
 	svgdom::style_stack::push push_styles(this->style_stack, e);
 
 	if (this->is_invisible()) {

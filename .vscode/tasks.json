@@ -79,7 +79,7 @@
             "type": "shell",
 			"dependsOn": "build_dbg_agg",
 			// "dependsOn": "build_dbg_agg_bg",
-            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/Customs-Ground_Level.svg out.png)",
+            // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/Customs-Ground_Level.svg out.png)",
             // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/rgb_percent.svg out.png)",
             // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/defs_style_2.svg out.png)",
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/defs_style.svg out.png)",
@@ -119,7 +119,7 @@
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/lines.svg out.png)",
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/linear_gradient.svg out.png)",
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/invisible_rect.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/interface-ethernet.svg out.png)",
+			"command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/interface-ethernet.svg out.png)",
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/gauge_arrow_shadow.svg out.png)",
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/FW5-24V.svg out.png)",
 			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/ellipse.svg out.png)",
@@ -159,7 +159,7 @@
 		{
             "label": "run_dbg_cairo",
             "type": "shell",
-            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_cairo out/dbg_cairo/tests ../unit/samples_data/dropshadowfilter.svg out.png)",
+            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_cairo out/dbg_cairo/tests ../unit/samples_data/Customs-Ground_Level.svg out.png)",
             "problemMatcher": [],
 			"dependsOn": "build_dbg_cairo",
 			"group": {

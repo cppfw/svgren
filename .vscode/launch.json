@@ -29,7 +29,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/tests/render/out/dbg_agg/tests",
-            "args": ["${workspaceFolder}/tests/samples/testdata/gradtest.svg", "${workspaceFolder}/out.png"],
+            "args": ["${workspaceFolder}/tests/unit/samples_data/Customs-Ground_Level.svg", "${workspaceFolder}/out.png"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/tests/render",
             "environment": [{"name": "LD_LIBRARY_PATH", "value": "../../src/out/dbg_agg"}],
@@ -42,7 +42,7 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "build_debug_agg"
+            "preLaunchTask": "build_dbg_agg"
         },
         {
             "name": "debug checksvg",
