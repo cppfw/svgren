@@ -16,11 +16,11 @@ jobs:
 ##### coverage #####
   coverage:
     runs-on: ubuntu-latest
-    container: debian:bullseye
+    container: debian:bookworm
     name: coverage - measure
     env:
       linux_distro: debian
-      linux_release: bullseye
+      linux_release: bookworm
     steps:
       - name: add cppfw deb repo
         uses: myci-actions/add-deb-repo@master
@@ -28,19 +28,13 @@ jobs:
           repo: deb https://gagis.hopto.org/repo/cppfw/${{ env.linux_distro }} ${{ env.linux_release }} main
           repo-name: cppfw
           keys-asc: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
-          install: myci locales git
+          install: myci locales git pipx
       - name: add llvm repo (for clang-format)
         uses: myci-actions/add-deb-repo@master
         with:
           repo: deb http://apt.llvm.org/${{ env.linux_release }} llvm-toolchain-${{ env.linux_release }} main
           repo-name: llvm
           keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
-      - name: install ci tools
-        run: |
-          apt --quiet install --assume-yes devscripts equivs lcov python3-pip
-
-          # install gcovr >5.2
-          pip install git+https://github.com/gcovr/gcovr.git
       - name: git clone
         uses: myci-actions/checkout@master
       - name: prepare debian package
@@ -57,9 +51,9 @@ jobs:
       - name: test
         run: make config=gcov test
       - name: generate coverage report
-        run: gcovr --gcov-ignore-parse-errors --exclude-throw-branches --filter src/ --cobertura > cobertura.xml
+        run: pipx run gcovr --gcov-ignore-parse-errors --exclude-throw-branches --filter src/ --cobertura > cobertura.xml
       - name: upload coverage report to artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: cobertura.xml
           path: cobertura.xml
@@ -79,8 +73,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - {os: debian, codename: bullseye, image_owner: }
-          - {os: debian, codename: bullseye, image_owner: arm32v7/, labels: [arm,docker]}
+          - {os: debian, codename: bookworm, image_owner: }
+          - {os: debian, codename: bookworm, image_owner: arm32v7/, labels: [arm,docker]}
     runs-on: ${{ (matrix.labels == '' && 'ubuntu-latest') || matrix.labels }}
     container: ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
     name: sanitizer - ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
@@ -131,7 +125,7 @@ jobs:
           # - {os: ubuntu, codename: focal, image_owner: }
           - {os: ubuntu, codename: jammy, image_owner: }
           # - {os: raspbian, codename: buster, image_owner: igagis/, labels: [arm,docker]}
-          - {os: raspbian, codename: bullseye, image_owner: igagis/, labels: [arm,docker]}
+          # - {os: raspbian, codename: bullseye, image_owner: igagis/, labels: [arm,docker]}
           - {os: raspbian, codename: bookworm, image_owner: igagis/, labels: [arm,docker]}
     runs-on: ${{ (matrix.labels == '' && 'ubuntu-latest') || matrix.labels }}
     container: ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
@@ -171,49 +165,49 @@ jobs:
           myci-deploy-apt-ssh.sh --key repo_key_rsa --server gagis.hopto.org --repo cppfw/${{ matrix.os }} --distro ${{ matrix.codename }} --component main ../lib${PACKAGE_NAME}*_${PACKAGE_VERSION}_*.*deb
         if: startsWith(github.ref, 'refs/tags/')
 ##### archlinux #####
-  archlinux:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - {image: "archlinux:latest", arch: amd64}
-          - {image: "lopsided/archlinux-arm32v7:latest", arch: arm32, labels: [arm,docker]}
-          - {image: "lopsided/archlinux-arm64v8:latest", arch: arm64, labels: [arm64,docker]}
-    runs-on: ${{ (matrix.labels == '' && 'ubuntu-latest') || matrix.labels }}
-    container: ${{ matrix.image }}
-    name: linux - archlinux - ${{ matrix.arch }}
-    steps:
-      - name: install ci tools
-        run: |
-          pacman --sync --refresh --sysupgrade --noconfirm --noprogressbar base-devel git
-      - name: add cppfw pacman repo
-        uses: myci-actions/add-pacman-repo@master
-        with:
-          name: cppfw
-          url: https://gagis.hopto.org/repo/cppfw/archlinux/${{ matrix.arch }}
-          key-server: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
-          install: >-
-            myci
-      - name: git clone
-        uses: myci-actions/checkout@master
-      - name: set PACKAGE_VERSION
-        uses: myci-actions/export-env-var@master
-        with: {name: PACKAGE_VERSION, value: $(myci-deb-version.sh debian/changelog)}
-      # makepkg needs to install dependency packages, so nobody user needs sudo rights
-      - name: add nobody to sudoers
-        run: |
-          echo "nobody ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-      - name: build
-        run: |
-          # provide write access to user nobody
-          chmod --recursive 777 .
-          cd archlinux
-          sudo --user=nobody --preserve-env=PACKAGE_VERSION makepkg --syncdeps --noconfirm --skipinteg --noprogressbar
-      - name: deploy
-        run: |
-          echo "${{ secrets.MYCI_REPO_SSH_KEY }}" > repo_key_rsa && chmod 600 repo_key_rsa
-          myci-deploy-pacman-ssh.sh --server gagis.hopto.org --key repo_key_rsa --repo cppfw/archlinux/${{ matrix.arch }} --database cppfw archlinux/$PACKAGE_NAME-*.pkg.*
-        if: startsWith(github.ref, 'refs/tags/')
+  # archlinux:
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       include:
+  #         - {image: "archlinux:latest", arch: amd64}
+  #         - {image: "lopsided/archlinux-arm32v7:latest", arch: arm32, labels: [arm,docker]}
+  #         - {image: "lopsided/archlinux-arm64v8:latest", arch: arm64, labels: [arm64,docker]}
+  #   runs-on: ${{ (matrix.labels == '' && 'ubuntu-latest') || matrix.labels }}
+  #   container: ${{ matrix.image }}
+  #   name: linux - archlinux - ${{ matrix.arch }}
+  #   steps:
+  #     - name: install ci tools
+  #       run: |
+  #         pacman --sync --refresh --sysupgrade --noconfirm --noprogressbar base-devel git
+  #     - name: add cppfw pacman repo
+  #       uses: myci-actions/add-pacman-repo@master
+  #       with:
+  #         name: cppfw
+  #         url: https://gagis.hopto.org/repo/cppfw/archlinux/${{ matrix.arch }}
+  #         key-server: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
+  #         install: >-
+  #           myci
+  #     - name: git clone
+  #       uses: myci-actions/checkout@master
+  #     - name: set PACKAGE_VERSION
+  #       uses: myci-actions/export-env-var@master
+  #       with: {name: PACKAGE_VERSION, value: $(myci-deb-version.sh debian/changelog)}
+  #     # makepkg needs to install dependency packages, so nobody user needs sudo rights
+  #     - name: add nobody to sudoers
+  #       run: |
+  #         echo "nobody ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+  #     - name: build
+  #       run: |
+  #         # provide write access to user nobody
+  #         chmod --recursive 777 .
+  #         cd archlinux
+  #         sudo --user=nobody --preserve-env=PACKAGE_VERSION makepkg --syncdeps --noconfirm --skipinteg --noprogressbar
+  #     - name: deploy
+  #       run: |
+  #         echo "${{ secrets.MYCI_REPO_SSH_KEY }}" > repo_key_rsa && chmod 600 repo_key_rsa
+  #         myci-deploy-pacman-ssh.sh --server gagis.hopto.org --key repo_key_rsa --repo cppfw/archlinux/${{ matrix.arch }} --database cppfw archlinux/$PACKAGE_NAME-*.pkg.*
+  #       if: startsWith(github.ref, 'refs/tags/')
 ##### macosx #####
   macosx:
     runs-on: macos-latest
@@ -465,59 +459,59 @@ jobs:
           conan upload --check --remote cppfw $PACKAGE_NAME/$PACKAGE_VERSION@$MYCI_CONAN_USER/main
         if: startsWith(github.ref, 'refs/tags/')
 ##### conan - macosx #####
-  conan-macosx:
-    # TODO: remove comment
-    # if: ${{ false }}  # disable until libpng is updated
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          # - macos-10.15
-          - macos-11
-          # - macos-12
-    name: conan - ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: workaround python2 and python3 issue when upgrading python
-        run : |
-          rm -rf /usr/local/bin/2to3*
-          rm -rf /usr/local/bin/idle3*
-          rm -rf /usr/local/bin/pydoc3*
-          rm -rf /usr/local/bin/python3
-          rm -rf /usr/local/bin/python3-config
-          rm -rf /usr/local/bin/python3*
-          rm -rf /usr/local/bin/python3*-config
-      - name: git clone
-        uses: myci-actions/checkout@master
-      - name: install clang-tidy and clang-format
-        run: |
-          brew install llvm
-          ln -s "$(brew --prefix llvm)/bin/clang-format" "/usr/local/bin/clang-format"
-          ln -s "$(brew --prefix llvm)/bin/clang-tidy" "/usr/local/bin/clang-tidy"
-          ln -s "$(brew --prefix llvm)/bin/clang-apply-replacements" "/usr/local/bin/clang-apply-replacements"
-      - name: add cppfw tap
-        run: |
-          brew tap cppfw/tap
-          brew update
-      - name: install ci tools
-        run: brew install myci prorab prorab-extra conan make pkg-config
-      - name: create default conan profile
-        run: |
-          conan profile detect --name default
-          sed -i -E "s/compiler.cppstd=.*$/compiler.cppstd=17/g" ~/.conan2/profiles/default
-      - name: set PATH to use latest make
-        uses: myci-actions/export-env-var@master
-        with: {name: PATH, value: "/usr/local/opt/make/libexec/gnubin:$PATH"}
-      - name: set PACKAGE_VERSION
-        uses: myci-actions/export-env-var@master
-        with: {name: PACKAGE_VERSION, value: $(myci-deb-version.sh debian/changelog)}
-        if: startsWith(github.ref, 'refs/tags/')
-      - name: build
-        run: |
-          conan remote add cppfw $MYCI_CONAN_REMOTE
-          conan create conan --user $MYCI_CONAN_USER --channel main --version $PACKAGE_VERSION
-      - name: deploy conan package
-        run: |
-          conan remote login --password $MYCI_CONAN_PASSWORD cppfw $MYCI_CONAN_USER
-          conan upload --check --remote cppfw $PACKAGE_NAME/$PACKAGE_VERSION@$MYCI_CONAN_USER/main
-        if: startsWith(github.ref, 'refs/tags/')
+  # conan-macosx:
+  #   # TODO: remove comment
+  #   # if: ${{ false }}  # disable until libpng is updated
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       os:
+  #         # - macos-10.15
+  #         - macos-11
+  #         # - macos-12
+  #   name: conan - ${{ matrix.os }}
+  #   runs-on: ${{ matrix.os }}
+  #   steps:
+  #     - name: workaround python2 and python3 issue when upgrading python
+  #       run : |
+  #         rm -rf /usr/local/bin/2to3*
+  #         rm -rf /usr/local/bin/idle3*
+  #         rm -rf /usr/local/bin/pydoc3*
+  #         rm -rf /usr/local/bin/python3
+  #         rm -rf /usr/local/bin/python3-config
+  #         rm -rf /usr/local/bin/python3*
+  #         rm -rf /usr/local/bin/python3*-config
+  #     - name: git clone
+  #       uses: myci-actions/checkout@master
+  #     - name: install clang-tidy and clang-format
+  #       run: |
+  #         brew install llvm
+  #         ln -s "$(brew --prefix llvm)/bin/clang-format" "/usr/local/bin/clang-format"
+  #         ln -s "$(brew --prefix llvm)/bin/clang-tidy" "/usr/local/bin/clang-tidy"
+  #         ln -s "$(brew --prefix llvm)/bin/clang-apply-replacements" "/usr/local/bin/clang-apply-replacements"
+  #     - name: add cppfw tap
+  #       run: |
+  #         brew tap cppfw/tap
+  #         brew update
+  #     - name: install ci tools
+  #       run: brew install myci prorab prorab-extra conan make pkg-config
+  #     - name: create default conan profile
+  #       run: |
+  #         conan profile detect --name default
+  #         sed -i -E "s/compiler.cppstd=.*$/compiler.cppstd=17/g" ~/.conan2/profiles/default
+  #     - name: set PATH to use latest make
+  #       uses: myci-actions/export-env-var@master
+  #       with: {name: PATH, value: "/usr/local/opt/make/libexec/gnubin:$PATH"}
+  #     - name: set PACKAGE_VERSION
+  #       uses: myci-actions/export-env-var@master
+  #       with: {name: PACKAGE_VERSION, value: $(myci-deb-version.sh debian/changelog)}
+  #       if: startsWith(github.ref, 'refs/tags/')
+  #     - name: build
+  #       run: |
+  #         conan remote add cppfw $MYCI_CONAN_REMOTE
+  #         conan create conan --user $MYCI_CONAN_USER --channel main --version $PACKAGE_VERSION
+  #     - name: deploy conan package
+  #       run: |
+  #         conan remote login --password $MYCI_CONAN_PASSWORD cppfw $MYCI_CONAN_USER
+  #         conan upload --check --remote cppfw $PACKAGE_NAME/$PACKAGE_VERSION@$MYCI_CONAN_USER/main
+  #       if: startsWith(github.ref, 'refs/tags/')
