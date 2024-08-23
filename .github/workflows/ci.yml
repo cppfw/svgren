@@ -105,8 +105,8 @@ jobs:
         run: make config=asan
       - name: test
         run: make config=asan test
-##### linux #####
-  linux:
+##### deb linux #####
+  deb:
     strategy:
       fail-fast: false
       matrix:
@@ -159,6 +159,11 @@ jobs:
         run: myci-deb-install-build-deps.sh
       - name: build
         run: dpkg-buildpackage --unsigned-source --unsigned-changes
+      - name: upload deb packages to artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.os }}_${{ matrix.codename }}_deb_packages
+          path: ../*.*deb
       - name: deploy deb packages
         run: |
           echo "${{ secrets.MYCI_REPO_SSH_KEY }}" > repo_key_rsa && chmod 600 repo_key_rsa
