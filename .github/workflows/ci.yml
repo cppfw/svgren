@@ -74,7 +74,7 @@ jobs:
       matrix:
         include:
           - {os: debian, codename: bookworm, image_owner: }
-          - {os: debian, codename: bookworm, image_owner: arm32v7/, labels: [arm,docker]}
+          - {os: debian, codename: bookworm, image_owner: arm32v7/, labels: [arm32,docker]}
     runs-on: ${{ (matrix.labels == '' && 'ubuntu-latest') || matrix.labels }}
     container: ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
     name: sanitizer - ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
@@ -113,23 +113,23 @@ jobs:
         include:
           # - {os: debian, codename: buster, image_owner: }
           # - {os: debian, codename: buster, image_owner: i386/, labels: [i386,docker]}
-          # - {os: debian, codename: buster, image_owner: arm32v7/, labels: [arm,docker]}
+          # - {os: debian, codename: buster, image_owner: arm32v7/, labels: [arm32,docker]}
           - {os: debian, codename: bullseye, image_owner: }
           # - {os: debian, codename: bullseye, image_owner: i386/, labels: [i386,docker]}
-          - {os: debian, codename: bullseye, image_owner: arm32v7/, labels: [arm,docker]}
+          - {os: debian, codename: bullseye, image_owner: arm32v7/, labels: [arm32,docker]}
           - {os: debian, codename: bullseye, image_owner: arm64v8/, labels: [arm64,docker]}
           - {os: debian, codename: bookworm, image_owner: }
           # - {os: debian, codename: bookworm, image_owner: i386/, labels: [i386,docker]}
-          - {os: debian, codename: bookworm, image_owner: arm32v7/, labels: [arm,docker]}
+          - {os: debian, codename: bookworm, image_owner: arm32v7/, labels: [arm32,docker]}
           - {os: debian, codename: bookworm, image_owner: arm64v8/, labels: [arm64,docker]}
           # - {os: ubuntu, codename: focal, image_owner: }
           - {os: ubuntu, codename: jammy, image_owner: }
-          # - {os: raspbian, codename: buster, image_owner: igagis/, labels: [arm,docker]}
-          # - {os: raspbian, codename: bullseye, image_owner: igagis/, labels: [arm,docker]}
-          - {os: raspbian, codename: bookworm, image_owner: igagis/, labels: [arm,docker]}
+          # - {os: raspbian, codename: buster, image_owner: igagis/, labels: [arm32,docker]}
+          # - {os: raspbian, codename: bullseye, image_owner: igagis/, labels: [arm32,docker]}
+          - {os: raspbian, codename: bookworm, image_owner: igagis/, labels: [arm32,docker]}
     runs-on: ${{ (matrix.labels == '' && 'ubuntu-latest') || matrix.labels }}
     container: ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
-    name: linux - ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
+    name: linux - ${{ matrix.os }}:${{ matrix.codename }} | ${{ matrix.labels[0] }}
     steps:
       - name: set TZ for ubuntu:focal
         run: |
@@ -164,7 +164,7 @@ jobs:
       - name: upload deb packages to artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.os }}_${{ matrix.codename }}_deb_packages
+          name: ${{ matrix.os }}_${{ matrix.codename }}_${{ matrix.labels[0] }}_debs
           path: "*.*deb"
       - name: deploy deb packages
         run: |
@@ -178,7 +178,7 @@ jobs:
   #     matrix:
   #       include:
   #         - {image: "archlinux:latest", arch: amd64}
-  #         - {image: "lopsided/archlinux-arm32v7:latest", arch: arm32, labels: [arm,docker]}
+  #         - {image: "lopsided/archlinux-arm32v7:latest", arch: arm32, labels: [arm32,docker]}
   #         - {image: "lopsided/archlinux-arm64v8:latest", arch: arm64, labels: [arm64,docker]}
   #   runs-on: ${{ (matrix.labels == '' && 'ubuntu-latest') || matrix.labels }}
   #   container: ${{ matrix.image }}
@@ -425,7 +425,7 @@ jobs:
           - {os: ubuntu, codename: jammy, image_owner: , arch: x86_64}
           # - {os: debian, codename: bullseye, image_owner: , arch: x86_64}
           # - {os: debian, codename: bullseye, image_owner: i386/, arch: x86, labels: [i386,docker]}
-          # - {os: debian, codename: bullseye, image_owner: arm32v7/, arch: armhf, labels: [arm,docker]}
+          # - {os: debian, codename: bullseye, image_owner: arm32v7/, arch: armhf, labels: [arm32,docker]}
     runs-on: ${{ (matrix.labels == '' && 'ubuntu-latest') || matrix.labels }}
     container: ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
     name: conan - linux - ${{ matrix.arch }}
