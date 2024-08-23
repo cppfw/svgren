@@ -161,11 +161,11 @@ jobs:
         run: |
           dpkg-buildpackage --unsigned-source --unsigned-changes
           mv ../*.*deb .
-      - name: upload deb packages to artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.os }}_${{ matrix.codename }}_${{ matrix.labels[0] }}_debs
-          path: "*.*deb"
+      # - name: upload deb packages to artifacts
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: ${{ matrix.os }}_${{ matrix.codename }}_${{ matrix.labels[0] }}_debs
+      #     path: "*.*deb"
       - name: deploy deb packages
         run: |
           echo "${{ secrets.MYCI_REPO_SSH_KEY }}" > repo_key_rsa && chmod 600 repo_key_rsa
