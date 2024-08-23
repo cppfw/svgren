@@ -141,7 +141,7 @@ jobs:
           repo: deb https://gagis.hopto.org/repo/cppfw/${{ matrix.os }} ${{ matrix.codename }} main
           repo-name: cppfw
           keys-asc: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
-          install: myci git devscripts equivs
+          install: myci git devscripts equivs nodejs
       - name: add llvm repo (for clang-format)
         uses: myci-actions/add-deb-repo@master
         with:
