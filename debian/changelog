@@ -1,3 +1,9 @@
+libsvgren (0.6.18) unstable; urgency=medium
+
+  * ubuntu noble
+
+ -- Ivan Gagis <igagis@gmail.com>  Thu, 05 Sep 2024 16:28:54 +0300
+
 libsvgren (0.6.17) unstable; urgency=medium
 
   * update
