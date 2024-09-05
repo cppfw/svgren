@@ -1,3 +1,15 @@
+libsvgren (0.6.17) unstable; urgency=medium
+
+  * update
+
+ -- Ivan Gagis <igagis@gmail.com>  Thu, 29 Aug 2024 01:05:38 +0300
+
+libsvgren (0.6.16) unstable; urgency=medium
+
+  * repackage
+
+ -- Ivan Gagis <igagis@gmail.com>  Sat, 24 Aug 2024 15:25:52 +0300
+
 libsvgren (0.6.15) unstable; urgency=medium
 
   * update
