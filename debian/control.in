@@ -28,16 +28,16 @@ Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: cross-platform C++ SVG rendering library.
  SVG rendering library.
 
-Package: libsvgren$(soname)-dbg
+Package: libsvgren$(soname)-dbgsrc
 Section: debug
-Architecture: any
-Depends: libsvgren$(soname) (= ${binary:Version}), ${misc:Depends}
-Description: debugging symbols for libsvgren$(soname) package.
+Architecture: all
+Depends: libsvgren$(soname)-dbgsym (= ${binary:Version}), ${misc:Depends}
+Description: debugging sources for libsvgren$(soname) package.
 
 Package: libsvgren-dev
 Section: libdevel
 Architecture: any
-Depends: libsvgren$(soname) (= ${binary:Version}), libsvgren$(soname)-dbg (= ${binary:Version}), ${misc:Depends},
+Depends: libsvgren$(soname) (= ${binary:Version}), ${misc:Depends},
 		libsvgdom-dev, libr4-dev
 Suggests: libsvgren-doc
 Description: cross-platform C++ SVG rendering library.

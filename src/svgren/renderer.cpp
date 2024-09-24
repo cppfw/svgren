@@ -267,7 +267,7 @@ void renderer::set_gradient_properties(
 				canvas::gradient::stop{
 					{rgb, opacity}, //
 					real(stop.offset)
-				}
+            }
 			);
 		}
 	} visitor(gradient_ss);

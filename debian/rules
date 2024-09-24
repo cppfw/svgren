@@ -1,11 +1,16 @@
 #!/usr/bin/make -f
+
+export PREFIX := /usr
+
+dbgsrc_pkg_name := $(filter %-dbgsrc, $(shell awk '/^Package: /{print $2}' debian/control))
+debug_prefix_map_arg := -fdebug-prefix-map=$(shell pwd)/src=$(PREFIX)/src/$(patsubst %-dbgsrc,%,$(dbgsrc_pkg_name))
+
+export PRORAB_INSTALL_DBGSRC := true
+
+export DEB_CFLAGS_MAINT_APPEND := $(debug_prefix_map_arg)
+export DEB_CXXFLAGS_MAINT_APPEND := $(debug_prefix_map_arg)
+export DEB_OBJCFLAGS_MAINT_APPEND := $(debug_prefix_map_arg)
+export DEB_OBJCXXFLAGS_MAINT_APPEND := $(debug_prefix_map_arg)
+
 %:
 	dh $@
-
-.PHONY: override_dh_strip
-override_dh_strip:
-	dh_strip --dbg-package=$(filter %-dbg, $(shell awk '/^Package: /{print $2}' debian/control))
-
-.PHONY: override_dh_auto_install
-override_dh_auto_install:
-	PREFIX=/usr dh_auto_install
