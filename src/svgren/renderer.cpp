@@ -549,7 +549,7 @@ void renderer::render_shape(bool is_group_pushed)
 
 				this->canvas.set_dash_pattern(utki::make_span(dasharray), dashoffset);
 			} else {
-				this->canvas.set_dash_pattern(nullptr, 0); // no dashing
+				this->canvas.set_dash_pattern({}, 0); // no dashing
 			}
 		}
 

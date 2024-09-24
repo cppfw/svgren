@@ -143,7 +143,7 @@ filter_result allocate_result(const surface& src)
 		ret.surface.stride = ret.surface.d.x();
 	} else {
 		ret.data.clear();
-		ret.surface.span = nullptr;
+		ret.surface.span = {};
 		ret.surface.stride = 0;
 	}
 
