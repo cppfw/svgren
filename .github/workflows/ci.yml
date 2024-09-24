@@ -62,6 +62,8 @@ jobs:
         if: always() # even if previous steps fail, this one needs to be run
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          # do not search for coverage files automatically, upload only specified files
+          disable_search: true
           files: cobertura.xml
           # flags: unittests # optional
           name: codecov-umbrella # optional
