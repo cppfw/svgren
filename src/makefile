@@ -1,7 +1,7 @@
 include prorab.mk
 include prorab-license.mk
 include prorab-clang-format.mk
-include prorab-clang-format.mk
+include prorab-install-dbgsrc.mk
 
 this_name := svgren
 
