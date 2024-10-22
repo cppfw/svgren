@@ -174,7 +174,10 @@ public:
 #endif
 
 	public:
-		linear_gradient(const r4::vector2<real>& p0, const r4::vector2<real>& p1);
+		linear_gradient(
+			const r4::vector2<real>& p0, //
+			const r4::vector2<real>& p1
+		);
 	};
 
 	class radial_gradient : public gradient
@@ -186,7 +189,11 @@ public:
 #endif
 
 	public:
-		radial_gradient(const r4::vector2<real>& f, const r4::vector2<real>& c, real r);
+		radial_gradient(
+			const r4::vector2<real>& f, //
+			const r4::vector2<real>& c,
+			real r
+		);
 	};
 
 private:
@@ -324,6 +331,7 @@ public:
 	void set_source(const r4::vector4<real>& rgba);
 	void set_source(std::shared_ptr<const gradient> g);
 
+	// multiply vector by current matrix
 	r4::vector2<real> matrix_mul(const r4::vector2<real>& v) const;
 
 	// multiply by current matrix without translation part
@@ -366,9 +374,15 @@ public:
 
 	void clear_path();
 
-	void rectangle(const r4::rectangle<real>& rect, const r4::vector2<real>& corner_radius = 0);
+	void rectangle(
+		const r4::rectangle<real>& rect, //
+		const r4::vector2<real>& corner_radius = 0
+	);
 
-	void circle(const r4::vector2<real>& center, real radius);
+	void circle(
+		const r4::vector2<real>& center, //
+		real radius
+	);
 
 	void fill();
 
@@ -389,12 +403,15 @@ public:
 
 	/**
 	 * @brief Set stroke dash pattern.
-	 * @param dashes - array of dash and gap length. If number of values is odd,
+	 * @param dashes - array of dash and gap lengths. If number of values is odd,
 	 *                 then the array conents is effectively repeated twice. Negative values are an error.
 	 *                 Empty list means no dashing, the stroke line will be solid.
 	 * @param offset - dash pattern offset. Can be negative.
 	 */
-	void set_dash_pattern(utki::span<const real> dashes, real offset);
+	void set_dash_pattern(
+		utki::span<const real> dashes, //
+		real offset
+	);
 
 	r4::matrix2<real> get_matrix() const;
 	void set_matrix(const r4::matrix2<real>& m);

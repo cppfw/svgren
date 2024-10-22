@@ -62,7 +62,7 @@ real svgren::percent_to_fraction(const svgdom::length& l)
 	return 0;
 }
 
-renderer_viewport_push::renderer_viewport_push(renderer& r, const decltype(old_viewport)& viewport) :
+renderer_viewport_push::renderer_viewport_push(renderer& r, const decltype(old_viewport) & viewport) :
 	r(r),
 	old_viewport(r.viewport)
 {

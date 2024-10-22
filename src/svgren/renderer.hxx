@@ -75,7 +75,7 @@ public:
 
 	void apply_transformation(const svgdom::transformable::transformation& t);
 
-	void apply_transformations(const decltype(svgdom::transformable::transformations)& transformations);
+	void apply_transformations(const decltype(svgdom::transformable::transformations) & transformations);
 
 	void set_gradient_properties(canvas::gradient& gradient, const svgdom::gradient& g, const svgdom::style_stack& ss);
 
@@ -101,7 +101,7 @@ public:
 		const svgdom::length& height
 	);
 
-	const decltype(svgdom::transformable::transformations)& gradient_get_transformations(const svgdom::gradient& g);
+	const decltype(svgdom::transformable::transformations) & gradient_get_transformations(const svgdom::gradient& g);
 	svgdom::coordinate_units gradient_get_units(const svgdom::gradient& g);
 
 	svgdom::length gradient_get_x1(const svgdom::linear_gradient_element& g);
@@ -115,9 +115,9 @@ public:
 	svgdom::length gradient_get_fx(const svgdom::radial_gradient_element& g);
 	svgdom::length gradient_get_fy(const svgdom::radial_gradient_element& g);
 
-	const decltype(svgdom::container::children)& gradient_get_stops(const svgdom::gradient& g);
-	const decltype(svgdom::styleable::styles)& gradient_get_styles(const svgdom::gradient& g);
-	const decltype(svgdom::styleable::classes)& gradient_get_classes(const svgdom::gradient& g);
+	const decltype(svgdom::container::children) & gradient_get_stops(const svgdom::gradient& g);
+	const decltype(svgdom::styleable::styles) & gradient_get_styles(const svgdom::gradient& g);
+	const decltype(svgdom::styleable::classes) & gradient_get_classes(const svgdom::gradient& g);
 	svgdom::gradient::spread_method gradient_get_spread_method(const svgdom::gradient& g);
 
 	decltype(svgdom::styleable::presentation_attributes) //
