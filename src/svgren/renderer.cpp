@@ -200,7 +200,7 @@ void renderer::apply_viewbox(const svgdom::view_boxed& e, const svgdom::aspect_r
 }
 
 void renderer::set_gradient_properties(
-	canvas::gradient& gradient,
+	veg::canvas::gradient& gradient,
 	const svgdom::gradient& g,
 	const svgdom::style_stack& ss
 )
@@ -239,7 +239,7 @@ void renderer::set_gradient_properties(
 	gradient_ss.stack.emplace_back(effective_gradient_styleable);
 
 	struct gradient_stops_adder : public svgdom::const_visitor {
-		std::vector<canvas::gradient::stop> stops;
+		std::vector<veg::canvas::gradient::stop> stops;
 		svgdom::style_stack& ss;
 
 		gradient_stops_adder(svgdom::style_stack& ss) :
@@ -264,7 +264,7 @@ void renderer::set_gradient_properties(
 				}
 			}
 			this->stops.push_back( //
-				canvas::gradient::stop{
+				veg::canvas::gradient::stop{
 					{rgb, opacity}, //
 					real(stop.offset)
             }
@@ -364,7 +364,7 @@ void renderer::set_gradient(const std::string& id)
 		{
 			common_gradient_push common_push(this->r, gradient);
 
-			auto g = std::make_shared<canvas::linear_gradient>(
+			auto g = std::make_shared<veg::canvas::linear_gradient>(
 				this->r.length_to_px(this->r.gradient_get_x1(gradient), this->r.gradient_get_y1(gradient)),
 				this->r.length_to_px(this->r.gradient_get_x2(gradient), this->r.gradient_get_y2(gradient))
 			);
@@ -391,7 +391,7 @@ void renderer::set_gradient(const std::string& id)
 				fy = cy;
 			}
 
-			auto g = std::make_shared<canvas::radial_gradient>(
+			auto g = std::make_shared<veg::canvas::radial_gradient>(
 				this->r.length_to_px(fx, fy),
 				this->r.length_to_px(cx, cy),
 				this->r.length_to_px(radius)
@@ -616,7 +616,7 @@ void renderer::render_svg_element(
 	this->apply_filter();
 }
 
-renderer::renderer(svgren::canvas& canvas, unsigned dpi, r4::vector2<real> viewport, const svgdom::svg_element& root) :
+renderer::renderer(veg::canvas& canvas, unsigned dpi, r4::vector2<real> viewport, const svgdom::svg_element& root) :
 	canvas(canvas),
 	finder_by_id(root),
 	style_stack_cache(root),

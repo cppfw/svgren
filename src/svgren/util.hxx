@@ -43,20 +43,13 @@ SOFTWARE.
 
 namespace svgren {
 
-// return angle between x axis and vector
-inline real get_angle(const r4::vector2<real>& v)
-{
-	using std::atan2;
-	return atan2(v.y(), v.x());
-}
-
 class canvas_matrix_push
 {
 	r4::matrix2<real> m;
-	canvas& c;
+	veg::canvas& c;
 
 public:
-	canvas_matrix_push(canvas& c);
+	canvas_matrix_push(veg::canvas& c);
 
 	canvas_matrix_push(const canvas_matrix_push&) = delete;
 	canvas_matrix_push& operator=(const canvas_matrix_push&) = delete;

@@ -45,13 +45,23 @@ using agg_curve3_type = agg::curve3_div;
 using agg_curve4_type = agg::curve4_div;
 #endif
 
-using namespace svgren;
+using namespace veg;
 
 namespace {
 // approximate 90 degree arc with bezier curve which matches the arc at 45 degree point
 // and has the same tangent as an arc at 45 degree point
 using std::sqrt;
 const real arc_bezier_param = real(4 * (sqrt(2) - 1) / 3);
+} // namespace
+
+namespace {
+// return angle between x axis and vector
+real get_angle(const r4::vector2<real>& v)
+{
+	using std::atan2;
+	return atan2(v.y(), v.x());
+}
+
 } // namespace
 
 canvas::canvas(const r4::vector2<unsigned>& dims) :
@@ -407,8 +417,9 @@ void canvas::gradient::set_stops(utki::span<const stop> stops)
 	}
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 	if (stops.size() == 1) {
-		this->lut.add_color(backend_real(0), to_agg_rgba(stops.rbegin()->rgba));
-		this->lut.add_color(backend_real(1), to_agg_rgba(stops.rbegin()->rgba));
+		auto color = to_agg_rgba(stops.front().rgba);
+		this->lut.add_color(backend_real(0), color);
+		this->lut.add_color(backend_real(1), color);
 	} else {
 		for (auto& s : stops) {
 			this->lut.add_color(backend_real(s.offset), to_agg_rgba(s.rgba));
@@ -1157,6 +1168,7 @@ void canvas::set_matrix(const r4::matrix2<real>& m)
 svgren::surface canvas::get_sub_surface(const r4::rectangle<unsigned>& region)
 {
 	r4::vector2<unsigned> dims;
+	using image_type = rasterimage::image<uint8_t, 4>;
 	image_type::pixel_type* buffer = nullptr;
 	unsigned stride = 0;
 
@@ -1183,10 +1195,10 @@ svgren::surface canvas::get_sub_surface(const r4::rectangle<unsigned>& region)
 #endif
 
 	ASSERT(buffer)
-	ASSERT(stride % sizeof(pixel) == 0)
+	ASSERT(stride % sizeof(image_type::pixel_type) == 0)
 
 	svgren::surface ret;
-	ret.stride = stride / sizeof(pixel);
+	ret.stride = stride / sizeof(image_type::pixel_type);
 
 	using std::min;
 	ret.d = min(region.d, dims - region.p);

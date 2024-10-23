@@ -46,7 +46,7 @@ namespace svgren {
 class renderer : public svgdom::const_visitor
 {
 public:
-	svgren::canvas& canvas;
+	veg::canvas& canvas;
 
 	svgdom::finder_by_id finder_by_id;
 	svgdom::style_stack_cache style_stack_cache;
@@ -77,7 +77,11 @@ public:
 
 	void apply_transformations(const decltype(svgdom::transformable::transformations) & transformations);
 
-	void set_gradient_properties(canvas::gradient& gradient, const svgdom::gradient& g, const svgdom::style_stack& ss);
+	void set_gradient_properties(
+		veg::canvas::gradient& gradient,
+		const svgdom::gradient& g,
+		const svgdom::style_stack& ss
+	);
 
 	void set_gradient(const std::string& id);
 
@@ -127,7 +131,12 @@ public:
 	bool is_group_invisible();
 
 public:
-	renderer(svgren::canvas& canvas, unsigned dpi, r4::vector2<real> viewport, const svgdom::svg_element& root);
+	renderer(
+		veg::canvas& canvas, //
+		unsigned dpi,
+		r4::vector2<real> viewport,
+		const svgdom::svg_element& root
+	);
 
 	// declare public method which calls protected one.
 	void relay_accept(const svgdom::container& e)

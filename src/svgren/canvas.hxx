@@ -65,7 +65,9 @@ SOFTWARE.
 #	include <agg/agg_span_interpolator_linear.h>
 #endif
 
-namespace svgren {
+namespace veg {
+
+using real = float;
 
 class canvas
 {
@@ -425,4 +427,4 @@ public:
 	rasterimage::image<uint8_t, 4> release();
 };
 
-} // namespace svgren
+} // namespace veg

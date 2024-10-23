@@ -96,7 +96,7 @@ image_type svgren::rasterize(const svgdom::svg_element& svg, const parameters& p
 	ASSERT(raster_dims.is_positive())
 	ASSERT(svg_dims.is_positive())
 
-	svgren::canvas canvas(raster_dims);
+	veg::canvas canvas(raster_dims);
 
 	canvas.scale(raster_dims.to<real>().comp_div(svg_dims.to<real>()));
 

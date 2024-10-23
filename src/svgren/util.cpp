@@ -40,7 +40,7 @@ SOFTWARE.
 
 using namespace svgren;
 
-canvas_matrix_push::canvas_matrix_push(canvas& c) :
+canvas_matrix_push::canvas_matrix_push(veg::canvas& c) :
 	c(c)
 {
 	this->m = this->c.get_matrix();
