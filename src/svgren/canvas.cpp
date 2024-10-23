@@ -33,8 +33,6 @@ SOFTWARE.
 #include <rasterimage/operations.hpp>
 #include <utki/debug.hpp>
 
-#include "util.hxx"
-
 #if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
 #elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
 #	include <agg/agg_conv_curve.h>
