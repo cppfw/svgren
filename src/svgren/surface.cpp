@@ -78,9 +78,9 @@ void surface::append_luminance_to_alpha()
 			image_type::value(1),
 			image_type::value(1),
 			// we use premultiplied alpha format, so no need to multiply alpha by liminance
-			rasterimage::multiply(px.r(), image_type::value(red_coeff)) +
-				rasterimage::multiply(px.g(), image_type::value(green_coeff)) +
-				rasterimage::multiply(px.b(), image_type::value(blue_coeff))
+			rasterimage::multiply(px.r(), image_type::value(float(red_coeff))) +
+				rasterimage::multiply(px.g(), image_type::value(float(green_coeff))) +
+				rasterimage::multiply(px.b(), image_type::value(float(blue_coeff)))
 		);
 	}
 }
