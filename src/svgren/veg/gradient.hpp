@@ -36,19 +36,8 @@ SOFTWARE.
 #		include <cairo/cairo.h>
 #	endif
 #elif VEG_BACKEND == VEG_BACKEND_AGG
-// #	include <agg/agg_rendering_buffer.h>
-// #	include <agg/agg_pixfmt_rgba.h>
-// #	include <agg/agg_renderer_base.h>
-// #	include <agg/agg_renderer_scanline.h>
-// #	include <agg/agg_path_storage.h>
-// #	include <agg/agg_scanline_u.h>
-// #	include <agg/agg_rasterizer_scanline_aa.h>
-// #	include <agg/agg_curves.h>
-// #	include <agg/agg_conv_stroke.h>
 #	include <agg/agg_gradient_lut.h>
 #	include <agg/agg_span_gradient.h>
-// #	include <agg/agg_span_allocator.h>
-// #	include <agg/agg_span_interpolator_linear.h>
 #endif
 
 namespace veg {
