@@ -37,28 +37,13 @@ SOFTWARE.
 #include <utki/config.hpp>
 #include <utki/math.hpp>
 
-#include "canvas.hxx"
+#include "veg/canvas.hpp"
+#include "veg/util.hpp"
+
 #include "config.hxx"
 #include "surface.hxx"
 
 namespace svgren {
-
-class canvas_matrix_push
-{
-	r4::matrix2<real> m;
-	veg::canvas& c;
-
-public:
-	canvas_matrix_push(veg::canvas& c);
-
-	canvas_matrix_push(const canvas_matrix_push&) = delete;
-	canvas_matrix_push& operator=(const canvas_matrix_push&) = delete;
-
-	canvas_matrix_push(canvas_matrix_push&&) = delete;
-	canvas_matrix_push& operator=(canvas_matrix_push&&) = delete;
-
-	~canvas_matrix_push() noexcept;
-};
 
 real percent_to_fraction(const svgdom::length& l);
 
@@ -89,7 +74,7 @@ class common_element_push
 
 	const svgdom::element* mask_element = nullptr;
 
-	canvas_matrix_push matrix_push;
+	veg::canvas_matrix_push matrix_push;
 
 	r4::segment2<real> old_device_space_bounding_box;
 

@@ -40,17 +40,6 @@ SOFTWARE.
 
 using namespace svgren;
 
-canvas_matrix_push::canvas_matrix_push(veg::canvas& c) :
-	c(c)
-{
-	this->m = this->c.get_matrix();
-}
-
-canvas_matrix_push::~canvas_matrix_push() noexcept
-{
-	this->c.set_matrix(this->m);
-}
-
 real svgren::percent_to_fraction(const svgdom::length& l)
 {
 	if (l.is_percent()) {

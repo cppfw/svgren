@@ -27,16 +27,36 @@ SOFTWARE.
 
 #pragma once
 
+// drawing backend variants
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+#define VEG_BACKEND_CAIRO 1
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+#define VEG_BACKEND_AGG 2
+
+#ifndef VEG_BACKEND
+#	define VEG_BACKEND VEG_BACKEND_AGG
+#endif
+
 #include <rasterimage/image.hpp>
-#include <svgdom/config.hpp>
 
-namespace svgren {
+#if VEG_BACKEND == VEG_BACKEND_CAIRO
+#elif VEG_BACKEND == VEG_BACKEND_AGG
+#	include <agg/agg_path_storage.h>
+#endif
 
-using real = svgdom::real;
+namespace veg {
+
+using real = float;
 
 using image_type = rasterimage::image<uint8_t, 4>;
 
 // TODO: image_type::pixel_type
-using pixel = uint32_t; // TODO: remove, unused
+using pixel = uint32_t; // TODO: remove, used in one place only
 
-} // namespace svgren
+#if VEG_BACKEND == VEG_BACKEND_CAIRO
+using backend_real = double;
+#elif VEG_BACKEND == VEG_BACKEND_AGG
+using backend_real = agg::path_storage::container_type::value_type;
+#endif
+
+} // namespace veg

@@ -36,7 +36,8 @@ SOFTWARE.
 #include <svgdom/visitor.hpp>
 #include <utki/config.hpp>
 
-#include "canvas.hxx"
+#include "veg/canvas.hpp"
+
 #include "config.hxx"
 #include "surface.hxx"
 #include "util.hxx"
@@ -78,7 +79,7 @@ public:
 	void apply_transformations(const decltype(svgdom::transformable::transformations) & transformations);
 
 	void set_gradient_properties(
-		veg::canvas::gradient& gradient,
+		veg::gradient& gradient, //
 		const svgdom::gradient& g,
 		const svgdom::style_stack& ss
 	);

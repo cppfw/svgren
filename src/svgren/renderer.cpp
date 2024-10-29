@@ -43,6 +43,27 @@ namespace {
 const std::string fake_svg_element_tag = "fake_svg_element";
 } // namespace
 
+namespace {
+veg::gradient_spread_method to_veg_gradient_spread_method(svgdom::gradient::spread_method sm)
+{
+	switch (sm) {
+		case svgdom::gradient::spread_method::default_method:
+			// this should not happen, default_method should be resolved to inherited value before calling this function
+			ASSERT(false)
+			[[fallthrough]];
+		case svgdom::gradient::spread_method::pad:
+			return veg::gradient_spread_method::pad;
+		case svgdom::gradient::spread_method::reflect:
+			return veg::gradient_spread_method::reflect;
+		case svgdom::gradient::spread_method::repeat:
+			return veg::gradient_spread_method::repeat;
+	}
+
+	ASSERT(false)
+	return veg::gradient_spread_method::pad;
+}
+} // namespace
+
 real renderer::length_to_px(const svgdom::length& l) const noexcept
 {
 	if (l.is_percent()) {
@@ -105,7 +126,7 @@ void renderer::apply_transformation(const svgdom::transformable::transformation&
 			break;
 	}
 
-#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+#if VEG_BACKEND == VEG_BACKEND_CAIRO
 	// WORKAROUND: Due to cairo/pixman bug https://bugs.freedesktop.org/show_bug.cgi?id=102966
 	//             we have to limit the maximum value of matrix element by 16 bit integer (+-0x7fff).
 	auto m = this->canvas.get_matrix();
@@ -200,7 +221,7 @@ void renderer::apply_viewbox(const svgdom::view_boxed& e, const svgdom::aspect_r
 }
 
 void renderer::set_gradient_properties(
-	veg::canvas::gradient& gradient,
+	veg::gradient& gradient, //
 	const svgdom::gradient& g,
 	const svgdom::style_stack& ss
 )
@@ -239,7 +260,7 @@ void renderer::set_gradient_properties(
 	gradient_ss.stack.emplace_back(effective_gradient_styleable);
 
 	struct gradient_stops_adder : public svgdom::const_visitor {
-		std::vector<veg::canvas::gradient::stop> stops;
+		std::vector<veg::gradient::stop> stops;
 		svgdom::style_stack& ss;
 
 		gradient_stops_adder(svgdom::style_stack& ss) :
@@ -264,7 +285,7 @@ void renderer::set_gradient_properties(
 				}
 			}
 			this->stops.push_back( //
-				veg::canvas::gradient::stop{
+				veg::gradient::stop{
 					{rgb, opacity}, //
 					real(stop.offset)
             }
@@ -277,7 +298,7 @@ void renderer::set_gradient_properties(
 	}
 
 	gradient.set_stops(utki::make_span(visitor.stops));
-	gradient.set_spread_method(this->gradient_get_spread_method(g));
+	gradient.set_spread_method(to_veg_gradient_spread_method(this->gradient_get_spread_method(g)));
 }
 
 void renderer::apply_filter()
@@ -316,7 +337,7 @@ void renderer::set_gradient(const std::string& id)
 	ASSERT(e)
 
 	struct common_gradient_push {
-		canvas_matrix_push matrix_push;
+		veg::canvas_matrix_push matrix_push;
 
 		std::unique_ptr<renderer_viewport_push> viewport_push;
 
@@ -364,7 +385,7 @@ void renderer::set_gradient(const std::string& id)
 		{
 			common_gradient_push common_push(this->r, gradient);
 
-			auto g = std::make_shared<veg::canvas::linear_gradient>(
+			auto g = std::make_shared<veg::linear_gradient>(
 				this->r.length_to_px(this->r.gradient_get_x1(gradient), this->r.gradient_get_y1(gradient)),
 				this->r.length_to_px(this->r.gradient_get_x2(gradient), this->r.gradient_get_y2(gradient))
 			);
@@ -391,7 +412,7 @@ void renderer::set_gradient(const std::string& id)
 				fy = cy;
 			}
 
-			auto g = std::make_shared<veg::canvas::radial_gradient>(
+			auto g = std::make_shared<veg::radial_gradient>(
 				this->r.length_to_px(fx, fy),
 				this->r.length_to_px(cx, cy),
 				this->r.length_to_px(radius)

@@ -25,18 +25,17 @@ SOFTWARE.
 
 /* ================ LICENSE END ================ */
 
-#pragma once
+#include "util.hpp"
 
-#include <rasterimage/image.hpp>
-#include <svgdom/config.hpp>
+using namespace veg;
 
-namespace svgren {
+canvas_matrix_push::canvas_matrix_push(veg::canvas& c) :
+	c(c)
+{
+	this->m = this->c.get_matrix();
+}
 
-using real = svgdom::real;
-
-using image_type = rasterimage::image<uint8_t, 4>;
-
-// TODO: image_type::pixel_type
-using pixel = uint32_t; // TODO: remove, unused
-
-} // namespace svgren
+canvas_matrix_push::~canvas_matrix_push() noexcept
+{
+	this->c.set_matrix(this->m);
+}

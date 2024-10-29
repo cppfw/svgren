@@ -29,7 +29,7 @@ SOFTWARE.
 
 #include <utki/debug.hpp>
 
-#include "canvas.hxx"
+#include "veg/canvas.hpp"
 
 using namespace svgren;
 

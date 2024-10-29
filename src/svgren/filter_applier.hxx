@@ -42,6 +42,7 @@ class filter_applier : public svgdom::const_visitor
 {
 	renderer& r;
 
+	// TODO: naming convention
 	decltype(svgdom::filter_element::primitive_units) primitiveUnits = svgdom::coordinate_units::user_space_on_use;
 
 	r4::rectangle<unsigned> filterRegion = {0, std::numeric_limits<unsigned>::max()};

@@ -1,2 +1,2 @@
 this_svgren_backend := cairo
-this_cxxflags += -D SVGREN_BACKEND=SVGREN_BACKEND_CAIRO
+this_cxxflags += -D VEG_BACKEND=VEG_BACKEND_CAIRO

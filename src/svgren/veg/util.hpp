@@ -27,16 +27,25 @@ SOFTWARE.
 
 #pragma once
 
-#include <rasterimage/image.hpp>
-#include <svgdom/config.hpp>
+#include "canvas.hpp"
 
-namespace svgren {
+namespace veg {
 
-using real = svgdom::real;
+class canvas_matrix_push
+{
+	r4::matrix2<real> m;
+	veg::canvas& c;
 
-using image_type = rasterimage::image<uint8_t, 4>;
+public:
+	canvas_matrix_push(veg::canvas& c);
 
-// TODO: image_type::pixel_type
-using pixel = uint32_t; // TODO: remove, unused
+	canvas_matrix_push(const canvas_matrix_push&) = delete;
+	canvas_matrix_push& operator=(const canvas_matrix_push&) = delete;
 
-} // namespace svgren
+	canvas_matrix_push(canvas_matrix_push&&) = delete;
+	canvas_matrix_push& operator=(canvas_matrix_push&&) = delete;
+
+	~canvas_matrix_push() noexcept;
+};
+
+} // namespace veg

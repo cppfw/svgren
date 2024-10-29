@@ -40,27 +40,29 @@ SOFTWARE.
 #include <svgdom/elements/styleable.hpp>
 #include <utki/config.hpp>
 
-#include "config.hxx"
-#include "surface.hxx"
+#include "../surface.hxx" // TODO:
 
-#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
+#include "config.hpp"
+#include "gradient.hpp"
+
+#if VEG_BACKEND == VEG_BACKEND_CAIRO
 #	if CFG_OS == CFG_OS_WINDOWS || CFG_OS_NAME == CFG_OS_NAME_IOS
 #		include <cairo.h>
 #	else
 #		include <cairo/cairo.h>
 #	endif
-#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+#elif VEG_BACKEND == VEG_BACKEND_AGG
 #	include <agg/agg_rendering_buffer.h>
 #	include <agg/agg_pixfmt_rgba.h>
 #	include <agg/agg_renderer_base.h>
 #	include <agg/agg_renderer_scanline.h>
-#	include <agg/agg_path_storage.h>
+// #	include <agg/agg_path_storage.h>
 #	include <agg/agg_scanline_u.h>
 #	include <agg/agg_rasterizer_scanline_aa.h>
 #	include <agg/agg_curves.h>
 #	include <agg/agg_conv_stroke.h>
-#	include <agg/agg_gradient_lut.h>
-#	include <agg/agg_span_gradient.h>
+// #	include <agg/agg_gradient_lut.h>
+// #	include <agg/agg_span_gradient.h>
 #	include <agg/agg_span_allocator.h>
 #	include <agg/agg_span_interpolator_linear.h>
 #endif
@@ -74,134 +76,8 @@ class canvas
 public:
 	const r4::vector2<unsigned> dims;
 
-	class gradient
-	{
-		friend class canvas;
-
-	protected:
-#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-		cairo_pattern_t* pattern = nullptr;
-
-		gradient() = default;
-
-#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-		struct gradient_wrapper_base {
-			virtual int calculate(int x, int y, int) const = 0;
-
-			gradient_wrapper_base() = default;
-
-			gradient_wrapper_base(const gradient_wrapper_base&) = delete;
-			gradient_wrapper_base& operator=(const gradient_wrapper_base&) = delete;
-
-			gradient_wrapper_base(gradient_wrapper_base&&) = delete;
-			gradient_wrapper_base& operator=(gradient_wrapper_base&&) = delete;
-
-			virtual ~gradient_wrapper_base() = default;
-		};
-
-		template <class gradient_type>
-		struct gradient_wrapper : public gradient_wrapper_base {
-			gradient_type g;
-
-			int calculate(int x, int y, int d) const override
-			{
-				return this->g.calculate(x, y, d);
-			}
-		};
-
-		template <class gradient_type, template <class> class spread_templ>
-		struct spread_gradient_wrapper : public gradient_wrapper_base {
-			gradient_type g;
-			spread_templ<gradient_type> sg{this->g};
-
-			int calculate(int x, int y, int d) const override
-			{
-				return this->sg.calculate(x, y, d);
-			}
-		};
-
-		const gradient_wrapper_base& pad;
-		const gradient_wrapper_base& reflect;
-		const gradient_wrapper_base& repeat;
-
-		const gradient_wrapper_base* cur_grad;
-
-		const gradient_wrapper_base& get_agg_gradient() const
-		{
-			ASSERT(this->cur_grad)
-			return *this->cur_grad;
-		}
-
-		constexpr static auto gradient_lut_size = 0x2ff;
-		agg::gradient_lut<agg::color_interpolator<agg::rgba8>, gradient_lut_size> lut;
-
-		r4::matrix2<real> local_matrix;
-
-		gradient(
-			const gradient_wrapper_base& pad,
-			const gradient_wrapper_base& reflect,
-			const gradient_wrapper_base& repeat
-		) :
-			pad(pad),
-			reflect(reflect),
-			repeat(repeat),
-			cur_grad(&this->pad)
-		{}
-#endif
-
-	public:
-		struct stop {
-			r4::vector4<real> rgba;
-			real offset;
-		};
-
-		void set_spread_method(svgdom::gradient::spread_method spread_method);
-		void set_stops(utki::span<const stop> stops);
-
-		gradient(const gradient&) = delete;
-		gradient& operator=(const gradient&) = delete;
-
-		gradient(gradient&&) = delete;
-		gradient& operator=(gradient&&) = delete;
-
-		virtual ~gradient();
-	};
-
-	class linear_gradient : public gradient
-	{
-#if SVGREN_BACKEND == SVGREN_BACKEND_AGG
-		gradient_wrapper<agg::gradient_x> linear_pad;
-		spread_gradient_wrapper<agg::gradient_x, agg::gradient_reflect_adaptor> linear_reflect;
-		spread_gradient_wrapper<agg::gradient_x, agg::gradient_repeat_adaptor> linear_repeat;
-#endif
-
-	public:
-		linear_gradient(
-			const r4::vector2<real>& p0, //
-			const r4::vector2<real>& p1
-		);
-	};
-
-	class radial_gradient : public gradient
-	{
-#if SVGREN_BACKEND == SVGREN_BACKEND_AGG
-		gradient_wrapper<agg::gradient_radial_focus> radial_pad;
-		spread_gradient_wrapper<agg::gradient_radial_focus, agg::gradient_reflect_adaptor> radial_reflect;
-		spread_gradient_wrapper<agg::gradient_radial_focus, agg::gradient_repeat_adaptor> radial_repeat;
-#endif
-
-	public:
-		radial_gradient(
-			const r4::vector2<real>& f, //
-			const r4::vector2<real>& c,
-			real r
-		);
-	};
-
 private:
-#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-	using backend_real = double;
-
+#if VEG_BACKEND == VEG_BACKEND_CAIRO
 	std::vector<rasterimage::image<uint8_t, 4>::pixel_type> pixels;
 
 	struct cairo_surface_wrapper {
@@ -239,8 +115,7 @@ private:
 	} surface;
 
 	cairo_t* cr;
-#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
-	using backend_real = agg::path_storage::container_type::value_type;
+#elif VEG_BACKEND == VEG_BACKEND_AGG
 
 	struct group {
 		std::vector<rasterimage::image<uint8_t, 4>::pixel_type> pixels;
@@ -283,8 +158,8 @@ private:
 #endif
 
 	struct context_type {
-#if SVGREN_BACKEND == SVGREN_BACKEND_CAIRO
-#elif SVGREN_BACKEND == SVGREN_BACKEND_AGG
+#if VEG_BACKEND == VEG_BACKEND_CAIRO
+#elif VEG_BACKEND == VEG_BACKEND_AGG
 		agg::rgba color = agg::rgba(0);
 		real line_width = 1;
 		agg::filling_rule_e fill_rule = agg::filling_rule_e::fill_even_odd;
@@ -388,7 +263,7 @@ public:
 
 	void fill();
 
-#if SVGREN_BACKEND == SVGREN_BACKEND_AGG
+#if VEG_BACKEND == VEG_BACKEND_AGG
 
 private:
 	template <class path_type>
