@@ -1667,9 +1667,7 @@ decltype(svgdom::styleable::presentation_attributes) renderer::gradient_get_pres
 void renderer::blit(const surface& s)
 {
 	if (s.span.empty() || s.rect().d.x() == 0 || s.rect().d.y() == 0) {
-		LOG([&](auto& o) {
-			o << "renderer::blit(): source image is empty" << std::endl;
-		})
+		// source image is empty, do nothing
 		return;
 	}
 	ASSERT(!s.span.empty() && s.rect().d.x() != 0 && s.rect().d.y() != 0)

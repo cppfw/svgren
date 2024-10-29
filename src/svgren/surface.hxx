@@ -44,6 +44,16 @@ struct surface {
 
 	surface() = default;
 
+	surface(
+		r4::rectangle<unsigned> rectangle, //
+		utki::span<image_type::pixel_type> span,
+		image_type::dimensions_type::value_type stride
+	) :
+		rectangle(rectangle),
+		span(span),
+		stride(stride)
+	{}
+
 	r4::rectangle<unsigned> rect() const noexcept
 	{
 		return this->rectangle;

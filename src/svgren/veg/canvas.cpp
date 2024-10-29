@@ -1036,11 +1036,11 @@ svgren::surface canvas::get_sub_surface(const r4::rectangle<unsigned>& region)
 	);
 	auto ret_pos = region.p;
 
-	svgren::surface ret{
-		.rectangle = {ret_pos, ret_dims},
-		.span = ret_span,
-		.stride = ret_stride
-	};
+	svgren::surface ret(
+		{ret_pos, ret_dims}, //
+		ret_span,
+		ret_stride
+	);
 
 	ASSERT(ret.rect().d.y() <= dims.y())
 	ASSERT(ret.rect().d.y() == 0 || std::next(ret.span.begin(), ret.stride * (ret.rect().d.y() - 1)) < ret.span.end())

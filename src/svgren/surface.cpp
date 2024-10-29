@@ -54,9 +54,9 @@ surface surface::intersection(const r4::rectangle<unsigned>& r) const
 	})
 
 	return {
-		.rectangle = ret_rect, //
-		.span = ret_span,
-		.stride = this->stride
+		ret_rect, //
+		ret_span,
+		this->stride
 	};
 }
 
