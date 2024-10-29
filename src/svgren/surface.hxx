@@ -37,13 +37,17 @@ SOFTWARE.
 
 namespace svgren {
 
-struct surface : public r4::rectangle<unsigned> {
+struct surface {
+	r4::rectangle<unsigned> rectangle = {0, std::numeric_limits<unsigned>::max()};
 	utki::span<image_type::pixel_type> span; // RGBA data
 	image_type::dimensions_type::value_type stride = 0; // stride in pixels, not bytes
 
-	surface() :
-		r4::rectangle<unsigned>(0, std::numeric_limits<unsigned>::max())
-	{}
+	surface() = default;
+
+	r4::rectangle<unsigned> rect() const noexcept
+	{
+		return this->rectangle;
+	}
 
 	surface intersection(const r4::rectangle<unsigned>& r) const;
 

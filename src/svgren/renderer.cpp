@@ -1666,27 +1666,27 @@ decltype(svgdom::styleable::presentation_attributes) renderer::gradient_get_pres
 
 void renderer::blit(const surface& s)
 {
-	if (s.span.empty() || s.d.x() == 0 || s.d.y() == 0) {
+	if (s.span.empty() || s.rect().d.x() == 0 || s.rect().d.y() == 0) {
 		LOG([&](auto& o) {
 			o << "renderer::blit(): source image is empty" << std::endl;
 		})
 		return;
 	}
-	ASSERT(!s.span.empty() && s.d.x() != 0 && s.d.y() != 0)
+	ASSERT(!s.span.empty() && s.rect().d.x() != 0 && s.rect().d.y() != 0)
 
 	auto dst = this->canvas.get_sub_surface();
 
-	if (s.p.x() >= dst.d.x() || s.p.y() >= dst.d.y()) {
+	if (s.rect().p.x() >= dst.rect().d.x() || s.rect().p.y() >= dst.rect().d.y()) {
 		LOG([&](auto& o) {
 			o << "renderer::blit(): source image is out of canvas" << std::endl;
 		})
 		return;
 	}
 
-	auto dstp = dst.span.data() + size_t(s.p.y() * dst.stride + s.p.x());
+	auto dstp = dst.span.data() + size_t(s.rect().p.y() * dst.stride + s.rect().p.x());
 	auto srcp = s.span.data();
 	using std::min;
-	auto dp = min(s.d, dst.d - s.p);
+	auto dp = min(s.rect().d, dst.rect().d - s.rect().p);
 
 	for (unsigned y = 0; y != dp.y(); ++y) {
 		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)

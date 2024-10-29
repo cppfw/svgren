@@ -1025,20 +1025,25 @@ svgren::surface canvas::get_sub_surface(const r4::rectangle<unsigned>& region)
 	ASSERT(buffer)
 	ASSERT(stride % sizeof(image_type::pixel_type) == 0)
 
-	svgren::surface ret;
-	ret.stride = stride / sizeof(image_type::pixel_type);
+	unsigned ret_stride = stride / sizeof(image_type::pixel_type);
 
 	using std::min;
-	ret.d = min(region.d, dims - region.p);
-	ret.span = utki::make_span(
+	auto ret_dims = min(region.d, dims - region.p);
+	auto ret_span = utki::make_span(
 		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-		buffer + size_t(region.p.y() * ret.stride + region.p.x()),
-		ret.stride * ret.d.y() - (ret.stride - ret.d.x()) // subtract 'tail' from last pixels row
+		buffer + size_t(region.p.y() * ret_stride + region.p.x()),
+		ret_stride * ret_dims.y() - (ret_stride - ret_dims.x()) // subtract 'tail' from last pixels row
 	);
-	ret.p = region.p;
+	auto ret_pos = region.p;
 
-	ASSERT(ret.d.y() <= dims.y())
-	ASSERT(ret.d.y() == 0 || std::next(ret.span.begin(), ret.stride * (ret.d.y() - 1)) < ret.span.end())
+	svgren::surface ret{
+		.rectangle = {ret_pos, ret_dims},
+		.span = ret_span,
+		.stride = ret_stride
+	};
+
+	ASSERT(ret.rect().d.y() <= dims.y())
+	ASSERT(ret.rect().d.y() == 0 || std::next(ret.span.begin(), ret.stride * (ret.rect().d.y() - 1)) < ret.span.end())
 
 	return ret;
 }

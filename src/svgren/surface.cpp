@@ -35,32 +35,29 @@ using namespace svgren;
 
 surface surface::intersection(const r4::rectangle<unsigned>& r) const
 {
-	surface ret = *this;
+	auto ret_rect = r4::rectangle<unsigned>(this->rect()).intersect(r);
 
-	ASSERT(ret.span.data() == this->span.data())
-	ASSERT(ret.p == this->p)
-	ASSERT(ret.d == this->d)
-
-	// TRACE(<< "ret = " << ret << " r = " << r << std::endl)
-	ret.intersect(r);
-	// TRACE(<< "ret = " << ret << std::endl)
-	ASSERT(ret.d.y() <= r.d.y(), [&](auto& o) {
-		o << "ret = " << ret << " this = " << (*this) << " r = " << r;
+	ASSERT(ret_rect.d.y() <= r.d.y(), [&](auto& o) {
+		o << "ret_rect = " << ret_rect << " this->rect() = " << this->rect() << " r = " << r;
 	})
 
-	ASSERT(ret.p.x() >= this->p.x())
-	ASSERT(ret.p.y() >= this->p.y())
+	ASSERT(ret_rect.p.x() >= this->rect().p.x())
+	ASSERT(ret_rect.p.y() >= this->rect().p.y())
 
-	auto delta = (ret.p.y() - this->p.y()) * ret.stride + (ret.p.x() - this->p.x());
+	auto delta = (ret_rect.p.y() - this->rect().p.y()) * this->stride + (ret_rect.p.x() - this->rect().p.x());
 
-	ret.span = utki::make_span(ret.span.data() + delta, ret.span.size() - delta);
+	auto ret_span = utki::make_span(this->span.data() + delta, this->span.size() - delta);
 
-	ASSERT(ret.span.end() == this->span.end())
-	ASSERT(ret.d.y() <= this->d.y(), [&](auto& o) {
-		o << "ret = " << ret << " this = " << *this << " r = " << r;
+	ASSERT(ret_span.end() == this->span.end())
+	ASSERT(ret_rect.d.y() <= this->rect().d.y(), [&](auto& o) {
+		o << "ret_rect = " << ret_rect << " this->rect() = " << this->rect() << " r = " << r;
 	})
 
-	return ret;
+	return {
+		.rectangle = ret_rect, //
+		.span = ret_span,
+		.stride = this->stride
+	};
 }
 
 void surface::append_luminance_to_alpha()

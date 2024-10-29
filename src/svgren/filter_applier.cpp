@@ -133,14 +133,14 @@ filter_result allocate_result(const surface& src)
 {
 	filter_result ret;
 	ret.surface = src;
-	auto data_size = src.d.x() * src.d.y();
+	auto data_size = src.rect().d.x() * src.rect().d.y();
 	if (data_size != 0) {
 		ret.data.resize(data_size);
 		ASSERT(ret.data.size() != 0, [&](auto& o) {
-			o << "src.d = " << src.d;
+			o << "src.rect.d = " << src.rect().d;
 		})
 		ret.surface.span = utki::make_span(ret.data);
-		ret.surface.stride = ret.surface.d.x();
+		ret.surface.stride = ret.surface.rect().d.x();
 	} else {
 		ret.data.clear();
 		ret.surface.span = {};
@@ -152,11 +152,14 @@ filter_result allocate_result(const surface& src)
 } // namespace
 
 namespace {
-filter_result blur_surface(const surface& src, r4::vector2<real> std_deviation)
+filter_result blur_surface(
+	const surface& src, //
+	r4::vector2<real> std_deviation
+)
 {
 	// see https://www.w3.org/TR/SVG11/filters.html#feGaussianBlurElement for Gaussian Blur approximation algorithm
 
-	ASSERT(src.d.x() <= src.stride)
+	ASSERT(src.rect().d.x() <= src.stride)
 
 	using std::sqrt;
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
@@ -209,10 +212,10 @@ filter_result blur_surface(const surface& src, r4::vector2<real> std_deviation)
 	box_blur_horizontal(
 		tmp.data(),
 		src.span.data(),
-		src.d.x(),
+		src.rect().d.x(),
 		src.stride,
-		src.d.x(),
-		src.d.y(),
+		src.rect().d.x(),
+		src.rect().d.y(),
 		h_box_size[0],
 		h_offset[0]
 	);
@@ -220,19 +223,19 @@ filter_result blur_surface(const surface& src, r4::vector2<real> std_deviation)
 		ret.surface.span.data(),
 		tmp.data(),
 		ret.surface.stride,
-		src.d.x(),
-		src.d.x(),
-		src.d.y(),
+		src.rect().d.x(),
+		src.rect().d.x(),
+		src.rect().d.y(),
 		h_box_size[1],
 		h_offset[1]
 	);
 	box_blur_horizontal(
 		tmp.data(),
 		ret.surface.span.data(),
-		src.d.x(),
+		src.rect().d.x(),
 		ret.surface.stride,
-		src.d.x(),
-		src.d.y(),
+		src.rect().d.x(),
+		src.rect().d.y(),
 		h_box_size[2],
 		h_offset[2]
 	);
@@ -241,19 +244,19 @@ filter_result blur_surface(const surface& src, r4::vector2<real> std_deviation)
 		ret.surface.span.data(),
 		tmp.data(),
 		ret.surface.stride,
-		src.d.x(),
-		src.d.x(),
-		src.d.y(),
+		src.rect().d.x(),
+		src.rect().d.x(),
+		src.rect().d.y(),
 		v_box_size[0],
 		v_offset[0]
 	);
 	box_blur_vertical(
 		tmp.data(),
 		ret.surface.span.data(),
-		src.d.x(),
+		src.rect().d.x(),
 		ret.surface.stride,
-		src.d.x(),
-		src.d.y(),
+		src.rect().d.x(),
+		src.rect().d.y(),
 		v_box_size[1],
 		v_offset[1]
 	);
@@ -261,9 +264,9 @@ filter_result blur_surface(const surface& src, r4::vector2<real> std_deviation)
 		ret.surface.span.data(),
 		tmp.data(),
 		ret.surface.stride,
-		src.d.x(),
-		src.d.x(),
-		src.d.y(),
+		src.rect().d.x(),
+		src.rect().d.x(),
+		src.rect().d.y(),
 		v_box_size[2],
 		v_offset[2]
 	);
@@ -420,22 +423,26 @@ void filter_applier::visit(const svgdom::fe_gaussian_blur_element& e)
 }
 
 namespace {
-filter_result color_matrix(const surface& s, const r4::matrix4<real>& m, const r4::vector4<real>& mc5)
+filter_result color_matrix(
+	const surface& s, //
+	const r4::matrix4<real>& m,
+	const r4::vector4<real>& mc5
+)
 {
 	//	TRACE(<< "colorMatrix(): s.width = " << s.width << " s.height = " << s.height << std::endl)
-	ASSERT(!s.span.empty() || s.d.is_zero())
+	ASSERT(!s.span.empty() || s.rect().d.is_zero())
 	filter_result ret = allocate_result(s);
 
-	ASSERT(!s.span.empty() || s.d.is_zero())
+	ASSERT(!s.span.empty() || s.rect().d.is_zero())
 
-	for (unsigned y = 0; y != s.d.y(); ++y) {
+	for (unsigned y = 0; y != s.rect().d.y(); ++y) {
 		auto sp = &s.span[size_t(y) * size_t(s.stride)];
 		ASSERT(sp < s.span.end(), [&](auto& o) {
 			o << "sp = " << std::hex << static_cast<const void*>(sp)
 			  << " s.end = " << static_cast<const void*>(s.span.end());
 		})
 		auto dp = &ret.surface.span[size_t(y) * size_t(ret.surface.stride)];
-		for (unsigned x = 0; x != s.d.x(); ++x) {
+		for (unsigned x = 0; x != s.rect().d.x(); ++x) {
 			auto cc = *sp;
 			++sp;
 
@@ -618,7 +625,7 @@ void filter_applier::visit(const svgdom::fe_color_matrix_element& e)
 
 	// TRACE(<< "color matrix getSource()" << std::endl)
 	auto src = this->get_source(e.in);
-	ASSERT(!src.span.empty() || src.d.is_zero())
+	ASSERT(!src.span.empty() || src.rect().d.is_zero())
 	auto s = src.intersection(this->filterRegion);
 
 	// TODO: set filter sub-region
@@ -630,22 +637,22 @@ namespace {
 filter_result blend(const surface& in, const surface& in2, svgdom::fe_blend_element::mode mode)
 {
 	//	TRACE(<< "in.width = " << in.width << " in2.width = " << in2.width << std::endl)
-	auto s1 = in.intersection(in2);
-	auto s2 = in2.intersection(in);
+	auto s1 = in.intersection(in2.rect());
+	auto s2 = in2.intersection(in.rect());
 
-	ASSERT(s1.d.x() == s2.d.x(), [&](auto& o) {
-		o << "s1.d.x() = " << s1.d.x() << " s2.d.x() = " << s2.d.x();
+	ASSERT(s1.rect().d.x() == s2.rect().d.x(), [&](auto& o) {
+		o << "s1.rect().d.x() = " << s1.rect().d.x() << " s2.rect().d.x() = " << s2.rect().d.x();
 	})
-	ASSERT(s1.d.y() == s2.d.y())
-	ASSERT(s1.p == s2.p)
+	ASSERT(s1.rect().d.y() == s2.rect().d.y())
+	ASSERT(s1.rect().p == s2.rect().p)
 
 	auto ret = allocate_result(s1);
 
-	for (unsigned y = 0; y != ret.surface.d.y(); ++y) {
+	for (unsigned y = 0; y != ret.surface.rect().d.y(); ++y) {
 		auto sp1 = &s1.span[size_t(y) * size_t(s1.stride)];
 		auto sp2 = &s2.span[size_t(y) * size_t(s2.stride)];
 		auto dp = &ret.surface.span[size_t(y) * size_t(ret.surface.stride)];
-		for (unsigned x = 0; x != ret.surface.d.x(); ++x) {
+		for (unsigned x = 0; x != ret.surface.rect().d.x(); ++x) {
 			// TODO: optimize by using integer arithmetics instead of floating point
 			auto c01 = rasterimage::to_float<real>(*sp1);
 			++sp1;
@@ -721,22 +728,22 @@ namespace {
 filter_result composite(const surface& in, const surface& in2, const svgdom::fe_composite_element& e)
 {
 	//	TRACE(<< "in.width = " << in.width << " in2.width = " << in2.width << std::endl)
-	auto s1 = in.intersection(in2);
-	auto s2 = in2.intersection(in);
+	auto s1 = in.intersection(in2.rect());
+	auto s2 = in2.intersection(in.rect());
 
-	ASSERT(s1.d.x() == s2.d.x(), [&](auto& o) {
-		o << "s1.d.x() = " << s1.d.x() << " s2.d.x()) = " << s2.d.x();
+	ASSERT(s1.rect().d.x() == s2.rect().d.x(), [&](auto& o) {
+		o << "s1.rect().d.x() = " << s1.rect().d.x() << " s2.rect().d.x()) = " << s2.rect().d.x();
 	})
-	ASSERT(s1.d.y() == s2.d.y())
-	ASSERT(s1.p == s2.p)
+	ASSERT(s1.rect().d.y() == s2.rect().d.y())
+	ASSERT(s1.rect().p == s2.rect().p)
 
 	auto ret = allocate_result(s1);
 
-	for (unsigned y = 0; y != ret.surface.d.y(); ++y) {
+	for (unsigned y = 0; y != ret.surface.rect().d.y(); ++y) {
 		auto sp1 = &s1.span[size_t(y) * size_t(s1.stride)];
 		auto sp2 = &s2.span[size_t(y) * size_t(s2.stride)];
 		auto dp = &ret.surface.span[size_t(y) * size_t(ret.surface.stride)];
-		for (unsigned x = 0; x != ret.surface.d.x(); ++x) {
+		for (unsigned x = 0; x != ret.surface.rect().d.x(); ++x) {
 			// TODO: optimize by using integer arithmetics instead of floating point
 			auto c01 = rasterimage::to_float<real>(*sp1);
 			++sp1;
