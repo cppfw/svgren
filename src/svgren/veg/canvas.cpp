@@ -89,7 +89,7 @@ rasterimage::image<uint8_t, 4> canvas::release()
 	auto ret = rasterimage::image<uint8_t, 4>(this->dims, std::move(this->pixels));
 #elif VEG_BACKEND == VEG_BACKEND_AGG
 	ASSERT(!this->group_stack.empty())
-	auto ret = rasterimage::image<uint8_t, 4>(this->dims, std::move(this->group_stack.front().pixels));
+	auto ret = std::move(this->group_stack.front().image);
 #endif
 
 #if VEG_BACKEND == VEG_BACKEND_CAIRO
@@ -1018,7 +1018,7 @@ svgren::surface canvas::get_sub_surface(const r4::rectangle<unsigned>& region)
 		dims = this->dims;
 		auto& cur_group = this->group_stack.back();
 		stride = cur_group.rendering_buffer.stride_abs();
-		buffer = cur_group.pixels.data();
+		buffer = cur_group.image.span().data();
 	}
 #endif
 
@@ -1131,22 +1131,27 @@ void canvas::pop_mask_and_group()
 #elif VEG_BACKEND == VEG_BACKEND_AGG
 	ASSERT(this->group_stack.size() >= 2)
 
-	auto& mask = this->group_stack.back().pixels;
-	auto& grp = std::next(this->group_stack.rbegin())->pixels;
+	auto mask = this->group_stack.back().image.span();
+	auto grp = std::next(this->group_stack.rbegin())->image.span();
 
 	// apply mask to the group by multiplying group pixels by mask alpha
-	ASSERT(mask.size() == grp.size())
-	auto mi = mask.begin();
-	auto gi = grp.begin();
-	for (; mi != mask.end(); ++mi, ++gi) {
-		// extract group color and mask alpha
-		auto& gc = *gi;
-		auto ma = mi->a();
+	ASSERT(mask.dims() == grp.dims())
 
-		// multiply group color (since we use pre-multiplied pixel format) by mask alpha
-		gc.comp_operation([&ma](const auto& a) {
-			return rasterimage::multiply(a, ma);
-		});
+	for (auto mask_line_iter = mask.begin(), group_line_iter = grp.begin(); mask_line_iter != mask.end();
+		 ++mask_line_iter, ++group_line_iter)
+	{
+		ASSERT(mask_line_iter->size() == group_line_iter->size())
+		for (auto mi = mask_line_iter->begin(), gi = group_line_iter->begin(); mi != mask_line_iter->end(); ++mi, ++gi)
+		{
+			// extract group color and mask alpha
+			auto& gc = *gi;
+			auto ma = mi->a();
+
+			// multiply group color (since we use pre-multiplied pixel format) by mask alpha
+			gc.comp_operation([&ma](const auto& a) {
+				return rasterimage::multiply(a, ma);
+			});
+		}
 	}
 
 	this->group_stack.pop_back(); // pop out mask

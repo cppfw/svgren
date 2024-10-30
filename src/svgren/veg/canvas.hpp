@@ -115,19 +115,19 @@ private:
 #elif VEG_BACKEND == VEG_BACKEND_AGG
 
 	struct group {
-		std::vector<rasterimage::image<uint8_t, 4>::pixel_type> pixels;
+		image_type image;
 		agg::rendering_buffer rendering_buffer;
 		agg::pixfmt_rgba32_pre pixel_format; // use premultiplied pixel format for faster blending
 		agg::renderer_base<decltype(pixel_format)> renderer_base;
 
 		group(const r4::vector2<unsigned>& dims) :
-			pixels(size_t(dims.x() * dims.y()), 0),
+			image(dims, 0),
 			rendering_buffer(
 				// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-				reinterpret_cast<agg::int8u*>(this->pixels.data()),
-				dims.x(),
-				dims.y(),
-				int(dims.x() * unsigned(sizeof(decltype(this->pixels)::value_type)))
+				reinterpret_cast<agg::int8u*>(this->image.span().data()),
+				this->image.dims().x(),
+				this->image.dims().y(),
+				int(this->image.span().stride_bytes())
 			),
 			pixel_format(this->rendering_buffer),
 			renderer_base(this->pixel_format)
