@@ -38,28 +38,34 @@ SOFTWARE.
 namespace svgren {
 
 struct surface {
-	r4::rectangle<unsigned> rectangle = {0, std::numeric_limits<unsigned>::max()};
-	utki::span<image_type::pixel_type> span; // RGBA data
-	image_type::dimensions_type::value_type stride = 0; // stride in pixels, not bytes
+	r4::vector2<unsigned> position = 0;
+	image_span_type image_span;
+	// r4::rectangle<unsigned> rectangle = {0, 0};
+	// utki::span<image_type::pixel_type> span; // RGBA data
+	// image_type::dimensions_type::value_type stride = 0; // stride in pixels, not bytes
 
 	surface() = default;
 
 	surface(
-		r4::rectangle<unsigned> rectangle, //
-		utki::span<image_type::pixel_type> span,
-		image_type::dimensions_type::value_type stride
+		// r4::rectangle<unsigned> rectangle, //
+		// utki::span<image_type::pixel_type> span,
+		// image_type::dimensions_type::value_type stride
+		r4::vector2<unsigned> position,
+		image_span_type image_span
 	) :
-		rectangle(rectangle),
-		span(span),
-		stride(stride)
+		position(position),
+		image_span(image_span)
+	// rectangle(rectangle),
+	// span(span),
+	// stride(stride)
 	{}
 
 	r4::rectangle<unsigned> rect() const noexcept
 	{
-		return this->rectangle;
+		return {this->position, this->image_span.dims()};
 	}
 
-	surface intersection(const r4::rectangle<unsigned>& r) const;
+	surface intersection(const r4::rectangle<unsigned>& r);
 
 	void append_luminance_to_alpha();
 };

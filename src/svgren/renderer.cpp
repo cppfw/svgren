@@ -1666,11 +1666,13 @@ decltype(svgdom::styleable::presentation_attributes) renderer::gradient_get_pres
 
 void renderer::blit(const surface& s)
 {
-	if (s.span.empty() || s.rect().d.x() == 0 || s.rect().d.y() == 0) {
+	if (s.image_span.empty()) {
 		// source image is empty, do nothing
 		return;
 	}
-	ASSERT(!s.span.empty() && s.rect().d.x() != 0 && s.rect().d.y() != 0)
+	ASSERT(!s.image_span.empty())
+
+	// TODO: rewrite using rasterimage::image_span::blit()
 
 	auto dst = this->canvas.get_sub_surface();
 
@@ -1681,16 +1683,16 @@ void renderer::blit(const surface& s)
 		return;
 	}
 
-	auto dstp = dst.span.data() + size_t(s.rect().p.y() * dst.stride + s.rect().p.x());
-	auto srcp = s.span.data();
+	auto dstp = dst.image_span.data() + size_t(s.rect().p.y() * dst.image_span.stride_pixels() + s.rect().p.x());
+	auto srcp = s.image_span.data();
 	using std::min;
 	auto dp = min(s.rect().d, dst.rect().d - s.rect().p);
 
 	for (unsigned y = 0; y != dp.y(); ++y) {
 		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-		auto p = dstp + size_t(y * dst.stride);
+		auto p = dstp + size_t(y * dst.image_span.stride_pixels());
 		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-		auto sp = srcp + size_t(y * s.stride);
+		auto sp = srcp + size_t(y * s.image_span.stride_pixels());
 		for (unsigned x = 0; x != dp.x(); ++x, ++p, ++sp) {
 			*p = *sp;
 		}

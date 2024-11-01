@@ -995,55 +995,76 @@ void canvas::set_matrix(const r4::matrix2<real>& m)
 
 svgren::surface canvas::get_sub_surface(const r4::rectangle<unsigned>& region)
 {
-	r4::vector2<unsigned> dims;
+	// r4::vector2<unsigned> dims;
 	using image_type = rasterimage::image<uint8_t, 4>;
-	image_type::pixel_type* buffer = nullptr;
-	unsigned stride = 0;
+	// image_type::pixel_type* buffer = nullptr;
+	// unsigned stride = 0;
 
+	auto img_span = [this]() -> image_type::image_span_type {
 #if VEG_BACKEND == VEG_BACKEND_CAIRO
-	{
-		auto s = cairo_get_group_target(cr);
-		ASSERT(s)
+		{
+			auto s = cairo_get_group_target(cr);
+			ASSERT(s)
 
-		stride = cairo_image_surface_get_stride(s); // stride is returned in bytes
+			auto stride_bytes = cairo_image_surface_get_stride(s); // stride is returned in bytes
 
-		dims = decltype(dims){unsigned(cairo_image_surface_get_width(s)), unsigned(cairo_image_surface_get_height(s))};
+			auto dims = r4::vector<unsigned>{
+				unsigned(cairo_image_surface_get_width(s)),
+				unsigned(cairo_image_surface_get_height(s))
+			};
 
-		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-		buffer = reinterpret_cast<image_type::pixel_type*>(cairo_image_surface_get_data(s));
-	}
+			// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+			auto buffer = reinterpret_cast<image_type::pixel_type*>(cairo_image_surface_get_data(s));
+
+			return image_type::image_span_type(
+				dims, //
+				stride_bytes / sizeof(image_type::pixel_type),
+				buffer
+			);
+		}
 #elif VEG_BACKEND == VEG_BACKEND_AGG
-	{
-		ASSERT(!this->group_stack.empty())
-		dims = this->dims;
-		auto& cur_group = this->group_stack.back();
-		stride = cur_group.rendering_buffer.stride_abs();
-		buffer = cur_group.image.span().data();
-	}
+		{
+			ASSERT(!this->group_stack.empty())
+			// const auto& dims = this->dims;
+			auto& cur_group = this->group_stack.back();
+			// auto stride_bytes = cur_group.rendering_buffer.stride_abs();
+			// auto buffer = cur_group.image.span().data();
+
+			// return image_type::image_span_type(
+			// 	dims,
+			// 	stride_bytes / sizeof(image_type::pixel_type),
+			// 	buffer
+			// );
+
+			return cur_group.image.span();
+		}
 #endif
+	}();
 
-	ASSERT(buffer)
-	ASSERT(stride % sizeof(image_type::pixel_type) == 0)
+	// ASSERT(buffer)
+	// ASSERT(stride % sizeof(image_type::pixel_type) == 0)
 
-	unsigned ret_stride = stride / sizeof(image_type::pixel_type);
+	// unsigned ret_stride = stride / sizeof(image_type::pixel_type);
 
-	using std::min;
-	auto ret_dims = min(region.d, dims - region.p);
-	auto ret_span = utki::make_span(
-		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-		buffer + size_t(region.p.y() * ret_stride + region.p.x()),
-		ret_stride * ret_dims.y() - (ret_stride - ret_dims.x()) // subtract 'tail' from last pixels row
-	);
+	// using std::min;
+	// auto ret_dims = min(region.d, dims - region.p);
+	// auto ret_span = utki::make_span(
+	// 	// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	// 	buffer + size_t(region.p.y() * ret_stride + region.p.x()),
+	// 	ret_stride * ret_dims.y() - (ret_stride - ret_dims.x()) // subtract 'tail' from last pixels row
+	// );
 	auto ret_pos = region.p;
 
 	svgren::surface ret(
-		{ret_pos, ret_dims}, //
-		ret_span,
-		ret_stride
+		ret_pos, //, ret_dims}, //
+		img_span.subspan(region)
+		// ret_span,
+		// ret_stride
 	);
 
-	ASSERT(ret.rect().d.y() <= dims.y())
-	ASSERT(ret.rect().d.y() == 0 || std::next(ret.span.begin(), ret.stride * (ret.rect().d.y() - 1)) < ret.span.end())
+	// ASSERT(ret.rect().d.y() <= img_span.dims.y())
+	// ASSERT(ret.rect().d.y() == 0 || std::next(ret.span.begin(), ret.stride * (ret.rect().d.y() - 1)) <
+	// ret.span.end())
 
 	return ret;
 }
@@ -1137,6 +1158,7 @@ void canvas::pop_mask_and_group()
 	// apply mask to the group by multiplying group pixels by mask alpha
 	ASSERT(mask.dims() == grp.dims())
 
+	// TODO: use std::views::zip from C++23 (invent drop-in replacement)
 	for (auto mask_line_iter = mask.begin(), group_line_iter = grp.begin(); mask_line_iter != mask.end();
 		 ++mask_line_iter, ++group_line_iter)
 	{

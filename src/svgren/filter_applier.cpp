@@ -131,23 +131,31 @@ void box_blur_vertical(
 namespace {
 filter_result allocate_result(const surface& src)
 {
-	filter_result ret;
-	ret.surface = src;
-	auto data_size = src.rect().d.x() * src.rect().d.y();
-	if (data_size != 0) {
-		ret.data.resize(data_size);
-		ASSERT(ret.data.size() != 0, [&](auto& o) {
-			o << "src.rect.d = " << src.rect().d;
-		})
-		ret.surface.span = utki::make_span(ret.data);
-		ret.surface.stride = ret.surface.rect().d.x();
-	} else {
-		ret.data.clear();
-		ret.surface.span = {};
-		ret.surface.stride = 0;
-	}
+	// filter_result ret(
+	// 	image_type(src.image_span.dims()),
+	// 	surface(src)
+	// );
+	// ret.surface = src;
+	// auto data_size = src.rect().d.x() * src.rect().d.y();
+	// if (data_size != 0) {
+	// 	ret.data.resize(data_size);
+	// 	ASSERT(ret.data.size() != 0, [&](auto& o) {
+	// 		o << "src.rect.d = " << src.rect().d;
+	// 	})
+	// 	ret.surface.span = utki::make_span(ret.data);
+	// 	ret.surface.stride = ret.surface.rect().d.x();
+	// } else {
+	// 	ret.data.clear();
+	// 	ret.surface.span = {};
+	// 	ret.surface.stride = 0;
+	// }
 
-	return ret;
+	// return ret;
+
+	return filter_result{
+		image_type(src.image_span.dims()), //
+		surface(src)
+	};
 }
 } // namespace
 
@@ -159,7 +167,7 @@ filter_result blur_surface(
 {
 	// see https://www.w3.org/TR/SVG11/filters.html#feGaussianBlurElement for Gaussian Blur approximation algorithm
 
-	ASSERT(src.rect().d.x() <= src.stride)
+	// ASSERT(src.rect().d.x() <= src.stride)
 
 	using std::sqrt;
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
@@ -169,7 +177,7 @@ filter_result blur_surface(
 
 	filter_result ret = allocate_result(src);
 
-	std::vector<image_type::pixel_type> tmp(ret.data.size());
+	std::vector<image_type::pixel_type> tmp(ret.image.pixels().size());
 
 	std::array<unsigned, 3> h_box_size{};
 	std::array<unsigned, 3> h_offset{};
@@ -211,18 +219,18 @@ filter_result blur_surface(
 
 	box_blur_horizontal(
 		tmp.data(),
-		src.span.data(),
+		src.image_span.data(),
 		src.rect().d.x(),
-		src.stride,
+		src.image_span.stride_pixels(),
 		src.rect().d.x(),
 		src.rect().d.y(),
 		h_box_size[0],
 		h_offset[0]
 	);
 	box_blur_horizontal(
-		ret.surface.span.data(),
+		ret.surface.image_span.data(),
 		tmp.data(),
-		ret.surface.stride,
+		ret.surface.image_span.stride_pixels(),
 		src.rect().d.x(),
 		src.rect().d.x(),
 		src.rect().d.y(),
@@ -231,9 +239,9 @@ filter_result blur_surface(
 	);
 	box_blur_horizontal(
 		tmp.data(),
-		ret.surface.span.data(),
+		ret.surface.image_span.data(),
 		src.rect().d.x(),
-		ret.surface.stride,
+		ret.surface.image_span.stride_pixels(),
 		src.rect().d.x(),
 		src.rect().d.y(),
 		h_box_size[2],
@@ -241,9 +249,9 @@ filter_result blur_surface(
 	);
 
 	box_blur_vertical(
-		ret.surface.span.data(),
+		ret.surface.image_span.data(),
 		tmp.data(),
-		ret.surface.stride,
+		ret.surface.image_span.stride_pixels(),
 		src.rect().d.x(),
 		src.rect().d.x(),
 		src.rect().d.y(),
@@ -252,18 +260,18 @@ filter_result blur_surface(
 	);
 	box_blur_vertical(
 		tmp.data(),
-		ret.surface.span.data(),
+		ret.surface.image_span.data(),
 		src.rect().d.x(),
-		ret.surface.stride,
+		ret.surface.image_span.stride_pixels(),
 		src.rect().d.x(),
 		src.rect().d.y(),
 		v_box_size[1],
 		v_offset[1]
 	);
 	box_blur_vertical(
-		ret.surface.span.data(),
+		ret.surface.image_span.data(),
 		tmp.data(),
-		ret.surface.stride,
+		ret.surface.image_span.stride_pixels(),
 		src.rect().d.x(),
 		src.rect().d.x(),
 		src.rect().d.y(),
@@ -284,7 +292,10 @@ void filter_applier::set_result(const std::string& name, filter_result&& result)
 {
 	this->results[name] = std::move(result);
 	this->lastResult = &this->results[name];
-	ASSERT(this->lastResult->data.size() == 0 || this->lastResult->surface.span.data() == this->lastResult->data.data())
+	ASSERT(
+		this->lastResult->image.pixels().size() == 0 ||
+		this->lastResult->surface.image_span.data() == this->lastResult->image.pixels().data()
+	)
 }
 
 surface filter_applier::get_source(const std::string& in)
@@ -424,24 +435,24 @@ void filter_applier::visit(const svgdom::fe_gaussian_blur_element& e)
 
 namespace {
 filter_result color_matrix(
-	const surface& s, //
+	surface& s, //
 	const r4::matrix4<real>& m,
 	const r4::vector4<real>& mc5
 )
 {
 	//	TRACE(<< "colorMatrix(): s.width = " << s.width << " s.height = " << s.height << std::endl)
-	ASSERT(!s.span.empty() || s.rect().d.is_zero())
+	ASSERT(!s.image_span.empty() || s.rect().d.is_zero())
 	filter_result ret = allocate_result(s);
 
-	ASSERT(!s.span.empty() || s.rect().d.is_zero())
+	ASSERT(!s.image_span.empty() || s.rect().d.is_zero())
 
 	for (unsigned y = 0; y != s.rect().d.y(); ++y) {
-		auto sp = &s.span[size_t(y) * size_t(s.stride)];
-		ASSERT(sp < s.span.end(), [&](auto& o) {
-			o << "sp = " << std::hex << static_cast<const void*>(sp)
-			  << " s.end = " << static_cast<const void*>(s.span.end());
-		})
-		auto dp = &ret.surface.span[size_t(y) * size_t(ret.surface.stride)];
+		auto sp = s.image_span[size_t(y)].data();
+		// ASSERT(sp < s.span.end(), [&](auto& o) {
+		// 	o << "sp = " << std::hex << static_cast<const void*>(sp)
+		// 	  << " s.end = " << static_cast<const void*>(s.span.end());
+		// })
+		auto dp = ret.surface.image_span[size_t(y)].data();
 		for (unsigned x = 0; x != s.rect().d.x(); ++x) {
 			auto cc = *sp;
 			++sp;
@@ -625,7 +636,7 @@ void filter_applier::visit(const svgdom::fe_color_matrix_element& e)
 
 	// TRACE(<< "color matrix getSource()" << std::endl)
 	auto src = this->get_source(e.in);
-	ASSERT(!src.span.empty() || src.rect().d.is_zero())
+	ASSERT(!src.image_span.empty())
 	auto s = src.intersection(this->filterRegion);
 
 	// TODO: set filter sub-region
@@ -634,7 +645,7 @@ void filter_applier::visit(const svgdom::fe_color_matrix_element& e)
 }
 
 namespace {
-filter_result blend(const surface& in, const surface& in2, svgdom::fe_blend_element::mode mode)
+filter_result blend(surface& in, surface& in2, svgdom::fe_blend_element::mode mode)
 {
 	//	TRACE(<< "in.width = " << in.width << " in2.width = " << in2.width << std::endl)
 	auto s1 = in.intersection(in2.rect());
@@ -649,9 +660,9 @@ filter_result blend(const surface& in, const surface& in2, svgdom::fe_blend_elem
 	auto ret = allocate_result(s1);
 
 	for (unsigned y = 0; y != ret.surface.rect().d.y(); ++y) {
-		auto sp1 = &s1.span[size_t(y) * size_t(s1.stride)];
-		auto sp2 = &s2.span[size_t(y) * size_t(s2.stride)];
-		auto dp = &ret.surface.span[size_t(y) * size_t(ret.surface.stride)];
+		auto sp1 = s1.image_span[size_t(y)].data();
+		auto sp2 = s2.image_span[size_t(y)].data();
+		auto dp = ret.surface.image_span[size_t(y)].data();
 		for (unsigned x = 0; x != ret.surface.rect().d.x(); ++x) {
 			// TODO: optimize by using integer arithmetics instead of floating point
 			auto c01 = rasterimage::to_float<real>(*sp1);
@@ -710,12 +721,12 @@ filter_result blend(const surface& in, const surface& in2, svgdom::fe_blend_elem
 void filter_applier::visit(const svgdom::fe_blend_element& e)
 {
 	auto s1 = this->get_source(e.in).intersection(this->filterRegion);
-	if (s1.span.empty()) {
+	if (s1.image_span.empty()) {
 		return;
 	}
 
 	auto s2 = this->get_source(e.in2).intersection(this->filterRegion);
-	if (s2.span.empty()) {
+	if (s2.image_span.empty()) {
 		return;
 	}
 
@@ -725,7 +736,7 @@ void filter_applier::visit(const svgdom::fe_blend_element& e)
 }
 
 namespace {
-filter_result composite(const surface& in, const surface& in2, const svgdom::fe_composite_element& e)
+filter_result composite(surface& in, surface& in2, const svgdom::fe_composite_element& e)
 {
 	//	TRACE(<< "in.width = " << in.width << " in2.width = " << in2.width << std::endl)
 	auto s1 = in.intersection(in2.rect());
@@ -740,9 +751,9 @@ filter_result composite(const surface& in, const surface& in2, const svgdom::fe_
 	auto ret = allocate_result(s1);
 
 	for (unsigned y = 0; y != ret.surface.rect().d.y(); ++y) {
-		auto sp1 = &s1.span[size_t(y) * size_t(s1.stride)];
-		auto sp2 = &s2.span[size_t(y) * size_t(s2.stride)];
-		auto dp = &ret.surface.span[size_t(y) * size_t(ret.surface.stride)];
+		auto sp1 = s1.image_span[size_t(y)].data();
+		auto sp2 = s2.image_span[size_t(y)].data();
+		auto dp = ret.surface.image_span[size_t(y)].data();
 		for (unsigned x = 0; x != ret.surface.rect().d.x(); ++x) {
 			// TODO: optimize by using integer arithmetics instead of floating point
 			auto c01 = rasterimage::to_float<real>(*sp1);
@@ -799,12 +810,12 @@ filter_result composite(const surface& in, const surface& in2, const svgdom::fe_
 void filter_applier::visit(const svgdom::fe_composite_element& e)
 {
 	auto s1 = this->get_source(e.in).intersection(this->filterRegion);
-	if (s1.span.empty()) {
+	if (s1.image_span.empty()) {
 		return;
 	}
 
 	auto s2 = this->get_source(e.in2).intersection(this->filterRegion);
-	if (s2.span.empty()) {
+	if (s2.image_span.empty()) {
 		return;
 	}
 

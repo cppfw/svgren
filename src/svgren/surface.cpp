@@ -33,7 +33,7 @@ SOFTWARE.
 
 using namespace svgren;
 
-surface surface::intersection(const r4::rectangle<unsigned>& r) const
+surface surface::intersection(const r4::rectangle<unsigned>& r)
 {
 	auto ret_rect = r4::rectangle<unsigned>(this->rect()).intersect(r);
 
@@ -44,19 +44,23 @@ surface surface::intersection(const r4::rectangle<unsigned>& r) const
 	ASSERT(ret_rect.p.x() >= this->rect().p.x())
 	ASSERT(ret_rect.p.y() >= this->rect().p.y())
 
-	auto delta = (ret_rect.p.y() - this->rect().p.y()) * this->stride + (ret_rect.p.x() - this->rect().p.x());
+	// auto delta = (ret_rect.p.y() - this->rect().p.y()) * this->stride + (ret_rect.p.x() - this->rect().p.x());
 
-	auto ret_span = utki::make_span(this->span.data() + delta, this->span.size() - delta);
+	// auto ret_span = utki::make_span(this->span.data() + delta, this->span.size() - delta);
 
-	ASSERT(ret_span.end() == this->span.end())
-	ASSERT(ret_rect.d.y() <= this->rect().d.y(), [&](auto& o) {
-		o << "ret_rect = " << ret_rect << " this->rect() = " << this->rect() << " r = " << r;
-	})
+	// ASSERT(ret_span.end() == this->span.end())
+	// ASSERT(ret_rect.d.y() <= this->rect().d.y(), [&](auto& o) {
+	// 	o << "ret_rect = " << ret_rect << " this->rect() = " << this->rect() << " r = " << r;
+	// })
 
+	// return {
+	// 	ret_rect, //
+	// 	ret_span,
+	// 	this->stride
+	// };
 	return {
-		ret_rect, //
-		ret_span,
-		this->stride
+		ret_rect.p, //
+		this->image_span.subspan({ret_rect.p - this->position, ret_rect.d})
 	};
 }
 
@@ -68,16 +72,30 @@ void surface::append_luminance_to_alpha()
 	constexpr auto green_coeff = 0.7152;
 	constexpr auto blue_coeff = 0.0722;
 
-	// TODO: take stride into account, do not append luminance to alpha for data out of the surface width
-	for (auto& px : this->span) {
-		px.set(
-			image_type::value(1),
-			image_type::value(1),
-			image_type::value(1),
-			// we use premultiplied alpha format, so no need to multiply alpha by liminance
-			rasterimage::multiply(px.r(), image_type::value(float(red_coeff))) +
-				rasterimage::multiply(px.g(), image_type::value(float(green_coeff))) +
-				rasterimage::multiply(px.b(), image_type::value(float(blue_coeff)))
-		);
+	for (auto line : this->image_span) {
+		for (auto& px : line) {
+			px.set(
+				image_type::value(1),
+				image_type::value(1),
+				image_type::value(1),
+				// we use premultiplied alpha format, so no need to multiply alpha by liminance
+				rasterimage::multiply(px.r(), image_type::value(float(red_coeff))) +
+					rasterimage::multiply(px.g(), image_type::value(float(green_coeff))) +
+					rasterimage::multiply(px.b(), image_type::value(float(blue_coeff)))
+			);
+		}
 	}
+
+	// TODO: remove
+	// for (auto& px : this->span) {
+	// 	px.set(
+	// 		image_type::value(1),
+	// 		image_type::value(1),
+	// 		image_type::value(1),
+	// 		// we use premultiplied alpha format, so no need to multiply alpha by liminance
+	// 		rasterimage::multiply(px.r(), image_type::value(float(red_coeff))) +
+	// 			rasterimage::multiply(px.g(), image_type::value(float(green_coeff))) +
+	// 			rasterimage::multiply(px.b(), image_type::value(float(blue_coeff)))
+	// 	);
+	// }
 }
