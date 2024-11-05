@@ -45,6 +45,26 @@
             "preLaunchTask": "build_dbg_agg"
         },
         {
+            "name": "debug unit tests",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/tests/unit/out/dbg_agg/tests",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/tests/unit",
+            "environment": [{"name": "LD_LIBRARY_PATH", "value": "../../src/out/dbg_agg"}],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "build_dbg_agg"
+        },
+        {
             "name": "debug checksvg",
             "type": "cppdbg",
             "request": "launch",

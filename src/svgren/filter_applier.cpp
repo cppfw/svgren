@@ -152,10 +152,7 @@ filter_result allocate_result(const surface& src)
 
 	// return ret;
 
-	return filter_result{
-		image_type(src.image_span.dims()), //
-		surface(src)
-	};
+	return filter_result{src.rect()};
 }
 } // namespace
 
@@ -288,13 +285,28 @@ surface filter_applier::get_source_graphic()
 	return this->r.canvas.get_sub_surface(this->filterRegion);
 }
 
-void filter_applier::set_result(const std::string& name, filter_result&& result)
+void filter_applier::set_result(
+	const std::string& name, //
+	filter_result&& result
+)
 {
-	this->results[name] = std::move(result);
-	this->lastResult = &this->results[name];
+	auto res = this->results.insert(std::make_pair(name, std::move(result)));
+
+	if (!res.second) {
+		// result with given name is already there
+		// TODO: should not happen? ASSERT?
+		return;
+	}
+
+	// this->results[name] = std::move(result);
+	// this->lastResult = &this->results[name];
+	this->lastResult = &res.first->second;
 	ASSERT(
 		this->lastResult->image.pixels().size() == 0 ||
-		this->lastResult->surface.image_span.data() == this->lastResult->image.pixels().data()
+			this->lastResult->surface.image_span.data() == this->lastResult->image.pixels().data(),
+		[&](auto& o) {
+			o << "this->lastResult->image.pixels().size() = " << this->lastResult->image.pixels().size();
+		}
 	)
 }
 

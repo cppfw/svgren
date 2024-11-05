@@ -37,6 +37,14 @@ struct filter_result {
 	// std::vector<image_type::pixel_type> data;
 	image_type image;
 	svgren::surface surface;
+
+	filter_result(r4::rectangle<unsigned> surface_rect) :
+		image(surface_rect.d),
+		surface(
+			surface_rect.p, //
+			this->image.span()
+		)
+	{}
 };
 
 class filter_applier : public svgdom::const_visitor

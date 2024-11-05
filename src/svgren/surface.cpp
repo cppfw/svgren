@@ -41,8 +41,17 @@ surface surface::intersection(const r4::rectangle<unsigned>& r)
 		o << "ret_rect = " << ret_rect << " this->rect() = " << this->rect() << " r = " << r;
 	})
 
-	ASSERT(ret_rect.p.x() >= this->rect().p.x())
-	ASSERT(ret_rect.p.y() >= this->rect().p.y())
+	// TODO: remove commneted code
+
+	// ASSERT(ret_rect.p.x() >= this->rect().p.x())
+	// ASSERT(ret_rect.p.y() >= this->rect().p.y())
+	// ASSERT(
+	// 	ret_rect.p.x() < this->rect().x2(), //
+	// 	[&](auto& o) {
+	// 		o << "ret_rect.p = " << ret_rect.p << ", r = " << r << ", this->rect() = " << this->rect();
+	// 	}
+	// )
+	// ASSERT(ret_rect.p.y() < this->rect().y2())
 
 	// auto delta = (ret_rect.p.y() - this->rect().p.y()) * this->stride + (ret_rect.p.x() - this->rect().p.x());
 
@@ -58,6 +67,13 @@ surface surface::intersection(const r4::rectangle<unsigned>& r)
 	// 	ret_span,
 	// 	this->stride
 	// };
+	if (ret_rect.d.is_any_zero()) {
+		// resulting surface is of zero size
+		return {};
+	}
+
+	ASSERT(this->rect().contains(ret_rect))
+
 	return {
 		ret_rect.p, //
 		this->image_span.subspan({ret_rect.p - this->position, ret_rect.d})

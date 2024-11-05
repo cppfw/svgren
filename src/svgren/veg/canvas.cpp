@@ -1053,11 +1053,14 @@ svgren::surface canvas::get_sub_surface(const r4::rectangle<unsigned>& region)
 	// 	buffer + size_t(region.p.y() * ret_stride + region.p.x()),
 	// 	ret_stride * ret_dims.y() - (ret_stride - ret_dims.x()) // subtract 'tail' from last pixels row
 	// );
-	auto ret_pos = region.p;
+
+	auto rect = r4::rectangle<unsigned>(0, img_span.dims()).intersect(region);
+
+	auto ret_pos = rect.p;
 
 	svgren::surface ret(
 		ret_pos, //, ret_dims}, //
-		img_span.subspan(region)
+		img_span.subspan(rect)
 		// ret_span,
 		// ret_stride
 	);

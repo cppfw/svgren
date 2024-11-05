@@ -1683,6 +1683,7 @@ void renderer::blit(const surface& s)
 		return;
 	}
 
+	// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	auto dstp = dst.image_span.data() + size_t(s.rect().p.y() * dst.image_span.stride_pixels() + s.rect().p.x());
 	auto srcp = s.image_span.data();
 	using std::min;
