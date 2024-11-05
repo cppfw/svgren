@@ -34,7 +34,6 @@ SOFTWARE.
 namespace svgren {
 
 struct filter_result {
-	// std::vector<image_type::pixel_type> data;
 	image_type image;
 	svgren::surface surface;
 

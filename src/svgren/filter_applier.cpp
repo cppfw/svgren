@@ -129,34 +129,6 @@ void box_blur_vertical(
 } // namespace
 
 namespace {
-filter_result allocate_result(const surface& src)
-{
-	// filter_result ret(
-	// 	image_type(src.image_span.dims()),
-	// 	surface(src)
-	// );
-	// ret.surface = src;
-	// auto data_size = src.rect().d.x() * src.rect().d.y();
-	// if (data_size != 0) {
-	// 	ret.data.resize(data_size);
-	// 	ASSERT(ret.data.size() != 0, [&](auto& o) {
-	// 		o << "src.rect.d = " << src.rect().d;
-	// 	})
-	// 	ret.surface.span = utki::make_span(ret.data);
-	// 	ret.surface.stride = ret.surface.rect().d.x();
-	// } else {
-	// 	ret.data.clear();
-	// 	ret.surface.span = {};
-	// 	ret.surface.stride = 0;
-	// }
-
-	// return ret;
-
-	return filter_result{src.rect()};
-}
-} // namespace
-
-namespace {
 filter_result blur_surface(
 	const surface& src, //
 	r4::vector2<real> std_deviation
@@ -164,15 +136,13 @@ filter_result blur_surface(
 {
 	// see https://www.w3.org/TR/SVG11/filters.html#feGaussianBlurElement for Gaussian Blur approximation algorithm
 
-	// ASSERT(src.rect().d.x() <= src.stride)
-
 	using std::sqrt;
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 	auto d = (std_deviation * (3 * sqrt(2 * real(utki::pi)) / 4) + real(0.5)).to<unsigned>();
 
 	//	TRACE(<< "d = " << d[0] << ", " << d[1] << std::endl)
 
-	filter_result ret = allocate_result(src);
+	filter_result ret(src.rect());
 
 	std::vector<image_type::pixel_type> tmp(ret.image.pixels().size());
 
@@ -298,8 +268,6 @@ void filter_applier::set_result(
 		return;
 	}
 
-	// this->results[name] = std::move(result);
-	// this->lastResult = &this->results[name];
 	this->lastResult = &res.first->second;
 	ASSERT(
 		this->lastResult->image.pixels().size() == 0 ||
@@ -454,16 +422,12 @@ filter_result color_matrix(
 {
 	//	TRACE(<< "colorMatrix(): s.width = " << s.width << " s.height = " << s.height << std::endl)
 	ASSERT(!s.image_span.empty() || s.rect().d.is_zero())
-	filter_result ret = allocate_result(s);
+	filter_result ret(s.rect());
 
 	ASSERT(!s.image_span.empty() || s.rect().d.is_zero())
 
 	for (unsigned y = 0; y != s.rect().d.y(); ++y) {
 		auto sp = s.image_span[size_t(y)].data();
-		// ASSERT(sp < s.span.end(), [&](auto& o) {
-		// 	o << "sp = " << std::hex << static_cast<const void*>(sp)
-		// 	  << " s.end = " << static_cast<const void*>(s.span.end());
-		// })
 		auto dp = ret.surface.image_span[size_t(y)].data();
 		for (unsigned x = 0; x != s.rect().d.x(); ++x) {
 			auto cc = *sp;
@@ -669,7 +633,7 @@ filter_result blend(surface& in, surface& in2, svgdom::fe_blend_element::mode mo
 	ASSERT(s1.rect().d.y() == s2.rect().d.y())
 	ASSERT(s1.rect().p == s2.rect().p)
 
-	auto ret = allocate_result(s1);
+	filter_result ret(s1.rect());
 
 	for (unsigned y = 0; y != ret.surface.rect().d.y(); ++y) {
 		auto sp1 = s1.image_span[size_t(y)].data();
@@ -760,7 +724,7 @@ filter_result composite(surface& in, surface& in2, const svgdom::fe_composite_el
 	ASSERT(s1.rect().d.y() == s2.rect().d.y())
 	ASSERT(s1.rect().p == s2.rect().p)
 
-	auto ret = allocate_result(s1);
+	filter_result ret(s1.rect());
 
 	for (unsigned y = 0; y != ret.surface.rect().d.y(); ++y) {
 		auto sp1 = s1.image_span[size_t(y)].data();

@@ -41,32 +41,6 @@ surface surface::intersection(const r4::rectangle<unsigned>& r)
 		o << "ret_rect = " << ret_rect << " this->rect() = " << this->rect() << " r = " << r;
 	})
 
-	// TODO: remove commneted code
-
-	// ASSERT(ret_rect.p.x() >= this->rect().p.x())
-	// ASSERT(ret_rect.p.y() >= this->rect().p.y())
-	// ASSERT(
-	// 	ret_rect.p.x() < this->rect().x2(), //
-	// 	[&](auto& o) {
-	// 		o << "ret_rect.p = " << ret_rect.p << ", r = " << r << ", this->rect() = " << this->rect();
-	// 	}
-	// )
-	// ASSERT(ret_rect.p.y() < this->rect().y2())
-
-	// auto delta = (ret_rect.p.y() - this->rect().p.y()) * this->stride + (ret_rect.p.x() - this->rect().p.x());
-
-	// auto ret_span = utki::make_span(this->span.data() + delta, this->span.size() - delta);
-
-	// ASSERT(ret_span.end() == this->span.end())
-	// ASSERT(ret_rect.d.y() <= this->rect().d.y(), [&](auto& o) {
-	// 	o << "ret_rect = " << ret_rect << " this->rect() = " << this->rect() << " r = " << r;
-	// })
-
-	// return {
-	// 	ret_rect, //
-	// 	ret_span,
-	// 	this->stride
-	// };
 	if (ret_rect.d.is_any_zero()) {
 		// resulting surface is of zero size
 		return {};
@@ -80,6 +54,7 @@ surface surface::intersection(const r4::rectangle<unsigned>& r)
 	};
 }
 
+// TODO: move to image_span
 void surface::append_luminance_to_alpha()
 {
 	// Luminance is calculated using formula L = 0.2126 * R + 0.7152 * G + 0.0722 * B
@@ -101,17 +76,4 @@ void surface::append_luminance_to_alpha()
 			);
 		}
 	}
-
-	// TODO: remove
-	// for (auto& px : this->span) {
-	// 	px.set(
-	// 		image_type::value(1),
-	// 		image_type::value(1),
-	// 		image_type::value(1),
-	// 		// we use premultiplied alpha format, so no need to multiply alpha by liminance
-	// 		rasterimage::multiply(px.r(), image_type::value(float(red_coeff))) +
-	// 			rasterimage::multiply(px.g(), image_type::value(float(green_coeff))) +
-	// 			rasterimage::multiply(px.b(), image_type::value(float(blue_coeff)))
-	// 	);
-	// }
 }
