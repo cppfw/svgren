@@ -83,7 +83,7 @@ canvas::~canvas()
 #endif
 }
 
-rasterimage::image<uint8_t, 4> canvas::release()
+rasterimage::image<uint8_t, 4> canvas::release_image()
 {
 #if VEG_BACKEND == VEG_BACKEND_CAIRO
 	auto ret = rasterimage::image<uint8_t, 4>(this->dims, std::move(this->pixels));
@@ -993,54 +993,35 @@ void canvas::set_matrix(const r4::matrix2<real>& m)
 #endif
 }
 
-svgren::surface canvas::get_sub_surface(const r4::rectangle<unsigned>& region)
+veg::image_span_type canvas::get_image_span()
 {
-	using image_type = rasterimage::image<uint8_t, 4>;
-
-	auto img_span = [this]() -> image_type::image_span_type {
 #if VEG_BACKEND == VEG_BACKEND_CAIRO
-		{
-			auto s = cairo_get_group_target(cr);
-			ASSERT(s)
+	auto s = cairo_get_group_target(cr);
+	ASSERT(s)
 
-			auto stride_bytes = cairo_image_surface_get_stride(s);
+	auto stride_bytes = cairo_image_surface_get_stride(s);
 
-			ASSERT(stride_bytes % sizeof(image_type::pixel_type) == 0)
+	ASSERT(stride_bytes % sizeof(image_type::pixel_type) == 0)
 
-			auto dims = r4::vector2<unsigned>(
-				unsigned(cairo_image_surface_get_width(s)),
-				unsigned(cairo_image_surface_get_height(s))
-			);
-
-			// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-			auto buffer = reinterpret_cast<image_type::pixel_type*>(cairo_image_surface_get_data(s));
-
-			return image_type::image_span_type(
-				dims, //
-				stride_bytes / sizeof(image_type::pixel_type),
-				buffer
-			);
-		}
-#elif VEG_BACKEND == VEG_BACKEND_AGG
-		{
-			ASSERT(!this->group_stack.empty())
-			auto& cur_group = this->group_stack.back();
-
-			return cur_group.image.span();
-		}
-#endif
-	}();
-
-	auto rect = r4::rectangle<unsigned>(0, img_span.dims()).intersect(region);
-
-	auto ret_pos = rect.p;
-
-	svgren::surface ret(
-		ret_pos, //
-		img_span.subspan(rect)
+	auto dims = r4::vector2<unsigned>(
+		unsigned(cairo_image_surface_get_width(s)), //
+		unsigned(cairo_image_surface_get_height(s))
 	);
 
-	return ret;
+	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+	auto buffer = reinterpret_cast<image_type::pixel_type*>(cairo_image_surface_get_data(s));
+
+	return image_type::image_span_type(
+		dims, //
+		stride_bytes / sizeof(image_type::pixel_type),
+		buffer
+	);
+#elif VEG_BACKEND == VEG_BACKEND_AGG
+	ASSERT(!this->group_stack.empty())
+	auto& cur_group = this->group_stack.back();
+
+	return cur_group.image.span();
+#endif
 }
 
 void canvas::push_group()
@@ -1100,9 +1081,35 @@ void canvas::pop_group(real opacity)
 #endif
 }
 
+namespace {
+// TODO: use rasterimage::luminance
+void move_luminance_to_alpha(image_span_type img)
+{
+	// Luminance is calculated using formula L = 0.2126 * R + 0.7152 * G + 0.0722 * B
+
+	constexpr auto red_coeff = 0.2126;
+	constexpr auto green_coeff = 0.7152;
+	constexpr auto blue_coeff = 0.0722;
+
+	for (auto line : img) {
+		for (auto& px : line) {
+			px.set(
+				image_type::value(1),
+				image_type::value(1),
+				image_type::value(1),
+				// we use premultiplied alpha format, so no need to multiply alpha by liminance
+				rasterimage::multiply(px.r(), image_type::value(float(red_coeff))) +
+					rasterimage::multiply(px.g(), image_type::value(float(green_coeff))) +
+					rasterimage::multiply(px.b(), image_type::value(float(blue_coeff)))
+			);
+		}
+	}
+}
+} // namespace
+
 void canvas::pop_mask_and_group()
 {
-	this->get_sub_surface().append_luminance_to_alpha();
+	move_luminance_to_alpha(this->get_image_span());
 
 #if VEG_BACKEND == VEG_BACKEND_CAIRO
 	cairo_pattern_t* mask = cairo_pop_group(this->cr);

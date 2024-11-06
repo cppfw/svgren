@@ -49,6 +49,7 @@ namespace veg {
 using real = float;
 
 using image_type = rasterimage::image<uint8_t, 4>;
+using image_span_type = decltype(std::declval<image_type>().span());
 
 // TODO: image_type::pixel_type
 using pixel = uint32_t; // TODO: remove, used in one place only

@@ -294,9 +294,10 @@ public:
 	void pop_group(real opacity);
 	void pop_mask_and_group();
 
-	svgren::surface get_sub_surface(const r4::rectangle<unsigned>& region = {0, std::numeric_limits<unsigned>::max()});
+	image_span_type get_image_span();
 
-	rasterimage::image<uint8_t, 4> release();
+	// NOTE: the canvas remains in invalid state and cannot be used further
+	image_type release_image();
 };
 
 } // namespace veg

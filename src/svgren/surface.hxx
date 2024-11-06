@@ -43,6 +43,11 @@ struct surface {
 
 	surface() = default;
 
+	surface(image_span_type image_span) :
+		position(0),
+		image_span(image_span)
+	{}
+
 	surface(r4::vector2<unsigned> position, image_span_type image_span) :
 		position(position),
 		image_span(image_span)
@@ -54,8 +59,6 @@ struct surface {
 	}
 
 	surface intersection(const r4::rectangle<unsigned>& r);
-
-	void append_luminance_to_alpha();
 };
 
 } // namespace svgren

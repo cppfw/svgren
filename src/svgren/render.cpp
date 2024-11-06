@@ -105,5 +105,5 @@ image_type svgren::rasterize(const svgdom::svg_element& svg, const parameters& p
 
 	svg.accept(r);
 
-	return canvas.release();
+	return canvas.release_image();
 }

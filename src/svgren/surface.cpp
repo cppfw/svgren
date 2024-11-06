@@ -53,27 +53,3 @@ surface surface::intersection(const r4::rectangle<unsigned>& r)
 		this->image_span.subspan({ret_rect.p - this->position, ret_rect.d})
 	};
 }
-
-// TODO: move to image_span
-void surface::append_luminance_to_alpha()
-{
-	// Luminance is calculated using formula L = 0.2126 * R + 0.7152 * G + 0.0722 * B
-
-	constexpr auto red_coeff = 0.2126;
-	constexpr auto green_coeff = 0.7152;
-	constexpr auto blue_coeff = 0.0722;
-
-	for (auto line : this->image_span) {
-		for (auto& px : line) {
-			px.set(
-				image_type::value(1),
-				image_type::value(1),
-				image_type::value(1),
-				// we use premultiplied alpha format, so no need to multiply alpha by liminance
-				rasterimage::multiply(px.r(), image_type::value(float(red_coeff))) +
-					rasterimage::multiply(px.g(), image_type::value(float(green_coeff))) +
-					rasterimage::multiply(px.b(), image_type::value(float(blue_coeff)))
-			);
-		}
-	}
-}

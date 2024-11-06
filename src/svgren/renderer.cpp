@@ -645,7 +645,7 @@ renderer::renderer(veg::canvas& canvas, unsigned dpi, r4::vector2<real> viewport
 	viewport(viewport)
 {
 	this->device_space_bounding_box.set_empty_bounding_box();
-	this->background = this->canvas.get_sub_surface();
+	this->background = surface(this->canvas.get_image_span());
 
 #ifdef SVGREN_BACKGROUND
 	this->canvas.set_source(
@@ -1666,36 +1666,43 @@ decltype(svgdom::styleable::presentation_attributes) renderer::gradient_get_pres
 
 void renderer::blit(const surface& s)
 {
-	if (s.image_span.empty()) {
-		// source image is empty, do nothing
-		return;
-	}
-	ASSERT(!s.image_span.empty())
-
 	// TODO: rewrite using rasterimage::image_span::blit()
 
-	auto dst = this->canvas.get_sub_surface();
+	auto src = s.image_span;
+	r4::vector2<int> src_pos = s.position.to<int>();
 
-	if (s.rect().p.x() >= dst.rect().d.x() || s.rect().p.y() >= dst.rect().d.y()) {
-		LOG([&](auto& o) {
-			o << "renderer::blit(): source image is out of canvas" << std::endl;
-		})
+	auto dst = this->canvas.get_image_span();
+
+	auto dst_rect = r4::rectangle<int>(0, dst.dims().to<int>()).intersect(s.rect().to<int>());
+
+	if (dst_rect.d.is_any_zero()) {
+		// image to blit is out of destination rectangle
 		return;
 	}
 
-	// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-	auto dstp = dst.image_span.data() + size_t(s.rect().p.y() * dst.image_span.stride_pixels() + s.rect().p.x());
-	auto srcp = s.image_span.data();
-	using std::min;
-	auto dp = min(s.rect().d, dst.rect().d - s.rect().p);
+	ASSERT(dst_rect.p.is_positive_or_zero())
+	ASSERT(dst_rect.d.is_positive_or_zero())
 
-	for (unsigned y = 0; y != dp.y(); ++y) {
-		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-		auto p = dstp + size_t(y * dst.image_span.stride_pixels());
-		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-		auto sp = srcp + size_t(y * s.image_span.stride_pixels());
-		for (unsigned x = 0; x != dp.x(); ++x, ++p, ++sp) {
-			*p = *sp;
-		}
+	auto src_rect = r4::rectangle<int>(max(-src_pos, 0), dst_rect.d);
+	ASSERT(src_rect.p.is_positive_or_zero())
+	ASSERT(src_rect.d.is_positive_or_zero())
+	ASSERT(r4::rectangle<int>(0, src.dims().to<int>()).contains(src_rect))
+
+	auto rect = dst_rect.to<unsigned>();
+
+	ASSERT(r4::rectangle<unsigned>(0, dst.dims()).contains(rect))
+
+	auto dst_span = dst.subspan(rect);
+	auto src_span = src.subspan(src_rect.to<unsigned>());
+
+	ASSERT(!dst_span.empty())
+	ASSERT(!src_span.empty())
+	ASSERT(src_span.dims() == dst_span.dims())
+
+	// TODO: use zip_view
+	for (auto src_line = src_span.begin(), dst_line = dst_span.begin(); src_line != src_span.end();
+		 ++src_line, ++dst_line)
+	{
+		std::copy(src_line->begin(), src_line->end(), dst_line->begin());
 	}
 }

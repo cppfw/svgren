@@ -39,6 +39,7 @@ SOFTWARE.
 
 using namespace svgren;
 
+// TODO: rewrite using image_span
 namespace {
 void box_blur_horizontal(
 	image_type::pixel_type* dst,
@@ -252,7 +253,14 @@ filter_result blur_surface(
 
 surface filter_applier::get_source_graphic()
 {
-	return this->r.canvas.get_sub_surface(this->filterRegion);
+	auto img_span = this->r.canvas.get_image_span();
+
+	auto rect = r4::rectangle<unsigned>(0, img_span.dims()).intersect(this->filterRegion);
+
+	return {
+		rect.p, //
+		img_span.subspan(rect)
+	};
 }
 
 void filter_applier::set_result(

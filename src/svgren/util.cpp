@@ -123,7 +123,7 @@ common_element_push::common_element_push(svgren::renderer& renderer, bool is_con
 	}
 
 	if (!this->old_background.image_span.empty()) {
-		this->renderer.background = this->renderer.canvas.get_sub_surface();
+		this->renderer.background = surface(this->renderer.canvas.get_image_span());
 	}
 }
 

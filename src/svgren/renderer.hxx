@@ -68,7 +68,6 @@ public:
 
 	surface background; // for accessing background image from filter effects
 
-	// blit surface to current cairo surface
 	void blit(const surface& s);
 
 	real length_to_px(const svgdom::length& l) const noexcept;
