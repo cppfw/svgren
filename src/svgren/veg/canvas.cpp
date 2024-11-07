@@ -211,16 +211,16 @@ void canvas::scale(real x, real y)
 #endif
 }
 
-void canvas::set_fill_rule(svgdom::fill_rule fr)
+void canvas::set_fill_rule(fill_rule fr)
 {
 #if VEG_BACKEND == VEG_BACKEND_CAIRO
 	cairo_fill_rule_t cfr = [&fr]() {
 		switch (fr) {
 			default:
 				ASSERT(false);
-			case svgdom::fill_rule::evenodd:
+			case fill_rule::evenodd:
 				return CAIRO_FILL_RULE_EVEN_ODD;
-			case svgdom::fill_rule::nonzero:
+			case fill_rule::nonzero:
 				return CAIRO_FILL_RULE_WINDING;
 		}
 	}();
@@ -230,10 +230,10 @@ void canvas::set_fill_rule(svgdom::fill_rule fr)
 	switch (fr) {
 		default:
 			ASSERT(false)
-		case svgdom::fill_rule::evenodd:
+		case fill_rule::evenodd:
 			this->context.fill_rule = agg::filling_rule_e::fill_even_odd;
 			break;
-		case svgdom::fill_rule::nonzero:
+		case fill_rule::nonzero:
 			this->context.fill_rule = agg::filling_rule_e::fill_non_zero;
 			break;
 	}
@@ -894,17 +894,17 @@ void canvas::set_line_width(real width)
 #endif
 }
 
-void canvas::set_line_cap(svgdom::stroke_line_cap lc)
+void canvas::set_line_cap(line_cap lc)
 {
 #if VEG_BACKEND == VEG_BACKEND_CAIRO
 	cairo_line_cap_t clc = [&lc]() {
 		switch (lc) {
 			default:
-			case svgdom::stroke_line_cap::butt:
+			case line_cap::butt:
 				return CAIRO_LINE_CAP_BUTT;
-			case svgdom::stroke_line_cap::round:
+			case line_cap::round:
 				return CAIRO_LINE_CAP_ROUND;
-			case svgdom::stroke_line_cap::square:
+			case line_cap::square:
 				return CAIRO_LINE_CAP_SQUARE;
 		}
 	}();
@@ -914,30 +914,30 @@ void canvas::set_line_cap(svgdom::stroke_line_cap lc)
 	switch (lc) {
 		default:
 			ASSERT(false)
-		case svgdom::stroke_line_cap::butt:
+		case line_cap::butt:
 			this->context.line_cap = agg::line_cap_e::butt_cap;
 			break;
-		case svgdom::stroke_line_cap::round:
+		case line_cap::round:
 			this->context.line_cap = agg::line_cap_e::round_cap;
 			break;
-		case svgdom::stroke_line_cap::square:
+		case line_cap::square:
 			this->context.line_cap = agg::line_cap_e::square_cap;
 			break;
 	}
 #endif
 }
 
-void canvas::set_line_join(svgdom::stroke_line_join lj)
+void canvas::set_line_join(line_join lj)
 {
 #if VEG_BACKEND == VEG_BACKEND_CAIRO
 	cairo_line_join_t clj = [&lj]() {
 		switch (lj) {
 			default:
-			case svgdom::stroke_line_join::miter:
+			case line_join::miter:
 				return CAIRO_LINE_JOIN_MITER;
-			case svgdom::stroke_line_join::round:
+			case line_join::round:
 				return CAIRO_LINE_JOIN_ROUND;
-			case svgdom::stroke_line_join::bevel:
+			case line_join::bevel:
 				return CAIRO_LINE_JOIN_BEVEL;
 		}
 	}();
@@ -947,13 +947,13 @@ void canvas::set_line_join(svgdom::stroke_line_join lj)
 	switch (lj) {
 		default:
 			ASSERT(false)
-		case svgdom::stroke_line_join::miter:
+		case line_join::miter:
 			this->context.line_join = agg::line_join_e::miter_join;
 			break;
-		case svgdom::stroke_line_join::bevel:
+		case line_join::bevel:
 			this->context.line_join = agg::line_join_e::bevel_join;
 			break;
-		case svgdom::stroke_line_join::round:
+		case line_join::round:
 			this->context.line_join = agg::line_join_e::round_join;
 			break;
 	}

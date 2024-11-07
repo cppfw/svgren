@@ -64,6 +64,32 @@ SOFTWARE.
 
 namespace veg {
 
+/**
+ * @brief Path fill rule.
+ */
+enum class fill_rule {
+	nonzero,
+	evenodd
+};
+
+/**
+ * @brief Stroke line cap.
+ */
+enum class line_cap {
+	butt,
+	round,
+	square
+};
+
+/**
+ * @brief Stroke line join.
+ */
+enum class line_join {
+	miter,
+	round,
+	bevel
+};
+
 class canvas
 {
 public:
@@ -180,25 +206,64 @@ public:
 
 	~canvas();
 
+	/**
+	 * @brief Apply matrix transformation.
+	 * Multiply current matrix by given matrix from the left.
+	 * @param matrix - matrixy to multiply by from the left.
+	 */
 	void transform(const r4::matrix2<real>& matrix);
+
+	/**
+	 * @brief Apply translation.
+	 * Multiply current matrix by translation matrix from the left.
+	 * @param x - translation along x-axis.
+	 * @param y - translation along y-axis.
+	 */
 	void translate(real x, real y);
 
+	/**
+	 * @brief Apply translation.
+	 * Multiply current matrix by translation matrix from the left.
+	 * @param v - translation vector.
+	 */
 	void translate(const r4::vector2<real>& v)
 	{
 		this->translate(v.x(), v.y());
 	}
 
+	/**
+	 * @brief Apply rotation.
+	 * Multiply current matrix by rotation matrix from the left.
+	 * @param radians - rotation angle in radians.
+	 */
 	void rotate(real radians);
+
+	/**
+	 * @brief Apply scale.
+	 * Multiply current matrix by scale matrix from the left.
+	 * @param x - scale along x-axis.
+	 * @param y - scale along y-axis.
+	 */
 	void scale(real x, real y);
 
+	/**
+	 * @brief Apply scale.
+	 * Multiply current matrix by scale matrix from the left.
+	 * @param v - scale vector.
+	 */
 	void scale(const r4::vector2<real>& v)
 	{
 		this->scale(v.x(), v.y());
 	}
 
-	void set_fill_rule(svgdom::fill_rule fr);
+	/**
+	 * @brief Set fill rule.
+	 * @param fr - fill rule to use.
+	 */
+	void set_fill_rule(fill_rule fr);
 
 	void set_source(const r4::vector4<real>& rgba);
+
 	void set_source(std::shared_ptr<const gradient> g);
 
 	// multiply vector by current matrix
@@ -268,8 +333,10 @@ public:
 	void stroke();
 
 	void set_line_width(real width);
-	void set_line_cap(svgdom::stroke_line_cap lc);
-	void set_line_join(svgdom::stroke_line_join lj);
+
+	void set_line_cap(line_cap lc);
+
+	void set_line_join(line_join lj);
 
 	/**
 	 * @brief Set stroke dash pattern.

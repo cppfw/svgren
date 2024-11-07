@@ -463,6 +463,48 @@ void renderer::update_bounding_box()
 	}
 }
 
+namespace {
+veg::fill_rule to_veg_fill_rule(svgdom::fill_rule fr)
+{
+	switch (fr) {
+		default:
+			[[fallthrough]];
+		case svgdom::fill_rule::nonzero:
+			return veg::fill_rule::nonzero;
+		case svgdom::fill_rule::evenodd:
+			return veg::fill_rule::evenodd;
+	}
+}
+
+veg::line_cap to_veg_line_cap(svgdom::stroke_line_cap lc)
+{
+	switch (lc) {
+		default:
+			[[fallthrough]];
+		case svgdom::stroke_line_cap::butt:
+			return veg::line_cap::butt;
+		case svgdom::stroke_line_cap::round:
+			return veg::line_cap::round;
+		case svgdom::stroke_line_cap::square:
+			return veg::line_cap::square;
+	}
+}
+
+veg::line_join to_veg_line_join(svgdom::stroke_line_join lj)
+{
+	switch (lj) {
+		default:
+			[[fallthrough]];
+		case svgdom::stroke_line_join::miter:
+			return veg::line_join::miter;
+		case svgdom::stroke_line_join::round:
+			return veg::line_join::round;
+		case svgdom::stroke_line_join::bevel:
+			return veg::line_join::bevel;
+	}
+}
+} // namespace
+
 void renderer::render_shape(bool is_group_pushed)
 {
 	this->update_bounding_box();
@@ -470,9 +512,9 @@ void renderer::render_shape(bool is_group_pushed)
 	{
 		auto p = this->style_stack.get_style_property(svgdom::style_property::fill_rule);
 		if (p && std::holds_alternative<svgdom::fill_rule>(*p)) {
-			this->canvas.set_fill_rule(*std::get_if<svgdom::fill_rule>(p));
+			this->canvas.set_fill_rule(to_veg_fill_rule(*std::get_if<svgdom::fill_rule>(p)));
 		} else {
-			this->canvas.set_fill_rule(svgdom::fill_rule::nonzero);
+			this->canvas.set_fill_rule(veg::fill_rule::nonzero);
 		}
 	}
 
@@ -533,18 +575,18 @@ void renderer::render_shape(bool is_group_pushed)
 		{
 			auto p = this->style_stack.get_style_property(svgdom::style_property::stroke_linecap);
 			if (p && std::holds_alternative<svgdom::stroke_line_cap>(*p)) {
-				this->canvas.set_line_cap(*std::get_if<svgdom::stroke_line_cap>(p));
+				this->canvas.set_line_cap(to_veg_line_cap(*std::get_if<svgdom::stroke_line_cap>(p)));
 			} else {
-				this->canvas.set_line_cap(svgdom::stroke_line_cap::butt);
+				this->canvas.set_line_cap(veg::line_cap::butt);
 			}
 		}
 
 		{
 			auto p = this->style_stack.get_style_property(svgdom::style_property::stroke_linejoin);
 			if (p && std::holds_alternative<svgdom::stroke_line_join>(*p)) {
-				this->canvas.set_line_join(*std::get_if<svgdom::stroke_line_join>(p));
+				this->canvas.set_line_join(to_veg_line_join(*std::get_if<svgdom::stroke_line_join>(p)));
 			} else {
-				this->canvas.set_line_join(svgdom::stroke_line_join::miter);
+				this->canvas.set_line_join(veg::line_join::miter);
 			}
 		}
 
