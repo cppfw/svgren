@@ -64,8 +64,6 @@ SOFTWARE.
 
 namespace veg {
 
-using real = float;
-
 class canvas
 {
 public:
@@ -295,7 +293,7 @@ public:
 	image_span_type get_image_span();
 
 	// NOTE: the canvas remains in invalid state and cannot be used further
-	image_type release_image();
+	image_type release();
 };
 
 } // namespace veg

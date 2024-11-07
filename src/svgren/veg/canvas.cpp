@@ -83,7 +83,7 @@ canvas::~canvas()
 #endif
 }
 
-rasterimage::image<uint8_t, 4> canvas::release_image()
+rasterimage::image<uint8_t, 4> canvas::release()
 {
 #if VEG_BACKEND == VEG_BACKEND_CAIRO
 	auto ret = rasterimage::image<uint8_t, 4>(this->dims, std::move(this->pixels));
@@ -1091,7 +1091,7 @@ void move_luminance_to_alpha(image_span_type img)
 				image_type::value(1),
 				image_type::value(1),
 				// we use premultiplied alpha format, so no need to multiply alpha by liminance
-				rasterimage::luminance(px)
+				rasterimage::luminance(px) // assume RGBA pixel format
 			);
 		}
 	}
