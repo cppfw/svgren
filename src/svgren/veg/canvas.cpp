@@ -1082,15 +1082,8 @@ void canvas::pop_group(real opacity)
 }
 
 namespace {
-// TODO: use rasterimage::luminance
 void move_luminance_to_alpha(image_span_type img)
 {
-	// Luminance is calculated using formula L = 0.2126 * R + 0.7152 * G + 0.0722 * B
-
-	constexpr auto red_coeff = 0.2126;
-	constexpr auto green_coeff = 0.7152;
-	constexpr auto blue_coeff = 0.0722;
-
 	for (auto line : img) {
 		for (auto& px : line) {
 			px.set(
@@ -1098,9 +1091,7 @@ void move_luminance_to_alpha(image_span_type img)
 				image_type::value(1),
 				image_type::value(1),
 				// we use premultiplied alpha format, so no need to multiply alpha by liminance
-				rasterimage::multiply(px.r(), image_type::value(float(red_coeff))) +
-					rasterimage::multiply(px.g(), image_type::value(float(green_coeff))) +
-					rasterimage::multiply(px.b(), image_type::value(float(blue_coeff)))
+				rasterimage::luminance(px)
 			);
 		}
 	}

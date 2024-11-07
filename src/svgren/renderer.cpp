@@ -1664,54 +1664,7 @@ decltype(svgdom::styleable::presentation_attributes) renderer::gradient_get_pres
 	return ret;
 }
 
-namespace {
-void blit_span(
-	veg::image_span_type dst, //
-	veg::const_image_span_type src,
-	r4::vector2<int> pos
-)
-{
-	// TODO: rewrite using rasterimage::image_span::blit()
-
-	auto dst_rect =
-		r4::rectangle<int>(0, dst.dims().to<int>()).intersect(r4::rectangle<int>(pos, src.dims().to<int>()));
-
-	if (dst_rect.d.is_any_zero()) {
-		// image to blit is out of destination span
-		return;
-	}
-
-	ASSERT(dst_rect.p.is_positive_or_zero())
-	ASSERT(dst_rect.d.is_positive())
-
-	// rectangle on the source span which will actually be blitted
-	auto src_rect = r4::rectangle<int>(max(-pos, 0), dst_rect.d);
-
-	ASSERT(src_rect.p.is_positive_or_zero())
-	ASSERT(src_rect.d.is_positive())
-	ASSERT(r4::rectangle<int>(0, src.dims().to<int>()).contains(src_rect))
-
-	auto dst_span = dst.subspan(dst_rect.to<unsigned>());
-	auto src_span = src.subspan(src_rect.to<unsigned>());
-
-	ASSERT(!dst_span.empty())
-	ASSERT(!src_span.empty())
-	ASSERT(src_span.dims() == dst_span.dims())
-
-	// TODO: use zip_view
-	auto src_line = src_span.begin();
-	auto dst_line = dst_span.begin();
-	for (; src_line != src_span.end(); ++src_line, ++dst_line) {
-		std::copy(
-			src_line->begin(), //
-			src_line->end(),
-			dst_line->begin()
-		);
-	}
-}
-} // namespace
-
 void renderer::blit(const surface& s)
 {
-	blit_span(this->canvas.get_image_span(), s.image_span, s.position.to<int>());
+	this->canvas.get_image_span().blit(s.image_span, s.position.to<int>());
 }

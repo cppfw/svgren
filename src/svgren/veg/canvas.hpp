@@ -40,8 +40,6 @@ SOFTWARE.
 #include <svgdom/elements/styleable.hpp>
 #include <utki/config.hpp>
 
-#include "../surface.hxx" // TODO:
-
 #include "config.hpp"
 #include "gradient.hpp"
 
@@ -85,7 +83,7 @@ private:
 			if (width == 0 || height == 0) {
 				throw std::invalid_argument("svgren::canvas::canvas(): width or height argument is zero");
 			}
-			int stride = int(width) * int(sizeof(pixel));
+			int stride = int(width) * int(sizeof(uint32_t)); // 32 bits per pixel
 			this->surface = cairo_image_surface_create_for_data(
 				// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
 				reinterpret_cast<unsigned char*>(buffer),

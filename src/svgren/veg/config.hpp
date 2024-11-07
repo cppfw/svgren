@@ -52,9 +52,6 @@ using image_type = rasterimage::image<uint8_t, 4>;
 using image_span_type = decltype(std::declval<image_type>().span());
 using const_image_span_type = image_span_type::const_image_span_type;
 
-// TODO: image_type::pixel_type
-using pixel = uint32_t; // TODO: remove, used in one place only
-
 #if VEG_BACKEND == VEG_BACKEND_CAIRO
 using backend_real = double;
 #elif VEG_BACKEND == VEG_BACKEND_AGG
