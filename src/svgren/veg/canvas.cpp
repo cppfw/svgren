@@ -800,7 +800,10 @@ void canvas::stroke()
 #endif
 }
 
-void canvas::rectangle(const r4::rectangle<real>& rect, const r4::vector2<real>& corner_radius)
+void canvas::rectangle(
+	const r4::rectangle<real>& rect, //
+	const r4::vector2<real>& corner_radius
+)
 {
 	if (corner_radius.is_zero()) {
 #if VEG_BACKEND == VEG_BACKEND_CAIRO
