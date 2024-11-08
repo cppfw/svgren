@@ -48,6 +48,9 @@ enum class gradient_spread_method {
 	repeat
 };
 
+/**
+ * @brief Base class for gradients.
+ */
 class gradient
 {
 	friend class canvas;
@@ -124,12 +127,24 @@ protected:
 #endif
 
 public:
+	/**
+	 * @brief Gradient stop.
+	 * Specifies a color and its offset in the gradient.
+	 */
 	struct stop {
 		r4::vector4<real> rgba;
 		real offset;
 	};
 
+	/**
+	 * @brief Set gradient spread method.
+	 * Spread method is a behavior of the gradient when it reaches its final gradient stop.
+	 */
 	void set_spread_method(gradient_spread_method spread_method);
+
+	/**
+	 * @brief Set gradient stops.
+	 */
 	void set_stops(utki::span<const stop> stops);
 
 	gradient(const gradient&) = delete;
@@ -141,6 +156,9 @@ public:
 	virtual ~gradient();
 };
 
+/**
+ * @brief Linear gradient.
+ */
 class linear_gradient : public gradient
 {
 #if VEG_BACKEND == VEG_BACKEND_AGG
@@ -150,12 +168,20 @@ class linear_gradient : public gradient
 #endif
 
 public:
+	/**
+	 * @brief Constrict a linear gradient.
+	 * @param p0 - spacial position of the first gradient stop.
+	 * @param p1 - spacial position of the last gradient stop.
+	 */
 	linear_gradient(
 		const r4::vector2<real>& p0, //
 		const r4::vector2<real>& p1
 	);
 };
 
+/**
+ * @brief Radial gradient.
+ */
 class radial_gradient : public gradient
 {
 #if VEG_BACKEND == VEG_BACKEND_AGG
@@ -165,6 +191,13 @@ class radial_gradient : public gradient
 #endif
 
 public:
+	/**
+	 * @brief Construct radial gradient.
+	 * Radial gradient starts from a focal point and propogates radially to a destination circle.
+	 * @param f - focla point. A position of the gradients first stop.
+	 * @param c - position of the destination circle's center point.
+	 * @param r - radius of the destination circle.
+	 */
 	radial_gradient(
 		const r4::vector2<real>& f, //
 		const r4::vector2<real>& c,

@@ -31,12 +31,19 @@ SOFTWARE.
 
 namespace veg {
 
+/**
+ * @brief Save current canvas matrix and restore it later.
+ */
 class canvas_matrix_push
 {
 	r4::matrix2<real> m;
 	veg::canvas& c;
 
 public:
+	/**
+	 * @brief Construct an object holding current matrix of the canvas.
+	 * @param c - canvas to store the matrix of.
+	 */
 	canvas_matrix_push(veg::canvas& c);
 
 	canvas_matrix_push(const canvas_matrix_push&) = delete;
@@ -45,6 +52,10 @@ public:
 	canvas_matrix_push(canvas_matrix_push&&) = delete;
 	canvas_matrix_push& operator=(canvas_matrix_push&&) = delete;
 
+	/**
+	 * @brief Destroy the object.
+	 * It will set the stored matrix back to the canvas, so it becomes the canvas' current matrix again.
+	 */
 	~canvas_matrix_push() noexcept;
 };
 

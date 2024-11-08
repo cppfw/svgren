@@ -535,6 +535,7 @@ public:
 	/**
 	 * @brief Set dash pattern.
 	 * The dash pattern to use for stroke operation.
+	 * Set to empty span with 0 offset for no dashing.
 	 * @param dashes - array of dash and gap lengths. If number of values is odd,
 	 *                 then the array conents is effectively repeated twice. Negative values are an error.
 	 *                 Empty list means no dashing, the stroke line will be solid.

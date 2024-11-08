@@ -33,7 +33,7 @@ SOFTWARE.
 
 namespace veg {
 
-// return angle between x axis and vector
+// return angle between x axis and a vector
 inline real get_angle(const r4::vector2<real>& v)
 {
 	using std::atan2;
