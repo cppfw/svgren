@@ -37,7 +37,6 @@ SOFTWARE.
 #include <utki/config.hpp>
 #include <utki/math.hpp>
 
-#include "veg/canvas.hpp"
 #include "veg/util.hpp"
 
 #include "config.hxx"

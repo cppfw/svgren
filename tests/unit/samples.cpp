@@ -12,7 +12,6 @@
 #include <rasterimage/image_variant.hpp>
 #include <rasterimage/operations.hpp>
 
-#include "../../src/svgren/veg/config.hpp"
 #include "../../src/svgren/render.hpp"
 
 namespace{

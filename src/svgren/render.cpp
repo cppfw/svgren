@@ -31,8 +31,7 @@ SOFTWARE.
 
 #include <utki/config.hpp>
 #include <utki/util.hpp>
-
-#include "veg/canvas.hpp"
+#include <veg/canvas.hpp>
 
 #include "config.hxx"
 #include "renderer.hxx"

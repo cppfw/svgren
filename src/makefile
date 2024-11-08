@@ -26,6 +26,7 @@ else ifeq ($(this_svgren_backend),cairo)
 endif
 
 this_ldlibs += -lsvgdom -lutki -lstdc++ -lm
+this_ldlibs += -l veg
 
 $(eval $(prorab-build-lib))
 

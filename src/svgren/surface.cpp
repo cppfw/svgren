@@ -29,8 +29,6 @@ SOFTWARE.
 
 #include <utki/debug.hpp>
 
-#include "veg/canvas.hpp"
-
 using namespace svgren;
 
 surface surface::intersection(const r4::rectangle<unsigned>& r)

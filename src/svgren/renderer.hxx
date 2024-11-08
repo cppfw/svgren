@@ -35,8 +35,7 @@ SOFTWARE.
 #include <svgdom/util/style_stack_cache.hpp>
 #include <svgdom/visitor.hpp>
 #include <utki/config.hpp>
-
-#include "veg/canvas.hpp"
+#include <veg/canvas.hpp>
 
 #include "config.hxx"
 #include "surface.hxx"
