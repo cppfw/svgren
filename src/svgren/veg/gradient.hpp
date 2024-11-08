@@ -42,9 +42,24 @@ SOFTWARE.
 
 namespace veg {
 
+/**
+ * @brief Gradient spread method.
+ * This is the way gradient continues after the last gradient stop.
+ */
 enum class gradient_spread_method {
+	/**
+	 * @brief Remain at the color of the last gradient stop.
+	 */
 	pad,
+
+	/**
+	 * @brief Repeat gradient stops in reverse order.
+	 */
 	reflect,
+
+	/**
+	 * @brief Repeat gradients stops in direct order.
+	 */
 	repeat
 };
 
