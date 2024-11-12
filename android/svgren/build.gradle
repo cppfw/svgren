@@ -51,7 +51,7 @@ repositories {
 dependencies {
     implementation 'io.github.cppfw:utki:+'
     implementation 'io.github.cppfw:svgdom:+'
-    implementation 'io.github.cppfw:agg:+'
+    implementation 'io.github.cppfw:veg:+'
     implementation 'io.github.cppfw:rasterimage:+'
 }
 
