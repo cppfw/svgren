@@ -880,32 +880,34 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\libagg.2.8.21\build\native\libagg.targets" Condition="Exists('..\packages\libagg.2.8.21\build\native\libagg.targets')" />
-    <Import Project="..\packages\libutki.1.1.211\build\native\libutki.targets" Condition="Exists('..\packages\libutki.1.1.211\build\native\libutki.targets')" />
-    <Import Project="..\packages\libmikroxml.0.1.56\build\native\libmikroxml.targets" Condition="Exists('..\packages\libmikroxml.0.1.56\build\native\libmikroxml.targets')" />
-    <Import Project="..\packages\libr4.1.0.75\build\native\libr4.targets" Condition="Exists('..\packages\libr4.1.0.75\build\native\libr4.targets')" />
     <Import Project="..\packages\zlib_static.1.2.11.12\build\native\zlib_static.targets" Condition="Exists('..\packages\zlib_static.1.2.11.12\build\native\zlib_static.targets')" />
-    <Import Project="..\packages\libpapki.1.0.129\build\native\libpapki.targets" Condition="Exists('..\packages\libpapki.1.0.129\build\native\libpapki.targets')" />
-    <Import Project="..\packages\libcssom.0.2.6\build\native\libcssom.targets" Condition="Exists('..\packages\libcssom.0.2.6\build\native\libcssom.targets')" />
-    <Import Project="..\packages\libsvgdom.0.4.8\build\native\libsvgdom.targets" Condition="Exists('..\packages\libsvgdom.0.4.8\build\native\libsvgdom.targets')" />
-    <Import Project="..\packages\libjpeg_static.6.1.1.13\build\native\libjpeg_static.targets" Condition="Exists('..\packages\libjpeg_static.6.1.1.13\build\native\libjpeg_static.targets')" />
-    <Import Project="..\packages\librasterimage.0.1.3\build\native\librasterimage.targets" Condition="Exists('..\packages\librasterimage.0.1.3\build\native\librasterimage.targets')" />
     <Import Project="..\packages\libpng_static.1.6.39.1\build\native\libpng_static.targets" Condition="Exists('..\packages\libpng_static.1.6.39.1\build\native\libpng_static.targets')" />
+    <Import Project="..\packages\libveg.0.1.1\build\native\libveg.targets" Condition="Exists('..\packages\libveg.0.1.1\build\native\libveg.targets')" />
+    <Import Project="..\packages\libagg.2.8.26\build\native\libagg.targets" Condition="Exists('..\packages\libagg.2.8.26\build\native\libagg.targets')" />
+    <Import Project="..\packages\libjpeg_static.6.1.1.14\build\native\libjpeg_static.targets" Condition="Exists('..\packages\libjpeg_static.6.1.1.14\build\native\libjpeg_static.targets')" />
+    <Import Project="..\packages\libutki.1.1.257\build\native\libutki.targets" Condition="Exists('..\packages\libutki.1.1.257\build\native\libutki.targets')" />
+    <Import Project="..\packages\libmikroxml.0.1.64\build\native\libmikroxml.targets" Condition="Exists('..\packages\libmikroxml.0.1.64\build\native\libmikroxml.targets')" />
+    <Import Project="..\packages\libr4.1.0.96\build\native\libr4.targets" Condition="Exists('..\packages\libr4.1.0.96\build\native\libr4.targets')" />
+    <Import Project="..\packages\libpapki.1.0.143\build\native\libpapki.targets" Condition="Exists('..\packages\libpapki.1.0.143\build\native\libpapki.targets')" />
+    <Import Project="..\packages\libcssom.0.2.13\build\native\libcssom.targets" Condition="Exists('..\packages\libcssom.0.2.13\build\native\libcssom.targets')" />
+    <Import Project="..\packages\librasterimage.0.1.23\build\native\librasterimage.targets" Condition="Exists('..\packages\librasterimage.0.1.23\build\native\librasterimage.targets')" />
+    <Import Project="..\packages\libsvgdom.0.4.22\build\native\libsvgdom.targets" Condition="Exists('..\packages\libsvgdom.0.4.22\build\native\libsvgdom.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\libagg.2.8.21\build\native\libagg.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libagg.2.8.21\build\native\libagg.targets'))" />
-    <Error Condition="!Exists('..\packages\libutki.1.1.211\build\native\libutki.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libutki.1.1.211\build\native\libutki.targets'))" />
-    <Error Condition="!Exists('..\packages\libmikroxml.0.1.56\build\native\libmikroxml.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libmikroxml.0.1.56\build\native\libmikroxml.targets'))" />
-    <Error Condition="!Exists('..\packages\libr4.1.0.75\build\native\libr4.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libr4.1.0.75\build\native\libr4.targets'))" />
     <Error Condition="!Exists('..\packages\zlib_static.1.2.11.12\build\native\zlib_static.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\zlib_static.1.2.11.12\build\native\zlib_static.targets'))" />
-    <Error Condition="!Exists('..\packages\libpapki.1.0.129\build\native\libpapki.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libpapki.1.0.129\build\native\libpapki.targets'))" />
-    <Error Condition="!Exists('..\packages\libcssom.0.2.6\build\native\libcssom.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libcssom.0.2.6\build\native\libcssom.targets'))" />
-    <Error Condition="!Exists('..\packages\libsvgdom.0.4.8\build\native\libsvgdom.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libsvgdom.0.4.8\build\native\libsvgdom.targets'))" />
-    <Error Condition="!Exists('..\packages\libjpeg_static.6.1.1.13\build\native\libjpeg_static.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libjpeg_static.6.1.1.13\build\native\libjpeg_static.targets'))" />
-    <Error Condition="!Exists('..\packages\librasterimage.0.1.3\build\native\librasterimage.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\librasterimage.0.1.3\build\native\librasterimage.targets'))" />
     <Error Condition="!Exists('..\packages\libpng_static.1.6.39.1\build\native\libpng_static.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libpng_static.1.6.39.1\build\native\libpng_static.targets'))" />
+    <Error Condition="!Exists('..\packages\libveg.0.1.1\build\native\libveg.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libveg.0.1.1\build\native\libveg.targets'))" />
+    <Error Condition="!Exists('..\packages\libagg.2.8.26\build\native\libagg.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libagg.2.8.26\build\native\libagg.targets'))" />
+    <Error Condition="!Exists('..\packages\libjpeg_static.6.1.1.14\build\native\libjpeg_static.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libjpeg_static.6.1.1.14\build\native\libjpeg_static.targets'))" />
+    <Error Condition="!Exists('..\packages\libutki.1.1.257\build\native\libutki.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libutki.1.1.257\build\native\libutki.targets'))" />
+    <Error Condition="!Exists('..\packages\libmikroxml.0.1.64\build\native\libmikroxml.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libmikroxml.0.1.64\build\native\libmikroxml.targets'))" />
+    <Error Condition="!Exists('..\packages\libr4.1.0.96\build\native\libr4.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libr4.1.0.96\build\native\libr4.targets'))" />
+    <Error Condition="!Exists('..\packages\libpapki.1.0.143\build\native\libpapki.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libpapki.1.0.143\build\native\libpapki.targets'))" />
+    <Error Condition="!Exists('..\packages\libcssom.0.2.13\build\native\libcssom.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libcssom.0.2.13\build\native\libcssom.targets'))" />
+    <Error Condition="!Exists('..\packages\librasterimage.0.1.23\build\native\librasterimage.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\librasterimage.0.1.23\build\native\librasterimage.targets'))" />
+    <Error Condition="!Exists('..\packages\libsvgdom.0.4.22\build\native\libsvgdom.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libsvgdom.0.4.22\build\native\libsvgdom.targets'))" />
   </Target>
 </Project>

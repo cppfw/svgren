@@ -1,7 +1,7 @@
 /*
 The MIT License (MIT)
 
-Copyright (c) 2015-2023 Ivan Gagis <igagis@gmail.com>
+Copyright (c) 2015-2024 Ivan Gagis <igagis@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -35,8 +35,6 @@ namespace svgren {
 using real = svgdom::real;
 
 using image_type = rasterimage::image<uint8_t, 4>;
-
-// TODO: image_type::pixel_type
-using pixel = uint32_t; // TODO: remove, unused
+using image_span_type = decltype(std::declval<image_type>().span());
 
 } // namespace svgren

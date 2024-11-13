@@ -21,7 +21,7 @@ class SvgrenConan(ConanFile):
 		self.requires("utki/[>=1.1.202]@cppfw/main", transitive_headers=True)
 		self.requires("svgdom/[>=0.0.0]@cppfw/main", transitive_headers=True)
 		self.requires("rasterimage/[>=0.1.3]@cppfw/main", transitive_headers=True)
-		self.requires("agg/[>=0.0.0]@cppfw/main", transitive_headers=False)
+		self.requires("veg/[>=0.0.0]@cppfw/main", transitive_headers=False)
 
 	def build_requirements(self):
 		self.requires("tst/[>=0.3.29]@cppfw/main", visible=False)

@@ -1,7 +1,7 @@
 /*
 The MIT License (MIT)
 
-Copyright (c) 2015-2023 Ivan Gagis <igagis@gmail.com>
+Copyright (c) 2015-2024 Ivan Gagis <igagis@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -90,7 +90,7 @@ common_element_push::common_element_push(svgren::renderer& renderer, bool is_con
 		}
 	}
 
-	this->group_pushed = filter_prop || this->mask_element || !this->old_background.span.empty();
+	this->group_pushed = filter_prop || this->mask_element || !this->old_background.image_span.empty();
 
 	auto opacity = svgdom::real(1);
 	{
@@ -122,8 +122,8 @@ common_element_push::common_element_push(svgren::renderer& renderer, bool is_con
 		this->opacity = opacity;
 	}
 
-	if (!this->old_background.span.empty()) {
-		this->renderer.background = this->renderer.canvas.get_sub_surface();
+	if (!this->old_background.image_span.empty()) {
+		this->renderer.background = surface(this->renderer.canvas.get_image_span());
 	}
 }
 
@@ -181,7 +181,7 @@ common_element_push::~common_element_push() noexcept
 	}
 
 	// restore background if it was pushed
-	if (!this->old_background.span.empty()) {
+	if (!this->old_background.image_span.empty()) {
 		this->renderer.background = this->old_background;
 	}
 }

@@ -17,7 +17,8 @@ Build-Depends:
 		librasterimage-dev,
 		libr4-dev,
 		libclargs-dev,
-		libtst-dev
+		libtst-dev,
+		libveg-dev
 Build-Depends-Indep: doxygen
 Standards-Version: 3.9.2
 

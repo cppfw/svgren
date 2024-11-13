@@ -1,7 +1,7 @@
 /*
 The MIT License (MIT)
 
-Copyright (c) 2015-2023 Ivan Gagis <igagis@gmail.com>
+Copyright (c) 2015-2024 Ivan Gagis <igagis@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -463,6 +463,48 @@ void renderer::update_bounding_box()
 	}
 }
 
+namespace {
+veg::fill_rule to_veg_fill_rule(svgdom::fill_rule fr)
+{
+	switch (fr) {
+		default:
+			[[fallthrough]];
+		case svgdom::fill_rule::nonzero:
+			return veg::fill_rule::nonzero;
+		case svgdom::fill_rule::evenodd:
+			return veg::fill_rule::evenodd;
+	}
+}
+
+veg::line_cap to_veg_line_cap(svgdom::stroke_line_cap lc)
+{
+	switch (lc) {
+		default:
+			[[fallthrough]];
+		case svgdom::stroke_line_cap::butt:
+			return veg::line_cap::butt;
+		case svgdom::stroke_line_cap::round:
+			return veg::line_cap::round;
+		case svgdom::stroke_line_cap::square:
+			return veg::line_cap::square;
+	}
+}
+
+veg::line_join to_veg_line_join(svgdom::stroke_line_join lj)
+{
+	switch (lj) {
+		default:
+			[[fallthrough]];
+		case svgdom::stroke_line_join::miter:
+			return veg::line_join::miter;
+		case svgdom::stroke_line_join::round:
+			return veg::line_join::round;
+		case svgdom::stroke_line_join::bevel:
+			return veg::line_join::bevel;
+	}
+}
+} // namespace
+
 void renderer::render_shape(bool is_group_pushed)
 {
 	this->update_bounding_box();
@@ -470,9 +512,9 @@ void renderer::render_shape(bool is_group_pushed)
 	{
 		auto p = this->style_stack.get_style_property(svgdom::style_property::fill_rule);
 		if (p && std::holds_alternative<svgdom::fill_rule>(*p)) {
-			this->canvas.set_fill_rule(*std::get_if<svgdom::fill_rule>(p));
+			this->canvas.set_fill_rule(to_veg_fill_rule(*std::get_if<svgdom::fill_rule>(p)));
 		} else {
-			this->canvas.set_fill_rule(svgdom::fill_rule::nonzero);
+			this->canvas.set_fill_rule(veg::fill_rule::nonzero);
 		}
 	}
 
@@ -533,18 +575,18 @@ void renderer::render_shape(bool is_group_pushed)
 		{
 			auto p = this->style_stack.get_style_property(svgdom::style_property::stroke_linecap);
 			if (p && std::holds_alternative<svgdom::stroke_line_cap>(*p)) {
-				this->canvas.set_line_cap(*std::get_if<svgdom::stroke_line_cap>(p));
+				this->canvas.set_line_cap(to_veg_line_cap(*std::get_if<svgdom::stroke_line_cap>(p)));
 			} else {
-				this->canvas.set_line_cap(svgdom::stroke_line_cap::butt);
+				this->canvas.set_line_cap(veg::line_cap::butt);
 			}
 		}
 
 		{
 			auto p = this->style_stack.get_style_property(svgdom::style_property::stroke_linejoin);
 			if (p && std::holds_alternative<svgdom::stroke_line_join>(*p)) {
-				this->canvas.set_line_join(*std::get_if<svgdom::stroke_line_join>(p));
+				this->canvas.set_line_join(to_veg_line_join(*std::get_if<svgdom::stroke_line_join>(p)));
 			} else {
-				this->canvas.set_line_join(svgdom::stroke_line_join::miter);
+				this->canvas.set_line_join(veg::line_join::miter);
 			}
 		}
 
@@ -645,7 +687,7 @@ renderer::renderer(veg::canvas& canvas, unsigned dpi, r4::vector2<real> viewport
 	viewport(viewport)
 {
 	this->device_space_bounding_box.set_empty_bounding_box();
-	this->background = this->canvas.get_sub_surface();
+	this->background = surface(this->canvas.get_image_span());
 
 #ifdef SVGREN_BACKGROUND
 	this->canvas.set_source(
@@ -1666,33 +1708,5 @@ decltype(svgdom::styleable::presentation_attributes) renderer::gradient_get_pres
 
 void renderer::blit(const surface& s)
 {
-	if (s.span.empty() || s.rect().d.x() == 0 || s.rect().d.y() == 0) {
-		// source image is empty, do nothing
-		return;
-	}
-	ASSERT(!s.span.empty() && s.rect().d.x() != 0 && s.rect().d.y() != 0)
-
-	auto dst = this->canvas.get_sub_surface();
-
-	if (s.rect().p.x() >= dst.rect().d.x() || s.rect().p.y() >= dst.rect().d.y()) {
-		LOG([&](auto& o) {
-			o << "renderer::blit(): source image is out of canvas" << std::endl;
-		})
-		return;
-	}
-
-	auto dstp = dst.span.data() + size_t(s.rect().p.y() * dst.stride + s.rect().p.x());
-	auto srcp = s.span.data();
-	using std::min;
-	auto dp = min(s.rect().d, dst.rect().d - s.rect().p);
-
-	for (unsigned y = 0; y != dp.y(); ++y) {
-		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-		auto p = dstp + size_t(y * dst.stride);
-		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-		auto sp = srcp + size_t(y * s.stride);
-		for (unsigned x = 0; x != dp.x(); ++x, ++p, ++sp) {
-			*p = *sp;
-		}
-	}
+	this->canvas.get_image_span().blit(s.image_span, s.position.to<int>());
 }

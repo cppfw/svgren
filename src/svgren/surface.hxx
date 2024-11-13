@@ -1,7 +1,7 @@
 /*
 The MIT License (MIT)
 
-Copyright (c) 2015-2023 Ivan Gagis <igagis@gmail.com>
+Copyright (c) 2015-2024 Ivan Gagis <igagis@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -38,30 +38,27 @@ SOFTWARE.
 namespace svgren {
 
 struct surface {
-	r4::rectangle<unsigned> rectangle = {0, std::numeric_limits<unsigned>::max()};
-	utki::span<image_type::pixel_type> span; // RGBA data
-	image_type::dimensions_type::value_type stride = 0; // stride in pixels, not bytes
+	r4::vector2<unsigned> position = 0;
+	image_span_type image_span;
 
 	surface() = default;
 
-	surface(
-		r4::rectangle<unsigned> rectangle, //
-		utki::span<image_type::pixel_type> span,
-		image_type::dimensions_type::value_type stride
-	) :
-		rectangle(rectangle),
-		span(span),
-		stride(stride)
+	surface(image_span_type image_span) :
+		position(0),
+		image_span(image_span)
+	{}
+
+	surface(r4::vector2<unsigned> position, image_span_type image_span) :
+		position(position),
+		image_span(image_span)
 	{}
 
 	r4::rectangle<unsigned> rect() const noexcept
 	{
-		return this->rectangle;
+		return {this->position, this->image_span.dims()};
 	}
 
-	surface intersection(const r4::rectangle<unsigned>& r) const;
-
-	void append_luminance_to_alpha();
+	surface intersection(const r4::rectangle<unsigned>& r);
 };
 
 } // namespace svgren

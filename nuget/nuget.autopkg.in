@@ -31,7 +31,7 @@ nuget{
 	}
 	dependencies {
 		packages : {
-			libagg/2.8.3;
+			libveg/0.1.0;
 			libsvgdom/0.3.61;
 			libutki/1.1.123;
 			librasterimage/0.1.3;

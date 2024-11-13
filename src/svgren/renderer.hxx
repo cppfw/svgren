@@ -1,7 +1,7 @@
 /*
 The MIT License (MIT)
 
-Copyright (c) 2015-2023 Ivan Gagis <igagis@gmail.com>
+Copyright (c) 2015-2024 Ivan Gagis <igagis@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -35,8 +35,7 @@ SOFTWARE.
 #include <svgdom/util/style_stack_cache.hpp>
 #include <svgdom/visitor.hpp>
 #include <utki/config.hpp>
-
-#include "veg/canvas.hpp"
+#include <veg/canvas.hpp>
 
 #include "config.hxx"
 #include "surface.hxx"
@@ -68,7 +67,6 @@ public:
 
 	surface background; // for accessing background image from filter effects
 
-	// blit surface to current cairo surface
 	void blit(const surface& s);
 
 	real length_to_px(const svgdom::length& l) const noexcept;

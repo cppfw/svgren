@@ -31,7 +31,12 @@ url="http://github.com/cppfw/${packageName}"
 license=('MIT')
 groups=()
 
-depends=("${pkgPrefix}utki" "${pkgPrefix}svgdom" "${pkgPrefix}agg" "${pkgPrefix}rasterimage")
+depends=(
+	"${pkgPrefix}utki"
+	"${pkgPrefix}svgdom"
+	"${pkgPrefix}veg"
+	"${pkgPrefix}rasterimage"
+)
 
 makedepends=(
 	'myci'
@@ -43,6 +48,7 @@ makedepends=(
 	"${pkgPrefix}clargs"
 	"${pkgPrefix}tst"
 )
+
 checkdepends=('myci')
 optdepends=()
 provides=()

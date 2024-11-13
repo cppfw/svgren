@@ -1,7 +1,7 @@
 /*
 The MIT License (MIT)
 
-Copyright (c) 2015-2023 Ivan Gagis <igagis@gmail.com>
+Copyright (c) 2015-2024 Ivan Gagis <igagis@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -29,11 +29,9 @@ SOFTWARE.
 
 #include <utki/debug.hpp>
 
-#include "veg/canvas.hpp"
-
 using namespace svgren;
 
-surface surface::intersection(const r4::rectangle<unsigned>& r) const
+surface surface::intersection(const r4::rectangle<unsigned>& r)
 {
 	auto ret_rect = r4::rectangle<unsigned>(this->rect()).intersect(r);
 
@@ -41,43 +39,15 @@ surface surface::intersection(const r4::rectangle<unsigned>& r) const
 		o << "ret_rect = " << ret_rect << " this->rect() = " << this->rect() << " r = " << r;
 	})
 
-	ASSERT(ret_rect.p.x() >= this->rect().p.x())
-	ASSERT(ret_rect.p.y() >= this->rect().p.y())
+	if (ret_rect.d.is_any_zero()) {
+		// resulting surface is of zero size
+		return {};
+	}
 
-	auto delta = (ret_rect.p.y() - this->rect().p.y()) * this->stride + (ret_rect.p.x() - this->rect().p.x());
-
-	auto ret_span = utki::make_span(this->span.data() + delta, this->span.size() - delta);
-
-	ASSERT(ret_span.end() == this->span.end())
-	ASSERT(ret_rect.d.y() <= this->rect().d.y(), [&](auto& o) {
-		o << "ret_rect = " << ret_rect << " this->rect() = " << this->rect() << " r = " << r;
-	})
+	ASSERT(this->rect().contains(ret_rect))
 
 	return {
-		ret_rect, //
-		ret_span,
-		this->stride
+		ret_rect.p, //
+		this->image_span.subspan({ret_rect.p - this->position, ret_rect.d})
 	};
-}
-
-void surface::append_luminance_to_alpha()
-{
-	// Luminance is calculated using formula L = 0.2126 * R + 0.7152 * G + 0.0722 * B
-
-	constexpr auto red_coeff = 0.2126;
-	constexpr auto green_coeff = 0.7152;
-	constexpr auto blue_coeff = 0.0722;
-
-	// TODO: take stride into account, do not append luminance to alpha for data out of the surface width
-	for (auto& px : this->span) {
-		px.set(
-			image_type::value(1),
-			image_type::value(1),
-			image_type::value(1),
-			// we use premultiplied alpha format, so no need to multiply alpha by liminance
-			rasterimage::multiply(px.r(), image_type::value(float(red_coeff))) +
-				rasterimage::multiply(px.g(), image_type::value(float(green_coeff))) +
-				rasterimage::multiply(px.b(), image_type::value(float(blue_coeff)))
-		);
-	}
 }

@@ -1,7 +1,7 @@
 /*
 The MIT License (MIT)
 
-Copyright (c) 2015-2023 Ivan Gagis <igagis@gmail.com>
+Copyright (c) 2015-2024 Ivan Gagis <igagis@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -34,8 +34,16 @@ SOFTWARE.
 namespace svgren {
 
 struct filter_result {
-	std::vector<image_type::pixel_type> data;
+	image_type image;
 	svgren::surface surface;
+
+	filter_result(r4::rectangle<unsigned> surface_rect) :
+		image(surface_rect.d),
+		surface(
+			surface_rect.p, //
+			this->image.span()
+		)
+	{}
 };
 
 class filter_applier : public svgdom::const_visitor

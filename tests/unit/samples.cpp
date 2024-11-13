@@ -12,7 +12,6 @@
 #include <rasterimage/image_variant.hpp>
 #include <rasterimage/operations.hpp>
 
-#include "../../src/svgren/veg/config.hpp"
 #include "../../src/svgren/render.hpp"
 
 namespace{
@@ -20,15 +19,7 @@ const unsigned tolerance = 10;
 
 const std::string data_dir = "samples_data/";
 
-const std::string render_backend_name =
-#if VEG_BACKEND == VEG_BACKEND_CAIRO
-    "cairo"
-#elif VEG_BACKEND == VEG_BACKEND_AGG
-    "agg"
-#else
-#   error "Unknown rendering backend"
-#endif
-;
+const std::string render_backend_name = "agg";
 }
 
 namespace{
