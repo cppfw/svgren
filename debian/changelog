@@ -1,3 +1,9 @@
+libsvgren (0.6.20) unstable; urgency=medium
+
+  * refactor to use veg library
+
+ -- Ivan Gagis <igagis@gmail.com>  Wed, 13 Nov 2024 12:54:33 +0200
+
 libsvgren (0.6.19) unstable; urgency=medium
 
   * update
