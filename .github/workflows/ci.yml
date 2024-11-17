@@ -23,20 +23,20 @@ jobs:
       linux_release: bookworm
     steps:
       - name: add cppfw deb repo
-        uses: myci-actions/add-deb-repo@master
+        uses: myci-actions/add-deb-repo@main
         with:
           repo: deb https://gagis.hopto.org/repo/cppfw/${{ env.linux_distro }} ${{ env.linux_release }} main
           repo-name: cppfw
           keys-asc: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
           install: myci locales git pipx
       - name: add llvm repo (for clang-format)
-        uses: myci-actions/add-deb-repo@master
+        uses: myci-actions/add-deb-repo@main
         with:
           repo: deb http://apt.llvm.org/${{ env.linux_release }} llvm-toolchain-${{ env.linux_release }} main
           repo-name: llvm
           keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
       - name: git clone
-        uses: myci-actions/checkout@master
+        uses: myci-actions/checkout@main
       - name: prepare debian package
         run: myci-deb-prepare.sh
       - name: install deps
@@ -83,14 +83,14 @@ jobs:
     name: sanitizer - ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }} | ${{ matrix.labels[0] }}
     steps:
       - name: add cppfw deb repo
-        uses: myci-actions/add-deb-repo@master
+        uses: myci-actions/add-deb-repo@main
         with:
           repo: deb https://gagis.hopto.org/repo/cppfw/${{ matrix.os }} ${{ matrix.codename }} main
           repo-name: cppfw
           keys-asc: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
           install: myci git
       - name: add llvm repo (for clang-format)
-        uses: myci-actions/add-deb-repo@master
+        uses: myci-actions/add-deb-repo@main
         with:
           repo: deb http://apt.llvm.org/${{ matrix.codename }} llvm-toolchain-${{ matrix.codename }} main
           repo-name: llvm
@@ -99,7 +99,7 @@ jobs:
         run: |
           apt install --assume-yes devscripts equivs
       - name: git clone
-        uses: myci-actions/checkout@master
+        uses: myci-actions/checkout@main
       - name: prepare debian package
         run: myci-deb-prepare.sh
       - name: install deps
@@ -140,22 +140,22 @@ jobs:
           # configure timezone to avoid 'tzdata' package to require user interaction during installation (needed for ubuntu:focal)
           TZ=Europe/Helsinki ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
       - name: add cppfw deb repo
-        uses: myci-actions/add-deb-repo@master
+        uses: myci-actions/add-deb-repo@main
         with:
           repo: deb https://gagis.hopto.org/repo/cppfw/${{ matrix.os }} ${{ matrix.codename }} main
           repo-name: cppfw
           keys-asc: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
           install: myci git devscripts equivs nodejs
       - name: add llvm repo (for clang-format)
-        uses: myci-actions/add-deb-repo@master
+        uses: myci-actions/add-deb-repo@main
         with:
           repo: deb http://apt.llvm.org/${{ matrix.codename }} llvm-toolchain-${{ matrix.codename }} main
           repo-name: llvm
           keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
       - name: git clone
-        uses: myci-actions/checkout@master
+        uses: myci-actions/checkout@main
       - name: set PACKAGE_VERSION
-        uses: myci-actions/export-env-var@master
+        uses: myci-actions/export-env-var@main
         with: {name: PACKAGE_VERSION, value: $(myci-deb-version.sh debian/changelog)}
       - name: prepare debian package
         run: myci-deb-prepare.sh
@@ -192,7 +192,7 @@ jobs:
   #       run: |
   #         pacman --sync --refresh --sysupgrade --noconfirm --noprogressbar base-devel git
   #     - name: add cppfw pacman repo
-  #       uses: myci-actions/add-pacman-repo@master
+  #       uses: myci-actions/add-pacman-repo@main
   #       with:
   #         name: cppfw
   #         url: https://gagis.hopto.org/repo/cppfw/archlinux/${{ matrix.arch }}
@@ -200,9 +200,9 @@ jobs:
   #         install: >-
   #           myci
   #     - name: git clone
-  #       uses: myci-actions/checkout@master
+  #       uses: myci-actions/checkout@main
   #     - name: set PACKAGE_VERSION
-  #       uses: myci-actions/export-env-var@master
+  #       uses: myci-actions/export-env-var@main
   #       with: {name: PACKAGE_VERSION, value: $(myci-deb-version.sh debian/changelog)}
   #     # makepkg needs to install dependency packages, so nobody user needs sudo rights
   #     - name: add nobody to sudoers
@@ -233,7 +233,7 @@ jobs:
         rm -rf /usr/local/bin/python3*
         rm -rf /usr/local/bin/python3*-config
     - name: git clone
-      uses: myci-actions/checkout@master
+      uses: myci-actions/checkout@main
     - name: install clang-tidy and clang-format
       run: |
         brew install llvm
@@ -247,16 +247,16 @@ jobs:
     - name: install ci tools
       run: brew install myci make
     - name: set PATH to use latest make
-      uses: myci-actions/export-env-var@master
+      uses: myci-actions/export-env-var@main
       with: {name: PATH, value: "$HOMEBREW_PREFIX/opt/make/libexec/gnubin:$PATH"}
     - name: set CFLAGS
-      uses: myci-actions/export-env-var@master
+      uses: myci-actions/export-env-var@main
       with: {name: CFLAGS, value: "-isystem $HOMEBREW_PREFIX/include $CFLAGS"}
     - name: set CXXFLAGS
-      uses: myci-actions/export-env-var@master
+      uses: myci-actions/export-env-var@main
       with: {name: CXXFLAGS, value: "-isystem $HOMEBREW_PREFIX/include $CXXFLAGS"}
     - name: set LDFLAGS
-      uses: myci-actions/export-env-var@master
+      uses: myci-actions/export-env-var@main
       with: {name: LDFLAGS, value: "-L $HOMEBREW_PREFIX/lib $LDFLAGS"}
     - name: install deps
       run: myci-brew-install.sh `myci-list-deps-homebrew.sh`
@@ -287,9 +287,9 @@ jobs:
     - name: install ci tools
       run: brew install myci
     - name: git clone
-      uses: myci-actions/checkout@master
+      uses: myci-actions/checkout@main
     - name: set PACKAGE_VERSION
-      uses: myci-actions/export-env-var@master
+      uses: myci-actions/export-env-var@main
       with: {name: PACKAGE_VERSION, value: $(myci-deb-version.sh debian/changelog)}
     - name: add cocoapods repo
       run: pod repo add --silent cppfw https://$MYCI_GIT_USERNAME@github.com/cppfw/cocoapods-repo.git
@@ -319,16 +319,16 @@ jobs:
     container: mingc/android-build-box:latest
     steps:
     - name: git clone
-      uses: myci-actions/checkout@master
+      uses: myci-actions/checkout@main
     - name: add cppfw deb repo
-      uses: myci-actions/add-deb-repo@master
+      uses: myci-actions/add-deb-repo@main
       with:
         repo: deb https://gagis.hopto.org/repo/cppfw/$(lsb_release --id --short | tr '[:upper:]' '[:lower:]') $(lsb_release --codename --short) main
         repo-name: cppfw
         keys-asc: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
         install: myci
     - name: set PACKAGE_VERSION
-      uses: myci-actions/export-env-var@master
+      uses: myci-actions/export-env-var@main
       with: {name: PACKAGE_VERSION, value: $(myci-deb-version.sh debian/changelog)}
     - name: build
       run: |
@@ -362,7 +362,7 @@ jobs:
           msys2-devel
           mingw-w64-${{ matrix.arch }}-toolchain
     - name: add cppfw pacman msys repo
-      uses: myci-actions/add-pacman-repo@master
+      uses: myci-actions/add-pacman-repo@main
       with:
         name: cppfw_msys
         url: https://gagis.hopto.org/repo/cppfw/msys2/msys
@@ -370,14 +370,14 @@ jobs:
         key-server: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
         install: myci
     - name: add cppfw pacman msys/mingw repo
-      uses: myci-actions/add-pacman-repo@master
+      uses: myci-actions/add-pacman-repo@main
       with:
         name: cppfw_${{ matrix.repo }}
         url: https://gagis.hopto.org/repo/cppfw/msys2/${{ matrix.repo }}
         shell: 'msys2 {0}'
         key-server: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
     - name: git clone
-      uses: myci-actions/checkout@master
+      uses: myci-actions/checkout@main
     - name: prepare pacman package
       run: myci-apply-version.sh --version $(myci-deb-version.sh debian/changelog) msys2/PKGBUILD.in
     - name: build
@@ -403,7 +403,7 @@ jobs:
     - name: git clone
       uses: actions/checkout@v3
     - name: install CoAPP tools
-      uses: myci-actions/install-coapp-tools@master
+      uses: myci-actions/install-coapp-tools@main
     - name: nuget update
       run: |
         nuget restore msvs_solution/msvs_solution.sln
@@ -413,7 +413,7 @@ jobs:
     - name: build
       run: .\nuget\build_nuget.ps1
     - name: deploy
-      uses: myci-actions/publish-nuget@master
+      uses: myci-actions/publish-nuget@main
       with:
         filename: '.\nuget\*.nupkg'
         api-key: ${{ secrets.NUGET_DOT_ORG_API_KEY }}
@@ -435,14 +435,14 @@ jobs:
     name: conan - linux - ${{ matrix.arch }}
     steps:
       - name: add llvm repo (for clang-format)
-        uses: myci-actions/add-deb-repo@master
+        uses: myci-actions/add-deb-repo@main
         with:
           repo: deb http://apt.llvm.org/${{ matrix.codename }} llvm-toolchain-${{ matrix.codename }} main
           repo-name: llvm
           keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
           install: clang-format clang-tidy
       - name: add cppfw deb repo
-        uses: myci-actions/add-deb-repo@master
+        uses: myci-actions/add-deb-repo@main
         with:
           repo: deb https://gagis.hopto.org/repo/cppfw/${{ matrix.os }} ${{ matrix.codename }} main
           repo-name: cppfw
@@ -455,9 +455,9 @@ jobs:
           conan profile detect --name default
           sed -i -E "s/compiler.cppstd=.*$/compiler.cppstd=17/g" ~/.conan2/profiles/default
       - name: git clone
-        uses: myci-actions/checkout@master
+        uses: myci-actions/checkout@main
       - name: set PACKAGE_VERSION
-        uses: myci-actions/export-env-var@master
+        uses: myci-actions/export-env-var@main
         with: {name: PACKAGE_VERSION, value: $(myci-deb-version.sh debian/changelog)}
         if: startsWith(github.ref, 'refs/tags/')
       - name: build
@@ -493,7 +493,7 @@ jobs:
   #         rm -rf /usr/local/bin/python3*
   #         rm -rf /usr/local/bin/python3*-config
   #     - name: git clone
-  #       uses: myci-actions/checkout@master
+  #       uses: myci-actions/checkout@main
   #     - name: install clang-tidy and clang-format
   #       run: |
   #         brew install llvm
@@ -511,10 +511,10 @@ jobs:
   #         conan profile detect --name default
   #         sed -i -E "s/compiler.cppstd=.*$/compiler.cppstd=17/g" ~/.conan2/profiles/default
   #     - name: set PATH to use latest make
-  #       uses: myci-actions/export-env-var@master
+  #       uses: myci-actions/export-env-var@main
   #       with: {name: PATH, value: "/usr/local/opt/make/libexec/gnubin:$PATH"}
   #     - name: set PACKAGE_VERSION
-  #       uses: myci-actions/export-env-var@master
+  #       uses: myci-actions/export-env-var@main
   #       with: {name: PACKAGE_VERSION, value: $(myci-deb-version.sh debian/changelog)}
   #       if: startsWith(github.ref, 'refs/tags/')
   #     - name: build
