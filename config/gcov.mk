@@ -1,5 +1,4 @@
 include $(config_dir)base/base.mk
-include $(config_dir)base/agg.mk
 
 # no optimization to avoid mismamtch of actual code to source lines,
 # otherwise coverage report will not be accurate
