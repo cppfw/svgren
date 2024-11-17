@@ -1,3 +1,9 @@
+libsvgren (0.6.21) unstable; urgency=medium
+
+  * conan: rebuild
+
+ -- Ivan Gagis <igagis@gmail.com>  Mon, 18 Nov 2024 00:15:52 +0200
+
 libsvgren (0.6.20) unstable; urgency=medium
 
   * refactor to use veg library
