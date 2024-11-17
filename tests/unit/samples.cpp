@@ -19,7 +19,7 @@ const unsigned tolerance = 10;
 
 const std::string data_dir = "samples_data/";
 
-const std::string render_backend_name = "agg";
+const std::string expected_dir = "expected";
 }
 
 namespace{
@@ -70,7 +70,7 @@ const tst::set set("samples", [](tst::suite& suite){
 
             auto& img = res.pixels;
 
-            papki::fs_file png_file(data_dir + render_backend_name + "/" + papki::not_suffix(in_file.not_dir()) + ".png");
+            papki::fs_file png_file(data_dir + expected_dir + "/" + papki::not_suffix(in_file.not_dir()) + ".png");
 
 			auto png_var = rasterimage::read_png(png_file);
 
@@ -123,7 +123,7 @@ const tst::set set("samples", [](tst::suite& suite){
 
             auto im = svgren::rasterize(*dom);
 
-            papki::fs_file png_file(data_dir + render_backend_name + "/" + papki::not_suffix(in_file.not_dir()) + ".png");
+            papki::fs_file png_file(data_dir + expected_dir + "/" + papki::not_suffix(in_file.not_dir()) + ".png");
 
 			auto png_var = rasterimage::read_png(png_file);
 

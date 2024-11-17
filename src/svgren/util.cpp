@@ -97,12 +97,10 @@ common_element_push::common_element_push(svgren::renderer& renderer, bool is_con
 		auto stroke_prop = this->renderer.style_stack.get_style_property(svgdom::style_property::stroke);
 		auto fill_prop = this->renderer.style_stack.get_style_property(svgdom::style_property::fill);
 
-		// OPTIMIZATION: if opacity is set on an element then push cairo group only in case it is a container element,
-		// like 'g' or 'svg',
-		//               or in case the fill or stroke is a non-solid color, like gradient or pattern,
-		//               or both fill and stroke are non-none.
-		//               If element is non-container and one of stroke or fill is solid color and other one is none,
-		//               then opacity will be applied later without pushing cairo group.
+		// OPTIMIZATION: if opacity is set on an element then push group only in case it is a container element, like
+		// 'g' or 'svg', or in case the fill or stroke is a non-solid color, like gradient or pattern, or both fill and
+		// stroke are non-none. If element is non-container and one of stroke or fill is solid color and other one is
+		// none, then opacity will be applied later without pushing group.
 		if (this->group_pushed || is_container || (stroke_prop && std::holds_alternative<std::string>(*stroke_prop)) ||
 			(fill_prop && std::holds_alternative<std::string>(*fill_prop)) ||
 			(fill_prop && stroke_prop && !svgdom::is_none(*fill_prop) && !svgdom::is_none(*stroke_prop)))

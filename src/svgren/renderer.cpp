@@ -82,7 +82,6 @@ r4::vector2<real> renderer::length_to_px(const svgdom::length& x, const svgdom::
 
 void renderer::apply_transformation(const svgdom::transformable::transformation& t)
 {
-	//	TRACE(<< "renderer::applyCairoTransformation(): applying transformation " << unsigned(t.type) << std::endl)
 	switch (t.type_v) {
 		case svgdom::transformable::transformation::type::translate:
 			//			TRACE(<< "translate x,y = (" << t.x << ", " << t.y << ")" << std::endl)
@@ -125,19 +124,6 @@ void renderer::apply_transformation(const svgdom::transformable::transformation&
 			ASSERT(false)
 			break;
 	}
-
-#if VEG_BACKEND == VEG_BACKEND_CAIRO
-	// WORKAROUND: Due to cairo/pixman bug https://bugs.freedesktop.org/show_bug.cgi?id=102966
-	//             we have to limit the maximum value of matrix element by 16 bit integer (+-0x7fff).
-	auto m = this->canvas.get_matrix();
-	for (auto& r : m) {
-		using std::min;
-		using std::max;
-		const real max_value = 0x7fff;
-		r = max(-max_value, min(r, max_value));
-	}
-	this->canvas.set_matrix(m);
-#endif
 }
 
 void renderer::apply_transformations(const decltype(svgdom::transformable::transformations) & transformations)

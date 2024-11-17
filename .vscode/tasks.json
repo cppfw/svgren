@@ -4,9 +4,9 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build_agg",
+            "label": "build",
             "type": "shell",
-            "command": "make config=rel_agg",
+            "command": "make config=rel",
             "problemMatcher": [
                 "$gcc"
             ],
@@ -15,22 +15,10 @@
                 "isDefault": true
             }
 		},
-		{
-            "label": "build_cairo",
-            "type": "shell",
-            "command": "make config=rel_cairo",
-            "problemMatcher": [
-                "$gcc"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            }
-        },
         {
-            "label": "build_dbg_agg",
+            "label": "build_dbg",
             "type": "shell",
-            "command": "make config=dbg_agg",
+            "command": "make config=dbg",
             "problemMatcher": [
                 "$gcc"
             ],
@@ -39,10 +27,10 @@
                 "isDefault": true
             }
 		},
-		{
-            "label": "build_dbg_cairo",
+        {
+            "label": "build_dbg_bg",
             "type": "shell",
-            "command": "make config=dbg_cairo",
+            "command": "make config=dbg CXXFLAGS=-DSVGREN_BACKGROUND=0xffffffff",
             "problemMatcher": [
                 "$gcc"
             ],
@@ -52,121 +40,87 @@
             }
         },
         {
-            "label": "build_dbg_agg_bg",
+            "label": "run",
             "type": "shell",
-            "command": "make config=dbg_agg CXXFLAGS=-DSVGREN_BACKGROUND=0xffffffff",
-            "problemMatcher": [
-                "$gcc"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            }
-        },
-        {
-            "label": "run_agg",
-            "type": "shell",
-            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/rel_agg out/rel_agg/tests ../unit/samples_data/defs_style_2.svg ../unit/samples_data/agg/defs_style_2.png)",
+            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/rel out/rel/tests ../unit/samples_data/defs_style_2.svg ../unit/samples_data/agg/defs_style_2.png)",
             "problemMatcher": [],
-			"dependsOn": "build_agg",
+			"dependsOn": "build",
 			"group": {
                 "kind": "build",
                 "isDefault": true
             }
         },
         {
-            "label": "run_dbg_agg",
+            "label": "run_dbg",
             "type": "shell",
-			"dependsOn": "build_dbg_agg",
-			// "dependsOn": "build_dbg_agg_bg",
-            // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/Customs-Ground_Level.svg out.png)",
-            // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/rgb_percent.svg out.png)",
-            // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/defs_style_2.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/defs_style.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/opacity.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/ready_test.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/shadow_test.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/car.svg out.png)",
-            // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/Turntable-Active-NEW5.svg out.png)",
-            // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/machupicchu_collection_06.svg out.png)",
-            // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/machupicchu_collection_04.svg out.png)",
-            // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/machupicchu_collection_02.svg out.png)",
-            // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/machupicchu_collection_01.svg out.png)",
-            // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/test2.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/rectangle.svg out.png)",
-            // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/dropshadowfilter.svg out.png)",
-            // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/six_ball.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/granddad.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/3.072.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/0.451.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/gradtest.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/radial_gradient.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/car.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/VOLUME_GSP.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/visibility.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/use.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/tiger_with_smooth_cubic_curves.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/SPHERE_S_GSP.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/SPHERE_GSP.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/sample4.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/sample3.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/sample2.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/sample1.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/quadratic.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/percentage_dimensions_and_viewbox.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/mouse.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/menue-cut.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/lines.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/linear_gradient.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/invisible_rect.svg out.png)",
-			"command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/interface-ethernet.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/gauge_arrow_shadow.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/FW5-24V.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/ellipse.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/default_black.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/cubic_smooth.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/css_simple0.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/composite.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/circle.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/circle1.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/caltrain.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/arc.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/1.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/group_opacity.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/masking.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/camera.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/back.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/tiger.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/radial_gradient_2.svg out.png)",
-			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_agg out/dbg_agg/tests ../unit/samples_data/gradient-transform-rotate-compare.svg out.png)",
+			"dependsOn": "build_dbg",
+			// "dependsOn": "build_dbg_bg",
+            // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/Customs-Ground_Level.svg out.png)",
+            // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/rgb_percent.svg out.png)",
+            // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/defs_style_2.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/defs_style.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/opacity.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/ready_test.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/shadow_test.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/car.svg out.png)",
+            // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/Turntable-Active-NEW5.svg out.png)",
+            // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/machupicchu_collection_06.svg out.png)",
+            // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/machupicchu_collection_04.svg out.png)",
+            // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/machupicchu_collection_02.svg out.png)",
+            // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/machupicchu_collection_01.svg out.png)",
+            // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/test2.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/rectangle.svg out.png)",
+            // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/dropshadowfilter.svg out.png)",
+            // "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/six_ball.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/granddad.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/3.072.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/0.451.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/gradtest.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/radial_gradient.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/car.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/VOLUME_GSP.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/visibility.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/use.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/tiger_with_smooth_cubic_curves.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/SPHERE_S_GSP.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/SPHERE_GSP.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/sample4.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/sample3.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/sample2.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/sample1.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/quadratic.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/percentage_dimensions_and_viewbox.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/mouse.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/menue-cut.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/lines.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/linear_gradient.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/invisible_rect.svg out.png)",
+			"command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/interface-ethernet.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/gauge_arrow_shadow.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/FW5-24V.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/ellipse.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/default_black.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/cubic_smooth.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/css_simple0.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/composite.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/circle.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/circle1.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/caltrain.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/arc.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/1.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/group_opacity.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/masking.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/camera.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/back.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/tiger.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/radial_gradient_2.svg out.png)",
+			// "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg out/dbg/tests ../unit/samples_data/gradient-transform-rotate-compare.svg out.png)",
             "problemMatcher": [],
 			"group": {
                 "kind": "build",
                 "isDefault": true
             }
 		},
-		{
-            "label": "run_cairo",
-            "type": "shell",
-            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/rel_cairo out/rel_cairo/tests ../unit/samples_data/defs_style_2.svg ../unit/samples_data/cairo/defs_style_2.png)",
-            "problemMatcher": [],
-			"dependsOn": "build_cairo",
-			"group": {
-                "kind": "build",
-                "isDefault": true
-            }
-        },
-		{
-            "label": "run_dbg_cairo",
-            "type": "shell",
-            "command": "(cd ${workspaceFolder}/tests/render && LD_LIBRARY_PATH=../../src/out/dbg_cairo out/dbg_cairo/tests ../unit/samples_data/Customs-Ground_Level.svg out.png)",
-            "problemMatcher": [],
-			"dependsOn": "build_dbg_cairo",
-			"group": {
-                "kind": "build",
-                "isDefault": true
-            }
-        },
 		{
             "label": "clean-all",
             "type": "shell",
@@ -178,9 +132,9 @@
             }
         },
         {
-            "label": "clean_agg",
+            "label": "clean",
             "type": "shell",
-            "command": "make clean config=rel_agg",
+            "command": "make clean config=rel",
 			"problemMatcher": [],
 			"group": {
                 "kind": "build",
@@ -188,12 +142,12 @@
             }
         },
         {
-            "label": "rebuild_agg",
+            "label": "rebuild",
             "type": "shell",
             "command": "make re",
             "dependsOn": [
-                "clean_agg",
-                "build_agg"
+                "clean",
+                "build"
             ],
 			"problemMatcher": [],
 			"group": {
@@ -202,9 +156,9 @@
             }
         },
         {
-            "label": "test_agg",
+            "label": "test_",
             "type": "shell",
-            "command": "make test config=rel_agg",
+            "command": "make test config=rel",
             "problemMatcher": [],
 			"group": {
                 "kind": "build",
@@ -212,29 +166,9 @@
             }
         },
         {
-            "label": "test_dbg_agg",
+            "label": "test_dbg",
             "type": "shell",
-            "command": "make test config=dbg_agg",
-            "problemMatcher": [],
-			"group": {
-                "kind": "build",
-                "isDefault": true
-            }
-        },
-        {
-            "label": "test_cairo",
-            "type": "shell",
-            "command": "make test config=rel_cairo",
-            "problemMatcher": [],
-			"group": {
-                "kind": "build",
-                "isDefault": true
-            }
-        },
-        {
-            "label": "test_dbg_cairo",
-            "type": "shell",
-            "command": "make test config=dbg_cairo",
+            "command": "make test config=dbg",
             "problemMatcher": [],
 			"group": {
                 "kind": "build",
