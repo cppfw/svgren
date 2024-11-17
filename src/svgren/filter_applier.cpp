@@ -467,7 +467,7 @@ filter_result color_matrix(
 
 			using std::min;
 			c1 = min(c1, real(1)); // clamp top
-			*dp = rasterimage::to_integral<image_type::value_type>(c1);
+			*dp = rasterimage::to_integral<image_type::pixel_type::value_type>(c1);
 			++dp;
 		}
 	}
@@ -693,7 +693,7 @@ filter_result blend(surface& in, surface& in2, svgdom::fe_blend_element::mode mo
 			// qr = 1 - (1 - qa) * (1 - qb)
 			auto qr = 1 - (1 - c01.a()) * (1 - c02.a());
 
-			*dp = rasterimage::to_integral<image_type::value_type>(r4::vector4<real>{cr, qr});
+			*dp = rasterimage::to_integral<image_type::pixel_type::value_type>(r4::vector4<real>{cr, qr});
 			++dp;
 		}
 	}
@@ -782,7 +782,7 @@ filter_result composite(surface& in, surface& in2, const svgdom::fe_composite_el
 					break;
 			}
 
-			*dp = rasterimage::to_integral<image_type::value_type>(o);
+			*dp = rasterimage::to_integral<image_type::pixel_type::value_type>(o);
 			++dp;
 		}
 	}

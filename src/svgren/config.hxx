@@ -34,6 +34,7 @@ namespace svgren {
 
 using real = svgdom::real;
 
+// TODO: take these types from veg
 using image_type = rasterimage::image<uint8_t, 4>;
 using image_span_type = decltype(std::declval<image_type>().span());
 
