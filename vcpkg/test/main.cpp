@@ -1,5 +1,7 @@
 #include <svgren/render.hpp>
 
+using namespace std::string_view_literals;
+
 int main(int argc, const char** argv){
     auto dom = svgdom::load(R"qwertyuiop(
         <svg xmlns="http://www.w3.org/2000/svg" width="57.126" height="57.126">
