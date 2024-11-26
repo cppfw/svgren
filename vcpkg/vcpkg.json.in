@@ -1,0 +1,20 @@
+{
+    "name": "svgren",
+    "version": "$(version)",
+    "homepage": "https://github.com/cppfw/svgren",
+    "description": "SVG resterization library in C++",
+    "license": "MIT",
+    "dependencies": [
+      {
+        "name" : "vcpkg-cmake",
+        "host" : true
+      },
+      {
+        "name" : "vcpkg-cmake-config",
+        "host" : true
+      },
+      "utki",
+      "svgdom",
+      "veg"
+    ]
+  }
