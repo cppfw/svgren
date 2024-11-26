@@ -9,6 +9,7 @@ See link:Features.adoc[Features] page.
 . Setup your OS-preferred package system repo following link:https://github.com/cppfw/wiki/blob/main/enable_repo/enable_repo.adoc[this manual]
 . Install package
 +
+- **vcpkg** (multi-OS): `{package_name}`
 - **conan** (multi-OS): `{package_name}`
 - **deb** (Linux): `lib{package_name}-dev`
 - **homebrew** (MacOS X): `lib{package_name}`
