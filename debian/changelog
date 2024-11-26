@@ -1,3 +1,9 @@
+libsvgren (0.6.22) unstable; urgency=medium
+
+  * vcpkgize
+
+ -- Ivan Gagis <igagis@gmail.com>  Tue, 26 Nov 2024 21:31:44 +0200
+
 libsvgren (0.6.21) unstable; urgency=medium
 
   * conan: rebuild
