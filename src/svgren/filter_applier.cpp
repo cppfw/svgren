@@ -54,27 +54,29 @@ void box_blur_horizontal(
 		return;
 	}
 
-	for (unsigned y = 0; y != dims.y(); ++y) {
+	for (auto [src_line, dst_line] : utki::views::zip(src, dst)) {
 		using std::min;
 		using std::max;
 
-		// TODO: optimize by calculating first and last x and then iterate between them
 		r4::vector4<unsigned> sum = 0;
+
+		// calculate first value for sum
 		for (unsigned i = 0; i != box_size; ++i) {
 			int pos = int(i) - int(box_offset);
 			pos = max(pos, 0);
-			pos = min(pos, int(dims.x()) - 1);
+			pos = min(pos, int(src_line.size()) - 1);
 
-			sum += src[y][pos].to<unsigned>();
+			sum += src_line[pos].to<unsigned>();
 		}
+
 		for (unsigned x = 0; x != dims.x(); ++x) {
 			int tmp = int(x) - int(box_offset);
 			int last = max(tmp, 0);
 			int next = min(tmp + int(box_size), int(dims.x()) - 1);
 
-			dst[y][x] = (sum / box_size).to<image_type::pixel_type::value_type>();
+			dst_line[x] = (sum / box_size).to<image_type::pixel_type::value_type>();
 
-			sum += src[y][next].to<unsigned>() - src[y][last].to<unsigned>();
+			sum += src_line[next].to<unsigned>() - src_line[last].to<unsigned>();
 		}
 	}
 }
@@ -99,7 +101,8 @@ void box_blur_vertical(
 		using std::max;
 
 		r4::vector4<unsigned> sum = 0;
-		// TODO: optimize by calculating first and last x and then iterate between them
+
+		// calculate first value for sum
 		for (unsigned i = 0; i != box_size; ++i) {
 			int pos = int(i) - int(box_offset);
 			pos = max(pos, 0);
@@ -107,6 +110,7 @@ void box_blur_vertical(
 
 			sum += src[pos][x].to<unsigned>();
 		}
+
 		for (unsigned y = 0; y != dims.y(); ++y) {
 			int tmp = int(y) - int(box_offset);
 			int last = max(tmp, 0);
@@ -132,8 +136,6 @@ filter_result blur_surface(
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 	auto d = (std_deviation * (3 * sqrt(2 * real(utki::pi)) / 4) + real(0.5)).to<unsigned>();
 
-	//	TRACE(<< "d = " << d[0] << ", " << d[1] << std::endl)
-
 	filter_result ret(src.rect());
 
 	image_type tmp(ret.image.dims());
@@ -142,38 +144,44 @@ filter_result blur_surface(
 	std::array<unsigned, 3> h_offset{};
 	std::array<unsigned, 3> v_box_size{};
 	std::array<unsigned, 3> v_offset{};
-	if (d[0] % 2 == 0) {
-		h_offset[0] = d[0] / 2;
-		h_box_size[0] = d[0];
-		h_offset[1] = d[0] / 2 - 1; // it is ok if d[0] is 0 and -1 will give a large number because box size is also 0
-									// in that case and blur will have no effect anyway
-		h_box_size[1] = d[0];
-		h_offset[2] = d[0] / 2;
-		h_box_size[2] = d[0] + 1;
+	if (d.x() % 2 == 0) {
+		h_offset[0] = d.x() / 2;
+		h_box_size[0] = d.x();
+
+		// it is ok if d.x() is 0 and -1 will give a large number because box size is also
+		// 0 in that case and blur will have no effect anyway
+		h_offset[1] = d.x() / 2 - 1;
+		h_box_size[1] = d.x();
+
+		h_offset[2] = d.x() / 2;
+		h_box_size[2] = d.x() + 1;
 	} else {
-		h_offset[0] = d[0] / 2;
-		h_box_size[0] = d[0];
-		h_offset[1] = d[0] / 2;
-		h_box_size[1] = d[0];
-		h_offset[2] = d[0] / 2;
-		h_box_size[2] = d[0];
+		h_offset[0] = d.x() / 2;
+		h_box_size[0] = d.x();
+		h_offset[1] = d.x() / 2;
+		h_box_size[1] = d.x();
+		h_offset[2] = d.x() / 2;
+		h_box_size[2] = d.x();
 	}
 
-	if (d[1] % 2 == 0) {
-		v_offset[0] = d[1] / 2;
-		v_box_size[0] = d[1];
-		v_offset[1] = d[1] / 2 - 1; // it is ok if d[0] is 0 and -1 will give a large number because box size is also 0
-									// in that case and blur will have no effect anyway
-		v_box_size[1] = d[1];
-		v_offset[2] = d[1] / 2;
-		v_box_size[2] = d[1] + 1;
+	if (d.y() % 2 == 0) {
+		v_offset[0] = d.y() / 2;
+		v_box_size[0] = d.y();
+
+		// it is ok if d.y() is 0 and -1 will give a large number because box size is also
+		// 0 in that case and blur will have no effect anyway
+		v_offset[1] = d.y() / 2 - 1;
+		v_box_size[1] = d.y();
+
+		v_offset[2] = d.y() / 2;
+		v_box_size[2] = d.y() + 1;
 	} else {
-		v_offset[0] = d[1] / 2;
-		v_box_size[0] = d[1];
-		v_offset[1] = d[1] / 2;
-		v_box_size[1] = d[1];
-		v_offset[2] = d[1] / 2;
-		v_box_size[2] = d[1];
+		v_offset[0] = d.y() / 2;
+		v_box_size[0] = d.y();
+		v_offset[1] = d.y() / 2;
+		v_box_size[1] = d.y();
+		v_offset[2] = d.y() / 2;
+		v_box_size[2] = d.y();
 	}
 
 	box_blur_horizontal(
