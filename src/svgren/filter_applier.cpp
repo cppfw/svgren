@@ -46,8 +46,7 @@ void box_blur_horizontal(
 	const image_type::pixel_type* src,
 	unsigned dst_stride,
 	unsigned src_stride,
-	unsigned width,
-	unsigned height,
+	r4::vector2<unsigned> dims,
 	unsigned box_size,
 	unsigned box_offset
 )
@@ -55,7 +54,7 @@ void box_blur_horizontal(
 	if (box_size == 0) {
 		return;
 	}
-	for (unsigned y = 0; y != height; ++y) {
+	for (unsigned y = 0; y != dims.y(); ++y) {
 		using std::min;
 		using std::max;
 
@@ -64,19 +63,18 @@ void box_blur_horizontal(
 		for (unsigned i = 0; i != box_size; ++i) {
 			int pos = int(i) - int(box_offset);
 			pos = max(pos, 0);
-			pos = min(pos, int(width) - 1);
+			pos = min(pos, int(dims.x()) - 1);
 			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 			sum += src[src_stride * y + pos].to<unsigned>();
 		}
-		for (unsigned x = 0; x != width; ++x) {
+		for (unsigned x = 0; x != dims.x(); ++x) {
 			int tmp = int(x) - int(box_offset);
 			int last = max(tmp, 0);
-			int next = min(tmp + int(box_size), int(width) - 1);
+			int next = min(tmp + int(box_size), int(dims.x()) - 1);
 
 			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 			dst[dst_stride * y + x] = (sum / box_size).to<image_type::pixel_type::value_type>();
 
-			// TODO: subtracting colors, why unsigned and not uint8_t?
 			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 			sum += src[src_stride * y + next].to<unsigned>() - src[src_stride * y + last].to<unsigned>();
 		}
@@ -90,8 +88,7 @@ void box_blur_vertical(
 	const image_type::pixel_type* src,
 	unsigned dst_stride,
 	unsigned src_stride,
-	unsigned width,
-	unsigned height,
+	r4::vector2<unsigned> dims,
 	unsigned box_size,
 	unsigned box_offset
 )
@@ -99,7 +96,7 @@ void box_blur_vertical(
 	if (box_size == 0) {
 		return;
 	}
-	for (unsigned x = 0; x != width; ++x) {
+	for (unsigned x = 0; x != dims.x(); ++x) {
 		using std::min;
 		using std::max;
 
@@ -108,20 +105,19 @@ void box_blur_vertical(
 		for (unsigned i = 0; i != box_size; ++i) {
 			int pos = int(i) - int(box_offset);
 			pos = max(pos, 0);
-			pos = min(pos, int(height) - 1);
+			pos = min(pos, int(dims.y()) - 1);
 
 			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 			sum += src[src_stride * pos + x].to<unsigned>();
 		}
-		for (unsigned y = 0; y != height; ++y) {
+		for (unsigned y = 0; y != dims.y(); ++y) {
 			int tmp = int(y) - int(box_offset);
 			int last = max(tmp, 0);
-			int next = min(tmp + int(box_size), int(height) - 1);
+			int next = min(tmp + int(box_size), int(dims.y()) - 1);
 
 			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 			dst[dst_stride * y + x] = (sum / box_size).to<image_type::pixel_type::value_type>();
 
-			// TODO: subtracting colors, why unsigned and not uint8_t?
 			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 			sum += src[src_stride * next + x].to<unsigned>() - src[src_stride * last + x].to<unsigned>();
 		}
@@ -145,7 +141,7 @@ filter_result blur_surface(
 
 	filter_result ret(src.rect());
 
-	std::vector<image_type::pixel_type> tmp(ret.image.pixels().size());
+	image_type tmp(ret.image.dims());
 
 	std::array<unsigned, 3> h_box_size{};
 	std::array<unsigned, 3> h_offset{};
@@ -186,63 +182,57 @@ filter_result blur_surface(
 	}
 
 	box_blur_horizontal(
-		tmp.data(),
+		tmp.pixels().data(),
 		src.image_span.data(),
-		src.rect().d.x(),
+		src.image_span.dims().x(),
 		src.image_span.stride_pixels(),
-		src.rect().d.x(),
-		src.rect().d.y(),
+		src.image_span.dims(),
 		h_box_size[0],
 		h_offset[0]
 	);
 	box_blur_horizontal(
 		ret.surface.image_span.data(),
-		tmp.data(),
+		tmp.pixels().data(),
 		ret.surface.image_span.stride_pixels(),
-		src.rect().d.x(),
-		src.rect().d.x(),
-		src.rect().d.y(),
+		src.image_span.dims().x(),
+		src.image_span.dims(),
 		h_box_size[1],
 		h_offset[1]
 	);
 	box_blur_horizontal(
-		tmp.data(),
+		tmp.pixels().data(),
 		ret.surface.image_span.data(),
-		src.rect().d.x(),
+		src.image_span.dims().x(),
 		ret.surface.image_span.stride_pixels(),
-		src.rect().d.x(),
-		src.rect().d.y(),
+		src.image_span.dims(),
 		h_box_size[2],
 		h_offset[2]
 	);
 
 	box_blur_vertical(
 		ret.surface.image_span.data(),
-		tmp.data(),
+		tmp.pixels().data(),
 		ret.surface.image_span.stride_pixels(),
-		src.rect().d.x(),
-		src.rect().d.x(),
-		src.rect().d.y(),
+		src.image_span.dims().x(),
+		src.image_span.dims(),
 		v_box_size[0],
 		v_offset[0]
 	);
 	box_blur_vertical(
-		tmp.data(),
+		tmp.pixels().data(),
 		ret.surface.image_span.data(),
-		src.rect().d.x(),
+		src.image_span.dims().x(),
 		ret.surface.image_span.stride_pixels(),
-		src.rect().d.x(),
-		src.rect().d.y(),
+		src.image_span.dims(),
 		v_box_size[1],
 		v_offset[1]
 	);
 	box_blur_vertical(
 		ret.surface.image_span.data(),
-		tmp.data(),
+		tmp.pixels().data(),
 		ret.surface.image_span.stride_pixels(),
-		src.rect().d.x(),
-		src.rect().d.x(),
-		src.rect().d.y(),
+		src.image_span.dims().x(),
+		src.image_span.dims(),
 		v_box_size[2],
 		v_offset[2]
 	);
