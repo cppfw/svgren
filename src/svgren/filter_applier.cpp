@@ -39,21 +39,21 @@ SOFTWARE.
 
 using namespace svgren;
 
-// TODO: rewrite using image_span
 namespace {
 void box_blur_horizontal(
-	image_type::pixel_type* dst,
-	const image_type::pixel_type* src,
-	unsigned dst_stride,
-	unsigned src_stride,
-	r4::vector2<unsigned> dims,
+	image_span_type dst, //
+	image_span_type::const_image_span_type src,
 	unsigned box_size,
 	unsigned box_offset
 )
 {
+	ASSERT(dst.dims() == src.dims())
+	const auto& dims = src.dims();
+
 	if (box_size == 0) {
 		return;
 	}
+
 	for (unsigned y = 0; y != dims.y(); ++y) {
 		using std::min;
 		using std::max;
@@ -64,19 +64,17 @@ void box_blur_horizontal(
 			int pos = int(i) - int(box_offset);
 			pos = max(pos, 0);
 			pos = min(pos, int(dims.x()) - 1);
-			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-			sum += src[src_stride * y + pos].to<unsigned>();
+
+			sum += src[y][pos].to<unsigned>();
 		}
 		for (unsigned x = 0; x != dims.x(); ++x) {
 			int tmp = int(x) - int(box_offset);
 			int last = max(tmp, 0);
 			int next = min(tmp + int(box_size), int(dims.x()) - 1);
 
-			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-			dst[dst_stride * y + x] = (sum / box_size).to<image_type::pixel_type::value_type>();
+			dst[y][x] = (sum / box_size).to<image_type::pixel_type::value_type>();
 
-			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-			sum += src[src_stride * y + next].to<unsigned>() - src[src_stride * y + last].to<unsigned>();
+			sum += src[y][next].to<unsigned>() - src[y][last].to<unsigned>();
 		}
 	}
 }
@@ -84,15 +82,15 @@ void box_blur_horizontal(
 
 namespace {
 void box_blur_vertical(
-	image_type::pixel_type* dst,
-	const image_type::pixel_type* src,
-	unsigned dst_stride,
-	unsigned src_stride,
-	r4::vector2<unsigned> dims,
+	image_span_type dst, //
+	image_span_type::const_image_span_type src,
 	unsigned box_size,
 	unsigned box_offset
 )
 {
+	ASSERT(dst.dims() == src.dims())
+	const auto& dims = src.dims();
+
 	if (box_size == 0) {
 		return;
 	}
@@ -107,19 +105,16 @@ void box_blur_vertical(
 			pos = max(pos, 0);
 			pos = min(pos, int(dims.y()) - 1);
 
-			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-			sum += src[src_stride * pos + x].to<unsigned>();
+			sum += src[pos][x].to<unsigned>();
 		}
 		for (unsigned y = 0; y != dims.y(); ++y) {
 			int tmp = int(y) - int(box_offset);
 			int last = max(tmp, 0);
 			int next = min(tmp + int(box_size), int(dims.y()) - 1);
 
-			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-			dst[dst_stride * y + x] = (sum / box_size).to<image_type::pixel_type::value_type>();
+			dst[y][x] = (sum / box_size).to<image_type::pixel_type::value_type>();
 
-			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-			sum += src[src_stride * next + x].to<unsigned>() - src[src_stride * last + x].to<unsigned>();
+			sum += src[next][x].to<unsigned>() - src[last][x].to<unsigned>();
 		}
 	}
 }
@@ -182,57 +177,39 @@ filter_result blur_surface(
 	}
 
 	box_blur_horizontal(
-		tmp.pixels().data(),
-		src.image_span.data(),
-		src.image_span.dims().x(),
-		src.image_span.stride_pixels(),
-		src.image_span.dims(),
+		tmp.span(), //
+		src.image_span,
 		h_box_size[0],
 		h_offset[0]
 	);
 	box_blur_horizontal(
-		ret.surface.image_span.data(),
-		tmp.pixels().data(),
-		ret.surface.image_span.stride_pixels(),
-		src.image_span.dims().x(),
-		src.image_span.dims(),
+		ret.surface.image_span, //
+		tmp.span(),
 		h_box_size[1],
 		h_offset[1]
 	);
 	box_blur_horizontal(
-		tmp.pixels().data(),
-		ret.surface.image_span.data(),
-		src.image_span.dims().x(),
-		ret.surface.image_span.stride_pixels(),
-		src.image_span.dims(),
+		tmp.span(), //
+		ret.surface.image_span,
 		h_box_size[2],
 		h_offset[2]
 	);
 
 	box_blur_vertical(
-		ret.surface.image_span.data(),
-		tmp.pixels().data(),
-		ret.surface.image_span.stride_pixels(),
-		src.image_span.dims().x(),
-		src.image_span.dims(),
+		ret.surface.image_span, //
+		tmp.span(),
 		v_box_size[0],
 		v_offset[0]
 	);
 	box_blur_vertical(
-		tmp.pixels().data(),
-		ret.surface.image_span.data(),
-		src.image_span.dims().x(),
-		ret.surface.image_span.stride_pixels(),
-		src.image_span.dims(),
+		tmp.span(), //
+		ret.surface.image_span,
 		v_box_size[1],
 		v_offset[1]
 	);
 	box_blur_vertical(
-		ret.surface.image_span.data(),
-		tmp.pixels().data(),
-		ret.surface.image_span.stride_pixels(),
-		src.image_span.dims().x(),
-		src.image_span.dims(),
+		ret.surface.image_span, //
+		tmp.span(),
 		v_box_size[2],
 		v_offset[2]
 	);
