@@ -76,7 +76,8 @@ void box_blur_horizontal(
 
 			dst_line[x] = (sum / box_size).to<image_type::pixel_type::value_type>();
 
-			sum += src_line[next].to<unsigned>() - src_line[last].to<unsigned>();
+			sum += src_line[next].to<unsigned>();
+			sum -= src_line[last].to<unsigned>();
 		}
 	}
 }
@@ -118,7 +119,8 @@ void box_blur_vertical(
 
 			dst[y][x] = (sum / box_size).to<image_type::pixel_type::value_type>();
 
-			sum += src[next][x].to<unsigned>() - src[last][x].to<unsigned>();
+			sum += src[next][x].to<unsigned>();
+			sum -= src[last][x].to<unsigned>();
 		}
 	}
 }
