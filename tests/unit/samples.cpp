@@ -60,6 +60,7 @@ const tst::set set("samples", [](tst::suite& suite){
 #if CFG_COMPILER == CFG_COMPILER_MSVC
 #	pragma warning(disable : 4996)
 #endif
+            // NOLINTNEXTLINE(clang-diagnostic-deprecated-declarations, "false positive")
             auto res = svgren::render(*dom);
 #if CFG_COMPILER == CFG_COMPILER_MSVC
 #	pragma warning(enable: 4996)

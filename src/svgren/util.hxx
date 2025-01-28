@@ -52,7 +52,7 @@ class renderer_viewport_push
 	r4::vector2<real> old_viewport;
 
 public:
-	renderer_viewport_push(renderer& r, const decltype(old_viewport) & viewport);
+	renderer_viewport_push(renderer& r, const decltype(old_viewport)& viewport);
 
 	renderer_viewport_push(const renderer_viewport_push&) = delete;
 	renderer_viewport_push& operator=(const renderer_viewport_push&) = delete;
