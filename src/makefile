@@ -14,8 +14,10 @@ this_srcs := $(call prorab-src-dir,.)
 
 $(eval $(call prorab-config, ../config))
 
-this_ldlibs += -lsvgdom -lutki -lstdc++ -lm
+this_ldlibs += -l svgdom
 this_ldlibs += -l veg
+this_ldlibs += -l utki
+this_ldlibs += -l m
 
 $(eval $(prorab-build-lib))
 
