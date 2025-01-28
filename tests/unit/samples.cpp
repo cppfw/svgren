@@ -53,7 +53,7 @@ const tst::set set("samples", [](tst::suite& suite){
 
             auto dom = svgdom::load(in_file);
 
-#if CFG_COMPILER == CFG_COMPILER_GCC
+#if CFG_COMPILER == CFG_COMPILER_GCC || CFG_COMPILER == CFG_COMPILER_CLANG
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
