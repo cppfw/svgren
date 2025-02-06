@@ -575,3 +575,52 @@ jobs:
           conan remote login --password $MYCI_CONAN_PASSWORD cppfw $MYCI_CONAN_USER
           conan upload --check --remote cppfw $PACKAGE_NAME/$PACKAGE_VERSION@$MYCI_CONAN_USER/main
         if: startsWith(github.ref, 'refs/tags/')
+##### conan - emscripten #####
+  conan-emscripten:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # - {os: ubuntu, codename: noble, image_owner: }
+          - {os: debian, codename: bookworm, image_owner: }
+          # - {os: debian, codename: bookworm, image_owner: i386/, labels: [i386,docker]}
+          # - {os: debian, codename: bookworm, image_owner: , labels: [arm32,docker]}
+          # - {os: debian, codename: bookworm, image_owner: , labels: [arm64,docker]}
+    runs-on: ${{ (matrix.labels == '' && 'ubuntu-latest') || matrix.labels }}
+    container: ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
+    name: conan - emscripten | ${{ matrix.labels[0] }}
+    steps:
+      - name: add cppfw deb repo
+        uses: myci-actions/add-deb-repo@main
+        with:
+          repo: deb https://gagis.hopto.org/repo/cppfw/${{ matrix.os }} ${{ matrix.codename }} main
+          repo-name: cppfw
+          keys-asc: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
+          install: devscripts equivs myci pipx cmake git nodejs
+      - name: add ~/.local/bin to PATH
+        uses: myci-actions/export-env-var@main
+        with: {name: PATH, value: "$PATH:$HOME/.local/bin"}
+      - name: install conan
+        run: pipx install conan
+      - name: create default conan profile
+        run: |
+          conan profile detect --name default
+          sed -i -E "s/compiler.cppstd=.*$/compiler.cppstd=17/g" ~/.conan2/profiles/default
+      - name: git clone
+        uses: myci-actions/checkout@main
+        with:
+          submodules: false
+      - name: set PACKAGE_VERSION
+        uses: myci-actions/export-env-var@main
+        with: {name: PACKAGE_VERSION, value: $(myci-deb-version.sh debian/changelog)}
+        if: startsWith(github.ref, 'refs/tags/')
+      - name: build
+        run: |
+          conan remote add cppfw $MYCI_CONAN_REMOTE
+          # NOTE: specifying empty test folder to skip the test stage
+          conan create conan --profile:build default --profile:host emscripten/conan.profile --build=missing --user $MYCI_CONAN_USER --channel main --version $PACKAGE_VERSION --test-folder ""
+      - name: deploy conan package
+        run: |
+          conan remote login --password $MYCI_CONAN_PASSWORD cppfw $MYCI_CONAN_USER
+          conan upload --check --remote cppfw $PACKAGE_NAME/$PACKAGE_VERSION@$MYCI_CONAN_USER/main
+        if: startsWith(github.ref, 'refs/tags/')

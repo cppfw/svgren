@@ -24,7 +24,8 @@ class SvgrenConan(ConanFile):
 		self.requires("veg/[>=0.0.0]@cppfw/main", transitive_headers=False)
 
 	def build_requirements(self):
-		self.requires("tst/[>=0.3.29]@cppfw/main", visible=False)
+		if self.settings.os != "Emscripten":
+			self.requires("tst/[>=0.3.29]@cppfw/main", visible=False)
 		self.tool_requires("prorab/[>=2.0.27]@cppfw/main")
 		self.tool_requires("prorab-extra/[>=0.2.57]@cppfw/main")
 
@@ -52,16 +53,22 @@ class SvgrenConan(ConanFile):
 		git.run("submodule update --init --remote --depth 1")
 
 	def build(self):
-		self.run("make $MAKE_INCLUDE_DIRS_ARG lint=off")
-		self.run("make $MAKE_INCLUDE_DIRS_ARG lint=off test")
+		if self.settings.os == "Emscripten":
+			self.run("make $MAKE_INCLUDE_DIRS_ARG config=wasm --directory=src")
+		else:
+			self.run("make $MAKE_INCLUDE_DIRS_ARG lint=off")
+			self.run("make $MAKE_INCLUDE_DIRS_ARG lint=off test")
 
 	def package(self):
+		if self.settings.os == "Emscripten":
+			src_rel_dir = os.path.join(self.build_folder, "src/out/wasm")
+		else:
+			src_rel_dir = os.path.join(self.build_folder, "src/out/rel")
+
 		src_dir = os.path.join(self.build_folder, "src")
-		src_rel_dir = os.path.join(self.build_folder, "src/out/rel")
 		dst_include_dir = os.path.join(self.package_folder, "include")
 		dst_lib_dir = os.path.join(self.package_folder, "lib")
 		dst_bin_dir = os.path.join(self.package_folder, "bin")
-		
 		copy(conanfile=self, pattern="*.h",                    dst=dst_include_dir, src=src_dir,     keep_path=True)
 		copy(conanfile=self, pattern="*.hpp",                  dst=dst_include_dir, src=src_dir,     keep_path=True)
 

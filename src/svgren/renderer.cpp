@@ -126,7 +126,7 @@ void renderer::apply_transformation(const svgdom::transformable::transformation&
 	}
 }
 
-void renderer::apply_transformations(const decltype(svgdom::transformable::transformations) & transformations)
+void renderer::apply_transformations(const decltype(svgdom::transformable::transformations)& transformations)
 {
 	for (auto& t : transformations) {
 		this->apply_transformation(t);
@@ -1340,7 +1340,7 @@ void renderer::visit(const svgdom::rect_element& e)
 	this->render_shape(group_push.is_group_pushed());
 }
 
-const decltype(svgdom::transformable::transformations) & //
+const decltype(svgdom::transformable::transformations)& //
 renderer::gradient_get_transformations(const svgdom::gradient& g)
 {
 	if (g.transformations.size() != 0) {
@@ -1572,7 +1572,7 @@ svgdom::length renderer::gradient_get_fy(const svgdom::radial_gradient_element& 
 	return {0, svgdom::length_unit::unknown};
 }
 
-const decltype(svgdom::container::children) & renderer::gradient_get_stops(const svgdom::gradient& g)
+const decltype(svgdom::container::children)& renderer::gradient_get_stops(const svgdom::gradient& g)
 {
 	if (g.children.size() != 0) {
 		return g.children;
@@ -1594,7 +1594,7 @@ const decltype(svgdom::container::children) & renderer::gradient_get_stops(const
 	return g.children;
 }
 
-const decltype(svgdom::styleable::styles) & renderer::gradient_get_styles(const svgdom::gradient& g)
+const decltype(svgdom::styleable::styles)& renderer::gradient_get_styles(const svgdom::gradient& g)
 {
 	if (g.styles.size() != 0) {
 		return g.styles;
@@ -1616,7 +1616,7 @@ const decltype(svgdom::styleable::styles) & renderer::gradient_get_styles(const 
 	return g.styles;
 }
 
-const decltype(svgdom::styleable::classes) & renderer::gradient_get_classes(const svgdom::gradient& g)
+const decltype(svgdom::styleable::classes)& renderer::gradient_get_classes(const svgdom::gradient& g)
 {
 	if (!g.classes.empty()) {
 		return g.classes;

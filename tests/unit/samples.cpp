@@ -53,13 +53,14 @@ const tst::set set("samples", [](tst::suite& suite){
 
             auto dom = svgdom::load(in_file);
 
-#if CFG_COMPILER == CFG_COMPILER_GCC
+#if CFG_COMPILER == CFG_COMPILER_GCC || CFG_COMPILER == CFG_COMPILER_CLANG
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 #if CFG_COMPILER == CFG_COMPILER_MSVC
 #	pragma warning(disable : 4996)
 #endif
+            // NOLINTNEXTLINE(clang-diagnostic-deprecated-declarations, "false positive")
             auto res = svgren::render(*dom);
 #if CFG_COMPILER == CFG_COMPILER_MSVC
 #	pragma warning(enable: 4996)
