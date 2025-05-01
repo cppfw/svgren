@@ -97,26 +97,26 @@ tasks.whenTaskAdded { task ->
 //=== pack library files to aar ===
 //This stuff re-packs the release AAR file adding headers and static libs to there, but removing all shared (.so) libs, as we don't need them. The resulting AAR is put to the project root directory and can be uploaded to Maven along with POM file (you need to write one by hand).
 
-def aarName = name
+// def aarName = name
 
-task copyNdkLibsToAAR(type: Zip) {
-    baseName = aarName
-    version = "\$(version)"
-    extension = 'aar.in'
-    destinationDir = file('..') //put resulting AAR file to upper level directory
+// task copyNdkLibsToAAR(type: Zip) {
+//     baseName = aarName
+//     version = "\$(version)"
+//     extension = 'aar.in'
+//     destinationDir = file('..') //put resulting AAR file to upper level directory
 
-    from zipTree("build/outputs/aar/" + aarName + "-release.aar")
-    exclude('**/*.so') //do not include shared libraries into final AAR
-    from("../../src") {
-        include('**/*.hpp')
-        include('**/*.h')
-        into('ndkLibs/include')
-    }
-    from("build/intermediates/cmake/debug/obj"){
-        include('**/*.a')
-        into('ndkLibs')
-    }
-}
+//     from zipTree("build/outputs/aar/" + aarName + "-release.aar")
+//     exclude('**/*.so') //do not include shared libraries into final AAR
+//     from("../../src") {
+//         include('**/*.hpp')
+//         include('**/*.h')
+//         into('ndkLibs/include')
+//     }
+//     from("build/intermediates/cmake/debug/obj"){
+//         include('**/*.a')
+//         into('ndkLibs')
+//     }
+// }
 
 // This is only needed for libraries
 //afterEvaluate {
