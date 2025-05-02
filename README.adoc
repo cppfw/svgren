@@ -3,7 +3,7 @@
 = {name}
 
 |====
-| link:https://github.com/cppfw/{name}/releases[image:https://img.shields.io/github/tag/cppfw/{name}.svg[releases]] | link:https://github.com/cppfw/{name}/actions[image:https://github.com/cppfw/{name}/workflows/ci/badge.svg[ci status]] | link:https://codecov.io/gh/cppfw/{name}[image:https://codecov.io/gh/cppfw/{name}/branch/main/graph/badge.svg?token=vwqhr1CujV[codecov.io]]
+| link:https://github.com/cppfw/{name}/releases[image:https://img.shields.io/github/tag/cppfw/{name}.svg[releases]] | link:https://github.com/cppfw/{name}/actions[image:https://github.com/cppfw/{name}/workflows/ci/badge.svg[ci status]] | link:https://codecov.io/gh/cppfw/{name}/tree/main[image:https://codecov.io/gh/cppfw/{name}/branch/main/graph/badge.svg?token=vwqhr1CujV[codecov.io]]
 |====
 
 SVG renderer library in C++.
