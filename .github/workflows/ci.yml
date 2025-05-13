@@ -489,8 +489,8 @@ jobs:
         include:
           - {os: debian, codename: bookworm, image_owner: }
           # - {os: debian, codename: bookworm, image_owner: i386/, labels: [i386,docker]}
-          - {os: debian, codename: bookworm, image_owner: arm32v7/, labels: [ubuntu-24.04-arm]}
-          - {os: debian, codename: bookworm, image_owner: arm64v8/, labels: [ubuntu-24.04-arm]}
+          # - {os: debian, codename: bookworm, image_owner: arm32v7/, labels: [ubuntu-24.04-arm]}
+          # - {os: debian, codename: bookworm, image_owner: arm64v8/, labels: [ubuntu-24.04-arm]}
     runs-on: ${{ (matrix.labels == '' && 'ubuntu-latest') || matrix.labels }}
     container: ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
     name: conan - linux | ${{ matrix.image_owner }}
