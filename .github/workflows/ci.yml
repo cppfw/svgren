@@ -429,8 +429,8 @@ jobs:
         filename: '.\nuget\*.nupkg'
         api-key: ${{ secrets.NUGET_DOT_ORG_API_KEY }}
       if: startsWith(github.ref, 'refs/tags/')
-##### vcpkg #####
-  vcpkg:
+##### vcpkg-linux #####
+  vcpkg-linux:
     strategy:
       fail-fast: false
       matrix:
@@ -475,7 +475,7 @@ jobs:
         if: always() # even if previous steps fail, this one needs to be run
         uses: actions/upload-artifact@v4
         with:
-          name: vcpkg_logs
+          name: vcpkg_linux_logs
           path: |
             vcpkg-installation/buildtrees/${{ env.PACKAGE_NAME }}/
             build/vcpkg/**/*.log
@@ -483,6 +483,46 @@ jobs:
         run: |
           myci-deploy-vcpkg.sh --repo cppfw/vcpkg-repo --port-dir build/vcpkg/overlay/${PACKAGE_NAME}
         if: startsWith(github.ref, 'refs/tags/')
+##### vcpkg-windows #####
+  vcpkg-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: powershell
+    name: vcpkg - windows
+    steps:
+    - name: git clone
+      uses: actions/checkout@v4
+    - name: get myci scripts
+      uses: actions/checkout@v4
+      with:
+        repository: cppfw/myci
+        ref: latest
+        path: myci
+    - name: add myci to PATH
+      uses: myci-actions/export-env-var-powershell@main
+      with: {name: PATH, value: "$env:Path;myci/src/powershell"}
+    - name: set VCPKG_ROOT
+      uses: myci-actions/export-env-var-powershell@main
+      # accorging to github actions windows image docs, it should define VCPKG_INSTALLATION_ROOT env var,
+      # but on practice it is not set, so specify vcpkg root path explicitly
+      with: {name: VCPKG_ROOT, value: "C:/vcpkg/"}
+    - name: prepare vcpkg port
+      run: myci-vcpkg-prepare.ps1 -gitref ${{ github.sha }}
+    - name: test vcpkg port
+      run: |
+        cd build/vcpkg/test
+        cmake .
+        cmake --build . --parallel
+        ./Debug/test.exe
+    - name: upload vcpkg logs to artifacts
+      if: always() # even if previous steps fail, this one needs to be run
+      uses: actions/upload-artifact@v4
+      with:
+        name: vcpkg_windows_logs
+        path: |
+          vcpkg-installation/buildtrees/${{ env.PACKAGE_NAME }}/
+          build/vcpkg/**/*.log
 ##### conan - linux #####
   conan-linux:
     strategy:
