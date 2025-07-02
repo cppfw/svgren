@@ -25,28 +25,46 @@ Standards-Version: 3.9.2
 Package: libsvgren$(soname)
 Section: libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends:
+	${shlibs:Depends},
+	${misc:Depends}
 Description: cross-platform C++ SVG rendering library.
- SVG rendering library.
+	SVG rendering library.
+
+Package: libsvgren-dbg$(soname)
+Section: libs
+Architecture: any
+Depends:
+	${shlibs:Depends},
+	${misc:Depends}
+Description: cross-platform C++ SVG rendering library.
+	Debug version of libsvgren.
 
 Package: libsvgren$(soname)-dbgsrc
 Section: debug
 Architecture: all
-Depends: libsvgren$(soname)-dbgsym (= ${binary:Version}), ${misc:Depends}
+Depends:
+	libsvgren$(soname)-dbgsym (= ${binary:Version}),
+	libsvgren-dbg$(soname)-dbgsym (= ${binary:Version}),
+	${misc:Depends}
 Description: debugging sources for libsvgren$(soname) package.
 
 Package: libsvgren-dev
 Section: libdevel
 Architecture: any
-Depends: libsvgren$(soname) (= ${binary:Version}), ${misc:Depends},
-		libsvgdom-dev, libr4-dev
+Depends:
+	libsvgren$(soname) (= ${binary:Version}),
+	libsvgren-dbg$(soname) (= ${binary:Version}),
+	${misc:Depends},
+	libsvgdom-dev,
+	libr4-dev
 Suggests: libsvgren-doc
 Description: cross-platform C++ SVG rendering library.
- SVG rendering library.
+	SVG rendering library.
 
 Package: libsvgren-doc
 Section: doc
 Architecture: all
 Depends: ${misc:Depends}
 Description: documentation for libsvgren library.
- For more details see description to libsvgren-dev package.
+	For more details see description to libsvgren-dev package.

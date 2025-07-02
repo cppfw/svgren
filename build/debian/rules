@@ -1,0 +1,31 @@
+#!/usr/bin/make -f
+
+export PREFIX := /usr
+
+dbgsrc_pkg_name := $(filter %-dbgsrc, $(shell awk '/^Package: /{print $2}' debian/control))
+debug_prefix_map_arg := -fdebug-prefix-map=$(shell pwd)/src=$(PREFIX)/src/$(patsubst %-dbgsrc,%,$(dbgsrc_pkg_name))
+
+export PRORAB_INSTALL_DBGSRC := true
+
+export DEB_CFLAGS_MAINT_APPEND := $(debug_prefix_map_arg)
+export DEB_CXXFLAGS_MAINT_APPEND := $(debug_prefix_map_arg)
+export DEB_OBJCFLAGS_MAINT_APPEND := $(debug_prefix_map_arg)
+export DEB_OBJCXXFLAGS_MAINT_APPEND := $(debug_prefix_map_arg)
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	dh_auto_build --buildsystem=makefile -- --directory=..
+	@echo ""
+	@echo "|========== build debug version of the library ==========|"
+	@echo ""
+	dh_auto_build --buildsystem=makefile -- --directory=../src config=dbg
+
+override_dh_auto_install:
+	dh_auto_install --buildsystem=makefile -- --directory=../
+	dh_auto_install --buildsystem=makefile -- --directory=../src config=dbg
+
+override_dh_auto_clean:
+	dh_auto_clean --buildsystem=makefile -- --directory=../
+	dh_auto_clean --buildsystem=makefile -- --directory=../src config=dbg

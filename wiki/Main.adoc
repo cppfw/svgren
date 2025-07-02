@@ -16,7 +16,7 @@ See link:Features.adoc[Features] page.
 - **Android**: `io.github.cppfw:{package_name}`
 - **cocoapods** (iOS): `{package_name}`
 - **Msys2** (Windows): `mingw-w64-i686-{package_name}`, `mingw-w64-x86_64-{package_name}`
-- **Nuget** (Windows, Visual Studio): `lib{package_name}`
+- **Nuget** (DEPRECATED!!! use `vcpkg`) (Windows, Visual Studio): `lib{package_name}`
 
 == Tutorials
 - link:UsageTutorial.md[Basic usage]
