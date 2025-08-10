@@ -13,6 +13,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <ratio>
 
 #include <png.h>
 
@@ -59,13 +60,13 @@ int main(int argc, char **argv){
 	}
 
 #ifdef DEBUG
-	auto loadStart = utki::get_ticks_ms();
+	auto load_start = utki::get_ticks_ms();
 #endif
 	
 	auto dom = svgdom::load(papki::fs_file(filename));
 	utki::assert(dom, SL);
 	
-	LOG([&](auto&o){o << "SVG loaded in " << float(utki::get_ticks_ms() - loadStart) / 1000.0f << " sec." << std::endl;})
+	LOG([&](auto&o){o << "SVG loaded in " << float(utki::get_ticks_ms() - load_start) / float(std::milli::den) << " sec." << std::endl;})
 	
 	auto render_start_ms = utki::get_ticks_ms();
 	

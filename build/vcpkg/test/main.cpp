@@ -1,5 +1,7 @@
 #include <svgren/render.hpp>
 
+#include <iostream>
+
 using namespace std::string_view_literals;
 
 int main(int argc, const char** argv){

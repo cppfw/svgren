@@ -16,11 +16,11 @@ jobs:
 ##### coverage #####
   coverage:
     runs-on: ubuntu-latest
-    container: debian:bookworm
+    container: debian:trixie
     name: coverage - measure
     env:
       linux_distro: debian
-      linux_release: bookworm
+      linux_release: trixie
     steps:
       - name: add cppfw deb repo
         uses: myci-actions/add-deb-repo@main
@@ -29,12 +29,12 @@ jobs:
           repo-name: cppfw
           keys-asc: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
           install: myci locales git pipx
-      - name: add llvm repo (for clang-format)
-        uses: myci-actions/add-deb-repo@main
-        with:
-          repo: deb http://apt.llvm.org/${{ env.linux_release }} llvm-toolchain-${{ env.linux_release }} main
-          repo-name: llvm
-          keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
+      # - name: add llvm repo (for clang-format)
+      #   uses: myci-actions/add-deb-repo@main
+      #   with:
+      #     repo: deb http://apt.llvm.org/${{ env.linux_release }} llvm-toolchain-${{ env.linux_release }} main
+      #     repo-name: llvm
+      #     keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
       - name: git clone
         uses: myci-actions/checkout@main
       - name: prepare debian package
@@ -87,9 +87,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - {os: debian, codename: bookworm, image_owner: }
-          - {os: debian, codename: bookworm, image_owner: arm32v7/, labels: [ubuntu-24.04-arm]}
-          - {os: debian, codename: bookworm, image_owner: arm64v8/, labels: [ubuntu-24.04-arm]}
+          - {os: debian, codename: trixie, image_owner: }
+          - {os: debian, codename: trixie, image_owner: arm32v7/, labels: [ubuntu-24.04-arm]}
+          - {os: debian, codename: trixie, image_owner: arm64v8/, labels: [ubuntu-24.04-arm]}
     runs-on: ${{ (matrix.labels == '' && 'ubuntu-latest') || matrix.labels }}
     container: ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
     name: sanitizer - ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }} | ${{ matrix.labels[0] }}
@@ -101,12 +101,12 @@ jobs:
           repo-name: cppfw
           keys-asc: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
           install: myci git
-      - name: add llvm repo (for clang-format)
-        uses: myci-actions/add-deb-repo@main
-        with:
-          repo: deb http://apt.llvm.org/${{ matrix.codename }} llvm-toolchain-${{ matrix.codename }} main
-          repo-name: llvm
-          keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
+      # - name: add llvm repo (for clang-format)
+      #   uses: myci-actions/add-deb-repo@main
+      #   with:
+      #     repo: deb http://apt.llvm.org/${{ matrix.codename }} llvm-toolchain-${{ matrix.codename }} main
+      #     repo-name: llvm
+      #     keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
       - name: install ci tools
         run: |
           apt install --assume-yes devscripts equivs
@@ -120,6 +120,32 @@ jobs:
         run: make config=asan
       - name: test
         run: make config=asan test
+##### lint #####
+  lint:
+    runs-on: ubuntu-latest
+    container: debian:trixie
+    name: lint
+    env:
+      linux_distro: debian
+      linux_release: trixie
+    steps:
+      - name: add cppfw deb repo
+        uses: myci-actions/add-deb-repo@main
+        with:
+          repo: deb https://gagis.hopto.org/repo/cppfw/${{ env.linux_distro }} ${{ env.linux_release }} main
+          repo-name: cppfw
+          keys-asc: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
+          install: myci locales git devscripts equivs
+      - name: git clone
+        uses: myci-actions/checkout@main
+      - name: prepare debian package
+        run: myci-deb-prepare.sh
+      - name: install deps
+        run: myci-deb-install-build-deps.sh
+      - name: build
+        run: make config=lint
+      - name: test
+        run: make config=lint test
 ##### deb linux #####
   deb:
     strategy:
@@ -137,6 +163,10 @@ jobs:
           # - {os: debian, codename: bookworm, image_owner: i386/, labels: [i386,docker]}
           - {os: debian, codename: bookworm, image_owner: arm32v7/, labels: [ubuntu-24.04-arm]}
           - {os: debian, codename: bookworm, image_owner: arm64v8/, labels: [ubuntu-24.04-arm]}
+          - {os: debian, codename: trixie, image_owner: }
+          # - {os: debian, codename: trixie, image_owner: i386/, labels: [i386,docker]}
+          - {os: debian, codename: trixie, image_owner: arm32v7/, labels: [ubuntu-24.04-arm]}
+          - {os: debian, codename: trixie, image_owner: arm64v8/, labels: [ubuntu-24.04-arm]}
           # - {os: ubuntu, codename: focal, image_owner: }
           # - {os: ubuntu, codename: jammy, image_owner: }
           - {os: ubuntu, codename: noble, image_owner: }
@@ -158,12 +188,12 @@ jobs:
           repo-name: cppfw
           keys-asc: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
           install: myci git devscripts equivs nodejs
-      - name: add llvm repo (for clang-format)
-        uses: myci-actions/add-deb-repo@main
-        with:
-          repo: deb http://apt.llvm.org/${{ matrix.codename }} llvm-toolchain-${{ matrix.codename }} main
-          repo-name: llvm
-          keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
+      # - name: add llvm repo (for clang-format)
+      #   uses: myci-actions/add-deb-repo@main
+      #   with:
+      #     repo: deb http://apt.llvm.org/${{ matrix.codename }} llvm-toolchain-${{ matrix.codename }} main
+      #     repo-name: llvm
+      #     keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
       - name: git clone
         uses: myci-actions/checkout@main
       - name: set PACKAGE_VERSION
@@ -538,13 +568,13 @@ jobs:
     container: ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
     name: conan - linux | ${{ matrix.image_owner }}
     steps:
-      - name: add llvm repo (for clang-format)
-        uses: myci-actions/add-deb-repo@main
-        with:
-          repo: deb http://apt.llvm.org/${{ matrix.codename }} llvm-toolchain-${{ matrix.codename }} main
-          repo-name: llvm
-          keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
-          install: clang-format clang-tidy
+      # - name: add llvm repo (for clang-format)
+      #   uses: myci-actions/add-deb-repo@main
+      #   with:
+      #     repo: deb http://apt.llvm.org/${{ matrix.codename }} llvm-toolchain-${{ matrix.codename }} main
+      #     repo-name: llvm
+      #     keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
+      #     install: clang-format clang-tidy
       - name: add cppfw deb repo
         uses: myci-actions/add-deb-repo@main
         with:
