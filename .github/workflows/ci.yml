@@ -93,6 +93,8 @@ jobs:
     runs-on: ${{ (matrix.labels == '' && 'ubuntu-latest') || matrix.labels }}
     container: ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
     name: sanitizer - ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }} | ${{ matrix.labels[0] }}
+    env:
+      CXX: clang++
     steps:
       - name: add cppfw deb repo
         uses: myci-actions/add-deb-repo@main
@@ -100,7 +102,7 @@ jobs:
           repo: deb https://gagis.hopto.org/repo/cppfw/${{ matrix.os }} ${{ matrix.codename }} main
           repo-name: cppfw
           keys-asc: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
-          install: myci git
+          install: myci git clang
       # - name: add llvm repo (for clang-format)
       #   uses: myci-actions/add-deb-repo@main
       #   with:
