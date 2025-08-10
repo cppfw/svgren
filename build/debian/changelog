@@ -1,3 +1,9 @@
+libsvgren (0.6.29) unstable; urgency=medium
+
+  * debian trixie build
+
+ -- Ivan Gagis <igagis@gmail.com>  Sun, 10 Aug 2025 05:26:58 +0300
+
 libsvgren (0.6.28) unstable; urgency=medium
 
   * add debian dbg package
