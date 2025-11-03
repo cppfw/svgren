@@ -311,52 +311,6 @@ jobs:
     - name: deploy
       run: myci-deploy-homebrew.sh --tap cppfw/tap
       if: startsWith(github.ref, 'refs/tags/')
-##### ios #####
-  ios:
-    runs-on: macos-latest
-    steps:
-    - name: workaround python2 and python3 issue when upgrading python
-      run : |
-        rm -rf /usr/local/bin/2to3*
-        rm -rf /usr/local/bin/idle3*
-        rm -rf /usr/local/bin/pydoc3*
-        rm -rf /usr/local/bin/python3
-        rm -rf /usr/local/bin/python3-config
-        rm -rf /usr/local/bin/python3*
-        rm -rf /usr/local/bin/python3*-config
-    - name: add cppfw tap
-      run: |
-        brew tap cppfw/tap
-        brew update
-    - name: install ci tools
-      run: brew install myci
-    - name: git clone
-      uses: myci-actions/checkout@main
-    - name: set PACKAGE_VERSION
-      uses: myci-actions/export-env-var@main
-      with: {name: PACKAGE_VERSION, value: $(myci-deb-version.sh)}
-    - name: add cocoapods repo
-      run: pod repo add --silent cppfw https://$MYCI_GIT_USERNAME@github.com/cppfw/cocoapods-repo.git
-    - name: install deps
-      run: pod install --project-directory=xcode
-    - name: add sources to xcode project
-      run: |
-        curl -L https://github.com/zackslash/Xcode-Proj-Adder/raw/master/bin/XcodeProjAdder -O
-        chmod +x XcodeProjAdder
-        cd xcode/$PACKAGE_NAME
-        ../../XcodeProjAdder -XCP $PACKAGE_NAME.xcodeproj -SCSV `echo $(find ../../src -type f -name *.cpp) | sed -E -e 's/ /,/g'`
-    - name: build
-      run: |
-        xcodebuild CONFIGURATION_BUILD_DIR=../build_ios -sdk iphoneos -workspace xcode/$PACKAGE_NAME.xcworkspace -scheme $PACKAGE_NAME -configuration Release
-        xcodebuild CONFIGURATION_BUILD_DIR=../build_iossim -sdk iphonesimulator -workspace xcode/$PACKAGE_NAME.xcworkspace -scheme $PACKAGE_NAME -configuration Release
-        xcodebuild -create-xcframework -framework "xcode/build_ios/$PACKAGE_NAME.framework" -framework "xcode/build_iossim/$PACKAGE_NAME.framework" -output "xcode/$PACKAGE_NAME.xcframework"
-    - name: create package
-      run: myci-create-zip-package.sh --headers-dir src --file xcode/$PACKAGE_NAME.xcframework///lib/ios --file LICENSE $PACKAGE_NAME-$PACKAGE_VERSION.zip
-    - name: deploy
-      run: |
-        echo "${{ secrets.MYCI_REPO_SSH_KEY }}" > repo_key_rsa && chmod 600 repo_key_rsa
-        myci-deploy-cocoapods-ssh.sh --repo cppfw --version $PACKAGE_VERSION --server gagis.hopto.org --key repo_key_rsa --generic-repo cppfw/cocoapods --package $PACKAGE_NAME-$PACKAGE_VERSION.zip build/cocoapods/$PACKAGE_NAME.podspec.in
-      if: startsWith(github.ref, 'refs/tags/')
 ##### android #####
   android:
     runs-on: ubuntu-latest
@@ -436,31 +390,6 @@ jobs:
         for f in $(find build/msys2 -name "mingw-w64-${{ matrix.arch }}-$PACKAGE_NAME-*-any.pkg.*"); do
           myci-deploy-pacman-ssh.sh --server gagis.hopto.org --key repo_key_rsa --repo cppfw/msys2/${{ matrix.repo }} --database cppfw_${{ matrix.repo }} $f
         done
-      if: startsWith(github.ref, 'refs/tags/')
-##### msvs #####
-  msvs:
-    runs-on: windows-latest
-    defaults:
-      run:
-        shell: powershell
-    steps:
-    - name: git clone
-      uses: actions/checkout@v3
-    - name: install CoAPP tools
-      uses: myci-actions/install-coapp-tools@main
-    - name: nuget update
-      run: |
-        nuget restore msvs_solution/msvs_solution.sln
-        nuget update msvs_solution/msvs_solution.sln
-    - name: add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.1
-    - name: build
-      run: .\nuget\build_nuget.ps1
-    - name: deploy
-      uses: myci-actions/publish-nuget@main
-      with:
-        filename: '.\nuget\*.nupkg'
-        api-key: ${{ secrets.NUGET_DOT_ORG_API_KEY }}
       if: startsWith(github.ref, 'refs/tags/')
 ##### vcpkg-linux #####
   vcpkg-linux:
@@ -553,6 +482,63 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: vcpkg_windows_logs
+        path: |
+          vcpkg-installation/buildtrees/${{ env.PACKAGE_NAME }}/
+          build/vcpkg/**/*.log
+##### vcpkg-ios #####
+  vcpkg-ios:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - Debug
+          - Release
+    name: vcpkg - ios | ${{ matrix.config }}
+    steps:
+    - name: workaround python2 and python3 issue when upgrading python
+      run : |
+        rm -rf /usr/local/bin/2to3*
+        rm -rf /usr/local/bin/idle3*
+        rm -rf /usr/local/bin/pydoc3*
+        rm -rf /usr/local/bin/python3
+        rm -rf /usr/local/bin/python3-config
+        rm -rf /usr/local/bin/python3*
+        rm -rf /usr/local/bin/python3*-config
+    - name: git clone
+      uses: myci-actions/checkout@main
+      with:
+        submodules: true #  non-recursive, no remote
+    - name: install vcpkg
+      run: |
+        git clone https://github.com/microsoft/vcpkg.git vcpkg-installation
+        (cd vcpkg-installation; ./bootstrap-vcpkg.sh)
+    - name: set VCPKG_ROOT
+      uses: myci-actions/export-env-var@main
+      with: {name: VCPKG_ROOT, value: "$(pwd)/vcpkg-installation"}
+    - name: add VCPKG_ROOT to PATH
+      uses: myci-actions/export-env-var@main
+      with: {name: PATH, value: "$PATH:$VCPKG_ROOT"}
+    - name: add cppfw tap
+      run: |
+        brew tap cppfw/tap
+        brew update
+    - name: install ci tools
+      run: brew install myci cmake
+    - name: prepare vcpkg port
+      run: |
+        myci-vcpkg-prepare.sh --git-ref ${{ github.sha }}
+    - name: test vcpkg port
+      run: |
+        cd build/vcpkg/test
+        cmake -G Xcode -D CMAKE_SYSTEM_NAME=iOS -D VCPKG_TARGET_TRIPLET=arm64-ios-simulator .
+        cmake --build . --parallel --config ${{ matrix.config }} -- -sdk iphonesimulator -arch arm64
+#        ./test
+    - name: upload vcpkg logs to artifacts
+      if: always() # even if previous steps fail, this one needs to be run
+      uses: actions/upload-artifact@v4
+      with:
+        name: vcpkg_ios_${{ matrix.config }}_logs
         path: |
           vcpkg-installation/buildtrees/${{ env.PACKAGE_NAME }}/
           build/vcpkg/**/*.log

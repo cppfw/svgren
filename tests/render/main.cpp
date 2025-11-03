@@ -6,7 +6,7 @@
 #include <utki/config.hpp>
 #include <utki/time.hpp>
 
-#include <papki/fs_file.hpp>
+#include <fsif/native_file.hpp>
 
 #include <rasterimage/image_variant.hpp>
 
@@ -63,7 +63,7 @@ int main(int argc, char **argv){
 	auto load_start = utki::get_ticks_ms();
 #endif
 	
-	auto dom = svgdom::load(papki::fs_file(filename));
+	auto dom = svgdom::load(fsif::native_file(filename));
 	utki::assert(dom, SL);
 	
 	LOG([&](auto&o){o << "SVG loaded in " << float(utki::get_ticks_ms() - load_start) / float(std::milli::den) << " sec." << std::endl;})
@@ -79,7 +79,7 @@ int main(int argc, char **argv){
 	
 	utki::log([&](auto&o){o << "img.dims = " << img.dims() << " img.pixels.size() = " << img.pixels().size() << std::endl;});
 
-	image.write_png(papki::fs_file(out_filename));
+	image.write_png(fsif::native_file(out_filename));
 	
 #if CFG_OS == CFG_OS_LINUX
 	auto width = int(img.dims().x() + 2);

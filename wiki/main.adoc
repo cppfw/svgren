@@ -1,7 +1,7 @@
 = WiKi main page
 
 == Supported/unsupported SVG features
-See link:Features.adoc[Features] page.
+See link:features.adoc[Features] page.
 
 == Installation
 :package_name: svgren
@@ -13,13 +13,11 @@ See link:Features.adoc[Features] page.
 - **conan** (multi-OS): `{package_name}`
 - **deb** (Linux): `lib{package_name}-dev`
 - **homebrew** (MacOS X): `lib{package_name}`
-- **Android**: `io.github.cppfw:{package_name}`
-- **cocoapods** (iOS): `{package_name}`
-- **Msys2** (Windows): `mingw-w64-i686-{package_name}`, `mingw-w64-x86_64-{package_name}`
-- **Nuget** (DEPRECATED!!! use `vcpkg`) (Windows, Visual Studio): `lib{package_name}`
+- **android**: `io.github.cppfw:{package_name}`
+- **msys2** (Windows): `mingw-w64-i686-{package_name}`, `mingw-w64-x86_64-{package_name}`
 
 == Tutorials
-- link:UsageTutorial.md[Basic usage]
+- link:usage.adoc[Basic usage tutorial]
 
 == Building
-- link:BuildingLinux.adoc[Linux]
+- link:building.adoc[Linux]

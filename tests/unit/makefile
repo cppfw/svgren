@@ -8,7 +8,7 @@ this_name := tests
 this_srcs += $(call prorab-src-dir, .)
 
 this_ldlibs += -l svgdom$(this_dbg)
-this_ldlibs += -l papki$(this_dbg)
+this_ldlibs += -l fsif$(this_dbg)
 this_ldlibs += -l utki$(this_dbg)
 this_ldlibs += -l tst$(this_dbg)
 this_ldlibs += -l rasterimage$(this_dbg)

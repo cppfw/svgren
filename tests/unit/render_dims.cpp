@@ -1,7 +1,7 @@
 #include <tst/set.hpp>
 #include <tst/check.hpp>
 
-#include <papki/fs_file.hpp>
+#include <fsif/native_file.hpp>
 
 #include "../../src/svgren/render.hpp"
 
@@ -14,7 +14,7 @@ const tst::set set("render_dims", [](tst::suite& suite){
 	suite.add(
 		"requested_dimensions",
 		[](){
-			auto dom = svgdom::load(papki::fs_file("samples_data/camera.svg"));
+			auto dom = svgdom::load(fsif::native_file("samples_data/camera.svg"));
 
 			utki::assert(dom, SL);
 

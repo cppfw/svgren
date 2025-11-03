@@ -8,12 +8,12 @@
       {
         "kind": "git",
         "repository": "https://github.com/cppfw/vcpkg-repo/",
-        "baseline": "1f2290382f6d31870139666276c1aa04bc925885",
+        "baseline": "2a83a4f54975ff94bdd2adf7f96e6bcfefa31560",
         "reference": "main",
         "packages": [
           "myci",
           "utki",
-          "papki",
+          "fsif",
           "mikroxml",
           "cssom",
           "svgdom",

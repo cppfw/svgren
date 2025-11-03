@@ -13,7 +13,7 @@ image:wiki/camera.png[image sample]
 **{name}** uses **link:https://github.com/cppfw/svgdom[svgdom]** to read the SVG file and **link:http://github.com/cppfw/agg[AGG]** to render graphics.
 
 = Installation and Tutorials
-Read link:wiki/Main.adoc[WiKi] for installation instructions and tutorials.
+Read link:wiki/main.adoc[WiKi] for installation instructions and tutorials.
 
 = Projects using {name}
 link:wiki/usages.adoc[See list here].

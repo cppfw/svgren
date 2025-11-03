@@ -1,5 +1,5 @@
 #include <utki/debug.hpp>
-#include <papki/fs_file.hpp>
+#include <fsif/native_file.hpp>
 
 #include "../../src/svgren/render.hpp"
 
@@ -15,7 +15,7 @@ int main(int argc, const char** argv) {
 	std::vector<std::unique_ptr<svgdom::svg_element>> svgs;
 	
 	for(const char* arg : utki::make_span(std::next(argv), argc - 1)){
-		svgs.push_back(svgdom::load(papki::fs_file(arg)));
+		svgs.push_back(svgdom::load(fsif::native_file(arg)));
 	}
 	
 	std::vector<std::thread> threads;

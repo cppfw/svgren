@@ -6,7 +6,7 @@
 #include <utki/config.hpp>
 #include <utki/span.hpp>
 #include <r4/vector.hpp>
-#include <papki/fs_file.hpp>
+#include <fsif/native_file.hpp>
 #include <svgdom/dom.hpp>
 
 #include <rasterimage/image_variant.hpp>
@@ -28,7 +28,7 @@ const tst::set set("samples", [](tst::suite& suite){
 
     {
 		const std::regex suffix_regex("^.*\\.svg$");
-		auto all_files = papki::fs_file(data_dir).list_dir();
+		auto all_files = fsif::native_file(data_dir).list_dir();
 
 		std::copy_if(
 				all_files.begin(),
@@ -49,7 +49,7 @@ const tst::set set("samples", [](tst::suite& suite){
 		},
         files,
         [](const auto& p){
-            papki::fs_file in_file(data_dir + p);
+            fsif::native_file in_file(data_dir + p);
 
             auto dom = svgdom::load(in_file);
 
@@ -71,7 +71,7 @@ const tst::set set("samples", [](tst::suite& suite){
 
             auto& img = res.pixels;
 
-            papki::fs_file png_file(data_dir + expected_dir + "/" + papki::not_suffix(in_file.not_dir()) + ".png");
+            fsif::native_file png_file(data_dir + expected_dir + "/" + fsif::not_suffix(in_file.not_dir()) + ".png");
 
 			auto png_var = rasterimage::read_png(png_file);
 
@@ -118,13 +118,13 @@ const tst::set set("samples", [](tst::suite& suite){
 		},
         files,
         [](const auto& p){
-            papki::fs_file in_file(data_dir + p);
+            fsif::native_file in_file(data_dir + p);
 
             auto dom = svgdom::load(in_file);
 
             auto im = svgren::rasterize(*dom);
 
-            papki::fs_file png_file(data_dir + expected_dir + "/" + papki::not_suffix(in_file.not_dir()) + ".png");
+            fsif::native_file png_file(data_dir + expected_dir + "/" + fsif::not_suffix(in_file.not_dir()) + ".png");
 
 			auto png_var = rasterimage::read_png(png_file);
 
