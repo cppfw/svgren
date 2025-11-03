@@ -15,7 +15,7 @@
       },
       {
         "name" : "myci",
-        "host" : true
+        "host" : false
       },
       "utki",
       "svgdom",

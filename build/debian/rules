@@ -3,7 +3,7 @@
 export PREFIX := /usr
 
 dbgsrc_pkg_name := $(filter %-dbgsrc, $(shell awk '/^Package: /{print $2}' debian/control))
-debug_prefix_map_arg := -fdebug-prefix-map=$(shell pwd)/src=$(PREFIX)/src/$(patsubst %-dbgsrc,%,$(dbgsrc_pkg_name))
+debug_prefix_map_arg := -fdebug-prefix-map=$(abspath ../src)=$(PREFIX)/src/$(patsubst %-dbgsrc,%,$(dbgsrc_pkg_name))
 
 export PRORAB_INSTALL_DBGSRC := true
 
