@@ -1,3 +1,9 @@
+libsvgren (0.6.30) unstable; urgency=medium
+
+  * debian: fix dbgsrc path
+
+ -- Ivan Gagis <igagis@gmail.com>  Mon, 03 Nov 2025 15:50:50 +0200
+
 libsvgren (0.6.29) unstable; urgency=medium
 
   * debian trixie build
