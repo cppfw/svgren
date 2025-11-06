@@ -469,6 +469,10 @@ jobs:
       # accorging to github actions windows image docs, it should define VCPKG_INSTALLATION_ROOT env var,
       # but on practice it is not set, so specify vcpkg root path explicitly
       with: {name: VCPKG_ROOT, value: "C:/vcpkg/"}
+    - name: make local symbolic link to VCPKG installation directory
+      # this is needed at least for actions/upload-artifact to be able to find vcpkg install logs
+      shell: powershell
+      run: New-Item -ItemType SymbolicLink -Path vcpkg-installation -Target $env:VCPKG_ROOT
     - name: prepare vcpkg port
       run: myci-vcpkg-prepare.ps1 -gitref ${{ github.sha }}
     - name: test vcpkg port
