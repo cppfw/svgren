@@ -412,8 +412,8 @@ filter_result color_matrix(
 	ASSERT(!s.image_span.empty() || s.rect().d.is_zero())
 
 	for (unsigned y = 0; y != s.rect().d.y(); ++y) {
-		auto sp = s.image_span[size_t(y)].data();
-		auto dp = ret.surface.image_span[size_t(y)].data();
+		auto sp = s.image_span[y].data();
+		auto dp = ret.surface.image_span[y].data();
 		for (unsigned x = 0; x != s.rect().d.x(); ++x) {
 			auto cc = *sp;
 			++sp;
@@ -621,9 +621,9 @@ filter_result blend(surface& in, surface& in2, svgdom::fe_blend_element::mode mo
 	filter_result ret(s1.rect());
 
 	for (unsigned y = 0; y != ret.surface.rect().d.y(); ++y) {
-		auto sp1 = s1.image_span[size_t(y)].data();
-		auto sp2 = s2.image_span[size_t(y)].data();
-		auto dp = ret.surface.image_span[size_t(y)].data();
+		auto sp1 = s1.image_span[y].data();
+		auto sp2 = s2.image_span[y].data();
+		auto dp = ret.surface.image_span[y].data();
 		for (unsigned x = 0; x != ret.surface.rect().d.x(); ++x) {
 			// TODO: optimize by using integer arithmetics instead of floating point
 			auto c01 = rasterimage::to_float<real>(*sp1);
@@ -712,9 +712,9 @@ filter_result composite(surface& in, surface& in2, const svgdom::fe_composite_el
 	filter_result ret(s1.rect());
 
 	for (unsigned y = 0; y != ret.surface.rect().d.y(); ++y) {
-		auto sp1 = s1.image_span[size_t(y)].data();
-		auto sp2 = s2.image_span[size_t(y)].data();
-		auto dp = ret.surface.image_span[size_t(y)].data();
+		auto sp1 = s1.image_span[y].data();
+		auto sp2 = s2.image_span[y].data();
+		auto dp = ret.surface.image_span[y].data();
 		for (unsigned x = 0; x != ret.surface.rect().d.x(); ++x) {
 			// TODO: optimize by using integer arithmetics instead of floating point
 			auto c01 = rasterimage::to_float<real>(*sp1);
