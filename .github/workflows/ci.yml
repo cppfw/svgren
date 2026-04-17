@@ -347,7 +347,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - {arch: i686, repo: mingw32}
+          # - {arch: i686, repo: mingw32}
           - {arch: x86_64, repo: mingw64}
     name: msys2 - ${{ matrix.repo }}
     steps:
