@@ -3,7 +3,7 @@
 
 #include <fsif/native_file.hpp>
 
-#include "../../src/svgren/render.hpp"
+#include "../../../src/svgren/render.hpp"
 
 #ifdef assert
 #	undef assert

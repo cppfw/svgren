@@ -5,7 +5,7 @@ $(eval $(call prorab-config, ../../config))
 
 this_name := tests
 
-this_srcs += $(call prorab-src-dir, .)
+this_srcs += $(call prorab-src-dir, src)
 
 this_ldlibs += -l svgdom$(this_dbg)
 this_ldlibs += -l fsif$(this_dbg)

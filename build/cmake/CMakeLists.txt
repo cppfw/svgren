@@ -28,3 +28,8 @@ myci_declare_library(${name}
         svgdom
         veg
 )
+
+# ==============
+# = unit tests =
+
+include(unit_tests.cmake)

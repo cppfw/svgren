@@ -12,7 +12,7 @@
 #include <rasterimage/image_variant.hpp>
 #include <rasterimage/operations.hpp>
 
-#include "../../src/svgren/render.hpp"
+#include "../../../src/svgren/render.hpp"
 
 namespace{
 const unsigned tolerance = 10;
