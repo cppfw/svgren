@@ -1,5 +1,6 @@
 {
   "dependencies": [
-      "svgren"
+      "svgren",
+      "tst"
   ]
 }

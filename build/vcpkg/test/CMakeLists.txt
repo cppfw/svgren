@@ -8,5 +8,6 @@ project(test)
 # Otherwise VCPKG does not set the CMAKE_PREFIX_PATH to find packages.
 find_package(myci CONFIG REQUIRED)
 find_package(svgren CONFIG REQUIRED)
+find_package(tst CONFIG REQUIRED)
 
 include(../../cmake/unit_tests.cmake)

@@ -18,6 +18,10 @@
           "cssom",
           "svgdom",
           "r4",
+          "tst",
+          "clargs",
+          "nitki",
+          "opros",
           "rasterimage",
           "agg",
           "veg"
