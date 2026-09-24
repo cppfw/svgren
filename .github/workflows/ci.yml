@@ -436,7 +436,7 @@ jobs:
       - name: test vcpkg port - test
         run: |
           cd build/vcpkg/test
-          cmake --build . --target test
+          cmake --build . --target run-svgren-tests
       - name: upload vcpkg logs to artifacts
         if: always() # even if previous steps fail, this one needs to be run
         uses: actions/upload-artifact@v4
@@ -496,7 +496,7 @@ jobs:
     - name: test vcpkg port - test
       run: |
         cd build/vcpkg/test
-        cmake --build . --config ${{ matrix.config}} --target test
+        cmake --build . --config ${{ matrix.config}} --target run-svgren-tests
     - name: upload vcpkg logs to artifacts
       if: always() # even if previous steps fail, this one needs to be run
       uses: actions/upload-artifact@v4
