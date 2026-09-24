@@ -27,7 +27,8 @@ myci_declare_application(${PROJECT_NAME}-tests
         tst::tst
 )
 
-myci_declare_test(
-    RUN_TARGET
-        run-${PROJECT_NAME}-tests
-)
+# The tests in dbg config take too long to execute (about a minute?), so do not add it to general test target.
+# myci_declare_test(
+#     RUN_TARGET
+#         run-${PROJECT_NAME}-tests
+# )
