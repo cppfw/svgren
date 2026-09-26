@@ -1,7 +1,6 @@
-#include <tst/set.hpp>
-#include <tst/check.hpp>
-
 #include <fsif/native_file.hpp>
+#include <tst/check.hpp>
+#include <tst/set.hpp>
 
 #include "../../../src/svgren/render.hpp"
 
@@ -9,22 +8,19 @@
 #	undef assert
 #endif
 
-namespace{
-const tst::set set("render_dims", [](tst::suite& suite){
-	suite.add(
-		"requested_dimensions",
-		[](){
-			auto dom = svgdom::load(fsif::native_file("samples_data/camera.svg"));
+namespace {
+const tst::set set("render_dims", [](tst::suite& suite) {
+	suite.add("requested_dimensions", []() {
+		auto dom = svgdom::load(fsif::native_file("samples_data/camera.svg"));
 
-			utki::assert(dom, SL);
+		utki::assert(dom, SL);
 
-			svgren::parameters p;
-			// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-			p.dims_request = decltype(p.dims_request){10, 10};
-			auto res = svgren::rasterize(*dom, p);
+		svgren::parameters p;
+		// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+		p.dims_request = decltype(p.dims_request){10, 10};
+		auto res = svgren::rasterize(*dom, p);
 
-			utki::assert(res.dims() == p.dims_request, SL);
-		}
-	);
+		utki::assert(res.dims() == p.dims_request, SL);
+	});
 });
-}
+} // namespace
