@@ -1,4 +1,7 @@
 # TODO: remove when moved to C++20
+# svgren must support C++17, so the C++20-only modernize checks are
+# suppressed for this library.
 Checks: |
   -modernize-use-designated-initializers
+  -modernize-use-ranges
 InheritParentConfig: true

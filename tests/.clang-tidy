@@ -1,0 +1,6 @@
+# TODO: remove when moved to C++20
+# svgren must support C++17, so the C++20-only modernize-use-ranges
+# (std::ranges algorithms) is suppressed for the tests.
+Checks: |
+  -modernize-use-ranges
+InheritParentConfig: true
