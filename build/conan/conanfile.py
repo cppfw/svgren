@@ -58,7 +58,8 @@ class SvgrenConan(ConanFile):
 			self.run("make $MAKE_INCLUDE_DIRS_ARG config=emsc --directory=src")
 		else:
 			self.run("make $MAKE_INCLUDE_DIRS_ARG lint=off")
-			self.run("make $MAKE_INCLUDE_DIRS_ARG lint=off test")
+			# disabled: tests/render needs X11 headers which are not available when built as a conan dependency
+			# self.run("make $MAKE_INCLUDE_DIRS_ARG lint=off test")
 
 	def package(self):
 		if self.settings.os == "Emscripten":
