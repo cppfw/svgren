@@ -1,3 +1,9 @@
+libsvgren (0.6.32) unstable; urgency=medium
+
+  * conan: no tests when installing
+
+ -- Ivan Gagis <igagis@gmail.com>  Tue, 10 Nov 2026 19:23:34 +0200
+
 libsvgren (0.6.31) unstable; urgency=medium
 
   * update
