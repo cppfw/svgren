@@ -47,7 +47,7 @@ void box_blur_horizontal(
 	unsigned box_offset
 )
 {
-	ASSERT(dst.dims() == src.dims())
+	utki::assert(dst.dims() == src.dims(), SL);
 	const auto& dims = src.dims();
 
 	if (box_size == 0) {
@@ -91,7 +91,7 @@ void box_blur_vertical(
 	unsigned box_offset
 )
 {
-	ASSERT(dst.dims() == src.dims())
+	utki::assert(dst.dims() == src.dims(), SL);
 	const auto& dims = src.dims();
 
 	if (box_size == 0) {
@@ -254,13 +254,14 @@ void filter_applier::set_result(
 	}
 
 	this->lastResult = &res.first->second;
-	ASSERT(
+	utki::assert(
 		this->lastResult->image.pixels().size() == 0 ||
 			this->lastResult->surface.image_span.data() == this->lastResult->image.pixels().data(),
 		[&](auto& o) {
 			o << "this->lastResult->image.pixels().size() = " << this->lastResult->image.pixels().size();
-		}
-	)
+		},
+		SL
+	);
 }
 
 surface filter_applier::get_source(const std::string& in)
@@ -406,10 +407,10 @@ filter_result color_matrix(
 )
 {
 	//	TRACE(<< "colorMatrix(): s.width = " << s.width << " s.height = " << s.height << std::endl)
-	ASSERT(!s.image_span.empty() || s.rect().d.is_zero())
+	utki::assert(!s.image_span.empty() || s.rect().d.is_zero(), SL);
 	filter_result ret(s.rect());
 
-	ASSERT(!s.image_span.empty() || s.rect().d.is_zero())
+	utki::assert(!s.image_span.empty() || s.rect().d.is_zero(), SL);
 
 	for (unsigned y = 0; y != s.rect().d.y(); ++y) {
 		auto sp = s.image_span[y].data();
@@ -422,18 +423,34 @@ filter_result color_matrix(
 
 			auto c = rasterimage::to_float<real>(cc);
 
-			ASSERT(real(0) <= c.r() && c.r() <= real(1), [&](auto& o) {
-				o << "c = " << c << ", cc = " << cc;
-			})
-			ASSERT(real(0) <= c.g() && c.g() <= real(1), [&](auto& o) {
-				o << "c = " << c << ", cc = " << cc;
-			})
-			ASSERT(real(0) <= c.b() && c.b() <= real(1), [&](auto& o) {
-				o << "c = " << c << ", cc = " << cc;
-			})
-			ASSERT(real(0) <= c.a() && c.a() <= real(1), [&](auto& o) {
-				o << "c = " << c << ", cc = " << cc;
-			})
+			utki::assert(
+				real(0) <= c.r() && c.r() <= real(1),
+				[&](auto& o) {
+					o << "c = " << c << ", cc = " << cc;
+				},
+				SL
+			);
+			utki::assert(
+				real(0) <= c.g() && c.g() <= real(1),
+				[&](auto& o) {
+					o << "c = " << c << ", cc = " << cc;
+				},
+				SL
+			);
+			utki::assert(
+				real(0) <= c.b() && c.b() <= real(1),
+				[&](auto& o) {
+					o << "c = " << c << ", cc = " << cc;
+				},
+				SL
+			);
+			utki::assert(
+				real(0) <= c.a() && c.a() <= real(1),
+				[&](auto& o) {
+					o << "c = " << c << ", cc = " << cc;
+				},
+				SL
+			);
 
 			auto c1 = m * c + mc5;
 
@@ -465,18 +482,18 @@ void filter_applier::visit(const svgdom::fe_color_matrix_element& e)
 				auto mc5_iter = mc5.begin();
 				for (auto& row : m) {
 					for (auto& elem : row) {
-						ASSERT(e_values_iter != e.values.end())
+						utki::assert(e_values_iter != e.values.end(), SL);
 						elem = *e_values_iter;
 						++e_values_iter;
 					}
-					ASSERT(e_values_iter != e.values.end())
-					ASSERT(mc5_iter != mc5.end())
+					utki::assert(e_values_iter != e.values.end(), SL);
+					utki::assert(mc5_iter != mc5.end(), SL);
 					*mc5_iter = *e_values_iter;
 					++mc5_iter;
 					++e_values_iter;
 				}
-				ASSERT(mc5_iter == mc5.end())
-				ASSERT(e_values_iter == e.values.end())
+				utki::assert(mc5_iter == mc5.end(), SL);
+				utki::assert(e_values_iter == e.values.end(), SL);
 			}
 			break;
 		case svgdom::fe_color_matrix_element::type::saturate:
@@ -597,7 +614,7 @@ void filter_applier::visit(const svgdom::fe_color_matrix_element& e)
 
 	// TRACE(<< "color matrix getSource()" << std::endl)
 	auto src = this->get_source(e.in);
-	ASSERT(!src.image_span.empty())
+	utki::assert(!src.image_span.empty(), SL);
 	auto s = src.intersection(this->filterRegion);
 
 	// TODO: set filter sub-region
@@ -612,11 +629,15 @@ filter_result blend(surface& in, surface& in2, svgdom::fe_blend_element::mode mo
 	auto s1 = in.intersection(in2.rect());
 	auto s2 = in2.intersection(in.rect());
 
-	ASSERT(s1.rect().d.x() == s2.rect().d.x(), [&](auto& o) {
-		o << "s1.rect().d.x() = " << s1.rect().d.x() << " s2.rect().d.x() = " << s2.rect().d.x();
-	})
-	ASSERT(s1.rect().d.y() == s2.rect().d.y())
-	ASSERT(s1.rect().p == s2.rect().p)
+	utki::assert(
+		s1.rect().d.x() == s2.rect().d.x(),
+		[&](auto& o) {
+			o << "s1.rect().d.x() = " << s1.rect().d.x() << " s2.rect().d.x() = " << s2.rect().d.x();
+		},
+		SL
+	);
+	utki::assert(s1.rect().d.y() == s2.rect().d.y(), SL);
+	utki::assert(s1.rect().p == s2.rect().p, SL);
 
 	filter_result ret(s1.rect());
 
@@ -642,7 +663,7 @@ filter_result blend(surface& in, surface& in2, svgdom::fe_blend_element::mode mo
 			r4::vector3<real> cr;
 			switch (mode) {
 				default:
-					ASSERT(false)
+					utki::assert(false, SL);
 					[[fallthrough]];
 				case svgdom::fe_blend_element::mode::normal:
 					// cr = (1 - qa) * cb + ca
@@ -703,11 +724,15 @@ filter_result composite(surface& in, surface& in2, const svgdom::fe_composite_el
 	auto s1 = in.intersection(in2.rect());
 	auto s2 = in2.intersection(in.rect());
 
-	ASSERT(s1.rect().d.x() == s2.rect().d.x(), [&](auto& o) {
-		o << "s1.rect().d.x() = " << s1.rect().d.x() << " s2.rect().d.x()) = " << s2.rect().d.x();
-	})
-	ASSERT(s1.rect().d.y() == s2.rect().d.y())
-	ASSERT(s1.rect().p == s2.rect().p)
+	utki::assert(
+		s1.rect().d.x() == s2.rect().d.x(),
+		[&](auto& o) {
+			o << "s1.rect().d.x() = " << s1.rect().d.x() << " s2.rect().d.x()) = " << s2.rect().d.x();
+		},
+		SL
+	);
+	utki::assert(s1.rect().d.y() == s2.rect().d.y(), SL);
+	utki::assert(s1.rect().p == s2.rect().p, SL);
 
 	filter_result ret(s1.rect());
 
@@ -755,7 +780,7 @@ filter_result composite(surface& in, surface& in2, const svgdom::fe_composite_el
 					o = min(c01.comp_mul(c02) * real(e.k1) + c01 * real(e.k2) + c02 * real(e.k3) + real(e.k4), 1);
 					break;
 				default:
-					ASSERT(false)
+					utki::assert(false, SL);
 					break;
 			}
 

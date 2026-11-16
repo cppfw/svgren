@@ -49,7 +49,7 @@ veg::gradient_spread_method to_veg_gradient_spread_method(svgdom::gradient::spre
 	switch (sm) {
 		case svgdom::gradient::spread_method::default_method:
 			// this should not happen, default_method should be resolved to inherited value before calling this function
-			ASSERT(false)
+			utki::assert(false, SL);
 			[[fallthrough]];
 		case svgdom::gradient::spread_method::pad:
 			return veg::gradient_spread_method::pad;
@@ -59,7 +59,7 @@ veg::gradient_spread_method to_veg_gradient_spread_method(svgdom::gradient::spre
 			return veg::gradient_spread_method::repeat;
 	}
 
-	ASSERT(false)
+	utki::assert(false, SL);
 	return veg::gradient_spread_method::pad;
 }
 } // namespace
@@ -121,7 +121,7 @@ void renderer::apply_transformation(const svgdom::transformable::transformation&
 			}
 			break;
 		default:
-			ASSERT(false)
+			utki::assert(false, SL);
 			break;
 	}
 }
@@ -165,7 +165,7 @@ void renderer::apply_viewbox(const svgdom::view_boxed& e, const svgdom::aspect_r
 			}
 			switch (ar.preserve_aspect_ratio.preserve) {
 				case svgdom::aspect_ratioed::aspect_ratio_preservation::none:
-					ASSERT(false)
+					utki::assert(false, SL);
 				default:
 					break;
 				case svgdom::aspect_ratioed::aspect_ratio_preservation::x_min_y_max:
@@ -241,7 +241,7 @@ void renderer::set_gradient_properties(
 	effective_gradient_styleable.classes = this->gradient_get_classes(g);
 	effective_gradient_styleable.presentation_attributes = this->gradient_get_presentation_attributes(g);
 
-	ASSERT(!gradient_ss.stack.empty())
+	utki::assert(!gradient_ss.stack.empty(), SL);
 	gradient_ss.stack.pop_back();
 	gradient_ss.stack.emplace_back(effective_gradient_styleable);
 
@@ -305,7 +305,7 @@ void renderer::apply_filter(const std::string& id)
 
 	filter_applier visitor(*this);
 
-	ASSERT(e)
+	utki::assert(e, SL);
 	e->accept(visitor);
 
 	this->blit(visitor.get_last_result());
@@ -315,12 +315,12 @@ void renderer::set_gradient(const std::string& id)
 {
 	auto ss = this->style_stack_cache.find(id);
 	auto e = this->finder_by_id.find(id);
-	ASSERT((ss && e) || !ss)
+	utki::assert((ss && e) || !ss, SL);
 	if (!ss) {
 		this->canvas.set_source(r4::vector4<real>(0));
 		return;
 	}
-	ASSERT(e)
+	utki::assert(e, SL);
 
 	struct common_gradient_push {
 		veg::canvas_matrix_push matrix_push;
@@ -338,9 +338,15 @@ void renderer::set_gradient(const std::string& id)
 					r.canvas.scale(r.user_space_bounding_box.d);
 				}
 
-				ASSERT(r.canvas.get_matrix().det() != 0, [&](auto& o) {
-					o << "matrix =\n" << r.canvas.get_matrix();
-				})
+				utki::assert(
+					[&]() -> bool {
+						return r.canvas.get_matrix().det() != 0;
+					},
+					[&](auto& o) {
+						o << "matrix =\n" << r.canvas.get_matrix();
+					},
+					SL
+				);
 				// NOLINTNEXTLINE(bugprone-unused-return-value, "false positive")
 				this->viewport_push = std::make_unique<renderer_viewport_push>(r, real(1));
 			}
@@ -527,7 +533,7 @@ void renderer::render_shape(bool is_group_pushed)
 		}
 	}
 
-	ASSERT(fill)
+	utki::assert(fill, SL);
 	if (!svgdom::is_none(*fill)) {
 		if (std::holds_alternative<std::string>(*fill)) {
 			this->set_gradient(svgdom::get_local_id_from_iri(*fill));
@@ -538,7 +544,7 @@ void renderer::render_shape(bool is_group_pushed)
 				fill_opacity = *std::get_if<svgdom::real>(p);
 			}
 
-			ASSERT(std::holds_alternative<uint32_t>(*fill))
+			utki::assert(std::holds_alternative<uint32_t>(*fill), SL);
 			auto fill_rgb = svgdom::get_rgb(*fill).to<real>();
 			// std::cout << "fill_rgb = " << fill_rgb << std::endl;
 			auto color = r4::vector4<real>{fill_rgb, fill_opacity * opacity};
@@ -591,10 +597,10 @@ void renderer::render_shape(bool is_group_pushed)
 				std::vector<real> dasharray(lenarr.size());
 				auto dst = dasharray.begin();
 				for (auto src = lenarr.begin(); src != lenarr.end(); ++src, ++dst) {
-					ASSERT(dst != dasharray.end())
+					utki::assert(dst != dasharray.end(), SL);
 					*dst = this->length_to_px(*src);
 				}
-				ASSERT(dst == dasharray.end())
+				utki::assert(dst == dasharray.end(), SL);
 
 				this->canvas.set_dash_pattern(utki::make_span(dasharray), dashoffset);
 			} else {
@@ -602,7 +608,7 @@ void renderer::render_shape(bool is_group_pushed)
 			}
 		}
 
-		ASSERT(stroke)
+		utki::assert(stroke, SL);
 		if (std::holds_alternative<std::string>(*stroke)) {
 			this->set_gradient(svgdom::get_local_id_from_iri(*stroke));
 		} else {
@@ -758,7 +764,7 @@ void renderer::visit(const svgdom::use_element& e)
 
 				void accept(svgdom::visitor& visitor) override
 				{
-					ASSERT(false)
+					utki::assert(false, SL);
 				}
 
 				void accept(svgdom::const_visitor& visitor) const override
@@ -802,7 +808,7 @@ void renderer::visit(const svgdom::use_element& e)
 
 				void accept(svgdom::visitor& visitor) override
 				{
-					ASSERT(false)
+					utki::assert(false, SL);
 				}
 
 				void accept(svgdom::const_visitor& visitor) const override
@@ -843,7 +849,7 @@ void renderer::visit(const svgdom::use_element& e)
 
 				void accept(svgdom::visitor& visitor) override
 				{
-					ASSERT(false)
+					utki::assert(false, SL);
 				}
 
 				void accept(svgdom::const_visitor& visitor) const override
@@ -867,7 +873,7 @@ void renderer::visit(const svgdom::use_element& e)
 		}
 	} visitor(*this, e);
 
-	ASSERT(ref)
+	utki::assert(ref, SL);
 
 	ref->accept(visitor);
 }
@@ -1125,9 +1131,13 @@ void renderer::visit(const svgdom::path_element& e)
 				);
 				break;
 			default:
-				ASSERT(false, [&](auto& o) {
-					o << "unknown path step type: " << unsigned(s.type_v);
-				})
+				utki::assert(
+					false,
+					[&](auto& o) {
+						o << "unknown path step type: " << unsigned(s.type_v);
+					},
+					SL
+				);
 				break;
 		}
 		prev_step = &s;
@@ -1316,7 +1326,7 @@ void renderer::visit(const svgdom::rect_element& e)
 		} else if (!rx.is_valid() && ry.is_valid()) {
 			rx = ry;
 		}
-		ASSERT(rx.is_valid() && ry.is_valid())
+		utki::assert(rx.is_valid() && ry.is_valid(), SL);
 
 		auto r = this->length_to_px(rx, ry);
 
@@ -1644,7 +1654,7 @@ svgdom::gradient::spread_method renderer::gradient_get_spread_method(const svgdo
 		return g.spread_method_attribute;
 	}
 
-	ASSERT(g.spread_method_attribute == svgdom::gradient::spread_method::default_method)
+	utki::assert(g.spread_method_attribute == svgdom::gradient::spread_method::default_method, SL);
 
 	auto ref_id = g.get_local_id_from_iri();
 	if (ref_id.size() != 0) {

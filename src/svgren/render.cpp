@@ -76,7 +76,7 @@ image_type svgren::rasterize(const svgdom::svg_element& svg, const parameters& p
 		if (aspect_ratio == 0) {
 			return {};
 		}
-		ASSERT(aspect_ratio > 0)
+		utki::assert(aspect_ratio > 0, SL);
 		using std::round;
 		using std::max;
 		if (params.dims_request.x() == 0 && params.dims_request.y() != 0) {
@@ -88,13 +88,13 @@ image_type svgren::rasterize(const svgdom::svg_element& svg, const parameters& p
 			raster_dims.y() = max(raster_dims.y(), unsigned(1)); // we don't want zero height
 			raster_dims.x() = params.dims_request.x();
 		} else {
-			ASSERT(params.dims_request.is_positive())
+			utki::assert(params.dims_request.is_positive(), SL);
 			raster_dims = params.dims_request;
 		}
 	}
 
-	ASSERT(raster_dims.is_positive())
-	ASSERT(svg_dims.is_positive())
+	utki::assert(raster_dims.is_positive(), SL);
+	utki::assert(svg_dims.is_positive(), SL);
 
 	veg::canvas canvas(raster_dims);
 

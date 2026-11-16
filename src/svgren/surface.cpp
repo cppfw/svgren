@@ -35,16 +35,20 @@ surface surface::intersection(const r4::rectangle<unsigned>& r)
 {
 	auto ret_rect = r4::rectangle<unsigned>(this->rect()).intersect(r);
 
-	ASSERT(ret_rect.d.y() <= r.d.y(), [&](auto& o) {
-		o << "ret_rect = " << ret_rect << " this->rect() = " << this->rect() << " r = " << r;
-	})
+	utki::assert(
+		ret_rect.d.y() <= r.d.y(),
+		[&](auto& o) {
+			o << "ret_rect = " << ret_rect << " this->rect() = " << this->rect() << " r = " << r;
+		},
+		SL
+	);
 
 	if (ret_rect.d.is_any_zero()) {
 		// resulting surface is of zero size
 		return {};
 	}
 
-	ASSERT(this->rect().contains(ret_rect))
+	utki::assert(this->rect().contains(ret_rect), SL);
 
 	return {
 		ret_rect.p, //
