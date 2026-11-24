@@ -1,7 +1,12 @@
 name: ci
 on:
-  push: {branches-ignore: [latest], tags: ['*']}
+  push:
+    branches:
+      - main
+    tags: ['*']
   pull_request:
+    branches:
+      - main
 env:
   PACKAGE_NAME: ${{ github.event.repository.name }}
   PACKAGE_VERSION: ${{ github.sha }}
